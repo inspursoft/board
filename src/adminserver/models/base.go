@@ -2,6 +2,7 @@ package models
 
 import (
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
+
 	"github.com/astaxie/beego/orm"
 )
 
@@ -10,9 +11,7 @@ func RegisterModels() {
 		new(nodeModel.NodeLog),
 		new(nodeModel.NodeLogDetailInfo),
 		new(nodeModel.NodeStatus),
-		new(InitStatusInfo),
 		new(Account),
 		new(Token),
-		new(User),
-		new(Config))
+		new(User))
 }

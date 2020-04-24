@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"git/inspursoft/board/src/common/utils"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -89,22 +90,6 @@ func (a *AccController) Login() {
 	a.ServeJSON()
 }
 
-
-// @Title Install
-// @Description judge if it's the first time open admin server.
-// @Success 200 {object} models.InitStep success
-// @Failure 400 bad request
-// @router /install [get]
-func (a *AccController) Install() {
-	install, err := service.Install()
-	if err != nil {
-		logs.Error(err)
-		a.CustomAbort(http.StatusBadRequest, err.Error())
-	}
-	a.Data["json"] = models.InitStep{Step: install}
-	a.ServeJSON()
-}
-
 // @Title CreateUUID
 // @Description create UUID
 // @Success 200 success
@@ -132,7 +117,7 @@ func (a *AccController) ValidateUUID() {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	result, err := service.ValidateUUID(uuid.UUID)
+	result, err := service.ValidateUUID(uuid.UUIDstring)
 	if err != nil {
 		logs.Error(err)
 		a.CustomAbort(http.StatusBadRequest, err.Error())

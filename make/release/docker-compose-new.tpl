@@ -1,10 +1,7 @@
 version: '2'
 services:
   log:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
+    image: board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -12,20 +9,38 @@ services:
       - dvserver_net
     ports:
       - 1514:514
-  gogits:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/gogits/Dockerfile
-    image: dev_gogits:dev
+  db:
+    image: board_db:__version__
     restart: always
     volumes:
-      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /data/board/database:/var/lib/mysql
+      - ../config/db/my.cnf:/etc/mysql/conf.d/my.cnf
+    env_file:
+      - ../config/db/env
+    networks:
+      - dvserver_net
+    depends_on:
+      - log
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "db"
+  gogits:
+    image: board_gogits:__version__
+    restart: always
+    volumes:
       - /data/board/gogits:/data:rw
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
     ports:
       - "10022:22"
       - "10080:3000"
     networks:
-      - dvserver_net 
+      - dvserver_net
     depends_on:
       - log
     logging:
@@ -34,10 +49,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "gogits"
   jenkins:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/jenkins/Dockerfile
-    image: dev_jenkins:dev
+    image: board_jenkins:__version__
     restart: always
     networks:
       - dvserver_net
@@ -45,12 +57,11 @@ services:
       - /data/board/jenkins_home:/var/jenkins_home
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/bin/docker
+      - /usr/bin/docker:/usr/bin/docker
     env_file:
       - ../config/jenkins/env
     ports:
       - 8888:8080
-      - 50000:50000
     depends_on:
       - log
     logging:
@@ -59,39 +70,32 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jenkins"
   apiserver:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/apiserver/Dockerfile
-    image: dev_apiserver:dev
+    image: board_apiserver:__version__
     restart: always
     volumes:
-      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+#     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/repos:/repos:rw
       - /data/board/keys:/keys:rw
       - /data/board/cert:/cert:rw
-      - ../config/apiserver/kvm:/root/kvm
-      - ../config/apiserver/kvmregistry:/root/kvmregistry
-      - /etc/board/cert:/etc/board/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/apiserver/env
+    ports:
+      - 8088:8088
     networks:
       - dvserver_net
-    ports: 
-      - 8088:8088
+    links:
+      - db
     depends_on:
       - log
-      - jenkins
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: dev_tokenserver:dev
+    image: board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -105,19 +109,18 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   collector:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/collector/Dockerfile
-    image: dev_collector:dev
+    image: board_collector:__version__
     restart: always
     volumes:
       - /data/board/cert:/cert:rw
-      - /etc/board/cert:/etc/board/cert:rw
       - ../config/collector/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
     env_file:
       - ../config/collector/env
     networks:
       - dvserver_net
+    links:
+      - db
     depends_on:
       - log
     logging:
@@ -126,18 +129,16 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "collector" 
   proxy:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/proxy/Dockerfile
-    image: dev_proxy:dev
+    image: board_proxy:__version__
     networks:
       - dvserver_net
     restart: always
     volumes:
       - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
-      - ../../src/ui/dist:/usr/share/nginx/html:z
+#     - ../../src/ui/dist:/usr/share/nginx/html:z
     ports: 
       - 80:80
+      - 8080:8080
     links:
       - apiserver
     depends_on:
@@ -148,10 +149,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
   grafana:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/grafana/Dockerfile
-    image: dev_grafana:dev
+    image: board_grafana:__version__
     restart: always
     volumes:
       - /data/board/grafana/lib:/var/lib/grafana
@@ -159,8 +157,6 @@ services:
       - ../config/grafana:/etc/grafana/config
     networks:
       - dvserver_net
-    ports:
-      - 3000:3000
     depends_on:
       - log
     logging:
@@ -169,10 +165,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "grafana"
   graphite:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/graphite/Dockerfile
-    image: dev_graphite:dev
+    image: board_graphite:__version__
     restart: always
     networks:
       - dvserver_net
@@ -188,10 +181,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "graphite"
   elasticsearch:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/elasticsearch/Dockerfile
-    image: dev_elasticsearch:dev
+    image: board_elasticsearch:__version__
     restart: always
     env_file:
       - ../config/elasticsearch/env
@@ -213,10 +203,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "elasticsearch"
   kibana:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/kibana/Dockerfile
-    image: dev_kibana:dev
+    image: board_kibana:__version__
     restart: always
     networks:
       - dvserver_net
@@ -230,15 +217,12 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "kibana"
   chartmuseum:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/chartmuseum/Dockerfile
-    image: dev_chartmuseum:dev
+    image: board_chartmuseum:__version__
     restart: always
     networks:
       - dvserver_net
-    ports:
-      - 8089:8080
+#    ports:
+#      - 8089:8080
     depends_on:
       - log
     volumes:
@@ -251,4 +235,4 @@ services:
 networks:
   dvserver_net:
     external:
-      name: dev_board
+      name: deploy_board

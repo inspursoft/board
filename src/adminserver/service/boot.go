@@ -1,10 +1,13 @@
 package service
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/models"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -42,9 +45,6 @@ func InitDB(db *models.DBconf) error {
 	cnf.WriteString("[mysqld]\n")
 	cnf.WriteString(fmt.Sprintf("max_connections=%d\n", db.MaxConnections))
 
-	if err = NextStep(models.InitStatusFirst, models.InitStatusSecond); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -67,10 +67,6 @@ func StartDB(host *models.Account) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if err = NextStep(models.InitStatusSecond, models.InitStatusThird); err != nil {
-		return err
 	}
 
 	return nil
@@ -115,6 +111,16 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
+	o := orm.NewOrm()
+	o.Using("default")
+	token := models.Token{Id: 1}
+	if o.Read(&token) != orm.ErrNoRows {
+		if _, err = o.Delete(&token); err != nil {
+			return err
+		}
+	}
+	os.Remove("/go/secrets/initialAdminPassword")
+
 	return nil
 }
 
@@ -144,21 +150,56 @@ func RegisterDB() error {
 	return nil
 }
 
-func NextStep(curstat, nextstat models.InitStatus) error {
-	o := orm.NewOrm()
-	o.Using("default")
-	status := models.InitStatusInfo{Id: 1}
-	err := o.Read(&status)
-	if err != nil {
-		return err
-	}
-	if status.Status == curstat {
-		status.InstallTime = time.Now().Unix()
-		status.Status = nextstat
-		_, err = o.Update(&status, "InstallTime", "Status")
-		if err != nil {
-			return err
+func CheckSysStatus() (models.InitStatus, error) {
+	var err error
+	var cfgCheck bool
+	if err = CheckBoard(); err != nil {
+		logs.Info("Board is down")
+		if cfgCheck, err = CheckCfgModified(); err != nil {
+			return 0, err
+		}
+		if !cfgCheck {
+			return models.InitStatusFirst, nil
+		} else {
+			return models.InitStatusSecond, nil
 		}
 	}
+	return models.InitStatusThird, nil
+}
+
+func CheckBoard() error {
+	var err error
+	if err = RegisterDB(); err != nil {
+		return err
+	}
+	if err = CheckDB(); err != nil {
+		return err
+	}
+	if tokenserver := CheckTokenserver(); !tokenserver {
+		return errors.New("tokenserver is down")
+	}
 	return nil
+}
+
+func CheckCfgModified() (bool, error) {
+	cfgPath := "/go/cfgfile/board.cfg"
+	f, err := os.Open(cfgPath)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "hostname = reg.mydomain.com") {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func CheckTokenserver() bool {
+	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1 && echo $?")
+	bytes, _ := cmd.Output()
+	result := strings.Replace(string(bytes), "\n", "", 1)
+	return (result == "0")
 }

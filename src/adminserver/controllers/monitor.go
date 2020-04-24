@@ -18,14 +18,21 @@ func (m *MoniController) Prepare() {
 	if token == "" {
 		token = m.GetString("token")
 	}
-	result, err := service.VerifyToken(token)
-	if err != nil {
-		logs.Error(err)
-		m.CustomAbort(http.StatusBadRequest, err.Error())
+	if tokenserver := service.CheckTokenserver(); !tokenserver {
+		result, err := service.VerifyUUIDToken(token)
+		if err != nil {
+			logs.Error(err)
+			m.CustomAbort(http.StatusBadRequest, err.Error())
+		}
+		if !result {
+			m.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
+	} else {
+		if user := service.GetCurrentUser(token); user == nil {
+			m.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
 	}
-	if !result {
-		m.CustomAbort(http.StatusUnauthorized, "Unauthorized")	
-	} 
+
 }
 
 // @Title Get

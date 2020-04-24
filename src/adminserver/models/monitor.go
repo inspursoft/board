@@ -1,10 +1,8 @@
 package models
 
 import (
-	"reflect"
-	"time"
-	"github.com/astaxie/beego/orm"
 	"os"
+	"reflect"
 )
 
 //Boardinfo contains information output by docker ps and docker stats commands.
@@ -36,48 +34,49 @@ func GetBoardinfo(container []string) Boardinfo {
 type InitStatus int
 
 const (
-	InitStatusStart		InitStatus = 0
-	InitStatusFirst		InitStatus = 1	
-	InitStatusSecond	InitStatus = 2
-	InitStatusThird		InitStatus = 3
-	InitStatusComplete	InitStatus = 4
+	InitStatusFirst  InitStatus = 1
+	InitStatusSecond InitStatus = 2
+	InitStatusThird  InitStatus = 3
 )
 
-//InitStatus saves the status indicating if the adminserver is first-time installed. 
+/*
+//InitStatus saves the status indicating if the adminserver is first-time installed.
 type InitStatusInfo struct {
-	Id          int        	`json:"id"`
-	InstallTime	int64		`json:"install_time"`
-	Status		InitStatus	`json:"status"`
+	Id          int        `json:"id"`
+	InstallTime int64      `json:"install_time"`
+	Status      InitStatus `json:"status"`
 }
+*/
 
 type Token struct {
-	Id		int		`json:"id"`
-	Token	string	`json:"token"`
-	Time	int64	`json:"time"`
+	Id    int    `json:"id"`
+	Token string `json:"token"`
+	Time  int64  `json:"time"`
 }
 
-
+/*
 func InitInstallationStatus() error {
 	o := orm.NewOrm()
 	status := &InitStatusInfo{Id: 1}
-	err := o.Read(status,"Id")
+	err := o.Read(status, "Id")
 	if err == orm.ErrNoRows {
 		initStatus := InitStatusInfo{InstallTime: time.Now().Unix(), Status: InitStatusStart}
 		_, err := o.Insert(&initStatus)
 		if err != nil {
 			return err
-		}	
-	} 
+		}
+	}
 	return nil
 }
+*/
 
 var ImagePrefix string = os.Getenv("IMAGE_PREFIX")
 var ContainerPrefix string = os.Getenv("CONTAINER_PREFIX")
 
 type TokenString struct {
-	TokenString string `json:"token_string"`
+	TokenString string `json:"token"`
 }
 
-type InitStep struct {
-	Step InitStatus	`json:"step"`
+type InitSysStatus struct {
+	Status InitStatus `json:"status"`
 }

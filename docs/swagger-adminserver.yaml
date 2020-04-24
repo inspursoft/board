@@ -25,8 +25,6 @@ paths:
       responses:
         "200":
           description: success
-          schema:
-            type: string
         "400":
           description: bad request
   /account/createUUID:
@@ -58,19 +56,6 @@ paths:
           description: success
         "400":
           description: bad request
-  /account/install:
-    get:
-      tags:
-      - account
-      description: judge if it's the first time open admin server.
-      operationId: AccController.Install
-      responses:
-        "200":
-          description: success
-          schema:
-            type: string
-        "400":
-          description: bad request
   /account/login:
     post:
       tags:
@@ -88,9 +73,11 @@ paths:
         "200":
           description: success
           schema:
-            type: string
+            $ref: '#/definitions/models.TokenString'
         "400":
           description: bad request
+        "403":
+          description: forbidden
   /account/verify:
     post:
       tags:
@@ -107,8 +94,6 @@ paths:
       responses:
         "200":
           description: success
-          schema:
-            type: string
         "400":
           description: bad request
   /board/applycfg:
@@ -117,31 +102,6 @@ paths:
       - board
       description: apply cfg and restart Board
       operationId: BoardController.Applycfg
-      parameters:
-      - in: query
-        name: token
-        description: token
-        required: true
-        type: string
-      - in: body
-        name: body
-        description: body for host acc info
-        required: true
-        schema:
-          $ref: '#/definitions/models.Account'
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
-        "401":
-          description: unauthorized
-  /board/restart:
-    post:
-      tags:
-      - board
-      description: restart Board
-      operationId: BoardController.Restart
       parameters:
       - in: query
         name: token
@@ -173,6 +133,36 @@ paths:
         description: token
         required: true
         type: string
+      - in: query
+        name: uninstall
+        description: uninstall flag
+        required: true
+        type: boolean
+      - in: body
+        name: body
+        description: body for host acc info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Account'
+      responses:
+        "200":
+          description: success
+        "400":
+          description: bad request
+        "401":
+          description: unauthorized
+  /board/start:
+    post:
+      tags:
+      - board
+      description: start Board
+      operationId: BoardController.Start
+      parameters:
+      - in: query
+        name: token
+        description: token
+        required: true
+        type: string
       - in: body
         name: body
         description: body for host acc info
@@ -197,6 +187,19 @@ paths:
           description: success
         "400":
           description: bad request
+  /boot/checksysstatus:
+    get:
+      tags:
+      - boot
+      description: return the current system status.
+      operationId: BootController.CheckSysStatus
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/models.InitSysStatus'
+        "400":
+          description: bad request
   /boot/initdb:
     post:
       tags:
@@ -215,31 +218,6 @@ paths:
           description: success
         "400":
           description: bad request
-  /boot/startboard:
-    post:
-      tags:
-      - boot
-      description: ssh to host and docker-compose up the Board
-      operationId: BootController.StartBoard
-      parameters:
-      - in: query
-        name: token
-        description: token
-        required: true
-        type: string
-      - in: body
-        name: body
-        description: body for host acc info
-        required: true
-        schema:
-          $ref: '#/definitions/models.Account'
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
-        "401":
-          description: unauthorized
   /boot/startdb:
     post:
       tags:
@@ -323,7 +301,7 @@ paths:
         "200":
           description: success
           schema:
-            type: string
+            $ref: '#/definitions/models.Key'
         "400":
           description: bad request
         "401":
@@ -514,7 +492,7 @@ paths:
         "500":
           description: Internal Server Error
 definitions:
-  3229.<nil>.NodeLog:
+  3442.<nil>.NodeLog:
     title: NodeLog
     type: object
   models.Account:
@@ -637,6 +615,21 @@ definitions:
         type: string
       gogits_ssh_port:
         type: string
+  models.InitStatus:
+    title: InitStatus
+    format: int64
+    type: integer
+    enum:
+    - InitStatusFirst = 1
+    - InitStatusSecond = 2
+    - InitStatusThird = 3
+    example: 1
+  models.InitSysStatus:
+    title: InitSysStatus
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/models.InitStatus'
   models.Jenkinsserver:
     title: Jenkinsserver
     type: object
@@ -656,6 +649,12 @@ definitions:
       jenkins_node_username:
         type: string
       jenkins_node_volume:
+        type: string
+  models.Key:
+    title: Key
+    type: object
+    properties:
+      Key:
         type: string
   models.Kvm:
     title: Kvm
@@ -693,6 +692,8 @@ definitions:
         type: string
       board_admin_password:
         type: string
+      db_max_connections:
+        type: string
       db_password:
         type: string
       dns_suffix:
@@ -717,11 +718,17 @@ definitions:
         type: string
       which:
         type: string
+  models.TokenString:
+    title: TokenString
+    type: object
+    properties:
+      token:
+        type: string
   models.UUID:
     title: UUID
     type: object
     properties:
-      UUID:
+      uuid:
         type: string
   nodeModel.AddNodePostData:
     title: AddNodePostData
@@ -775,7 +782,7 @@ definitions:
     type: object
     properties:
       log_list:
-        $ref: '#/definitions/3229.<nil>.NodeLog'
+        $ref: '#/definitions/3442.<nil>.NodeLog'
       pagination:
         $ref: '#/definitions/nodeModel.Pagination'
   nodeModel.Pagination:

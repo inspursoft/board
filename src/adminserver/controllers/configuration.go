@@ -20,14 +20,22 @@ func (c *CfgController) Prepare() {
 	if token == "" {
 		token = c.GetString("token")
 	}
-	result, err := service.VerifyToken(token)
-	if err != nil {
-		logs.Error(err)
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+
+	if tokenserver := service.CheckTokenserver(); !tokenserver {
+		result, err := service.VerifyUUIDToken(token)
+		if err != nil {
+			logs.Error(err)
+			c.CustomAbort(http.StatusBadRequest, err.Error())
+		}
+		if !result {
+			c.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
+	} else {
+		if user := service.GetCurrentUser(token); user == nil {
+			c.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
 	}
-	if !result {
-		c.CustomAbort(http.StatusUnauthorized, "Unauthorized")	
-	} 
+
 }
 
 // @Title Post
@@ -40,7 +48,7 @@ func (c *CfgController) Prepare() {
 // @router / [post]
 func (c *CfgController) Post() {
 	var cfg models.Configuration
-	
+
 	//transferring JSON to struct.
 	err := utils.UnmarshalToJSON(c.Ctx.Request.Body, &cfg)
 	if err != nil {
@@ -53,7 +61,7 @@ func (c *CfgController) Post() {
 		c.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	c.ServeJSON()
-	
+
 }
 
 // @Title GetAll
@@ -75,7 +83,7 @@ func (c *CfgController) GetAll() {
 	//apply struct to JSON value.
 	c.Data["json"] = cfg
 	c.ServeJSON()
-	
+
 }
 
 // @Title GetKey

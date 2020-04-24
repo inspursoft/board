@@ -1,13 +1,14 @@
 package controllers
 
 import (
+	"fmt"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"github.com/astaxie/beego/logs"
+
 	"github.com/astaxie/beego"
-	"fmt"
+	"github.com/astaxie/beego/logs"
 )
 
 // BootController includes operations about booting config.
@@ -32,7 +33,7 @@ func (b *BootController) Initdb() {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }
 
 // @Title Startdb
@@ -52,7 +53,7 @@ func (b *BootController) Startdb() {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }
 
 // @Title CheckDB
@@ -65,6 +66,20 @@ func (b *BootController) CheckDB() {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, fmt.Sprintf("DB is down."))
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }
 
+// @Title CheckSysStatus
+// @Description return the current system status.
+// @Success 200 {object} models.InitSysStatus success
+// @Failure 400 bad request
+// @router /checksysstatus [get]
+func (b *BootController) CheckSysStatus() {
+	this, err := service.CheckSysStatus()
+	if err != nil {
+		logs.Error(err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	b.Data["json"] = models.InitSysStatus{Status: this}
+	b.ServeJSON()
+}

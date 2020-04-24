@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
@@ -19,36 +20,43 @@ func (b *BoardController) Prepare() {
 	if token == "" {
 		token = b.GetString("token")
 	}
-	result, err := service.VerifyToken(token)
-	if err != nil {
-		logs.Error(err)
-		b.CustomAbort(http.StatusBadRequest, err.Error())
+
+	if tokenserver := service.CheckTokenserver(); !tokenserver {
+		result, err := service.VerifyUUIDToken(token)
+		if err != nil {
+			logs.Error(err)
+			b.CustomAbort(http.StatusBadRequest, err.Error())
+		}
+		if !result {
+			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
+	} else {
+		if user := service.GetCurrentUser(token); user == nil {
+			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+		}
 	}
-	if !result {
-		b.CustomAbort(http.StatusUnauthorized, "Unauthorized")	
-	} 
 }
 
-// @Title Restart
-// @Description restart Board
+// @Title Start
+// @Description start Board
 // @Param	token	query 	string	true		"token"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 400 bad request
 // @Failure 401 unauthorized
-// @router /restart [post]
-func (b *BoardController) Restart() {
+// @router /start [post]
+func (b *BoardController) Start() {
 	var host models.Account
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if err = service.Restart(&host); err != nil {
+	if err = service.Start(&host); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }
 
 // @Title Applycfg
@@ -61,7 +69,7 @@ func (b *BoardController) Restart() {
 // @router /applycfg [post]
 func (b *BoardController) Applycfg() {
 	var host models.Account
-	err:= utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
+	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
@@ -70,12 +78,13 @@ func (b *BoardController) Applycfg() {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }
 
 // @Title Shutdown
 // @Description shutdown board
 // @Param	token	query 	string	true	"token"
+// @Param	uninstall	query 	bool	true	"uninstall flag"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 400 bad request
@@ -83,14 +92,19 @@ func (b *BoardController) Applycfg() {
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
 	var host models.Account
-	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
+	uninstall, err := b.GetBool("uninstall")
+	if err != nil {
+		logs.Error("Failed to get bool data: %+v", err)
+		b.CustomAbort(http.StatusBadRequest, err.Error())
+	}
+	err = utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if err = service.Shutdown(&host); err != nil {
+	if err = service.Shutdown(&host, uninstall); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	b.ServeJSON()	
+	b.ServeJSON()
 }

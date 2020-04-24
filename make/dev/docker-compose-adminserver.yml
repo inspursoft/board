@@ -13,9 +13,9 @@ services:
       - /usr/bin/docker:/usr/bin/docker
       - /data/board/database:/data/board/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
-      - /data/board/make:/data/board/make
+      - /data/board/make/config:/data/board/make/config
     env_file:
-      - ../config/adminserver/env
+      - ../templates/adminserver/env-dev
     networks:
       - board
     ports:

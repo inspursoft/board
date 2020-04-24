@@ -2,12 +2,13 @@ package dao
 
 import (
 	"database/sql"
+	"os"
+	"path"
+
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/mattn/go-sqlite3"
-	"os"
-	"path"
 )
 
 const AdminServerDbPath = "/data/board/database/"
@@ -18,8 +19,8 @@ var (
 )
 
 func InitGlobalCache() (err error) {
-	GlobalCache, err = cache.NewCache("memory", `{"interval": 3600}`);
-	return err;
+	GlobalCache, err = cache.NewCache("memory", `{"interval": 3600}`)
+	return err
 }
 
 func RegisterDatabase(dbFileName string) error {
@@ -88,23 +89,13 @@ func InitDbTables(dbFileName string) error {
 	}
 	logs.Info("create node_log_detail table successfully")
 
-	initStatusTable := `create table if not exists init_status_info(
-						id integer primary key autoincrement,
-						install_time int not null,
-						status int
-						);`
-	if _, err := db.Exec(initStatusTable); err != nil {
-	return err
-	}
-	logs.Info("create init_status_info table successfully")
-
 	tokenTable := `create table if not exists token(
 		id integer primary key autoincrement,
 		time int not null,
 		token varchar(30) not null
 		);`
 	if _, err := db.Exec(tokenTable); err != nil {
-	return err
+		return err
 	}
 	logs.Info("create token table successfully")
 
@@ -114,7 +105,7 @@ func InitDbTables(dbFileName string) error {
 		password varchar(255) not null
 		);`
 	if _, err := db.Exec(accountTable); err != nil {
-	return err
+		return err
 	}
 	logs.Info("create account table successfully")
 

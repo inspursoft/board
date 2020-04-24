@@ -3,12 +3,17 @@ package service
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
+	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alyu/configparser"
@@ -17,12 +22,15 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var TokenServerURL = fmt.Sprintf("http://%s:%s/tokenservice/token", "tokenserver", "4000")
+var TokenCacheExpireSeconds int
+
+var ErrInvalidToken = errors.New("error for invalid token")
+
 const (
 	defaultInitialPassword = "123456a?"
 	adminUserID            = 1
 )
-
-var configStorage map[string]interface{}
 
 //VerifyPassword compares the password in cfg with the input one.
 func VerifyPassword(passwd *models.Password) (bool, error) {
@@ -81,16 +89,11 @@ func Initialize(acc *models.Account) error {
 		}
 	}
 
-	if err = NextStep(models.InitStatusThird, models.InitStatusComplete); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 //Login allow user to use account information to login adminserver.
 func Login(acc *models.Account) (bool, error, string) {
-	var token string = ""
 	o := orm.NewOrm()
 	o.Using("mysql-db2")
 
@@ -98,67 +101,133 @@ func Login(acc *models.Account) (bool, error, string) {
 	err := o.Read(&user, "username", "system_admin", "deleted")
 	if err != nil {
 		if err == orm.ErrNoRows {
-			return false, errors.New("Forbidden"), token
+			return false, errors.New("Forbidden"), ""
 		}
-		return false, err, token
+		return false, err, ""
 	}
 
 	query := models.User{Username: acc.Username, Password: acc.Password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
 	err = o.Read(&query, "username", "password")
-
 	if err != nil {
-		return false, err, token
+		return false, errors.New("Wrong password"), ""
 	}
 
-	token = uuid.NewV4().String()
-	newtoken := models.Token{Id: 1, Token: token, Time: time.Now().Unix()}
-	o2 := orm.NewOrm()
-	o2.Using("default")
-	if o2.Read(&models.Token{Id: 1}) == orm.ErrNoRows {
-		if _, err := o2.Insert(&newtoken); err != nil {
-			return false, err, token
-		}
-	} else {
-		if _, err := o2.Update(&newtoken); err != nil {
-			return false, err, token
-		}
+	payload := make(map[string]interface{})
+	payload["id"] = strconv.Itoa(int(query.ID))
+	payload["username"] = query.Username
+	payload["email"] = query.Email
+	payload["realname"] = query.Realname
+	payload["is_system_admin"] = query.SystemAdmin
+	token, err := SignToken(payload)
+	if err != nil {
+		return false, err, ""
 	}
 
-	return true, nil, token
+	TokenCacheExpireSeconds = 1800
+	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL, TokenCacheExpireSeconds)
+	dao.GlobalCache.Put(query.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
+	dao.GlobalCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+
+	return true, nil, token.TokenString
 }
 
-//Install method is called when first open the admin server.
-func Install() (models.InitStatus, error) {
-	o := orm.NewOrm()
-	status := models.InitStatusInfo{Id: 1}
-	err := o.Read(&status)
+func SignToken(payload map[string]interface{}) (*models.TokenString, error) {
+	var token models.TokenString
+	err := utils.RequestHandle(http.MethodPost, TokenServerURL, func(req *http.Request) error {
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+		}
+		return nil
+	}, payload, func(req *http.Request, resp *http.Response) error {
+		return utils.UnmarshalToJSON(resp.Body, &token)
+	})
+	return &token, err
+}
+
+func VerifyToken(tokenString string) (map[string]interface{}, error) {
+	if strings.TrimSpace(tokenString) == "" {
+		return nil, fmt.Errorf("no token provided")
+	}
+	var payload map[string]interface{}
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", TokenServerURL, tokenString), nil, nil, func(req *http.Request, resp *http.Response) error {
+		if resp.StatusCode == http.StatusUnauthorized {
+			logs.Error("Invalid token due to session timeout.")
+			return ErrInvalidToken
+		}
+		return utils.UnmarshalToJSON(resp.Body, &payload)
+	})
+	return payload, err
+}
+
+func GetCurrentUser(token string) *models.User {
+	if isTokenExists := dao.GlobalCache.IsExist(token); !isTokenExists {
+		logs.Info("Token stored in cache has expired.")
+		return nil
+	}
+	payload, err := VerifyToken(token)
 	if err != nil {
-		return -1, err
+		logs.Error("failed to verify token: %+v\n", err)
+		return nil
 	}
 
-	return status.Status, nil
+	if strID, ok := payload["id"].(string); ok {
+		userID, err := strconv.Atoi(strID)
+		if err != nil {
+			logs.Error("Error occurred on converting userID: %+v\n", err)
+			return nil
+		}
+		o := orm.NewOrm()
+		o.Using("mysql-db2")
+		user := models.User{ID: int64(userID), Deleted: 0}
+		err = o.Read(&user, "id", "deleted")
+		if err != nil {
+			logs.Error("Error occurred while getting user by ID: %d\n", err)
+			return nil
+		}
+		if currentToken, ok := dao.GlobalCache.Get(user.Username).(string); ok {
+			if currentToken != "" && currentToken != token {
+				logs.Info("Another admin user has signed in other place.")
+				return nil
+			}
+		}
+		user.Password = ""
+		return &user
+	}
+	return nil
 }
 
 //CreateUUID creates a file with an UUID in it.
 func CreateUUID() error {
-	u := uuid.NewV4()
+	u := uuid.NewV4().String()
+	existingToken := models.Token{Id: 1}
+	newtoken := models.Token{Id: 1, Token: u, Time: time.Now().Unix()}
+	o := orm.NewOrm()
+	o.Using("default")
+	if o.Read(&existingToken) == orm.ErrNoRows {
+		if _, err := o.Insert(&newtoken); err != nil {
+			return err
+		}
+	} else if (newtoken.Time - existingToken.Time) > 1800 {
+		if _, err := o.Update(&newtoken); err != nil {
+			return err
+		}
+	} else {
+		return errors.New("another admin user has signed in other place")
+	}
 
 	folderPath := path.Join("/go", "/secrets")
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		os.Mkdir(folderPath, os.ModePerm)
 		os.Chmod(folderPath, os.ModePerm)
 	}
-
 	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
-	if _, err := os.Stat(uuidPath); os.IsNotExist(err) {
-		f, err := os.Create(uuidPath)
-		if err != nil {
-			return err
-		}
-		f.WriteString(u.String())
-		defer f.Close()
+	f, err := os.Create(uuidPath)
+	if err != nil {
+		return err
 	}
+	defer f.Close()
+	f.WriteString(u)
 
 	return nil
 }
@@ -171,17 +240,10 @@ func ValidateUUID(input string) (bool, error) {
 		return false, err
 	}
 
-	result := (input == string(f))
-	if result {
-		os.Remove(uuidPath)
-		if err = NextStep(models.InitStatusStart, models.InitStatusFirst); err != nil {
-			return false, err
-		}
-	}
-	return result, nil
+	return (input == string(f)), nil
 }
 
-func VerifyToken(input string) (bool, error) {
+func VerifyUUIDToken(input string) (bool, error) {
 	o := orm.NewOrm()
 	token := models.Token{Id: 1}
 	err := o.Read(&token)

@@ -36,15 +36,6 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
         beego.ControllerComments{
-            Method: "Install",
-            Router: `/install`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
-        beego.ControllerComments{
             Method: "Login",
             Router: `/login`,
             AllowHTTPMethods: []string{"post"},
@@ -72,8 +63,8 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"],
         beego.ControllerComments{
-            Method: "Restart",
-            Router: `/restart`,
+            Method: "Shutdown",
+            Router: `/shutdown`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -81,8 +72,8 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"],
         beego.ControllerComments{
-            Method: "Shutdown",
-            Router: `/shutdown`,
+            Method: "Start",
+            Router: `/start`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -99,17 +90,17 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"],
         beego.ControllerComments{
-            Method: "Initdb",
-            Router: `/initdb`,
-            AllowHTTPMethods: []string{"post"},
+            Method: "CheckSysStatus",
+            Router: `/checksysstatus`,
+            AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"],
         beego.ControllerComments{
-            Method: "Start",
-            Router: `/startboard`,
+            Method: "Initdb",
+            Router: `/initdb`,
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,

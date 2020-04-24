@@ -9,28 +9,32 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
-//Restart Board without loading cfg.
-func Restart(host *models.Account) error {
+//Start Board without loading cfg.
+func Start(host *models.Account) error {
 	shell, err := SSHtoHost(host)
 	if err != nil {
 		return err
 	}
-
-	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
-	err = shell.ExecuteCommand(cmdComposeDown)
-	if err != nil {
-		return err
-	}
-	time.Sleep(time.Duration(10) * time.Second)
 
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
 	err = shell.ExecuteCommand(cmdComposeUp)
 	if err != nil {
 		return err
 	}
+
+	o := orm.NewOrm()
+	o.Using("default")
+	token := models.Token{Id: 1}
+	if o.Read(&token) != orm.ErrNoRows {
+		if _, err = o.Delete(&token); err != nil {
+			return err
+		}
+	}
+	os.Remove("/go/secrets/initialAdminPassword")
 
 	return nil
 }
@@ -68,7 +72,7 @@ func Applycfg(host *models.Account) error {
 }
 
 //Shutdown Board.
-func Shutdown(host *models.Account) error {
+func Shutdown(host *models.Account, uninstall bool) error {
 	shell, err := SSHtoHost(host)
 	if err != nil {
 		return err
@@ -80,6 +84,13 @@ func Shutdown(host *models.Account) error {
 		return err
 	}
 
+	if uninstall {
+		cmdRm := fmt.Sprintf("rm -rf /data/board %s/board.cfg && cp %s/adminserver/board.cfg %s/.", models.MakePath, models.MakePath, models.MakePath)
+		err = shell.ExecuteCommand(cmdRm)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -87,12 +98,10 @@ func SSHtoHost(host *models.Account) (*secureShell.SecureShell, error) {
 	var output bytes.Buffer
 	var shell *secureShell.SecureShell
 
-	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
-	bytes, err := cmd.Output()
+	HostIP, err := GetHostIP()
 	if err != nil {
 		return nil, err
 	}
-	HostIP := strings.Replace(string(bytes), "\n", "", 1)
 	shell, err = secureShell.NewSecureShell(&output, HostIP, host.Username, host.Password)
 	if err != nil {
 		return nil, err
@@ -108,4 +117,14 @@ func Execute(command string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
+}
+
+func GetHostIP() (string, error) {
+	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
+	bytes, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	HostIP := strings.Replace(string(bytes), "\n", "", 1)
+	return HostIP, nil
 }

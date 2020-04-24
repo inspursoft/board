@@ -10,7 +10,7 @@ item=0
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
-sed -i "s|__CURDIR__|$workdir|g"  $workdir/config/adminserver/env
+sed -i "s|__CURDIR__|$workdir|g"  $workdir/env
 
 function check_docker {
 	if ! docker --version &> /dev/null
@@ -74,7 +74,7 @@ check_dockercompose
 if [ -f board*.tgz ]
 then
 	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
-	docker load -i ./board*.tgz
+	docker load -i ../board*.tgz
 fi
 echo ""
 
@@ -82,7 +82,7 @@ echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."
-	docker-compose -f ./docker-compose-db.yml down
+	#docker-compose -f ./docker-compose-db.yml down
 	docker-compose -f ./docker-compose-adminserver.yml down
 fi
 echo ""

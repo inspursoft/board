@@ -3,9 +3,6 @@ package service
 import (
 	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
-	"github.com/astaxie/beego/orm"
-	"strings"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -21,7 +18,7 @@ func GetAllCfg(which string) (*models.Configuration, error) {
 	} else {
 		cfgPath = path.Join("/go", "/cfgfile/board.cfg.tmp")
 	}
-	
+
 	//use configparser to read indicated cfg file.
 	config, err := configparser.Read(cfgPath)
 	if err != nil {
@@ -68,24 +65,26 @@ func UpdateCfg(cfg *models.Configuration) error {
 		return err
 	}
 
-	o := orm.NewOrm()
-	o.Using("default")
-	account := models.Account{Id: 1}
-	err = o.Read(&account)
-	if err != nil {
-		return nil
-	}
-	cfg.Other.BoardAdminPassword = account.Password
+	/*
+		o := orm.NewOrm()
+		o.Using("default")
+		account := models.Account{Id: 1}
+		err = o.Read(&account)
+		if err != nil {
+			return nil
+		}
+		cfg.Other.BoardAdminPassword = account.Password
 
-	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
-	if err != nil {
-		return nil
-	}
-	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
-	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
-	cfg.Other.DBPassword = DBpassword
+		b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
+		if err != nil {
+			return nil
+		}
+		DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
+		DBpassword = strings.Replace(DBpassword, "\n", "", 1)
+		cfg.Other.DBPassword = DBpassword
+	*/
 
-	if cfg.Email.Identity == ""{
+	if cfg.Email.Identity == "" {
 		cfg.Email.Identity = " "
 	}
 
