@@ -2,7 +2,9 @@ package admins
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -53,9 +55,6 @@ func (u *CommonController) List() {
 	orderField := u.GetString("order_field", "creation_time")
 	orderAsc, _ := u.GetInt("order_asc", 0)
 
-	var paginatedUsers *model.PaginatedUsers
-	var users []*model.User
-	var err error
 	fieldName := "deleted"
 	var fieldValue interface{}
 	if strings.TrimSpace(username) != "" {
@@ -66,16 +65,21 @@ func (u *CommonController) List() {
 		fieldValue = email
 	}
 	if isPaginated {
-		paginatedUsers, err = service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc)
+		paginatedUsers, err := service.GetPaginatedUsers(fieldName, fieldValue, pageIndex, pageSize, orderField, orderAsc)
+		if err != nil {
+			u.InternalError(err)
+			return
+		}
 		u.Data["json"] = paginatedUsers
 	} else {
-		users, err = service.GetUsers(fieldName, fieldValue, "id", "username", "email", "realname")
+		users, err := service.GetUsers(fieldName, fieldValue, "id", "username", "email", "realname")
+		if err != nil {
+			u.InternalError(err)
+			return
+		}
 		u.Data["json"] = users
 	}
-	if err != nil {
-		u.InternalError(err)
-		return
-	}
+
 	u.ServeJSON()
 }
 
@@ -123,7 +127,7 @@ func (u *CommonController) Add() {
 		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
 	}
-	var reqUser model.User
+	var reqUser vm.User
 	var err error
 	err = u.ResolveBody(&reqUser)
 	if err != nil {
@@ -178,7 +182,7 @@ func (u *CommonController) Add() {
 	reqUser.Realname = strings.TrimSpace(reqUser.Realname)
 	reqUser.Comment = strings.TrimSpace(reqUser.Comment)
 
-	isSuccess, err := service.SignUp(reqUser)
+	isSuccess, err := adapting.SignUp(reqUser)
 	if err != nil {
 		u.InternalError(err)
 		return

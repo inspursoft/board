@@ -5,3 +5,4 @@ type Image	struct {
 	ImageTag	string	`json:"image_tag"`
 	ProjectName	string	`json:"project_name"`
 }
+

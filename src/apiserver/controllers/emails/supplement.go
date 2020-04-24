@@ -2,10 +2,10 @@ package emails
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/models/emails/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/adapting"
 	c "git/inspursoft/board/src/common/controller"
-	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
@@ -93,12 +93,12 @@ func (e *SupplementController) Forgot() {
 		return
 	}
 	credential := e.GetString("credential")
-	var user *model.User
+	var user *vm.User
 	var err error
 	if utils.ValidateWithPattern("email", credential) {
-		user, err = service.GetUserByEmail(credential)
+		user, err = adapting.GetUserByEmail(credential)
 	} else {
-		user, err = service.GetUserByName(credential)
+		user, err = adapting.GetUserByName(credential)
 	}
 	if err != nil {
 		logs.Error("Failed to get user with credential: %s, error: %+v", credential, err)

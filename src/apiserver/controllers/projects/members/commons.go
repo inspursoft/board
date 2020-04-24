@@ -1,7 +1,7 @@
 package members
 
 import (
-	"git/inspursoft/board/src/apiserver/models/projects/members/vm"
+	"git/inspursoft/board/src/apiserver/models/vm"
 	"git/inspursoft/board/src/apiserver/service"
 	"net/http"
 	"strconv"

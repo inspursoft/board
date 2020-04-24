@@ -1,6 +1,12 @@
 package vm
 
-import "time"
+import (
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
+	"time"
+
+	"github.com/astaxie/beego/logs"
+)
 
 type Project struct {
 	ID                int64     `json:"project_id" orm:"column(id)"`
@@ -16,4 +22,14 @@ type Project struct {
 	CurrentUserRoleID int64     `json:"project_current_user_role_id" orm:"column(current_user_role_id)"`
 	ServiceCount      int       `json:"project_service_count" orm:"column(service_count)"`
 	IstioSupport      bool      `json:"project_istio_support" orm:"column(istio_support)"`
+}
+
+func (p Project) ToMO() (m model.Project) {
+	err := utils.Adapt(p, &m)
+	if err != nil {
+		logs.Error("Failed to convert VM to MO: %+v", err)
+		return
+	}
+	logs.Debug("Converted to model: %+v", m)
+	return
 }
