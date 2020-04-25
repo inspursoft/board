@@ -93,12 +93,16 @@ func (a *AccController) Login() {
 // @Title CreateUUID
 // @Description create UUID
 // @Success 200 success
+// @Success 202 accepted
 // @Failure 400 bad request
 // @router /createUUID [post]
 func (a *AccController) CreateUUID() {
 	err := service.CreateUUID()
 	if err != nil {
 		logs.Error(err)
+		if err.Error() == "another admin user has signed in other place" {
+			a.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
+		}
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 	a.ServeJSON()

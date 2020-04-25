@@ -169,11 +169,11 @@ func CheckSysStatus() (models.InitStatus, error) {
 
 func CheckBoard() error {
 	var err error
-	if err = RegisterDB(); err != nil {
-		return err
-	}
+
 	if err = CheckDB(); err != nil {
-		return err
+		if err = RegisterDB(); err != nil {
+			return err
+		}
 	}
 	if tokenserver := CheckTokenserver(); !tokenserver {
 		return errors.New("tokenserver is down")
