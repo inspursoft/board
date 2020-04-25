@@ -16,6 +16,7 @@ type SupplementController struct {
 }
 
 func (u *SupplementController) Prepare() {
+	u.EnableXSRF = false
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	if !u.IsSysAdmin {

@@ -48,7 +48,9 @@ type EmailController struct {
 	c.BaseController
 }
 
-func (e *EmailController) Prepare() {}
+func (e *EmailController) Prepare() {
+	e.EnableXSRF = false
+}
 
 func (e *EmailController) Ping() {
 	var pingEmail EmailPingParam
