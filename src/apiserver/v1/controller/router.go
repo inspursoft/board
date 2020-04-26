@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"git/inspursoft/board/src/apiserver/controllers/commons"
+
 	"github.com/astaxie/beego"
 )
 
@@ -10,6 +12,8 @@ func InitRouter() {
 			beego.NSRouter("/sign-in",
 				&AuthController{},
 				"post:SignInAction"),
+			beego.NSRouter("/captcha",
+				&commons.CaptchaController{}),
 			beego.NSRouter("/ext-auth",
 				&AuthController{},
 				"get:ExternalAuthAction"),
