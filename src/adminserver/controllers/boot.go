@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
@@ -17,12 +18,6 @@ type BootController struct {
 
 func (b *BootController) Prepare() {}
 
-// @Title Initdb
-// @Description init db password and max number of connections.
-// @Param	body	body 	models.DBconf	true	"body for db conf"
-// @Success 200 success
-// @Failure 400 bad request
-// @router /initdb [post]
 func (b *BootController) Initdb() {
 	var db models.DBconf
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &db)
@@ -37,12 +32,6 @@ func (b *BootController) Initdb() {
 	b.ServeJSON()
 }
 
-// @Title Startdb
-// @Description ssh to host and docker-compose up the db
-// @Param	body	body 	models.Account	true	"body for host acc info"
-// @Success 200 success
-// @Failure 400 bad request
-// @router /startdb [post]
 func (b *BootController) Startdb() {
 	var host models.Account
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
@@ -57,13 +46,8 @@ func (b *BootController) Startdb() {
 	b.ServeJSON()
 }
 
-// @Title CheckDB
-// @Description Check db status
-// @Success 200 success
-// @Failure 400 bad request
-// @router /checkdb [get]
 func (b *BootController) CheckDB() {
-	if err := service.CheckDB(); err != nil {
+	if err := dao.CheckDB(); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusBadRequest, fmt.Sprintf("DB is down."))
 	}

@@ -62,13 +62,6 @@ func (c *CfgController) GetAll() {
 
 }
 
-// @Title GetKey
-// @Description return public key
-// @Param	token	query 	string	true	"token"
-// @Success 200 {object} models.Key	success
-// @Failure 400 bad request
-// @Failure 401 unauthorized
-// @router /pubkey [get]
 func (c *CfgController) GetKey() {
 	pubkey := service.GetKey()
 	c.Data["json"] = models.Key{Key: pubkey}

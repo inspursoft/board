@@ -16,12 +16,6 @@ type AccController struct {
 
 func (a *AccController) Prepare() {}
 
-// @Title Verify
-// @Description verify input password
-// @Param	body	body 	models.Password	true	"The password"
-// @Success 200 success
-// @Failure 400 bad request
-// @router /verify [post]
 func (a *AccController) Verify() {
 	var passwd models.Password
 	err := utils.UnmarshalToJSON(a.Ctx.Request.Body, &passwd)
@@ -40,12 +34,6 @@ func (a *AccController) Verify() {
 	a.ServeJSON()
 }
 
-// @Title Initialize
-// @Description initialize username and password
-// @Param	body	body 	models.Account	true	"body for user account"
-// @Success 200 success
-// @Failure 400 bad request
-// @router /initialize [post]
 func (a *AccController) Initialize() {
 	var acc models.Account
 	err := utils.UnmarshalToJSON(a.Ctx.Request.Body, &acc)

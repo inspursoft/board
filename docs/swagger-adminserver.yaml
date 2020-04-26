@@ -36,24 +36,8 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
-  /account/initialize:
-    post:
-      tags:
-      - account
-      description: initialize username and password
-      operationId: AccController.Initialize
-      parameters:
-      - in: body
-        name: body
-        description: body for user account
-        required: true
-        schema:
-          $ref: '#/definitions/models.Account'
-      responses:
-        "200":
-          description: success
+        "202":
+          description: accepted
         "400":
           description: bad request
   /account/login:
@@ -78,24 +62,6 @@ paths:
           description: bad request
         "403":
           description: forbidden
-  /account/verify:
-    post:
-      tags:
-      - account
-      description: verify input password
-      operationId: AccController.Verify
-      parameters:
-      - in: body
-        name: body
-        description: The password
-        required: true
-        schema:
-          $ref: '#/definitions/models.Password'
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
   /board/applycfg:
     post:
       tags:
@@ -176,17 +142,6 @@ paths:
           description: bad request
         "401":
           description: unauthorized
-  /boot/checkdb:
-    get:
-      tags:
-      - boot
-      description: Check db status
-      operationId: BootController.CheckDB
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
   /boot/checksysstatus:
     get:
       tags:
@@ -198,42 +153,6 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/models.InitSysStatus'
-        "400":
-          description: bad request
-  /boot/initdb:
-    post:
-      tags:
-      - boot
-      description: init db password and max number of connections.
-      operationId: BootController.Initdb
-      parameters:
-      - in: body
-        name: body
-        description: body for db conf
-        required: true
-        schema:
-          $ref: '#/definitions/models.DBconf'
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
-  /boot/startdb:
-    post:
-      tags:
-      - boot
-      description: ssh to host and docker-compose up the db
-      operationId: BootController.Startdb
-      parameters:
-      - in: body
-        name: body
-        description: body for host acc info
-        required: true
-        schema:
-          $ref: '#/definitions/models.Account'
-      responses:
-        "200":
-          description: success
         "400":
           description: bad request
   /configuration/:
@@ -281,27 +200,6 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
-        "401":
-          description: unauthorized
-  /configuration/pubkey:
-    get:
-      tags:
-      - configuration
-      description: return public key
-      operationId: CfgController.GetKey
-      parameters:
-      - in: query
-        name: token
-        description: token
-        required: true
-        type: string
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/models.Key'
         "400":
           description: bad request
         "401":
@@ -492,7 +390,7 @@ paths:
         "500":
           description: Internal Server Error
 definitions:
-  3442.<nil>.NodeLog:
+  3487.<nil>.NodeLog:
     title: NodeLog
     type: object
   models.Account:
@@ -578,15 +476,6 @@ definitions:
         type: boolean
       tmp_exist:
         type: boolean
-  models.DBconf:
-    title: DBconf
-    type: object
-    properties:
-      db_max_connections:
-        type: integer
-        format: int64
-      db_password:
-        type: string
   models.Email:
     title: Email
     type: object
@@ -650,12 +539,6 @@ definitions:
         type: string
       jenkins_node_volume:
         type: string
-  models.Key:
-    title: Key
-    type: object
-    properties:
-      Key:
-        type: string
   models.Kvm:
     title: Kvm
     type: object
@@ -709,14 +592,6 @@ definitions:
       token_expire_seconds:
         type: string
       verification_url:
-        type: string
-  models.Password:
-    title: Password
-    type: object
-    properties:
-      value:
-        type: string
-      which:
         type: string
   models.TokenString:
     title: TokenString
@@ -782,7 +657,7 @@ definitions:
     type: object
     properties:
       log_list:
-        $ref: '#/definitions/3442.<nil>.NodeLog'
+        $ref: '#/definitions/3487.<nil>.NodeLog'
       pagination:
         $ref: '#/definitions/nodeModel.Pagination'
   nodeModel.Pagination:
