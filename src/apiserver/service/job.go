@@ -292,13 +292,13 @@ func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
 	return pods, nil
 }
 
-func GetK8sJobLogs(job *model.JobStatusMO, podName string, opt *model.PodLogOptions) (io.ReadCloser, error) {
-	logs.Debug("Get Job logs %s/%s/%s", job.ProjectName, job.Name, podName)
+func GetK8sPodLogs(projectName, podName string, opt *model.PodLogOptions) (io.ReadCloser, error) {
+	logs.Debug("Get pod logs %s/%s", projectName, podName)
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
 	})
-	return k8sclient.AppV1().Pod(job.ProjectName).GetLogs(podName, opt)
+	return k8sclient.AppV1().Pod(projectName).GetLogs(podName, opt)
 }
 
 func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {

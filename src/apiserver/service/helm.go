@@ -545,6 +545,24 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 			logs.Warning("Get release %s workloads from helm error:%+v", release.Name, err)
 		}
 		loadChan <- load
+		// analysis the manifest and get the pods.
+		model.NewK8sHelper().Visit(load, func(infos []*model.K8sInfo, err error) error {
+			// add the kubernetes resources to board
+			k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+				KubeConfigPath: kubeConfigPath(),
+			})
+			podlist, err := k8sclient.AppV1().Extend().ListSelectRelatePods(infos)
+			if err != nil {
+				return err
+			}
+			// send the podlist to release details.
+			if podlist != nil {
+				for i := range podlist.Items {
+					logs.Warn("helm release pods....%+v", podlist.Items[i])
+				}
+			}
+			return nil
+		})
 	}()
 
 	//get the result
