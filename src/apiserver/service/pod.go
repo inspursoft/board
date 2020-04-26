@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/gorilla/websocket"
@@ -31,6 +32,7 @@ type WSStreamHandler struct {
 
 // Run start a loop to fetch from ws client and store the data in byte buffer
 func (h *WSStreamHandler) Run() error {
+	h.conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 	for {
 		t, p, err := h.conn.ReadMessage()
 		if err != nil {
