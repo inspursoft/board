@@ -61,6 +61,7 @@ func (e *extendserver) listOneWorkLoadRelatePods(info *model.K8sInfo) (*model.Po
 		}
 		if sel == nil {
 			logs.Warn("the kubernetes %+v has no selector, so ignore it", info)
+			return nil, nil
 		}
 		logs.Debug("the selector of k8s object %s/%s is %+v", info.Kind, info.Name, sel)
 		opts := model.ListOptions{
