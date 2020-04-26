@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { ClrModal } from '@clr/angular';
 import { timeout } from 'rxjs/operators';
 import { BoardService } from 'src/app/shared.service/board.service';
+import { MessageService } from 'src/app/shared/message/message.service';
 
 @Component({
   selector: 'app-previewer',
@@ -24,11 +25,13 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   loadingFlag = true;
   enableStop = false;
   disableApply = false;
+  showShutdown = false;
 
   @ViewChild('confirmModal') confirmModal: ClrModal;
 
   constructor(private dashboardService: DashboardService,
               private boardService: BoardService,
+              private messageService: MessageService,
               private router: Router) {
     this.modal = new ComponentStatus();
     this.confirmType = new ConfirmType('rb');
@@ -48,7 +51,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
           (res: Array<ComponentStatus>) => {
             this.componentList = res;
             this.loadingFlag = false;
-            this.enableStop = this.componentList.length > 3;
+            this.enableStop = this.componentList.length > 2;
             this.reflashDetail();
           },
           (err: HttpErrorResponse) => {
@@ -82,6 +85,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /*
   confirm(type: string, containerID?: string) {
     this.user = new User();
     this.confirmModal.open();
@@ -134,16 +138,37 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       alert('Wrong parameter!');
     }
   }
+  */
+
+  shutdownBoard() {
+    this.loadingFlag = true;
+    this.disableApply = true;
+    clearInterval(this.timer);
+    this.boardService.shutdown(this.user, false).subscribe(
+      () => {
+        window.sessionStorage.removeItem('token');
+        this.router.navigateByUrl('account/login');
+      },
+      (err: HttpErrorResponse) => {
+        this.loadingFlag = false;
+        this.disableApply = false;
+        this.showShutdown = false;
+        if (err.status === 401) {
+          this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
+          this.router.navigateByUrl('account/login');
+        } else {
+          this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
+        }
+      }
+    )
+  }
 
   commonError(err: HttpErrorResponse) {
-    const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
-    const tokenError = currentLang ? '用户状态信息错误！请重新登录！' : 'User status error! Please login again!';
-    const unknown = currentLang ? '连接超时，请检查网络或刷新页面。' : 'Connection timed out! Please check the network or refresh the page.';
     if (err.status === 401) {
-      alert(tokenError);
+      this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
       this.router.navigateByUrl('account/login');
     } else {
-      alert(unknown);
+      this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
     }
   }
 

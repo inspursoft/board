@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { CanActivate, CanActivateChild, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AppInitService } from '../shared.service/app-init.service';
-import { InitStatus, InitStatusCode } from '../shared.service/app-init.type';
-import { HttpErrorResponse } from '@angular/common/http';
+import { InitStatus, InitStatusCode } from '../shared.service/app-init.model';
 
 @Injectable({
   providedIn: 'root'
@@ -34,15 +33,7 @@ export class SysStatusGuard implements CanActivate, CanActivateChild {
   }
 
   async checkSysStatus() {
-    let result = false;
-    this.appInitService.getSystemStatus().subscribe(
-      (res: InitStatus) => {
-        result = (res.status === InitStatusCode.InitStatusThird);
-      },
-      (err: HttpErrorResponse) => {
-        console.log('error:' + err.message);
-      }
-    );
-    return result;
+    const res: InitStatus = await this.appInitService.getSystemStatus().toPromise();
+    return res.status === InitStatusCode.InitStatusThird;
   }
 }

@@ -1,6 +1,5 @@
 import { NgModule, LOCALE_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SignUpComponent } from './sign-up/sign-up.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
@@ -15,7 +14,6 @@ import { ConfigurationModule } from '../configuration/configuration.module';
 
 @NgModule({
   declarations: [
-    SignUpComponent,
     SignInComponent,
     InstallationComponent,
   ],

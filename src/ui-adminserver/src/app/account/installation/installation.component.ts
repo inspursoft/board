@@ -1,15 +1,16 @@
 import { Component, OnInit, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { Configuration } from 'src/app/configuration/cfg.models';
 import { AccountService } from '../account.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageService } from 'src/app/shared/message/message.service';
 import { MyInputTemplateComponent } from 'src/app/shared/my-input-template/my-input-template.component';
 import { ClrLoadingState } from '@clr/angular';
 import { AppInitService } from 'src/app/shared.service/app-init.service';
-import { InitStatus, InitStatusCode } from 'src/app/shared.service/app-init.type';
-import { CfgCardsService } from 'src/app/configuration/cfg-cards.service';
+import { InitStatus, InitStatusCode } from 'src/app/shared.service/app-init.model';
 import { User } from '../account.model';
 import { BoardService } from 'src/app/shared.service/board.service';
+import { ConfigurationService } from 'src/app/shared.service/configuration.service';
+import { Configuration } from 'src/app/shared.service/configuration.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-installation',
@@ -17,7 +18,6 @@ import { BoardService } from 'src/app/shared.service/board.service';
   styleUrls: ['./installation.component.css']
 })
 export class InstallationComponent implements OnInit {
-  baseline = '2016-01-01 09:00:00';
   newDate = new Date('2016-01-01 09:00:00');
 
   passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)([A-Za-z\d#?!@$%^&*-]){8,20}$/;
@@ -26,7 +26,6 @@ export class InstallationComponent implements OnInit {
   uuid = '';
   // TODO email identity不为空时，无法映射默认值
   config: Configuration;
-  currentLang = true;
   showBaselineHelper = false;
 
   installStep = 0;
@@ -37,8 +36,6 @@ export class InstallationComponent implements OnInit {
 
   // TODO put some config into default.
   simpleMode = false;
-  disableEdit = false;
-
   loadingFlag = true;
   enableInitialization = false;
   openSSH = false;
@@ -46,20 +43,19 @@ export class InstallationComponent implements OnInit {
   clearDate = false;
   responsibility = false;
   isEditable = false;
-
-  @ViewChild('UUID') uuidInput: MyInputTemplateComponent;
   submitBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   user: User;
 
+  @ViewChild('UUID') uuidInput: MyInputTemplateComponent;
   @ViewChildren(MyInputTemplateComponent) myInputTemplateComponents: QueryList<MyInputTemplateComponent>;
 
   constructor(private accountService: AccountService,
               private appInitService: AppInitService,
               private boardService: BoardService,
-              private cfgCardsService: CfgCardsService,
-              private messageService: MessageService) {
+              private configurationService: ConfigurationService,
+              private messageService: MessageService,
+              private router: Router) {
     this.user = new User();
-    this.currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
   }
 
   ngOnInit() {
@@ -68,7 +64,8 @@ export class InstallationComponent implements OnInit {
         this.loadingFlag = false;
         this.enableInitialization = true;
       },
-      () => {
+      (err: HttpErrorResponse) => {
+        console.error(err);
         this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
       });
   }
@@ -103,28 +100,33 @@ export class InstallationComponent implements OnInit {
           this.appInitService.getSystemStatus().subscribe(
             (res: InitStatus) => {
               switch (res.status) {
+                // 未起Board且未更改cfg
                 case InitStatusCode.InitStatusFirst: {
-                  this.cfgCardsService.getConfig().subscribe(
+                  this.configurationService.getConfig().subscribe(
                     (resTmp: Configuration) => {
                       this.config = new Configuration(resTmp);
+                      this.isEditable = true;
                       this.ignoreStep1 = true;
                       this.installStep = 2;
                       this.installProgress = 50;
                       this.submitBtnState = ClrLoadingState.DEFAULT;
                     },
                     (err: HttpErrorResponse) => {
+                      console.error(err);
                       this.submitBtnState = ClrLoadingState.DEFAULT;
-                      this.messageService.showOnlyOkDialog(err.message + '# Using Default Configuration', 'ACCOUNT.ERROR');
+                      this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_CFG_FAILED', 'ACCOUNT.ERROR');
                     }
                   );
                   break;
                 }
+                // 未起Board但更改过cfg
                 case InitStatusCode.InitStatusSecond: {
                   this.installStep++;
                   this.installProgress += 33;
                   this.submitBtnState = ClrLoadingState.DEFAULT;
                   break;
                 }
+                // Board已经运行
                 case InitStatusCode.InitStatusThird: {
                   this.ignoreStep1 = true;
                   this.ignoreStep2 = true;
@@ -136,17 +138,19 @@ export class InstallationComponent implements OnInit {
                 }
               }
             },
-            () => {
-              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
+            (err: HttpErrorResponse) => {
+              console.error(err);
+              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
               this.submitBtnState = ClrLoadingState.DEFAULT;
             }
           );
         },
-        () => {
-          this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+        (err: HttpErrorResponse) => {
+          console.error(err);
+          this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID_FAILED', 'ACCOUNT.ERROR');
           this.submitBtnState = ClrLoadingState.DEFAULT;
         }
-      )
+      );
     }
 
   }
@@ -158,19 +162,40 @@ export class InstallationComponent implements OnInit {
 
 
     this.submitBtnState = ClrLoadingState.LOADING;
-    this.cfgCardsService.getConfig().subscribe(
+    this.configurationService.getConfig().subscribe(
       (res: Configuration) => {
         this.config = new Configuration(res);
-        this.newDate = new Date(this.config.apiserver.imageBaselineTime);
-        this.isEditable = this.config.isInit;
-        this.installStep++;
-        this.installProgress += 33;
-        this.submitBtnState = ClrLoadingState.DEFAULT;
+        if (this.config.tmpExist) {
+          this.configurationService.getConfig('tmp').subscribe(
+            (resTmp: Configuration) => {
+              this.config = new Configuration(resTmp);
+              this.newDate = new Date(this.config.apiserver.imageBaselineTime);
+              this.isEditable = this.config.isInit;
+              this.installStep++;
+              this.installProgress += 33;
+              this.submitBtnState = ClrLoadingState.DEFAULT;
+            },
+            (err: HttpErrorResponse) => {
+              console.log('Can not read tmp file: ' + err.message);
+              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED', 'GLOBAL_ALERT.HINT');
+              this.newDate = new Date(this.config.apiserver.imageBaselineTime);
+              this.isEditable = this.config.isInit;
+              this.installStep++;
+              this.installProgress += 33;
+              this.submitBtnState = ClrLoadingState.DEFAULT;
+            }
+          );
+        } else {
+          this.newDate = new Date(this.config.apiserver.imageBaselineTime);
+          this.isEditable = this.config.isInit;
+          this.installStep++;
+          this.installProgress += 33;
+          this.submitBtnState = ClrLoadingState.DEFAULT;
+        }
       },
-      // TODO get config error
       (err: HttpErrorResponse) => {
-        console.log(err.message);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+        console.error(err);
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_CFG_FAILED', 'ACCOUNT.ERROR');
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
     );
@@ -192,10 +217,10 @@ export class InstallationComponent implements OnInit {
         this.installProgress = 100;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
-      // TODO start error
-      () => {
+      (err: HttpErrorResponse) => {
+        console.error(err);
         this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.START_BOARD_FAILED', 'ACCOUNT.ERROR');
       },
     );
   }
@@ -219,10 +244,10 @@ export class InstallationComponent implements OnInit {
         this.installProgress = 100;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
-      // TODO uninstall error
-      () => {
+      (err: HttpErrorResponse) => {
+        console.error(err);
         this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED', 'ACCOUNT.ERROR');
       },
     );
   }
@@ -237,7 +262,7 @@ export class InstallationComponent implements OnInit {
 
     this.submitBtnState = ClrLoadingState.LOADING;
     this.openSSH = false;
-    this.cfgCardsService.postConfig(this.config).subscribe(
+    this.configurationService.postConfig(this.config).subscribe(
       () => {
         this.boardService.applyCfg(this.user).subscribe(
           () => {
@@ -245,38 +270,41 @@ export class InstallationComponent implements OnInit {
             this.installProgress = 100;
             this.submitBtnState = ClrLoadingState.DEFAULT;
           },
-          // TODO apply error
-          () => {
+          (err: HttpErrorResponse) => {
+            console.error(err);
             this.submitBtnState = ClrLoadingState.DEFAULT;
-            this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+            this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.START_BOARD_FAILED', 'ACCOUNT.ERROR');
           },
         );
       },
-      // TODO post error
-      () => {
+      (err: HttpErrorResponse) => {
+        console.error(err);
         this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID', 'ACCOUNT.ERROR');
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.POST_CFG_FAILED', 'ACCOUNT.ERROR');
       },
     );
   }
 
   goToBoard() {
     if (this.config) {
-      window.open(this.config.apiserver.hostname)
+      window.open(this.config.apiserver.hostname);
     } else {
       const boardURL = window.location.hostname;
       window.open(boardURL + ':80');
     }
   }
 
+  goToAdminserver() {
+    window.sessionStorage.removeItem('token');
+    this.router.navigateByUrl('account/login');
+  }
+
   onFocusBaselineHelper() {
     this.showBaselineHelper = true;
-    console.log('focus date')
   }
 
   onBlurBaselineHelper() {
     this.showBaselineHelper = false;
-    console.log('blur date')
     const year = this.newDate.getFullYear();
     const month = this.newDate.getMonth() + 1;
     const day = this.newDate.getDate();

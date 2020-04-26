@@ -84,6 +84,11 @@ export const LANG_EN_US = {
       BLOCK_IO: 'Block I/O: ',
       PID: 'PID: ',
     },
+    CONFIRM: {
+      RESTART_BORAD: 'Are you sure to RESTART the Board? If so, please enter the account and password of the host machine:',
+      RESTART_CONTAINER: 'Please enter the account and password of the host machine to Restart the Container:',
+      STOP_BORAD: 'Are you sure to STOP the Board? If so, please enter the account and password of the host machine:',
+    },
   },
   Resource: {
     Nav_Compute: 'Compute resource',
@@ -465,6 +470,9 @@ export const LANG_EN_US = {
     RESET_PASS_ERR_MSG: 'Reset Password Error,Please Contact Administrator.',
     INVALID_RESET_UUID: 'The Link is Invalid.',
     REGISTER_INFO: 'The system has just been initialized and you need to set up an account & password before using it.',
+    FORBIDDEN: 'Forbidden access!',
+    FORGOT_PASSWORD_HELPER: 'If you have configured an email, please change the password in the board. If you have not configured an email, please contact the administrator for assistance.',
+    TOKEN_ERROR: 'User status error! Please login again!',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: 'Upload',
@@ -535,7 +543,13 @@ export const LANG_EN_US = {
       MAX_CONNECTION: 'Database\'s max connection error!',
       SSH: 'Network error or account error, please try again!',
       ACCOUNT: 'Network error or docker error, please try again!',
+      GET_SYS_STATUS_FAILED: 'Failed to get system status. Please check whether the service is running normally.',
       VALIDATE_UUID: 'UUID verification failed! Please check whether the network is normal or the UUID is filled in correctly.',
+      GET_CFG_FAILED: 'Failed to get the configuration. Please check whether the service is running normally.',
+      GET_TMP_FAILED: 'Failed to get temporary configuration, use current configuration.',
+      START_BOARD_FAILED: 'Failed to start Board. Please check whether the configuration is correct or the service is running normally.',
+      UNINSTALL_BOARD_FAILED: 'Failed to uninstall Board, please check whether the service is running normally',
+      POST_CFG_FAILED: 'Failed to save the configuration. Please check whether the service is running normally.',
       ALREADY_START: 'Board have been successfully started. The next steps cannot be operated.',
     },
     CONTENTS: {

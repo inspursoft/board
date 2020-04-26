@@ -86,6 +86,11 @@ export const LANG_ZH_CN = {
       BLOCK_IO: '硬盘I/O: ',
       PID: 'PID: ',
     },
+    CONFIRM: {
+      RESTART_BORAD: '您确定要重新启动Board吗？如果是这样，请输入主机的帐户和密码：',
+      RESTART_CONTAINER: '请输入主机的帐户和密码以重新启动容器：',
+      STOP_BORAD: '您确定要停止Board吗？如果是这样，请输入主机的帐户和密码：',
+    },
   },
   Resource: {
     Nav_Compute: '计算资源',
@@ -467,6 +472,9 @@ export const LANG_ZH_CN = {
     RESET_PASS_ERR_MSG: '重置密码失败，请联系管理员。',
     INVALID_RESET_UUID: '链接失效。',
     REGISTER_INFO: '系统刚刚初始化，您需要先设置一个帐户和密码，然后才能使用它。',
+    FORBIDDEN: '禁止访问。',
+    FORGOT_PASSWORD_HELPER: '如果您配置了邮箱，请在board中修改密码。如果您没有配置邮箱，请联系管理员进行协助。',
+    TOKEN_ERROR: '用户状态信息错误！请重新登录！',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: '上传',
@@ -537,7 +545,13 @@ export const LANG_ZH_CN = {
       MAX_CONNECTION: '数据库最大连接数错误！',
       SSH: '网络错误或者账户错误，请重试！',
       ACCOUNT: '网络错误或者docker运行错误，请重试！',
-      VALIDATE_UUID: 'UUID验证失败！请检查网络是否正常或者UUID是否填写正确。',
+      GET_SYS_STATUS_FAILED: '获取系统状态失败，请检查服务是否正常运行。',
+      VALIDATE_UUID_FAILED: 'UUID验证失败！请检查网络是否正常或者UUID是否填写正确。',
+      GET_CFG_FAILED: '获取配置失败，请检查服务是否正常运行。',
+      GET_TMP_FAILED: '获取临时配置失败，使用当前配置。',
+      START_BOARD_FAILED: '启动Board失败，请检查配置是否正确或者服务是否正常运行。',
+      UNINSTALL_BOARD_FAILED: '卸载Board失败，请检查服务是否正常运行。',
+      POST_CFG_FAILED: '保存配置失败，请检查服务是否正常运行。',
       ALREADY_START: '检查发现Board已经启动！无法继续操作。',
     },
     CONTENTS: {

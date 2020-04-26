@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { InitStatus } from './app-init.type';
+import { InitStatus } from './app-init.model';
 
 const BASE_URL = '/v1/admin';
 

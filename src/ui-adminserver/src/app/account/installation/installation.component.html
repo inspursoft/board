@@ -823,13 +823,13 @@
             <span> {{'INITIALIZATION.BUTTONS.GO_TO_BOARD' | translate}}</span>
           </button>
 
-          <a href="/account/login"
-             class="btn"
-             *ngIf="installStep === 3">
+          <button class="btn"
+                  (click)="goToAdminserver()"
+                  *ngIf="installStep === 3">
             <clr-icon shape="angle-double"
                       style="transform: rotate(180deg);"></clr-icon>
             <span> {{'INITIALIZATION.BUTTONS.GO_TO_ADMINSERVER' | translate}}</span>
-          </a>
+          </button>
         </div>
       </div>
 
