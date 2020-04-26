@@ -59,6 +59,10 @@ func (e *extendserver) listOneWorkLoadRelatePods(info *model.K8sInfo) (*model.Po
 		if serr != nil || !find {
 			return nil, serr
 		}
+		if sel == nil {
+			logs.Warn("the kubernetes %+v has no selector, so ignore it", info)
+		}
+		logs.Debug("the selector of k8s object %s/%s is %+v", info.Kind, info.Name, sel)
 		opts := model.ListOptions{
 			LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: sel}),
 		}
@@ -76,7 +80,7 @@ func (e *extendserver) listOneWorkLoadRelatePods(info *model.K8sInfo) (*model.Po
 func (e *extendserver) getSelectorFromObject(info *model.K8sInfo) (map[string]string, bool, error) {
 	var path []string
 	switch info.Kind {
-	case "Deployment", "Statefulset", "DaemonSet", "ReplicaSet":
+	case "Deployment", "StatefulSet", "DaemonSet", "ReplicaSet":
 		path = []string{"spec", "selector", "matchLabels"}
 	case "Service", "ReplicationController":
 		path = []string{"spec", "selector"}
@@ -97,19 +101,28 @@ func (e *extendserver) getSelectorFromObject(info *model.K8sInfo) (map[string]st
 		return nil, false, nil
 	}
 
+	return getJsonMapField(info.Source, path)
+}
+
+func getJsonMapField(source string, path []string) (map[string]string, bool, error) {
 	object := map[string]interface{}{}
-	err := json.Unmarshal([]byte(info.Source), &object)
+	err := json.Unmarshal([]byte(source), &object)
 	if err != nil {
 		return nil, false, err
 	}
 	selector, find, err := utils.GetNestedField(object, path...)
-	if err != nil {
+	if err != nil || !find {
 		return nil, false, err
 	}
-	if !find {
-		return nil, false, nil
-	}
-	if selectormap, ok := selector.(map[string]string); ok {
+	if sel, ok := selector.(map[string]interface{}); ok {
+		selectormap := map[string]string{}
+		for k, v := range sel {
+			sv, ok := v.(string)
+			if !ok {
+				return nil, false, fmt.Errorf("the selector %T is not map[string]string", selector)
+			}
+			selectormap[k] = sv
+		}
 		return selectormap, true, nil
 	}
 	return nil, false, fmt.Errorf("the selector %T is not map[string]string", selector)
