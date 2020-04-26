@@ -10,11 +10,12 @@ export interface IPagination {
 }
 
 export interface ICsMenuItemData {
-  caption: string,
-  icon: string,
-  url: string,
-  visible: boolean,
-  children?: Array<ICsMenuItemData>
+  caption: string;
+  icon: string;
+  url: string;
+  visible: boolean;
+  children?: Array<ICsMenuItemData>;
+  isAdminServer?: boolean;
 }
 
 export enum RETURN_STATUS {
