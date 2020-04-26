@@ -4,14 +4,14 @@ services:
     image: board_adminserver:__version__
     restart: always
     volumes:
-      - ./:/go/cfgfile
+      - ../:/go/cfgfile
       - /data/board/secrets:/go/secrets
       - /var/run/docker.sock:/var/run/docker.sock
-      - /data/board/database:/data/board/database
+      - /data/adminserver/database:/data/adminserver/database
       - /data/board/ansible_k8s:/data/board/ansible_k8s
-      - /data/board/Deploy:/data/board/Deploy
+      - ../config:/data/board/make/config
     env_file:
-      - ../config/adminserver/env
+      - ./env
     networks:
       - board
     ports:
@@ -26,7 +26,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ./templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
       - board
 networks:

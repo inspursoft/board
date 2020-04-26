@@ -120,8 +120,9 @@ func (controller *Controller) DeleteNodeLog() {
 // @Failure 500 Internal Server Error
 // @router /preparation [get]
 func (controller *Controller) PreparationAction() {
-	configuration, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
+	configuration, err := service.GetAllCfg("")
+	if err != nil {
+		logs.Error(err)
 		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
 		return
 	}

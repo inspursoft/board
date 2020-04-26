@@ -1,6 +1,5 @@
-DB_CONFIG_DIR=/data/board/make/config/db
-DB_COMPOSE=/data/board/make/dev/docker-compose-db.yml
-BOARD_COMPOSE=/data/board/make/dev/docker-compose-rest.yml
-PREPARE_FILE=/data/board/make/prepare
+BOARD_COMPOSE=__CURDIR__/dev/docker-compose-new.yml
+PREPARE_FILE=__CURDIR__/prepare
+MAKE_PATH=__CURDIR__
 IMAGE_PREFIX=dev
 CONTAINER_PREFIX=dev

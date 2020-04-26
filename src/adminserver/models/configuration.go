@@ -1,10 +1,11 @@
 package models
 
 import (
-	"reflect"
 	"os"
-	"github.com/alyu/configparser"
+	"reflect"
 	"time"
+
+	"github.com/alyu/configparser"
 )
 
 //Apiserver refers to those properties controlling Apiserver parameters.
@@ -151,13 +152,14 @@ type Other struct {
 	RedirectionURL                  string `json:"redirection_url"`
 	AuditDebug                      string `json:"audit_debug"`
 	DNSSuffix                       string `json:"dns_suffix"`
+	DBMaxConnections                string `json:"db_max_connections"`
 }
 
 //GetOther returns data extracted from the Other part of the cfg file.
 func GetOther(section *configparser.Section) Other {
 	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
 		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix"}
+		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections"}
 	var other Other
 	value := reflect.ValueOf(&other).Elem()
 	for i := 0; i < value.NumField(); i++ {
@@ -170,7 +172,7 @@ func GetOther(section *configparser.Section) Other {
 func UpdateOther(section *configparser.Section, other Other) {
 	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
 		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix"}
+		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections"}
 	value := reflect.ValueOf(&other).Elem()
 	for i := 0; i < value.NumField(); i++ {
 		if value.Field(i).String() != "" {
@@ -299,19 +301,15 @@ type Password struct {
 	Value string `json:"value"`
 }
 
-//const DBconfigdir = "/data/board/Deploy/config/db"
-//const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
-//const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
-//const PrepareFile = "/data/board/Deploy/prepare"
-
-var DBconfigdir string = os.Getenv("DB_CONFIG_DIR")
+var DBconfigdir string = "/data/board/make/config/db"
 var DBcompose string = os.Getenv("DB_COMPOSE")
 var Boardcompose string = os.Getenv("BOARD_COMPOSE")
 var PrepareFile string = os.Getenv("PREPARE_FILE")
+var MakePath string = os.Getenv("MAKE_PATH")
 
 type DBconf struct {
-	Password   		string	`json:"db_password"`
-	MaxConnections	int 	`json:"db_max_connections"`
+	Password       string `json:"db_password"`
+	MaxConnections int    `json:"db_max_connections"`
 }
 
 type User struct {
@@ -331,12 +329,10 @@ type User struct {
 	FailedTimes  int       `json:"user_failed_times" orm:"column(failed_times)"`
 }
 
-type Config struct {
-	Name    string `json:"name" orm:"column(name);pk"`
-	Value   string `json:"value" orm:"column(value)"`
-	Comment string `json:"comment" orm:"column(comment)"`
+type UUID struct {
+	UUIDstring string `json:"uuid"`
 }
 
-type UUID struct {
-	UUID string `json:"UUID"`
+type Key struct {
+	Key string `json:"Key"`
 }
