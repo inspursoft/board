@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 )
 
 type HelmController struct {
@@ -248,6 +250,27 @@ func (hc *HelmController) GetHelmReleaseAction() {
 		return
 	}
 	hc.RenderJSON(release)
+}
+
+func (hc *HelmController) GetReleasePodLogsAction() {
+	var err error
+	r := hc.resolveRelease()
+	//Judge authority
+	if !hc.IsSysAdmin && hc.CurrentUser.ID != r.OwnerID {
+		hc.CustomAbortAudit(http.StatusForbidden, fmt.Sprintf("Insufficient privileges to operate release %s.", r.Name))
+		return
+	}
+	podName := hc.Ctx.Input.Param(":podname")
+	readCloser, err := service.GetK8sPodLogs(r.ProjectName, podName, hc.GeneratePodLogOptions())
+	if err != nil {
+		hc.ParseError(err, c.ParseGetK8sError)
+		return
+	}
+	defer readCloser.Close()
+	_, err = io.Copy(&utils.FlushResponseWriter{hc.Ctx.Output.Context.ResponseWriter}, readCloser)
+	if err != nil {
+		logs.Error("get job logs error:%+v", err)
+	}
 }
 
 func (hc *HelmController) resolveRelease() *model.ReleaseModel {
