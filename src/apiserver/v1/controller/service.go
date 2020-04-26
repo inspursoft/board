@@ -475,6 +475,29 @@ func (p *ServiceController) GetServiceInfoAction() {
 	p.RenderJSON(serviceInfo)
 }
 
+func (p *ServiceController) GetServicePodLogsAction() {
+	var err error
+	s, err := p.resolveServiceInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	if s.Public != 1 {
+		p.ResolveUserPrivilegeByID(s.ProjectID)
+	}
+	podName := p.Ctx.Input.Param(":podname")
+	readCloser, err := service.GetK8sPodLogs(s.ProjectName, podName, p.GeneratePodLogOptions())
+	if err != nil {
+		p.ParseError(err, c.ParseGetK8sError)
+		return
+	}
+	defer readCloser.Close()
+	_, err = io.Copy(&utils.FlushResponseWriter{p.Ctx.Output.Context.ResponseWriter}, readCloser)
+	if err != nil {
+		logs.Error("get service logs error:%+v", err)
+	}
+}
+
 func (p *ServiceController) GetServiceStatusAction() {
 	var err error
 	s, err := p.resolveServiceInfo()

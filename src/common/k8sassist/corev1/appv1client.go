@@ -81,6 +81,10 @@ func (p *AppV1Client) Proxy() ProxyInterface {
 	return apps.NewProxy(p.Config)
 }
 
+func (p *AppV1Client) Extend() ExtendInterface {
+	return apps.NewExtend(p.Clientset)
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -98,6 +102,7 @@ type AppV1ClientInterface interface {
 	StatefulSet(namespace string) StatefulSetClientInterface
 	Job(namespace string) JobInterface
 	Proxy() ProxyInterface
+	Extend() ExtendInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -271,4 +276,8 @@ type JobInterface interface {
 
 type ProxyInterface interface {
 	ProxyAPI(apiProxyPrefix string) (http.Handler, error)
+}
+
+type ExtendInterface interface {
+	ListSelectRelatePods(infos []*model.K8sInfo) (*model.PodList, error)
 }
