@@ -27,6 +27,7 @@ import { LoadBalanceComponent } from './step0-list-service/service-control/loadB
 import { CoreModule } from '../core/core.module';
 import { ServiceGuard } from './service-guard.service';
 import { ConfigParamsComponent } from './step2-config-container/config-params/config-params.component';
+import { ConsoleComponent } from './step0-list-service/service-control/console/console.component';
 
 @NgModule({
   imports: [
@@ -57,6 +58,7 @@ import { ConfigParamsComponent } from './step2-config-container/config-params/co
     AffinityCardListComponent,
     SetAffinityComponent,
     ConfigParamsComponent,
+    ConsoleComponent,
   ],
   entryComponents: [
     ListServiceComponent,
