@@ -23,15 +23,7 @@ func (p *PodController) PodShellAction() {
 		p.InternalError(err)
 		return
 	}
-	project, err := service.GetProjectByID(int64(projectID))
-	if err != nil {
-		p.InternalError(err)
-		return
-	}
-	if project == nil {
-		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
-		return
-	}
+	project := p.ResolveUserPrivilegeByID(int64(projectID))
 	pod := p.Ctx.Input.Param(":podname")
 	container := p.GetString("container")
 
@@ -53,15 +45,7 @@ func (p *PodController) CopyFromPodAction() {
 		p.InternalError(err)
 		return
 	}
-	project, err := service.GetProjectByID(int64(projectID))
-	if err != nil {
-		p.InternalError(err)
-		return
-	}
-	if project == nil {
-		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
-		return
-	}
+	project := p.ResolveUserPrivilegeByID(int64(projectID))
 	podName := p.Ctx.Input.Param(":podname")
 	container := p.GetString("container")
 	src := p.GetString("src")
@@ -85,15 +69,7 @@ func (p *PodController) CopyToPodAction() {
 		p.InternalError(err)
 		return
 	}
-	project, err := service.GetProjectByID(int64(projectID))
-	if err != nil {
-		p.InternalError(err)
-		return
-	}
-	if project == nil {
-		p.CustomAbortAudit(http.StatusNotFound, fmt.Sprintf("No project was found with provided ID: %d", projectID))
-		return
-	}
+	project := p.ResolveUserPrivilegeByID(int64(projectID))
 	podName := p.Ctx.Input.Param(":podname")
 	container := p.GetString("container")
 	dest := p.GetString("dest")
