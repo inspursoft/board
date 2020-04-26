@@ -21,6 +21,9 @@
     </form>
   </div> -->
 
+  <h4>{{'CONFIGURATIONPAGE.HEADER_HELPER' | translate}}</h4>
+  <br>
+
   <div class="btn-group clr-row clr-justify-content-start"
        style="margin-left: 2px;"
        *ngIf="config.tmpExist">
@@ -92,13 +95,13 @@
   </div>
 
   <div class="btn-container">
-    <button type="button"
+    <!-- <button type="button"
             class="btn btn-icon btn-primary"
             aria-label="apply"
             (click)="saveCfg()">
       <clr-icon shape="check"></clr-icon>
       {{ 'CONFIGURATIONPAGE.SAVETOSERVER' | translate }}
-    </button>
+    </button> -->
 
     <button type="button"
             class="btn btn-icon"

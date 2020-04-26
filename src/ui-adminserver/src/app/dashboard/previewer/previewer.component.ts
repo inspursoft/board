@@ -6,6 +6,7 @@ import { User } from 'src/app/account/account.model';
 import { Router } from '@angular/router';
 import { ClrModal } from '@clr/angular';
 import { timeout } from 'rxjs/operators';
+import { BoardService } from 'src/app/shared.service/board.service';
 
 @Component({
   selector: 'app-previewer',
@@ -27,7 +28,8 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   @ViewChild('confirmModal') confirmModal: ClrModal;
 
   constructor(private dashboardService: DashboardService,
-    private router: Router) {
+              private boardService: BoardService,
+              private router: Router) {
     this.modal = new ComponentStatus();
     this.confirmType = new ConfirmType('rb');
     this.user = new User();
@@ -114,9 +116,10 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       alert('Sorry, this feature is not yet supported. Restart container(' + containerID + ') fail.');
     } else if (type === 'sb') {
       clearInterval(this.timer);
-      this.dashboardService.shutdownBoard(this.user).subscribe(
+      this.boardService.shutdown(this.user, false).subscribe(
         () => {
-          this.commonSuccess();
+          window.sessionStorage.removeItem('token');
+          this.router.navigateByUrl('account/login');
         },
         (err: HttpErrorResponse) => {
           this.loadingFlag = false;

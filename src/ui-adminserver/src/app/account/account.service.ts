@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { User, DBInfo, UserVerify } from './account.model';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { User, DBInfo, UserVerify, MyToken } from './account.model';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 const ACCOUNT_URL = '/v1/admin/account';
 const BOOT_URL = '/v1/admin/boot';
@@ -15,8 +16,11 @@ export class AccountService {
     return this.http.post(
       `${ACCOUNT_URL}/login/`,
       user.PostBody()
-    );
+    ).pipe(map((res: HttpResponse<MyToken>) => {
+      return res;
+    }));
   }
+
 
   postSignUp(user: UserVerify): Observable<any> {
     return this.http.post(

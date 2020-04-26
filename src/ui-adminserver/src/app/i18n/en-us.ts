@@ -138,213 +138,277 @@ export const LANG_EN_US = {
   },
   CONFIGURATIONS: {
     API_SERVER: {
+      TITLE: 'Api Server',
       HOSTNAME: {
         NAME: 'Hostname',
+        PLACEHOLDER: 'eg：192.168.1.10 or reg.yourdomain.com',
         TIPS: 'The IP address or hostname to access admin UI and Kubernetes Cluster apiserver. DO NOT use localhost or 127.0.0.1, because Board needs to be accessed by external clients.'
       },
       API_SERVER_PORT: {
         NAME: 'Api server port',
+        PLACEHOLDER: '1 ~ 65535, default: 8088',
         TIPS: 'Port of the Board service deployment'
       },
       KUBE_HTTP_SCHEME: {
         NAME: 'Kube http scheme',
+        PLACEHOLDER: 'Kube http scheme',
         TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https'
       },
       KUBE_MASTER_IP: {
         NAME: 'Kube master IP',
+        PLACEHOLDER: 'eg: 192.168.1.10',
         TIPS: 'Host address of Kubernetes (K8s) deployment, Do not use localhost or 127.0.0.1 because K8s need to be accessed by other nodes'
       },
       KUBE_MASTER_PORT: {
         NAME: 'Kube master port',
-        TIPS: 'The port number deployed by Kubernetes (K8s). If the network protocol is http, port 8080 is used; if https is used, port 6443 is used.'
+        PLACEHOLDER: '',
+        TIPS: 'Port of Kubernetes (K8s). By default, http uses port 8080 and https uses port 6443. Please fill in according to the actual situation under non-default conditions.'
       },
       REGISTRY_IP: {
         NAME: 'Registry IP',
-        TIPS: 'The IP of the image registry'
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        TIPS: 'The address of the image registry, do not use localhost or 127.0.0.1, because the image registry needs other nodes to access'
       },
       REGISTRY_PORT: {
         NAME: 'Registry port',
-        TIPS: 'The port of the image registry'
+        PLACEHOLDER: '1~65535, default: 5000',
+        TIPS: 'The port of the image registry, default: 5000'
       },
       IMAGE_BASELINE_TIME: {
         NAME: 'Image baseline time',
-        TIPS: 'The baseline time of images, it\'s 2016-01-01 09:00:00 by default'
+        PLACEHOLDER: 'default: 2016-01-01 09:00:00',
+        TIPS: 'The baseline time of images, it\'s 2016-01-01 09:00:00 by default. Board only reads the image after this time'
       },
     },
     GOGITS: {
+      TITLE: 'Gogs',
       GOGITS_HOST_IP: {
-        NAME: 'Gogits host IP',
-        TIPS: 'The host address of the service deployment, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes'
+        NAME: 'Gogs host IP',
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        TIPS: 'The host address of Gogs, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes'
       },
       GOGITS_HOST_PORT: {
-        NAME: 'Gogits host port',
-        TIPS: 'Host port of Gogits'
+        NAME: 'Gogs host port',
+        PLACEHOLDER: '1~65535, default: 10080',
+        TIPS: 'Host port of Gogs, default: 10080'
       },
       GOGITS_SSH_PORT: {
-        NAME: 'Gogits SSH port',
-        TIPS: 'Request port number for SSH (Secure Shell)'
+        NAME: 'Gogs SSH port',
+        PLACEHOLDER: '1~65535, default: 10022',
+        TIPS: 'Request port number for SSH (Secure Shell), default: 10022'
       },
     },
     JENKINS: {
+      TITLE: 'Jenkins',
       JENKINS_HOST_IP: {
         NAME: 'Jenkins host IP',
-        TIPS: 'The address of the Jenkins master for external access'
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        TIPS: 'The address of the Jenkins master for external access. Don\'t use localhost or 127.0.0.1'
       },
       JENKINS_HOST_PORT: {
         NAME: 'Jenkins host port',
-        TIPS: 'Port number of the Jenkins master'
+        PLACEHOLDER: '1~65535, default: 8888',
+        TIPS: 'Port number of the Jenkins master, default: 8888'
       },
       JENKINS_NODE_IP: {
         NAME: 'Jenkins node IP',
+        PLACEHOLDER: 'eg: 192.168.1.11',
         TIPS: 'The address of the Jenkins node'
       },
       JENKINS_NODE_SSH_PORT: {
         NAME: 'Jenkins node SSH port',
-        TIPS: 'SSH (Secure Shell) request port number of the Node node'
+        PLACEHOLDER: '1~65535, default: 22',
+        TIPS: 'SSH (Secure Shell) request port number of the Node node, default: 22'
       },
       JENKINS_NODE_USERNAME: {
         NAME: 'Jenkins node username',
+        PLACEHOLDER: 'Jenkins node username',
         TIPS: 'User name for logging in to the Node'
       },
       JENKINS_NODE_PASSWORD: {
         NAME: 'Jenkins node password',
-        TIPS: 'Password for logging in to the Node host'
+        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
+        TIPS: 'The password of the Jemkins account, please use this password before production. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
       },
       JENKINS_NODE_VOLUME: {
         NAME: 'Jenkins node volume',
+        PLACEHOLDER: 'eg: /data/jenkins_node',
         TIPS: 'The address of the data volume of the Node'
       },
       JENKINS_EXECUTION_MODE: {
         NAME: 'Jenkins execution mode',
-        TIPS: 'Jenkins cluster operation mode, support single node (single) or multi-node (multi)'
+        PLACEHOLDER: '',
+        TIPS: 'Jenkins cluster operation mode, support single mode (single) or multi mode (multi)'
       },
     },
     KVM: {
+      TITLE: 'KVM',
       KVM_REGISTRY_SIZE: {
         NAME: 'Kvm registry size',
-        TIPS: ''
+        PLACEHOLDER: 'default: 5',
+        TIPS: 'Need to be greater than 0, the default is 5'
       },
       KVM_REGISTRY_PORT: {
         NAME: 'Kvm registry port',
-        TIPS: ''
+        PLACEHOLDER: '1~65535, default: 8890',
+        TIPS: '1~65535, default: 8890'
       },
       KVM_REGISTRY_PATH: {
         NAME: 'Kvm registry path',
-        TIPS: ''
+        PLACEHOLDER: 'eg: /root/kvm_toolkits',
+        TIPS: 'KVM tool storage path, default is /root/kvm_toolkits'
       },
     },
     LDAP: {
+      TITLE: 'LDAP(Lightweight Directory Access Protocol)',
       LDAP_URL: {
         NAME: 'URL',
+        PLACEHOLDER: 'eg: ldaps://ldap.mydomain.com',
         TIPS: 'LDAP service entry address'
       },
       LDAP_BASEDN: {
         NAME: 'Base dn',
+        PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
         TIPS: 'LDAP verifies which source the user came from, ou is people, dc is mydomain, dc is com'
       },
       LDAP_UID: {
         NAME: 'UID type',
+        PLACEHOLDER: 'uid/cn/email/...',
         TIPS: 'Attributes used to match users in the search, which can be uid, cn, email, sAMAccountName or other attributes, depending on your LDAP/AD'
       },
       LDAP_SCOPE: {
         NAME: 'Scope',
-        TIPS: 'Search for the user\'s scope (LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE)'
+        PLACEHOLDER: '',
+        TIPS: 'Search for the user\'s scope, default: Subtree'
       },
       LDAP_TIMEOUT: {
         NAME: 'Timeout',
-        TIPS: 'The timeout in seconds to connect to the LDAP server. The default (most reasonable) is 5 seconds'
+        PLACEHOLDER: 'The unit is seconds, default: (the most reasonable)5',
+        TIPS: 'The timeout in seconds to connect to the LDAP server. The unit is seconds. The default (most reasonable) is 5 seconds'
       },
     },
     EMAIL: {
+      TITLE: 'Email',
       EMAIL_IDENTITY: {
         NAME: 'Identity',
-        TIPS: 'Identity left blank to act as username'
+        PLACEHOLDER: 'Identity',
+        TIPS: 'The default is empty identity(NULL)'
       },
       EMAIL_SERVER: {
         NAME: 'Server IP',
+        PLACEHOLDER: 'eg: smtp.mydomain.com',
         TIPS: 'Email server address'
       },
       EMAIL_SERVER_PORT: {
         NAME: 'Server port',
-        TIPS: 'Email server port'
+        PLACEHOLDER: '1~65535, default: 25',
+        TIPS: 'Email server port, default: 25'
       },
       EMAIL_USERNAME: {
         NAME: 'Username',
-        TIPS: 'Email username, such as admin@mydomain.com'
+        PLACEHOLDER: 'eg: admin@mydomain.com',
+        TIPS: 'Email username, eg: admin@mydomain.com'
       },
       EMAIL_PASSWORD: {
         NAME: 'Password',
-        TIPS: ''
+        PLACEHOLDER: 'Email password',
+        TIPS: 'Used to login to the email and send mail'
       },
       EMAIL_FROM: {
         NAME: 'Email from',
-        TIPS: ''
+        PLACEHOLDER: 'eg: admin <admin@mydomain.com>',
+        TIPS: 'eg: admin <admin@mydomain.com>'
       },
       EMAIL_SSL: {
-        NAME: 'Whether to enable SSL',
-        TIPS: ''
+        NAME: 'Whether SSL',
+        PLACEHOLDER: '',
+        TIPS: 'Whether to enable SSL to encrypt the network connection, the default is false'
       },
     },
     OTHERS: {
+      TITLE: 'Initialization',
       ARCH_TYPE: {
         NAME: 'Architecture',
-        TIPS: 'The default arch for Board is x86_64, also support mips now'
+        PLACEHOLDER: '',
+        TIPS: 'The default arch for Board is x86_64, also support mips and arm64 now'
       },
       DATABASE_PASSWORD: {
         NAME: 'Database password',
-        TIPS: 'The password for the root user of mysql db, change this before any production use.'
+        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
+        TIPS: 'The password for the root user of mysql db, change this before any production use. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+      },
+      DB_MAX_CONNECTION: {
+        NAME: 'DB Max Connection',
+        PLACEHOLDER: '1~16384, recommended: 1000',
+        TIPS: '1~16384, recommended: 1000',
       },
       TOKEN_CACHE_EXPIRE: {
         NAME: 'Token cache expire',
-        TIPS: 'The expiration seconds of token stored in cache.'
+        PLACEHOLDER: 'In seconds, recommended: 1800',
+        TIPS: 'The expiration seconds of token stored in cache, recommended: 1800'
       },
       TOKEN_EXPIRE: {
         NAME: 'Token expire',
-        TIPS: 'The expiration seconds of token.'
+        PLACEHOLDER: 'In seconds, recommended: 1800',
+        TIPS: 'The expiration seconds of token, recommended: 1800'
       },
       ELASETICSEARCH_MEMORY: {
         NAME: 'Elaseticsearch memory',
-        TIPS: 'The max memory(MB) of elasticsearch can use.'
+        PLACEHOLDER: 'In MB, default: 1024',
+        TIPS: 'The max memory(MB) of elasticsearch can use, default: 1024'
       },
       TILLER_PORT: {
         NAME: 'Tiller port',
-        TIPS: 'The helm tiller node port'
+        PLACEHOLDER: '1~65535, default: 31111',
+        TIPS: 'The helm tiller node port, default: 31111'
       },
       BOARD_ADMIN_PASSWORD: {
         NAME: 'Board admin password',
-        TIPS: 'The initial password of Board admin, only works for the first time when Board starts. Change the admin password from UI after launching Board.'
+        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
+        TIPS: 'The initial password of Admin only takes effect when Board is started for the first time. This password is shared between the admin account of the Board and Adminserver. To modify it, you need to configure Email parameters, and then forget the password after the Board starts successfully. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
       },
       BOARD_ADMIN_PASSWORD_OLD: {
         NAME: 'Board Admin old password',
+        PLACEHOLDER: 'Board Admin old password',
         TIPS: 'Please enter the old password of Board Admin for verification. If the verification is successful, you can modify the new password below.',
       },
       BOARD_ADMIN_PASSWORD_NEW: {
         NAME: 'New password',
+        PLACEHOLDER: 'New password',
         TIPS: 'Please enter a new Board Admin password.',
       },
       BOARD_ADMIN_PASSWORD_CONFIRM: {
         NAME: 'Confirm password',
+        PLACEHOLDER: 'Confirm password',
         TIPS: 'Please confirm the new password entered above.',
       },
       AUTH_MODE: {
         NAME: 'Auth mode',
-        TIPS: 'By default the auth mode is db_auth, i.e. the credentials are stored in a local database. Set it to ldap_auth if you want to verify a user\'s credentials against an LDAP server. Set it to indata_auth if you want to verify a user\'s credentials against InData integration platform.'
+        PLACEHOLDER: 'Auth mode',
+        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials against an LDAP server. Set it to \'Indata\' if you want to verify a user\'s credentials against InData integration platform.'
       },
       VERIFICATION_URL: {
         NAME: 'Verification url',
-        TIPS: 'External token verification URL as to integrate authorization with another platform. NOTE: This option is only available when auth_mode is set to \'indata_auth\'.'
+        PLACEHOLDER: 'eg: http://verification.mydomain.com',
+        TIPS: 'External token verification URL as to integrate authorization with another platform. NOTE: This option is only available when auth_mode is set to \'Indata\'.'
       },
       REDIRECTION_URL: {
         NAME: 'Redirection url',
-        TIPS: 'Specify redirection URL when token is invalid or expired the UI will redirect to. NOTE: This option is only available when auth_mode is set to \'indata_auth\'.'
+        PLACEHOLDER: 'eg: http://redirection.mydomain.com',
+        TIPS: 'Specify redirection URL when token is invalid or expired the UI will redirect to. NOTE: This option is only available when auth_mode is set to \'Indata\'.'
       },
       AUDIT_DEBUG: {
         NAME: 'Audit debug',
-        TIPS: 'Record all operations switch of operation audit function '
+        PLACEHOLDER: '',
+        TIPS: 'Record all operations switch of operation audit function, default: false'
       },
       DNS_SUFFIX: {
         NAME: 'DNS suffix',
-        TIPS: 'Kubernetes DNS suffix'
+        PLACEHOLDER: 'eg: .cluster.local',
+        TIPS: 'Kubernetes DNS suffix, default: .cluster.local'
       },
     },
   },
@@ -409,6 +473,7 @@ export const LANG_EN_US = {
     TEMPORARY: 'temporary config',
     CURRENTTIP: 'Here shows the CURRENT Board config. You can click the button next to get the temporary configuration.',
     TEMPORARYTIP: 'Here shows the temporary config. You can click the button next to get CURRENT Board configuration.',
+    HEADER_HELPER: 'Only allow viewing of configuration.To update the configuration, you need to reconfigure after stopping the Board on the "Dashboard" page.',
     SAVETOSERVER: 'Save to server',
     SAVETOLOCAL: 'Save locally',
     SAVECONFIGURATION: {
@@ -432,6 +497,13 @@ export const LANG_EN_US = {
       TRANSLATE: '切换为汉语',
       APPLY: 'Apply',
       RESTART_DB: 'Restart DB',
+      FAST_MODE: 'Quick mode',
+      EDIT_CONFIG: 'Edit cfg',
+      START_BOARD: 'Start Board',
+      UNINSTALL: 'Uninstall Board',
+      APPLY_AND_START_BOARD: 'Apply & Start Board',
+      GO_TO_BOARD: 'Go to Board',
+      GO_TO_ADMINSERVER: 'Go to Adminserver',
     },
     PAGE_TITLE: {
       WELCOME: 'Welcome to Adminserver',
@@ -439,6 +511,11 @@ export const LANG_EN_US = {
       DATABASE: 'Config Database',
       SSH: 'Start Database',
       ACCOUNT: 'Initialize Account',
+      EDIT_CONFIG_CONFIRM: 'Do you want to edit the configuration?',
+      EDIT_CONFIG: 'Edit configuration of Board',
+      FINISH: 'Congratulations!',
+      UNINSTALL: 'Uninstallation is complete!',
+      SSH_ACCOUNT: 'Please input the SSH account',
     },
     PAGE_NAV_TITLE: {
       WELCOME: 'Welcome',
@@ -451,20 +528,27 @@ export const LANG_EN_US = {
       LOADING: 'Loading...',
     },
     ALERTS: {
-      INITIALIZATION: 'Initialization error! Please check that the docker is working normally.',
-      UUID: 'Incorrect UUID! Please re-enter UUID!',
+      INITIALIZATION: 'Initialization error! Please check that the docker or service is working normally.',
+      UUID: 'UUID format error! Please re-enter UUID!',
       DATABASE: 'Database initialization failed! Please check that the docker is working normally.',
       PASSWORDS_IDENTICAL: 'Passwords are not identical.',
       MAX_CONNECTION: 'Database\'s max connection error!',
       SSH: 'Network error or account error, please try again!',
       ACCOUNT: 'Network error or docker error, please try again!',
+      VALIDATE_UUID: 'UUID verification failed! Please check whether the network is normal or the UUID is filled in correctly.',
+      ALREADY_START: 'Board have been successfully started. The next steps cannot be operated.',
     },
     CONTENTS: {
       WELCOME: 'Welcome to Adminserver! Because this is the first time for the initialization process, you need to complete the following configurations to start the system normally.',
-      UUID: 'In order to confirm your identity, you need to enter the UUID in the /data/board/secrets folder for the next configuration.',
+      UUID: 'In order to confirm your identity, you need to enter the UUID in the /data/board/secrets folder for the next.',
       DATABASE: 'Requires to configure the database password to initialize the database. This step may take some time.',
       SSH: 'Please enter the account and password of the host machine. Note: The account needs certain permissions to install and run related components. It will take some time to run.The system will not store your account and password.',
       ACCOUNT: 'Initialize the administrator password of adminserver. The admin account will be shared with the board.',
+      EDIT_CONFIG_CONFIRM: 'It seems that there is already a configured cfg, do you want to re-edit it or start the board directly?',
+      FINISH: 'Board have been successfully started. Initialization needs to wait for a while, after waiting, you can access the following connection to access the Board or Adminserver.',
+      UNINSTALL: 'Board component uninstallation is complete!You can now go to the background to uninstall Adminserver and clear related data.',
+      CLEAR_DATA: 'Clear all relevant data of Board',
+      RESPONSIBILITY: 'I already know the impact of this operation and I am responsible for its consequences.',
     },
     LABELS: {
       UUID: 'UUID',
@@ -478,6 +562,7 @@ export const LANG_EN_US = {
       NUMS: 'Requires 10 ~ 16384.',
       MIN_LENGTH_8: 'It must be at least 8 characters!',
       NOT_EDITABLE: 'Unable to edit!',
+      FAST_MODE: 'Use default values ​​for some configurations',
     },
     MODAL_TITLE: 'Database Error!',
   },

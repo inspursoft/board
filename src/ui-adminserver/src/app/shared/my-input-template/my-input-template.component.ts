@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component, OnInit, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { FormGroup, FormControl, FormBuilder, ValidatorFn, Validators, AbstractControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,7 +18,8 @@ export class MyInputTemplateComponent implements OnInit {
   @Input() maxLength: number;
   @Input() value: string | number | boolean;
   @Input() enumType: 'text' | 'number' = 'text';
-  @Input() enumItem: Array<any>;
+  @Input() enumItem: object;
+  objectKeys = Object.keys;
   @Input() enumInline = false;
   @Input() enableCustomItem = false;
   @Input() customItemPlaceholder = 'Custom Input';
@@ -38,12 +39,14 @@ export class MyInputTemplateComponent implements OnInit {
   @Input() confirmMsg = 'Inconsistent password!';
   @Input() inputUpdateOn: 'change' | 'blur' | 'submit' = 'blur';
   @Input() firstItem = false;
+  @Input() inputWidth: string;
   @Output() editEvent: EventEmitter<any>;
   @Output() commitEvent: EventEmitter<any>;
   @Output() valueChanges: EventEmitter<any>;
 
+  @ViewChild('myInput') input: ElementRef;
+
   enableHelper = false;
-  showError = false;
   showPassword = false;
   showPasswordconfirm = false;
 
@@ -71,7 +74,6 @@ export class MyInputTemplateComponent implements OnInit {
         const sourceControl: AbstractControl = _form.controls[source];
         const targetControl: AbstractControl = _form.controls[target];
         if (targetControl.value && sourceControl.value && targetControl.value !== sourceControl.value) {   // 如果两个值不一致
-          console.log('###' + targetControl.value + '###' + sourceControl.value)
           return { verifyPassword: 'verify-password' };
         }
       }
@@ -80,9 +82,6 @@ export class MyInputTemplateComponent implements OnInit {
 
   ngOnInit() {
     this.enableHelper = this.showHelper === 'always' ? true : false;
-    // if (this.type === 'boolean') {
-    //   this.inputControl.setValue(false);
-    // }
     this.inputFormGroup = this.fb.group({
       inputControl: this.inputControl,
       confirmControl: this.confirmControl
@@ -107,7 +106,7 @@ export class MyInputTemplateComponent implements OnInit {
 
   @Input()
   set confirmPassword(value: boolean) {
-    if (value) {
+    if (value && !this.disabled) {
       this.confirmControl.enable();
     }
   }
@@ -118,14 +117,12 @@ export class MyInputTemplateComponent implements OnInit {
 
   @Input()
   set defaultValue(value: string | number | boolean) {
-    console.log(value)
     this.inputControl.setValue(value);
   }
 
   installValidators() {
     this.valueSubscription = this.inputControl.valueChanges.subscribe((value: any) => {
       this.valueChanges.next(value);
-      console.log('change' + value);
     });
     this.statusSubscription = this.inputControl.statusChanges.subscribe(() => {
       if (this.inputControl.valid) {
@@ -153,7 +150,6 @@ export class MyInputTemplateComponent implements OnInit {
         this.inputValidatorFns.push(Validators.pattern(this.pattern));
       }
       if (this.type === 'password' && this.confirmPassword) {
-        console.log("confirmPassword")
         this.inputValidatorFns.push(MyInputTemplateComponent.passwordValidator('inputControl', 'confirmControl'));
         this.confirmControl.setValidators(this.inputValidatorFns);
       }
@@ -170,11 +166,17 @@ export class MyInputTemplateComponent implements OnInit {
     }
     this.inputControl.clearValidators();
     this.inputControl.clearAsyncValidators();
+    if (this.confirmPassword) {
+      this.confirmControl.clearValidators();
+      this.confirmControl.clearAsyncValidators();
+    }
   }
 
-  getValidatorMessage(errors: ValidationErrors): string {
+  getValidatorMessage(sourceControl: AbstractControl): string {
     let result = '';
-    if (errors) {
+    if (sourceControl.touched && sourceControl.invalid) {
+      this.enableHelper = true;
+      const errors = sourceControl.errors;
       if (Reflect.has(errors, 'required')) {
         result = this.requiredMsg;
       } else if (Reflect.has(errors, 'pattern')) {
@@ -188,7 +190,6 @@ export class MyInputTemplateComponent implements OnInit {
       } else if (Reflect.has(errors, 'min')) {
         result = this.minMsg;
       } else if (Reflect.has(errors, 'verifyPassword')) {
-        console.log("confirmPassword Error")
         result = this.confirmMsg;
       } else if (Object.keys(errors).length > 0) {
         result = errors[Object.keys(errors)[0]];
@@ -198,9 +199,11 @@ export class MyInputTemplateComponent implements OnInit {
   }
 
   onInputFocus() {
-    this.showError = false;
     if (this.showHelper === 'onfocus' && this.inputControl.enabled) {
       this.enableHelper = true;
+    }
+    if (this.inputControl.enabled) {
+      this.editEvent.emit(this.inputControl.value);
     }
   }
 
@@ -209,8 +212,8 @@ export class MyInputTemplateComponent implements OnInit {
     if (this.confirmPassword) {
       this.confirmControl.updateValueAndValidity();
     }
-    if (this.showHelper === 'onfocus' && (!this.inputControl.value || this.inputControl.valid)) {
-      if (this.confirmPassword && this.confirmControl.invalid) {
+    if (this.showHelper === 'onfocus' && this.inputControl.valid) {
+      if (this.confirmPassword && this.confirmControl.touched && this.confirmControl.invalid) {
         this.enableHelper = true;
       } else {
         this.enableHelper = false;
@@ -218,18 +221,14 @@ export class MyInputTemplateComponent implements OnInit {
     }
   }
 
-  onCustomFocus(value: string | number) {
-    console.log(value);
+  onCustomFocus() {
     if (this.showHelper === 'onfocus' && this.inputControl.enabled) {
       this.enableHelper = true;
     }
-    // this.inputControl.setValue(value);
-    // this.checkSelf();
   }
 
   onCustomBlur(value: string | number) {
     if (typeof (value) === 'string' && this.enumType === 'text') {
-      console.log('string');
       value = value.trim();
       this.customItem = value;
     }
@@ -238,12 +237,10 @@ export class MyInputTemplateComponent implements OnInit {
   }
 
   togglePassword() {
-    console.log('toggle')
     this.showPassword = !this.showPassword;
   }
 
   togglePasswordconfirm() {
-    console.log('toggle C')
     this.showPasswordconfirm = !this.showPasswordconfirm;
   }
 
@@ -251,7 +248,6 @@ export class MyInputTemplateComponent implements OnInit {
     if (this.inputControl.enabled) {
       this.inputControl.markAsTouched({ onlySelf: true });
       this.inputControl.updateValueAndValidity();
-      this.showError = this.inputControl.errors ? true : false;
       if (this.showHelper === 'onfocus') {
         this.enableHelper = this.inputControl.errors ? true : false;
       }
@@ -263,6 +259,10 @@ export class MyInputTemplateComponent implements OnInit {
   }
 
   public get isValid(): boolean {
-    return this.inputControl.valid;
+    return this.confirmPassword ? (this.inputControl.valid && this.confirmControl.valid) : this.inputControl.valid;
+  }
+
+  public get element(): ElementRef {
+    return this.input;
   }
 }

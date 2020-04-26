@@ -140,213 +140,277 @@ export const LANG_ZH_CN = {
   },
   CONFIGURATIONS: {
     API_SERVER: {
+      TITLE: 'Api Server',
       HOSTNAME: {
         NAME: 'Board IP地址',
+        PLACEHOLDER: '如：192.168.1.10或reg.yourdomain.com',
         TIPS: 'Board服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为Board需要被其他节点访问'
       },
       API_SERVER_PORT: {
         NAME: 'API服务器端口号',
+        PLACEHOLDER: '1~65535，默认为8088',
         TIPS: 'Board服务部署的端口号'
       },
       KUBE_HTTP_SCHEME: {
         NAME: 'K8s网络请求方案',
+        PLACEHOLDER: 'K8s网络请求方案',
         TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https'
       },
       KUBE_MASTER_IP: {
         NAME: 'K8s主节点IP',
+        PLACEHOLDER: '如：192.168.1.10',
         TIPS: 'Kubernetes(K8s)部署的主机地址，不要使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
       },
       KUBE_MASTER_PORT: {
         NAME: 'K8s主节点端口号',
-        TIPS: 'Kubernetes(K8s)部署的端口号，如果网络协议为http，则使用8080端口；如果使用https则使用6443端口'
+        PLACEHOLDER: '',
+        TIPS: 'Kubernetes(K8s)部署的端口号。默认情况下，http使用8080端口，https使用6443端口。非默认情况下请按照实际情况填写。'
       },
       REGISTRY_IP: {
         NAME: '镜像仓库IP',
-        TIPS: '镜像仓库的地址'
+        PLACEHOLDER: '如：192.168.1.10',
+        TIPS: '镜像仓库的地址，不要使用localhost或者127.0.0.1上，因为镜像仓库需要被其他节点访问'
       },
       REGISTRY_PORT: {
         NAME: '镜像仓库端口号',
-        TIPS: '镜像仓库的端口号'
+        PLACEHOLDER: '1~65535，默认为5000',
+        TIPS: '镜像仓库的端口号，默认为5000'
       },
       IMAGE_BASELINE_TIME: {
         NAME: '镜像基准时间',
-        TIPS: '镜像的基准时间，默认为2016-01-01 09:00:00'
+        PLACEHOLDER: '默认为2016-01-01 09:00:00',
+        TIPS: '镜像的基准时间，默认为2016-01-01 09:00:00。Board只读取这个时间后的镜像。'
       },
     },
     GOGITS: {
+      TITLE: 'Gogs',
       GOGITS_HOST_IP: {
         NAME: '服务IP地址',
-        TIPS: '服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为需要被其他节点访问'
+        PLACEHOLDER: '如：192.168.1.10',
+        TIPS: 'gogs部署的主机地址，不要使用localhost或者127.0.0.1，因为需要被其他节点访问'
       },
       GOGITS_HOST_PORT: {
         NAME: '服务端口号',
-        TIPS: '服务部署的端口号'
+        PLACEHOLDER: '1~65535，默认为10080',
+        TIPS: '服务部署的端口号，默认为10080'
       },
       GOGITS_SSH_PORT: {
         NAME: 'SSH请求端口号',
-        TIPS: 'SSH(远程登录会话协议)的请求端口号'
+        PLACEHOLDER: '1~65535，默认为10022',
+        TIPS: 'SSH(远程登录会话协议)的请求端口号，默认为10022'
       },
     },
     JENKINS: {
+      TITLE: 'Jenkins',
       JENKINS_HOST_IP: {
-        NAME: '主机IP地址',
-        TIPS: 'Jenkins master节点的地址，用于外部访问'
+        NAME: '主节点IP地址',
+        PLACEHOLDER: '如：192.168.1.10',
+        TIPS: 'Jenkins主节点的地址，用于外部访问，不要使用localhost或者127.0.0.1'
       },
       JENKINS_HOST_PORT: {
-        NAME: '主机端口号',
-        TIPS: 'Jenkins master节点的端口号'
+        NAME: '主节点端口号',
+        PLACEHOLDER: '1~65535，默认为8888',
+        TIPS: 'Jenkins主节点的端口号，默认为8888'
       },
       JENKINS_NODE_IP: {
-        NAME: '节点IP地址',
-        TIPS: 'Jenkins node节点的地址'
+        NAME: '从节点IP地址',
+        PLACEHOLDER: '如：192.168.1.11',
+        TIPS: 'Jenkins从节点的地址'
       },
       JENKINS_NODE_SSH_PORT: {
         NAME: '节点SSH请求端口号',
-        TIPS: 'Node节点的SSH(远程登录会话协议)请求端口号'
+        PLACEHOLDER: '1~65535，默认为22',
+        TIPS: 'Node节点的SSH(远程登录会话协议)请求端口号，默认为22'
       },
       JENKINS_NODE_USERNAME: {
         NAME: '节点用户名',
-        TIPS: '登录Node主机的用户名'
+        PLACEHOLDER: '',
+        TIPS: 'Jenkins的用户名'
       },
       JENKINS_NODE_PASSWORD: {
         NAME: '节点密码',
-        TIPS: '登录Node节点的密码'
+        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
+        TIPS: 'Jemkins账户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
+        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
       },
       JENKINS_NODE_VOLUME: {
         NAME: '节点数据卷路径',
+        PLACEHOLDER: '如：/data/jenkins_node',
         TIPS: 'Node节点的数据卷的地址'
       },
       JENKINS_EXECUTION_MODE: {
         NAME: '运行模式',
+        PLACEHOLDER: '',
         TIPS: 'Jenkins集群的运行模式，支持单节点(single)或者多节点(multi)'
       },
     },
     KVM: {
+      TITLE: 'KVM',
       KVM_REGISTRY_SIZE: {
         NAME: 'KVM仓库大小',
-        TIPS: '',
+        PLACEHOLDER: '默认为5',
+        TIPS: '需大于0，默认为5',
       },
       KVM_REGISTRY_PORT: {
         NAME: 'KVM仓库端口号',
-        TIPS: '',
+        PLACEHOLDER: '1~65535，默认为8890',
+        TIPS: '1~65535，默认为8890',
       },
       KVM_REGISTRY_PATH: {
         NAME: 'KVM工具路径',
-        TIPS: '',
+        PLACEHOLDER: '如：/root/kvm_toolkits',
+        TIPS: 'KVM工具存储的路径，默认为/root/kvm_toolkits',
       },
     },
     LDAP: {
+      TITLE: 'LDAP(轻型目录访问协议)',
       LDAP_URL: {
         NAME: '服务URL地址',
+        PLACEHOLDER: '如：ldaps://ldap.mydomain.com',
         TIPS: 'LDAP服务的入口地址',
       },
       LDAP_BASEDN: {
         NAME: '服务DN来源',
+        PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
         TIPS: 'LDAP验证用户是来自哪个源，ou为people,dc为mydomain,dc为com',
       },
       LDAP_UID: {
         NAME: '服务匹配源',
+        PLACEHOLDER: 'uid/cn/email/...',
         TIPS: '搜索中用于匹配用户的属性，可以是uid，cn，email，sAMAccountName或其他属性，具体取决于您的LDAP/AD',
       },
       LDAP_SCOPE: {
         NAME: '服务匹配范围',
-        TIPS: '搜索用户的范围（LDAP_SCOPE_BASE，LDAP_SCOPE_ONELEVEL，LDAP_SCOPE_SUBTREE）',
+        PLACEHOLDER: '',
+        TIPS: '搜索用户的范围，默认是Subtree',
       },
       LDAP_TIMEOUT: {
         NAME: '请求超时时间',
+        PLACEHOLDER: '单位为秒，默认值（最合理）为5秒',
         TIPS: '连接到LDAP服务器的超时时间（以秒为单位）。默认值（最合理）是5秒',
       },
     },
     EMAIL: {
+      TITLE: '电子邮件',
       EMAIL_IDENTITY: {
         NAME: '身份',
-        TIPS: '身份留为空白，用作用户名',
+        PLACEHOLDER: '身份名',
+        TIPS: '默认为空身份（NULL)',
       },
       EMAIL_SERVER: {
         NAME: '服务IP地址',
+        PLACEHOLDER: '如：smtp.mydomain.com',
         TIPS: '邮箱服务器地址',
       },
       EMAIL_SERVER_PORT: {
         NAME: '服务端口号',
-        TIPS: '邮箱服务器的端口号',
+        PLACEHOLDER: '1~65535，默认为25',
+        TIPS: '邮箱服务器的端口号，默认为25',
       },
       EMAIL_USERNAME: {
         NAME: '用户名',
-        TIPS: '',
+        PLACEHOLDER: '如：admin@mydomain.com',
+        TIPS: '邮箱地址，如：admin@mydomain.com',
       },
       EMAIL_PASSWORD: {
         NAME: '邮箱密码',
-        TIPS: '',
+        PLACEHOLDER: '邮箱密码',
+        TIPS: '用于登录邮箱，发送邮件',
       },
       EMAIL_FROM: {
         NAME: '邮件来源',
-        TIPS: '',
+        PLACEHOLDER: '如：admin <admin@mydomain.com>',
+        TIPS: '如：admin <admin@mydomain.com>',
       },
       EMAIL_SSL: {
         NAME: '是否启用SSL',
-        TIPS: '',
+        PLACEHOLDER: '',
+        TIPS: '是否启用SSL对网络连接进行加密，默认为否',
       },
     },
     OTHERS: {
+      TITLE: '初始化配置',
       ARCH_TYPE: {
         NAME: '系统架构',
-        TIPS: '默认架构是x86_64，现在也支持mips',
+        PLACEHOLDER: '',
+        TIPS: '默认架构是x86_64，现在也支持mips、arm64',
       },
       DATABASE_PASSWORD: {
         NAME: '数据库密码',
-        TIPS: 'mysql db的root用户的密码，请在生产前使用此密码',
+        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
+        TIPS: 'mysql db的root用户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
+        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
+      },
+      DB_MAX_CONNECTION: {
+        NAME: '数据库最大连接数',
+        PLACEHOLDER: '1~16384，推荐为1000',
+        TIPS: '数据库最大连接数，范围：1~16384，推荐为1000',
       },
       TOKEN_CACHE_EXPIRE: {
         NAME: 'Token缓存存留时间',
-        TIPS: '存储在缓存中的令牌的到期秒数',
+        PLACEHOLDER: '单位为秒，推荐为1800',
+        TIPS: '存储在缓存中的令牌的到期秒数，推荐为1800',
       },
       TOKEN_EXPIRE: {
         NAME: 'Token存留时间',
-        TIPS: '令牌的到期秒数',
+        PLACEHOLDER: '单位为秒，推荐为1800',
+        TIPS: '令牌的到期秒数，推荐为1800',
       },
       ELASETICSEARCH_MEMORY: {
         NAME: 'Elasticsearch内存',
-        TIPS: 'Elasticsearch可以使用的最大内存（MB）',
+        PLACEHOLDER: '单位为MB，默认为1024',
+        TIPS: 'Elasticsearch可以使用的最大内存（MB），默认为1024',
       },
       TILLER_PORT: {
         NAME: 'Tiller端口号',
-        TIPS: 'Helm tiller的节点端口号',
+        PLACEHOLDER: '1~65535，默认为31111',
+        TIPS: 'Helm tiller的节点端口号，默认为31111',
       },
       BOARD_ADMIN_PASSWORD: {
-        NAME: 'Board Admin密码',
-        TIPS: 'Board Admin的初始密码仅在Board首次启动时才能生效，请在Board启动成功后再进行修改。',
+        NAME: 'Admin密码',
+        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
+        TIPS: 'Admin的初始密码仅在Board首次启动时才能生效，Board和Adminserver的admin账户共用这个密码。若要修改，需要配置Email参数，然后在Board启动成功后进行忘记密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
+        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
       },
       BOARD_ADMIN_PASSWORD_OLD: {
         NAME: 'Board Admin旧密码',
+        PLACEHOLDER: '',
         TIPS: '请输入Board Admin旧密码用于系统验证，验证通过则可以在下方修改新密码。',
       },
       BOARD_ADMIN_PASSWORD_NEW: {
         NAME: '新密码',
+        PLACEHOLDER: '',
         TIPS: '请输入Board Admin新密码。',
       },
       BOARD_ADMIN_PASSWORD_CONFIRM: {
         NAME: '确认密码',
+        PLACEHOLDER: '',
         TIPS: '请确认一次上面输入的新密码。',
       },
       AUTH_MODE: {
         NAME: '用户验证模式',
-        TIPS: '默认情况下，身份验证模式为db_auth，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为ldap_auth；如果要根据InData集成平台验证用户的凭据，请将其设置为indata_auth',
+        PLACEHOLDER: '',
+        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP；如果要根据InData集成平台验证用户的凭据，请将其设置为Indata',
       },
       VERIFICATION_URL: {
         NAME: '验证地址',
-        TIPS: '外部令牌验证URL，用于与其他平台集成授权。注：仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
+        PLACEHOLDER: '如：http://verification.mydomain.com',
+        TIPS: '外部令牌验证URL，用于与其他平台集成授权。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
       },
       REDIRECTION_URL: {
         NAME: '重定向地址',
-        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。注：仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
+        PLACEHOLDER: '如：http://redirection.mydomain.com',
+        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
       },
       AUDIT_DEBUG: {
         NAME: '审计',
-        TIPS: '记录运行审核功能的所有运行切换',
+        PLACEHOLDER: '',
+        TIPS: '记录运行审核功能的所有运行切换，默认为否',
       },
       DNS_SUFFIX: {
         NAME: 'DNS后缀',
-        TIPS: 'Kubernetes DNS后缀',
+        PLACEHOLDER: '如：.cluster.local',
+        TIPS: 'Kubernetes DNS后缀，默认为.cluster.local',
       },
     },
   },
@@ -411,6 +475,7 @@ export const LANG_ZH_CN = {
     TEMPORARY: '未生效配置',
     CURRENTTIP: '这里显示了当前Board的配置。您可以单击旁边的按钮以获取未生效的配置。',
     TEMPORARYTIP: '这里显示了未生效的配置。您可以单击旁边的按钮以查看Board当前配置。',
+    HEADER_HELPER: '只允许查看配置。若要更新配置需要在“仪表盘”页停止Board后进行重新配置。',
     SAVETOSERVER: '保存到服务',
     SAVETOLOCAL: '下载到本地',
     SAVECONFIGURATION: {
@@ -434,6 +499,13 @@ export const LANG_ZH_CN = {
       TRANSLATE: 'Translate to English',
       APPLY: '应用',
       RESTART_DB: '重启数据库',
+      FAST_MODE: '快速模式',
+      EDIT_CONFIG: '编辑配置',
+      START_BOARD: '启动Board',
+      UNINSTALL: '卸载Board',
+      APPLY_AND_START_BOARD: '应用并启动Board',
+      GO_TO_BOARD: '前往Board',
+      GO_TO_ADMINSERVER: '前往Adminserver',
     },
     PAGE_TITLE: {
       WELCOME: '欢迎使用Adminserver',
@@ -441,6 +513,11 @@ export const LANG_ZH_CN = {
       DATABASE: '配置数据库',
       SSH: '启动数据库',
       ACCOUNT: '初始化账户',
+      EDIT_CONFIG_CONFIRM: '是否再次编辑Board配置？',
+      EDIT_CONFIG: '编辑Board配置',
+      FINISH: '完成！',
+      UNINSTALL: '卸载完成！',
+      SSH_ACCOUNT: '请输入SSH账户',
     },
     PAGE_NAV_TITLE: {
       WELCOME: '欢迎页',
@@ -453,20 +530,27 @@ export const LANG_ZH_CN = {
       LOADING: '等待中···',
     },
     ALERTS: {
-      INITIALIZATION: '初始化错误！请检查Docker是否正常运行。',
-      UUID: 'UUID错误！请重新输入！',
+      INITIALIZATION: '初始化错误！请检查Docker或服务是否正常运行。',
+      UUID: 'UUID格式错误！请重新输入！',
       DATABASE: '数据库初始化失败！请检查Docker是否正常运行。',
       PASSWORDS_IDENTICAL: '两次密码不一致！',
       MAX_CONNECTION: '数据库最大连接数错误！',
       SSH: '网络错误或者账户错误，请重试！',
       ACCOUNT: '网络错误或者docker运行错误，请重试！',
+      VALIDATE_UUID: 'UUID验证失败！请检查网络是否正常或者UUID是否填写正确。',
+      ALREADY_START: '检查发现Board已经启动！无法继续操作。',
     },
     CONTENTS: {
       WELCOME: '欢迎使用Adminserver！由于这是第一次进行初始化流程，因此需要完成以下几项配置后才能正常启动系统。',
-      UUID: '为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步的配置。',
+      UUID: '为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步。',
       DATABASE: '您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。',
       SSH: '请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。',
       ACCOUNT: '初始化adminserver的管理员密码。该admin账户将与board共用。',
+      EDIT_CONFIG_CONFIRM: '似乎已经有一个已配置的cfg，您要重新编辑它还是直接启动Board？',
+      FINISH: 'Board已成功启动它。初始化需要等待一段时间，等待之后，您可以访问以下连接来访问Board或Adminserver。',
+      UNINSTALL: 'Board组件卸载完成！您现在可以前往后台卸载Adminserver以及清除相关数据。',
+      CLEAR_DATA: '清除Board的所有相关数据',
+      RESPONSIBILITY: '我已知晓该操作会造成什么影响并对此操作的后果进行负责',
     },
     LABELS: {
       UUID: 'UUID',
@@ -480,6 +564,7 @@ export const LANG_ZH_CN = {
       NUMS: '接受10~16384。',
       MIN_LENGTH_8: '至少包含8个字符！',
       NOT_EDITABLE: '不允许更改！',
+      FAST_MODE: '对部分配置使用默认值',
     },
     MODAL_TITLE: '数据库错误！',
   },
