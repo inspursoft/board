@@ -14,6 +14,7 @@ type OperationController struct {
 }
 
 func (o *OperationController) Prepare() {
+	o.EnableXSRF = false
 	o.ResolveSignedInUser()
 }
 

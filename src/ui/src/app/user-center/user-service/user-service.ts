@@ -26,13 +26,12 @@ export class UserService {
   }
 
   changeUserPassword(userID: number, user_password_old: string, user_password_new: string): Observable<any> {
-    let body = {
-      "user_password_old": user_password_old,
-      "user_password_new": user_password_new
+    const body = {
+      user_password_old: window.btoa(user_password_old),
+      user_password_new: window.btoa(user_password_new)
     };
     return this.http.put(`${BASE_URL}/users/${userID}/password`, body, {
-      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-      observe: "response"
+      headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE)
     });
   }
 
@@ -44,6 +43,7 @@ export class UserService {
   }
 
   newUser(userParams: User): Observable<any> {
+    userParams.user_password = window.btoa(userParams.user_password);
     return this.http.post(`${BASE_URL}/adduser`, userParams, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"

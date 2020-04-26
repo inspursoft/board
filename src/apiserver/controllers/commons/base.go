@@ -1,13 +1,12 @@
 package commons
 
 import (
-	"errors"
+	"git/inspursoft/board/src/common/model"
+	t "git/inspursoft/board/src/common/token"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 
 	"git/inspursoft/board/src/apiserver/service"
 
@@ -19,14 +18,14 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/utils/captcha"
 )
 
+var MemoryCache cache.Cache
+var Cpt *captcha.Captcha
 var TokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
 var TokenExpireTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
 var TokenCacheExpireSeconds int
-var MemoryCache cache.Cache
-
-var ErrInvalidToken = errors.New("error for invalid token")
 
 var APIServerURL = utils.GetConfig("API_SERVER_URL")
 
@@ -58,6 +57,7 @@ type BaseController struct {
 }
 
 func (b *BaseController) Prepare() {
+	b.EnableXSRF = false
 	b.ResolveSignedInUser()
 	b.RecordOperationAudit()
 }
@@ -127,7 +127,7 @@ func (b *BaseController) ServeStatus(statusCode int, message string) {
 }
 
 func (b *BaseController) ServeJSONOutput(statusCode int, data interface{}) {
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
+	b.Ctx.Output.SetStatus(statusCode)
 	b.RenderJSON(data)
 }
 
@@ -176,11 +176,11 @@ func (b *BaseController) GetCurrentUser() *model.User {
 		return nil
 	}
 	var hasResignedToken bool
-	payload, err := verifyToken(token)
+	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
-		if err == ErrInvalidToken {
+		if err == t.ErrInvalidToken {
 			if lastPayload, ok := MemoryCache.Get(token).(map[string]interface{}); ok {
-				newToken, err := b.SignToken(lastPayload)
+				newToken, err := t.SignToken(TokenServerURL(), lastPayload)
 				if err != nil {
 					logs.Error("failed to sign token: %+v\n", err)
 					return nil
@@ -217,6 +217,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			MemoryCache.Put(user.Username, token, time.Second*time.Duration(TokenCacheExpireSeconds))
 			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
+		user.Password = ""
 		return user
 	}
 	return nil
@@ -426,34 +427,6 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 	}
 }
 
-func (b *BaseController) SignToken(payload map[string]interface{}) (*model.Token, error) {
-	var token model.Token
-	err := utils.RequestHandle(http.MethodPost, TokenServerURL(), func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-		}
-		return nil
-	}, payload, func(req *http.Request, resp *http.Response) error {
-		return utils.UnmarshalToJSON(resp.Body, &token)
-	})
-	return &token, err
-}
-
-func verifyToken(tokenString string) (map[string]interface{}, error) {
-	if strings.TrimSpace(tokenString) == "" {
-		return nil, fmt.Errorf("no token provided")
-	}
-	var payload map[string]interface{}
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", TokenServerURL(), tokenString), nil, nil, func(req *http.Request, resp *http.Response) error {
-		if resp.StatusCode == http.StatusUnauthorized {
-			logs.Error("Invalid token due to session timeout.")
-			return ErrInvalidToken
-		}
-		return utils.UnmarshalToJSON(resp.Body, &payload)
-	})
-	return payload, err
-}
-
 func InitController() {
 	var err error
 	TokenCacheExpireSeconds, err = strconv.Atoi(utils.GetStringValue("TOKEN_CACHE_EXPIRE_SECONDS"))
@@ -461,11 +434,11 @@ func InitController() {
 		logs.Error("Failed to get token expire seconds: %+v", err)
 	}
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL(), TokenCacheExpireSeconds)
-
-	MemoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
+	beego.BConfig.MaxMemory = 1 << 22
+	MemoryCache, err = cache.NewCache("memory", `{"interval":3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v", err)
 	}
-	beego.BConfig.MaxMemory = 1 << 22
+	Cpt = captcha.NewWithFilter("/captcha/", MemoryCache)
 	logs.Debug("Current auth mode is: %s", AuthMode())
 }

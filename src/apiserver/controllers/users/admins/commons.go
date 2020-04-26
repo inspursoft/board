@@ -23,6 +23,7 @@ type CommonController struct {
 }
 
 func (u *CommonController) Prepare() {
+	u.EnableXSRF = false
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	if !u.IsSysAdmin {
