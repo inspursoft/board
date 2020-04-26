@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -61,9 +60,9 @@ func StartDB(host *models.Account) error {
 	}
 	time.Sleep(time.Duration(10) * time.Second)
 
-	if err = CheckDB(); err != nil {
+	if err = dao.CheckDB(); err != nil {
 		logs.Info(err)
-		err = RegisterDB()
+		err = dao.RegisterDB()
 		if err != nil {
 			return err
 		}
@@ -89,15 +88,7 @@ func StartBoard(host *models.Account) error {
 	time.Sleep(time.Duration(3) * time.Second)
 	/*
 		// TODO:
-		o := orm.NewOrm()
-		o.Using("default")
-		account := models.Account{Id: 1}
-		err = o.Read(&account)
-		if err != orm.ErrNoRows {
-			if _, err = o.Delete(&account); err != nil {
-				return err
-			}
-		}
+		delete account in sqlite
 	*/
 
 	err = shell.ExecuteCommand(cmdComposeDown)
@@ -111,42 +102,12 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
-	o := orm.NewOrm()
-	o.Using("default")
-	token := models.Token{Id: 1}
-	if o.Read(&token) != orm.ErrNoRows {
-		if _, err = o.Delete(&token); err != nil {
-			return err
-		}
+	err = dao.RemoveUUIDToken()
+	if err != nil {
+		return err
 	}
 	os.Remove("/go/secrets/initialAdminPassword")
 
-	return nil
-}
-
-func CheckDB() error {
-	o := orm.NewOrm()
-	err := o.Using("mysql-db2")
-	if err != nil {
-		return err
-	}
-	_, err = o.Raw("SELECT 1").Exec()
-	return err
-}
-
-func RegisterDB() error {
-	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
-	if err != nil {
-		return err
-	}
-	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
-	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
-	if err != nil {
-		return err
-	}
-	logs.Info("register DB success")
 	return nil
 }
 
@@ -170,8 +131,8 @@ func CheckSysStatus() (models.InitStatus, error) {
 func CheckBoard() error {
 	var err error
 
-	if err = CheckDB(); err != nil {
-		if err = RegisterDB(); err != nil {
+	if err = dao.CheckDB(); err != nil {
+		if err = dao.RegisterDB(); err != nil {
 			return err
 		}
 	}

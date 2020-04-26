@@ -9,7 +9,7 @@ import (
 //GetMonitor returns Board containers' information.
 func GetMonitor() ([]*models.Boardinfo, error) {
 
-	command := "docker ps -a --format \"table {{.ID}}\\t{{.Image}}\\t{{.CreatedAt}}\\t{{.Status}}\\t{{.Ports}}\" | grep " + models.ImagePrefix
+	command := `docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.CreatedAt}}\t{{.Status}}\t{{.Ports}}" | grep ` + models.ImagePrefix
 	resp, err := Execute(command)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func GetMonitor() ([]*models.Boardinfo, error) {
 	containersAdd := make([]*models.Boardinfo, row)
 	containersVal := make([]models.Boardinfo, row)
 
-	command2 := "docker stats -a --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\\t{{.BlockIO}}\\t{{.MemPerc}}\\t{{.PIDs}}\" | grep " + models.ContainerPrefix
+	command2 := `docker stats -a --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}\t{{.MemPerc}}\t{{.PIDs}}" | grep ` + models.ContainerPrefix
 	resp2, err := Execute(command2)
 	if err != nil {
 		return nil, err

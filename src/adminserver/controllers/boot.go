@@ -7,14 +7,15 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
 // BootController includes operations about booting config.
 type BootController struct {
-	beego.Controller
+	BaseController
 }
+
+func (b *BootController) Prepare() {}
 
 // @Title Initdb
 // @Description init db password and max number of connections.

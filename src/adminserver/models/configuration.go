@@ -301,11 +301,6 @@ type Password struct {
 	Value string `json:"value"`
 }
 
-//const DBconfigdir = "/data/board/Deploy/config/db"
-//const DBcompose = "/data/board/Deploy/docker-compose-db.yml"
-//const Boardcompose = "/data/board/Deploy/docker-compose-rest.yml"
-//const PrepareFile = "/data/board/Deploy/prepare"
-
 var DBconfigdir string = "/data/board/make/config/db"
 var DBcompose string = os.Getenv("DB_COMPOSE")
 var Boardcompose string = os.Getenv("BOARD_COMPOSE")

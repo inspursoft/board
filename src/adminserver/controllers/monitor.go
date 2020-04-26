@@ -4,35 +4,12 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
 // MoniController includes operations about monitoring.
 type MoniController struct {
-	beego.Controller
-}
-
-func (m *MoniController) Prepare() {
-	token := m.Ctx.Request.Header.Get("token")
-	if token == "" {
-		token = m.GetString("token")
-	}
-	if tokenserver := service.CheckTokenserver(); !tokenserver {
-		result, err := service.VerifyUUIDToken(token)
-		if err != nil {
-			logs.Error(err)
-			m.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		if !result {
-			m.CustomAbort(http.StatusUnauthorized, "Unauthorized")
-		}
-	} else {
-		if user := service.GetCurrentUser(token); user == nil {
-			m.CustomAbort(http.StatusUnauthorized, "Unauthorized")
-		}
-	}
-
+	BaseController
 }
 
 // @Title Get

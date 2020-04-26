@@ -6,36 +6,12 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
 // CfgController includes operations about cfg
 type CfgController struct {
-	beego.Controller
-}
-
-func (c *CfgController) Prepare() {
-	token := c.Ctx.Request.Header.Get("token")
-	if token == "" {
-		token = c.GetString("token")
-	}
-
-	if tokenserver := service.CheckTokenserver(); !tokenserver {
-		result, err := service.VerifyUUIDToken(token)
-		if err != nil {
-			logs.Error(err)
-			c.CustomAbort(http.StatusBadRequest, err.Error())
-		}
-		if !result {
-			c.CustomAbort(http.StatusUnauthorized, "Unauthorized")
-		}
-	} else {
-		if user := service.GetCurrentUser(token); user == nil {
-			c.CustomAbort(http.StatusUnauthorized, "Unauthorized")
-		}
-	}
-
+	BaseController
 }
 
 // @Title Post

@@ -17,7 +17,6 @@ import (
 
 	"github.com/alyu/configparser"
 	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -66,26 +65,13 @@ func Initialize(acc *models.Account) error {
 	salt := utils.GenerateRandomString()
 	encryptedPassword := utils.Encrypt(acc.Password, salt)
 	user := models.User{ID: adminUserID, Username: acc.Username, Password: encryptedPassword, Salt: salt}
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
-	user.UpdateTime = time.Now()
-	_, err := o.Update(&user, "password", "salt")
-	if err != nil {
+	if err := dao.InitAdmin(user); err != nil {
 		return err
 	}
-	logs.Info("Admin password has been updated successfully.")
 
-	o2 := orm.NewOrm()
-	o2.Using("default")
 	account := models.Account{Username: acc.Username, Password: acc.Password}
-	if o2.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
-		if _, err := o2.Insert(&account); err != nil {
-			return err
-		}
-	} else {
-		if _, err := o2.Update(&account); err != nil {
-			return err
-		}
+	if err := dao.CacheAccountInfo(account); err != nil {
+		return err
 	}
 
 	return nil
@@ -93,23 +79,16 @@ func Initialize(acc *models.Account) error {
 
 //Login allow user to use account information to login adminserver.
 func Login(acc *models.Account) (bool, error, string) {
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
 
 	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
-	err := o.Read(&user, "username", "system_admin", "deleted")
-	if err != nil {
-		if err == orm.ErrNoRows {
-			return false, errors.New("Forbidden"), ""
-		}
+	if err := dao.LoginCheckAuth(user); err != nil {
 		return false, err, ""
 	}
 
 	query := models.User{Username: acc.Username, Password: acc.Password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
-	err = o.Read(&query, "username", "password")
-	if err != nil {
-		return false, errors.New("Wrong password"), ""
+	if err := dao.LoginCheckPassword(query); err != nil {
+		return false, err, ""
 	}
 
 	payload := make(map[string]interface{})
@@ -148,10 +127,8 @@ func GetCurrentUser(token string) *models.User {
 			logs.Error("Error occurred on converting userID: %+v\n", err)
 			return nil
 		}
-		o := orm.NewOrm()
-		o.Using("mysql-db2")
 		user := models.User{ID: int64(userID), Deleted: 0}
-		err = o.Read(&user, "id", "deleted")
+		err = dao.GetUserByID(user)
 		if err != nil {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
@@ -171,20 +148,10 @@ func GetCurrentUser(token string) *models.User {
 //CreateUUID creates a file with an UUID in it.
 func CreateUUID() error {
 	u := uuid.NewV4().String()
-	existingToken := models.Token{Id: 1}
 	newtoken := models.Token{Id: 1, Token: u, Time: time.Now().Unix()}
-	o := orm.NewOrm()
-	o.Using("default")
-	if o.Read(&existingToken) == orm.ErrNoRows {
-		if _, err := o.Insert(&newtoken); err != nil {
-			return err
-		}
-	} else if (newtoken.Time - existingToken.Time) > 1800 {
-		if _, err := o.Update(&newtoken); err != nil {
-			return err
-		}
-	} else {
-		return errors.New("another admin user has signed in other place")
+	err := dao.UpdateUUIDToken(newtoken)
+	if err != nil {
+		return err
 	}
 
 	folderPath := path.Join("/go", "/secrets")
@@ -215,11 +182,9 @@ func ValidateUUID(input string) (bool, error) {
 }
 
 func VerifyUUIDToken(input string) (bool, error) {
-	o := orm.NewOrm()
 	token := models.Token{Id: 1}
-	err := o.Read(&token)
+	err := dao.GetUUIDToken(token)
 	if err != nil {
-		logs.Error(err)
 		return false, err
 	}
 

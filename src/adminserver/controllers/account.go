@@ -6,14 +6,15 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
 // AccController includes operations about account.
 type AccController struct {
-	beego.Controller
+	BaseController
 }
+
+func (a *AccController) Prepare() {}
 
 // @Title Verify
 // @Description verify input password

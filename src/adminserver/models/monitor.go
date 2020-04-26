@@ -39,36 +39,11 @@ const (
 	InitStatusThird  InitStatus = 3
 )
 
-/*
-//InitStatus saves the status indicating if the adminserver is first-time installed.
-type InitStatusInfo struct {
-	Id          int        `json:"id"`
-	InstallTime int64      `json:"install_time"`
-	Status      InitStatus `json:"status"`
-}
-*/
-
 type Token struct {
 	Id    int    `json:"id"`
 	Token string `json:"token"`
 	Time  int64  `json:"time"`
 }
-
-/*
-func InitInstallationStatus() error {
-	o := orm.NewOrm()
-	status := &InitStatusInfo{Id: 1}
-	err := o.Read(status, "Id")
-	if err == orm.ErrNoRows {
-		initStatus := InitStatusInfo{InstallTime: time.Now().Unix(), Status: InitStatusStart}
-		_, err := o.Insert(&initStatus)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-*/
 
 var ImagePrefix string = os.Getenv("IMAGE_PREFIX")
 var ContainerPrefix string = os.Getenv("CONTAINER_PREFIX")

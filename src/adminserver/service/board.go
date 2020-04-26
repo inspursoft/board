@@ -3,14 +3,13 @@ package service
 import (
 	"bytes"
 	"fmt"
+	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
-
-	"github.com/astaxie/beego/orm"
 )
 
 //Start Board without loading cfg.
@@ -26,13 +25,9 @@ func Start(host *models.Account) error {
 		return err
 	}
 
-	o := orm.NewOrm()
-	o.Using("default")
-	token := models.Token{Id: 1}
-	if o.Read(&token) != orm.ErrNoRows {
-		if _, err = o.Delete(&token); err != nil {
-			return err
-		}
+	err = dao.RemoveUUIDToken()
+	if err != nil {
+		return err
 	}
 	os.Remove("/go/secrets/initialAdminPassword")
 
