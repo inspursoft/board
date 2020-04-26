@@ -127,7 +127,7 @@ func (b *BaseController) ServeStatus(statusCode int, message string) {
 }
 
 func (b *BaseController) ServeJSONOutput(statusCode int, data interface{}) {
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
+	b.Ctx.Output.SetStatus(statusCode)
 	b.RenderJSON(data)
 }
 

@@ -9,7 +9,7 @@ type CaptchaController struct {
 }
 
 func (c *CaptchaController) Prepare() {
-
+	c.EnableXSRF = false
 }
 
 func (c *CaptchaController) Get() {

@@ -19,7 +19,9 @@ type SupplementController struct {
 	c.BaseController
 }
 
-func (e *SupplementController) Prepare() {}
+func (e *SupplementController) Prepare() {
+	e.EnableXSRF = false
+}
 
 func (e *SupplementController) send(to []string, subject string, content string) {
 	from := utils.GetStringValue("EMAIL_FROM")
