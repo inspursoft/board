@@ -11,7 +11,6 @@ import (
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/utils"
 
-	"github.com/astaxie/beego/logs"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +18,8 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
@@ -120,7 +121,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 	var logData *nodeModel.NodeLog
 	var err error
-	logData, err = nodeDao.GetNodeLog(putLogData.LogId);
+	logData, err = nodeDao.GetNodeLog(putLogData.LogId)
 	if err != nil {
 		return err
 	}
@@ -215,7 +216,7 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 }
 
 func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
-	var apiServerNodeList []nodeModel.ApiServerNodeListResult;
+	var apiServerNodeList []nodeModel.ApiServerNodeListResult
 	if err := getNodeListFromApiServer(&apiServerNodeList); err != nil {
 		logs.Info(err)
 	}
@@ -233,7 +234,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				origin = 1
 			}
 		}
-		* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+		*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
 			Ip:           item.NodeIP,
 			CreationTime: item.CreateTime,
 			Status:       item.Status,
@@ -249,7 +250,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			}
 		}
 		if existInApiServer == false {
-			* nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
 				Ip:           item.Ip,
 				CreationTime: item.CreationTime,
 				IsMaster:     false,
