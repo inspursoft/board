@@ -65,25 +65,6 @@ func UpdateCfg(cfg *models.Configuration) error {
 		return err
 	}
 
-	/*
-		o := orm.NewOrm()
-		o.Using("default")
-		account := models.Account{Id: 1}
-		err = o.Read(&account)
-		if err != nil {
-			return nil
-		}
-		cfg.Other.BoardAdminPassword = account.Password
-
-		b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
-		if err != nil {
-			return nil
-		}
-		DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
-		DBpassword = strings.Replace(DBpassword, "\n", "", 1)
-		cfg.Other.DBPassword = DBpassword
-	*/
-
 	if cfg.Email.Identity == "" {
 		cfg.Email.Identity = " "
 	}
@@ -111,12 +92,4 @@ func UpdateCfg(cfg *models.Configuration) error {
 	}
 
 	return nil
-}
-
-//GetKey generates 2 keys and return the public one.
-func GetKey() string {
-	_, pubKey := encryption.GenKey("rsa")
-	//ciphertext := encryption.Encrypt("rsa", []byte("123456a?"), pubKey)
-	//fmt.Println("###ciphertext:", base64.StdEncoding.EncodeToString(ciphertext))
-	return string(pubKey)
 }

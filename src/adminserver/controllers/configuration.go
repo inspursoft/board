@@ -61,9 +61,3 @@ func (c *CfgController) GetAll() {
 	c.ServeJSON()
 
 }
-
-func (c *CfgController) GetKey() {
-	pubkey := service.GetKey()
-	c.Data["json"] = models.Key{Key: pubkey}
-	c.ServeJSON()
-}

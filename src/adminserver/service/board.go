@@ -82,7 +82,7 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	}
 
 	if uninstall {
-		cmdRm := fmt.Sprintf("rm -rf /data/board %s/board.cfg* && cp %s/adminserver/board.cfg %s/.", models.MakePath, models.MakePath, models.MakePath)
+		cmdRm := fmt.Sprintf("rm -rf /data/board %s/board.cfg* && cp %s/adminserver/board.cfg %s/. && mkdir -p /data/board", models.MakePath, models.MakePath, models.MakePath)
 		err = shell.ExecuteCommand(cmdRm)
 		if err != nil {
 			return err

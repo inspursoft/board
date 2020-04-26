@@ -295,22 +295,11 @@ type Account struct {
 	Password string `json:"password"`
 }
 
-//Password refers to a certain type with its value.
-type Password struct {
-	Which string `json:"which"`
-	Value string `json:"value"`
-}
-
 var DBconfigdir string = "/data/board/make/config/db"
 var DBcompose string = os.Getenv("DB_COMPOSE")
 var Boardcompose string = os.Getenv("BOARD_COMPOSE")
 var PrepareFile string = os.Getenv("PREPARE_FILE")
 var MakePath string = os.Getenv("MAKE_PATH")
-
-type DBconf struct {
-	Password       string `json:"db_password"`
-	MaxConnections int    `json:"db_max_connections"`
-}
 
 type User struct {
 	ID           int64     `json:"user_id" orm:"column(id)"`
@@ -327,12 +316,4 @@ type User struct {
 	CreationTime time.Time `json:"user_creation_time" orm:"column(creation_time)"`
 	UpdateTime   time.Time `json:"user_update_time" orm:"column(update_time)"`
 	FailedTimes  int       `json:"user_failed_times" orm:"column(failed_times)"`
-}
-
-type UUID struct {
-	UUIDstring string `json:"uuid"`
-}
-
-type Key struct {
-	Key string `json:"Key"`
 }

@@ -9,15 +9,6 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
         beego.ControllerComments{
-            Method: "ValidateUUID",
-            Router: `/ValidateUUID`,
-            AllowHTTPMethods: []string{"post"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
-
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
-        beego.ControllerComments{
             Method: "CreateUUID",
             Router: `/createUUID`,
             AllowHTTPMethods: []string{"post"},

@@ -8,68 +8,12 @@ import (
 	"git/inspursoft/board/src/adminserver/models"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
 	_ "github.com/go-sql-driver/mysql"
 )
-
-func InitDB(db *models.DBconf) error {
-	if _, err := os.Stat(models.DBconfigdir); os.IsNotExist(err) {
-		os.MkdirAll(models.DBconfigdir, os.ModePerm)
-	}
-	envFile := path.Join(models.DBconfigdir, "env")
-	cnfFile := path.Join(models.DBconfigdir, "my.cnf")
-	if _, err := os.Stat(envFile); err == nil {
-		os.Remove(envFile)
-	}
-	if _, err := os.Stat(cnfFile); err == nil {
-		os.Remove(cnfFile)
-	}
-
-	env, err := os.Create(envFile)
-	defer env.Close()
-	if err != nil {
-		return err
-	}
-	env.WriteString(fmt.Sprintf("DB_PASSWORD=%s\n", db.Password))
-
-	cnf, err := os.Create(cnfFile)
-	defer cnf.Close()
-	if err != nil {
-		return err
-	}
-	cnf.WriteString("[mysqld]\n")
-	cnf.WriteString(fmt.Sprintf("max_connections=%d\n", db.MaxConnections))
-
-	return nil
-}
-
-func StartDB(host *models.Account) error {
-	shell, err := SSHtoHost(host)
-	if err != nil {
-		return err
-	}
-
-	cmdDB := fmt.Sprintf("docker-compose -f %s up -d", models.DBcompose)
-	err = shell.ExecuteCommand(cmdDB)
-	if err != nil {
-		return err
-	}
-	time.Sleep(time.Duration(10) * time.Second)
-
-	if err = dao.CheckDB(); err != nil {
-		logs.Info(err)
-		err = dao.RegisterDB()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 func StartBoard(host *models.Account) error {
 	shell, err := SSHtoHost(host)

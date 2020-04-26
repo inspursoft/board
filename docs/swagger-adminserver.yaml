@@ -9,24 +9,6 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1/admin
 paths:
-  /account/ValidateUUID:
-    post:
-      tags:
-      - account
-      description: validate the UUID
-      operationId: AccController.ValidateUUID
-      parameters:
-      - in: body
-        name: body
-        description: UUID
-        required: true
-        schema:
-          $ref: '#/definitions/models.UUID'
-      responses:
-        "200":
-          description: success
-        "400":
-          description: bad request
   /account/createUUID:
     post:
       tags:
@@ -598,12 +580,6 @@ definitions:
     type: object
     properties:
       token:
-        type: string
-  models.UUID:
-    title: UUID
-    type: object
-    properties:
-      uuid:
         type: string
   nodeModel.AddNodePostData:
     title: AddNodePostData
