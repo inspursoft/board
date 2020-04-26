@@ -28,6 +28,7 @@ type FileUploadController struct {
 }
 
 func (f *FileUploadController) Prepare() {
+	f.EnableXSRF = false
 	f.ResolveSignedInUser()
 	f.RecordOperationAudit()
 	f.resolveFilePath()

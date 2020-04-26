@@ -37,7 +37,7 @@ div.sign-in-background {
 
 div.sign-in-container {
     margin-left: auto;
-    height: 356px;
+    height: 324px;
     width: 350px;
     margin-right: auto;
     border-radius: 10px;
@@ -46,10 +46,14 @@ div.sign-in-container {
     background-color: ghostwhite;
 }
 
+div.show-verify-code{
+    height: 364px;
+}
+
 div.input-container {
     height: 50px;
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
     border-radius: 5px;
     flex-wrap: nowrap;
 }

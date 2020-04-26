@@ -28,11 +28,6 @@ func (u *AuthController) SignInAction() {
 	if err != nil {
 		return
 	}
-	reqUser.Password, err = service.DecodeUserPassword(reqUser.Password)
-	if err != nil {
-		u.CustomAbortAudit(http.StatusBadRequest, "Incorrect username or password.")
-		return
-	}
 	logs.Debug("Decode password %s", reqUser.Password) //Remove this debug in release
 	token, _ := u.ProcessAuth(reqUser.Username, reqUser.Password)
 	if token != "" {
