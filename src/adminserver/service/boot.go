@@ -102,11 +102,13 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
-	err = dao.RemoveUUIDToken()
-	if err != nil {
-		return err
+	UUIDpath := "/go/secrets/initialAdminPassword"
+	if _, err = os.Stat(UUIDpath); !os.IsNotExist(err) {
+		if err = dao.RemoveUUIDToken(); err != nil {
+			return err
+		}
+		os.Remove(UUIDpath)
 	}
-	os.Remove("/go/secrets/initialAdminPassword")
 
 	return nil
 }

@@ -120,11 +120,8 @@ func GetUUIDToken(token models.Token) error {
 func RemoveUUIDToken() error {
 	o := orm.NewOrm()
 	o.Using("default")
-	token := models.Token{Id: 1}
-	if o.Read(&token) != orm.ErrNoRows {
-		if _, err := o.Delete(&token); err != nil {
-			return err
-		}
+	if _, err := o.Delete(&models.Token{Id: 1}); err != nil {
+		return err
 	}
 	return nil
 }
