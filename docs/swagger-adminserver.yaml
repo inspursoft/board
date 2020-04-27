@@ -565,6 +565,8 @@ definitions:
         type: string
       elaseticsearch_memory_in_megabytes:
         type: string
+      mode:
+        type: string
       redirection_url:
         type: string
       tiller_port:
