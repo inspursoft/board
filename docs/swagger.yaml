@@ -6142,6 +6142,8 @@ definitions:
   SystemInfo:
     type: object
     properties:
+      mode:
+        type: string
       board_host:
         type: string
       auth_mode:
