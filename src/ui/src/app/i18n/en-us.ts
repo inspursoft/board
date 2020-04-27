@@ -703,6 +703,7 @@ export const LANG_EN_US = {
     "SERVICE_YAML_UPLOAD_FAILED":"Upload failed."
   },
   ServiceControlConsole: {
+    Name: 'Console',
     Status: 'Status',
     PodName: 'Pod name',
     ContainerName: 'Container name',

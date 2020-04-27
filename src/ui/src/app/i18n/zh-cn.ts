@@ -703,6 +703,7 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_UPLOAD_FAILED":"上传失败。"
   },
   ServiceControlConsole: {
+    Name: '控制台',
     Status: '状态',
     PodName: 'Pod名称',
     ContainerName: '容器名称',

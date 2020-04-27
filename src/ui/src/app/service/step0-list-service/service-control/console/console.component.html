@@ -16,10 +16,10 @@
         <span>{{serviceContainer.ContainerName}}</span>
       </div>
       <div class="clr-row clr-justify-content-end">
-        <clr-icon shape="connect"
-                  class="connect"
-                  (click)="buildSocketConnect(serviceContainer, i)">
-        </clr-icon>
+        <a href="javascript: void(0)"
+           (click)="buildSocketConnect(serviceContainer, i)">
+          <clr-icon shape="connect" class="connect"></clr-icon>
+        </a>
       </div>
     </div>
   </div>
