@@ -16,14 +16,14 @@ type MonitorController struct {
 // @Description monitor Board module containers
 // @Param	token	query 	string	true	"token"
 // @Success 200 {object} []models.Boardinfo	success
-// @Failure 400 bad request
+// @Failure 500 Internal Server Error
 // @Failure 401 unauthorized
 // @router / [get]
 func (m *MonitorController) Get() {
 	containers, err := service.GetMonitor()
 	if err != nil {
 		logs.Error(err)
-		m.CustomAbort(http.StatusBadRequest, err.Error())
+		m.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	//apply struct to JSON value.
 	m.Data["json"] = containers

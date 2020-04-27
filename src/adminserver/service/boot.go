@@ -2,8 +2,8 @@ package service
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"os"
@@ -15,8 +15,6 @@ import (
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
-
-var ErrTokenServer = errors.New("tokenserver is down")
 
 func StartBoard(host *models.Account) error {
 	shell, err := SSHtoHost(host)
@@ -86,7 +84,7 @@ func CheckBoard() error {
 		}
 	}
 	if tokenserver := CheckTokenserver(); !tokenserver {
-		return ErrTokenServer
+		return common.ErrTokenServer
 	}
 	return nil
 }

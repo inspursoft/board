@@ -1,17 +1,13 @@
 package dao
 
 import (
-	"errors"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/models"
 	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
-
-var ErrAdminLogin = errors.New("another admin user has signed in other place")
-var ErrForbidden = errors.New("Forbidden")
-var ErrWrongPassword = errors.New("Wrong password")
 
 func UsingDB(which string) orm.Ormer {
 	o := orm.NewOrm()
@@ -54,7 +50,7 @@ func LoginCheckAuth(user models.User) error {
 	o := UsingDB("mysql-db2")
 	err := o.Read(&user, "username", "system_admin", "deleted")
 	if err == orm.ErrNoRows {
-		return ErrForbidden
+		return common.ErrForbidden
 	}
 	return nil
 }
@@ -63,7 +59,7 @@ func LoginCheckPassword(user models.User) error {
 	o := UsingDB("mysql-db2")
 	err := o.Read(&user, "username", "password")
 	if err == orm.ErrNoRows {
-		return ErrWrongPassword
+		return common.ErrWrongPassword
 	}
 	return nil
 }
@@ -85,7 +81,7 @@ func UpdateUUIDToken(newtoken models.Token) error {
 			return err
 		}
 	} else {
-		return ErrAdminLogin
+		return common.ErrAdminLogin
 	}
 	return nil
 }

@@ -22,7 +22,7 @@ func (b *BaseController) Prepare() {
 		result, err := service.VerifyUUIDToken(token)
 		if err != nil {
 			logs.Error(err)
-			b.CustomAbort(http.StatusBadRequest, err.Error())
+			b.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
 		if !result {
 			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")

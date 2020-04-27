@@ -20,8 +20,8 @@ paths:
           description: success
         "202":
           description: accepted
-        "400":
-          description: bad request
+        "500":
+          description: Internal Server Error
   /account/login:
     post:
       tags:
@@ -40,10 +40,10 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/models.TokenString'
-        "400":
-          description: bad request
         "403":
           description: forbidden
+        "500":
+          description: Internal Server Error
   /board/applycfg:
     post:
       tags:
@@ -65,10 +65,10 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
   /board/shutdown:
     post:
       tags:
@@ -95,10 +95,10 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
   /board/start:
     post:
       tags:
@@ -120,10 +120,10 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
   /boot/checksysstatus:
     get:
       tags:
@@ -135,8 +135,8 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/models.InitSysStatus'
-        "400":
-          description: bad request
+        "500":
+          description: Internal Server Error
   /configuration/:
     get:
       tags:
@@ -158,10 +158,10 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/models.Configuration'
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
     put:
       tags:
       - configuration
@@ -182,10 +182,10 @@ paths:
       responses:
         "200":
           description: success
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
   /monitor/:
     get:
       tags:
@@ -205,10 +205,10 @@ paths:
             type: array
             items:
               $ref: '#/definitions/models.Boardinfo'
-        "400":
-          description: bad request
         "401":
           description: unauthorized
+        "500":
+          description: Internal Server Error
   /node/:
     get:
       tags:

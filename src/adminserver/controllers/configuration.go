@@ -19,7 +19,7 @@ type CfgController struct {
 // @Param	body	body	models.Configuration	true	"parameters"
 // @Param	token	query 	string	true	"token"
 // @Success 200 success
-// @Failure 400 bad request
+// @Failure 500 Internal Server Error
 // @Failure 401 unauthorized
 // @router / [put]
 func (c *CfgController) Put() {
@@ -29,12 +29,12 @@ func (c *CfgController) Put() {
 	err := utils.UnmarshalToJSON(c.Ctx.Request.Body, &cfg)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	err = service.UpdateCfg(&cfg)
 	if err != nil {
 		logs.Error(err)
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	c.ServeJSON()
 
@@ -45,7 +45,7 @@ func (c *CfgController) Put() {
 // @Param	which	query 	string	false	"which file to get"
 // @Param	token	query 	string	true	"token"
 // @Success 200 {object} models.Configuration	success
-// @Failure 400 bad request
+// @Failure 500 Internal Server Error
 // @Failure 401 unauthorized
 // @router / [get]
 func (c *CfgController) GetAll() {
@@ -54,7 +54,7 @@ func (c *CfgController) GetAll() {
 	cfg, err := service.GetAllCfg(which, false)
 	if err != nil {
 		logs.Error(err)
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	//apply struct to JSON value.
 	c.Data["json"] = cfg
