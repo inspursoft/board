@@ -32,7 +32,7 @@ type WSStreamHandler struct {
 
 // Run start a loop to fetch from ws client and store the data in byte buffer
 func (h *WSStreamHandler) Run() error {
-	h.conn.SetReadDeadline(time.Now().Add(300 * time.Second))
+	h.conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 	for {
 		t, p, err := h.conn.ReadMessage()
 		if err != nil {
@@ -83,7 +83,6 @@ func (h *WSStreamHandler) Read(b []byte) (int, error) {
 }
 
 func (h *WSStreamHandler) Write(b []byte) (int, error) {
-	logs.Info(b)
 	return len(b), h.conn.WriteMessage(websocket.TextMessage, b)
 }
 
@@ -113,7 +112,9 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	// run loop to fetch data from ws client
 	go ptyHandler.Run()
 	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
-	return k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
+	err = k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
+	ptyHandler.Write([]byte(err.Error()))
+	return err
 }
 
 func CopyFromPod(namespace, podName, container, src, dest string) error {
