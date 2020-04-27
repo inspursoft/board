@@ -40,7 +40,7 @@ export class SignInComponent implements OnInit {
         if (err.status === 403) {
           this.messageService.showOnlyOkDialog('ACCOUNT.FORBIDDEN', 'ACCOUNT.ERROR');
         } else if (err.status === 500) {
-          this.messageService.showOnlyOkDialog('ACCOUNT.FORBIDDEN', 'ACCOUNT.ERROR');
+          this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
         } else {
           this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
         }

@@ -16,7 +16,7 @@ services:
       - board
     ports:
       - 8081:8080
-  proxy-adminserver:
+  proxy_adminserver:
     image: board_proxy_adminserver:__version__
     depends_on: 
       - adminserver
@@ -26,7 +26,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ../templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../templates/proxy_adminserver/nginx.conf:/etc/nginx/nginx.conf:z
     networks:
       - board
 networks:
