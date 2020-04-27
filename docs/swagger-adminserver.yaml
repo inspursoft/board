@@ -66,7 +66,7 @@ paths:
         "200":
           description: success
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
   /board/shutdown:
@@ -96,7 +96,7 @@ paths:
         "200":
           description: success
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
   /board/start:
@@ -121,7 +121,7 @@ paths:
         "200":
           description: success
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
   /boot/checksysstatus:
@@ -159,7 +159,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Configuration'
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
     put:
@@ -183,7 +183,7 @@ paths:
         "200":
           description: success
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
   /monitor/:
@@ -206,7 +206,7 @@ paths:
             items:
               $ref: '#/definitions/models.Boardinfo'
         "401":
-          description: unauthorized
+          description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
   /node/:

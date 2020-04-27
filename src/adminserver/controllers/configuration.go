@@ -20,7 +20,7 @@ type CfgController struct {
 // @Param	token	query 	string	true	"token"
 // @Success 200 success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router / [put]
 func (c *CfgController) Put() {
 	var cfg models.Configuration
@@ -46,7 +46,7 @@ func (c *CfgController) Put() {
 // @Param	token	query 	string	true	"token"
 // @Success 200 {object} models.Configuration	success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router / [get]
 func (c *CfgController) GetAll() {
 

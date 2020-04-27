@@ -17,7 +17,7 @@ type MonitorController struct {
 // @Param	token	query 	string	true	"token"
 // @Success 200 {object} []models.Boardinfo	success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router / [get]
 func (m *MonitorController) Get() {
 	containers, err := service.GetMonitor()

@@ -20,7 +20,7 @@ type BoardController struct {
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router /start [post]
 func (b *BoardController) Start() {
 	var host models.Account
@@ -42,7 +42,7 @@ func (b *BoardController) Start() {
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router /applycfg [post]
 func (b *BoardController) Applycfg() {
 	var host models.Account
@@ -65,7 +65,7 @@ func (b *BoardController) Applycfg() {
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
-// @Failure 401 unauthorized
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
 	var host models.Account
