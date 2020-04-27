@@ -19,6 +19,6 @@ services:
     volumes:
       - ../src/ui-adminserver:/board_src
     environment:
-      MODE: test
+      MODE: build
     entrypoint:
       - /entrypoint.sh
