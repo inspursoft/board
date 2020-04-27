@@ -153,13 +153,14 @@ type Other struct {
 	AuditDebug                      string `json:"audit_debug"`
 	DNSSuffix                       string `json:"dns_suffix"`
 	DBMaxConnections                string `json:"db_max_connections"`
+	Mode                            string `json:"mode"`
 }
 
 //GetOther returns data extracted from the Other part of the cfg file.
 func GetOther(section *configparser.Section) Other {
 	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
 		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections"}
+		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections", "mode"}
 	var other Other
 	value := reflect.ValueOf(&other).Elem()
 	for i := 0; i < value.NumField(); i++ {
@@ -172,7 +173,7 @@ func GetOther(section *configparser.Section) Other {
 func UpdateOther(section *configparser.Section, other Other) {
 	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
 		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections"}
+		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections", "mode"}
 	value := reflect.ValueOf(&other).Elem()
 	for i := 0; i < value.NumField(); i++ {
 		if value.Field(i).String() != "" {
