@@ -64,9 +64,9 @@ func LoginCheckPassword(user models.User) error {
 	return nil
 }
 
-func GetUserByID(user models.User) error {
+func GetUserByID(user models.User) (models.User, error) {
 	o := UsingDB("mysql-db2")
-	return o.Read(&user, "id", "deleted")
+	return user, o.Read(&user, "id", "deleted")
 }
 
 func UpdateUUIDToken(newtoken models.Token) error {
@@ -86,9 +86,9 @@ func UpdateUUIDToken(newtoken models.Token) error {
 	return nil
 }
 
-func GetUUIDToken(token models.Token) error {
+func GetUUIDToken(token models.Token) (models.Token, error) {
 	o := UsingDB("default")
-	return o.Read(&token)
+	return token, o.Read(&token)
 }
 
 func RemoveUUIDToken() error {

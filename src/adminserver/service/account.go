@@ -83,7 +83,7 @@ func GetCurrentUser(token string) *models.User {
 			return nil
 		}
 		user := models.User{ID: int64(userID), Deleted: 0}
-		err = dao.GetUserByID(user)
+		user, err = dao.GetUserByID(user)
 		if err != nil {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
@@ -138,7 +138,7 @@ func ValidateUUID(input string) (bool, string, error) {
 
 func VerifyUUIDToken(input string) (bool, error) {
 	token := models.Token{Id: 1}
-	err := dao.GetUUIDToken(token)
+	token, err := dao.GetUUIDToken(token)
 	if err != nil {
 		return false, err
 	}
