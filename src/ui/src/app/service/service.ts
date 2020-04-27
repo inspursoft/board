@@ -28,4 +28,5 @@ export class Service {
   service_source: ServiceSource;
   service_is_member: number;
   service_type: ServiceType;
+  service_comment: string;
 }

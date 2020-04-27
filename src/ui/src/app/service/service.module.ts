@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { ServiceComponent } from './service.component';
-import { ServiceHostDirective } from './service-host.directive';
 import { StepService } from './service-step.service';
 import { K8sService } from './service.k8s';
 import { ListServiceComponent } from './step0-list-service/list-service.component';
@@ -37,7 +36,6 @@ import { ConsoleComponent } from './step0-list-service/service-control/console/c
   ],
   declarations: [
     ServiceComponent,
-    ServiceHostDirective,
     ListServiceComponent,
     ChooseProjectComponent,
     ConfigContainerComponent,

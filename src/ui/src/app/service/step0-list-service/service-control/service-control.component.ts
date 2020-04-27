@@ -3,7 +3,6 @@
  */
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { Observable, Subject } from 'rxjs';
 import { Service } from '../../service';
 import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared.service/message.service';

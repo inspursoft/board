@@ -7,12 +7,12 @@
           {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <scale [service]="service"
-                 [(isActionInWIP)]="isActionInWIP"
-                 (onError)="defaultDispatchErr($event)"
-                 (onMessage)="defaultHandleMessage($event)"
-                 (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </scale>
+          <app-scale [service]="service"
+                     [(isActionInWIP)]="isActionInWIP"
+                     (errorEvent)="defaultDispatchErr($event)"
+                     (messageEvent)="defaultHandleMessage($event)"
+                     (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+          </app-scale>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -20,13 +20,13 @@
           {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <update [service]="service"
-                  [isActionInWIP]="isActionInWIP"
-                  (onError)="defaultDispatchErr($event)"
-                  (onMessage)="defaultHandleMessage($event)"
-                  (onAlertMessage)="defaultHandleAlertMessage($event)"
-                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </update>
+          <app-update [service]="service"
+                      [isActionInWIP]="isActionInWIP"
+                      (errorEvent)="defaultDispatchErr($event)"
+                      (messageEvent)="defaultHandleMessage($event)"
+                      (alertEvent)="defaultHandleAlertMessage($event)"
+                      (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-update>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -34,12 +34,12 @@
           {{"SERVICE.SERVICE_CONTROL_LOCATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <locate [service]="service"
-                  [isActionInWIP]="isActionInWIP"
-                  (onError)="defaultDispatchErr($event)"
-                  (onMessage)="defaultHandleMessage($event)"
-                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </locate>
+          <app-locate [service]="service"
+                      [isActionInWIP]="isActionInWIP"
+                      (errorEvent)="defaultDispatchErr($event)"
+                      (messageEvent)="defaultHandleMessage($event)"
+                      (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-locate>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -47,12 +47,12 @@
           {{"SERVICE.SERVICE_CONTROL_LOAD_BALANCE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <load-balance [service]="service"
-                        [isActionInWIP]="isActionInWIP"
-                        (onError)="defaultDispatchErr($event)"
-                        (onMessage)="defaultHandleMessage($event)"
-                        (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </load-balance>
+          <app-load-balance [service]="service"
+                            [isActionInWIP]="isActionInWIP"
+                            (errorEvent)="defaultDispatchErr($event)"
+                            (messageEvent)="defaultHandleMessage($event)"
+                            (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-load-balance>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -60,7 +60,7 @@
           {{"控制台" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <app-console>
+          <app-console [service]="service">
           </app-console>
         </clr-tab-content>
       </clr-tab>
