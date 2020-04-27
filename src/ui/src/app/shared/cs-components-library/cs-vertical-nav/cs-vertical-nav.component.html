@@ -1,17 +1,29 @@
 <clr-vertical-nav [clrVerticalNavCollapsible]="true"
                   [(clrVerticalNavCollapsed)]="collapsed">
   <div *ngFor="let navItem of navSource">
-    <ng-container *ngIf="!navItem.children" [ngTemplateOutletContext]="navItem"
+    <ng-container *ngIf="!navItem.children"
+                  [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemTemp"></ng-container>
-    <ng-container *ngIf="navItem.children && navItem.visible" [ngTemplateOutletContext]="navItem"
+    <ng-container *ngIf="navItem.children && navItem.visible"
+                  [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemGroupTemp"></ng-container>
   </div>
+<<<<<<< HEAD
   <a clrVerticalNavLink [href]="adminServerUrl" target="_blank">
     <clr-icon clrVerticalNavIcon [attr.shape]="'home'" class="is-solid"></clr-icon>
     <span>{{"AdminServer.Name" | translate}}</span>
   </a>
   <ng-template let-visible='visible' let-url='url' let-icon='icon' let-caption='caption' #itemTemp>
     <a *ngIf="visible"
+=======
+  <ng-template let-visible='visible'
+               let-url='url'
+               let-icon='icon'
+               let-caption='caption'
+               let-isAdminServer='isAdminServer'
+               #itemTemp>
+    <a *ngIf="visible && !isAdminServer"
+>>>>>>> dev_new2
        clrVerticalNavLink
        [routerLink]="url"
        [routerLinkActive]="'active'"
@@ -19,6 +31,13 @@
       <clr-icon clrVerticalNavIcon [attr.shape]="icon" class="is-solid"></clr-icon>
       <span>{{caption | translate}}</span>
       <ng-template [appVerticalNavGuide]="url"></ng-template>
+    </a>
+    <a *ngIf="isShowAdminSever && isAdminServer"
+       target="_blank"
+       clrVerticalNavLink
+       [href]="adminServerUrl">
+      <clr-icon clrVerticalNavIcon [attr.shape]="'home'" class="is-solid"></clr-icon>
+      <span>{{"AdminServer.Name" | translate}}</span>
     </a>
   </ng-template>
   <ng-template let-visible='visible'

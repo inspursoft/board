@@ -1,5 +1,5 @@
 import { Input, ViewChildren, QueryList, ViewChild } from '@angular/core';
-import { CardObject } from './cfg.models';
+import { CardObject } from './cfg.model';
 import { CsComponentBase } from 'src/app/shared/cs-components-library/cs-component-base';
 import { InputExComponent } from 'board-components-library';
 

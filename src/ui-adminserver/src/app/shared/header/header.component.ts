@@ -21,7 +21,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.display = location.pathname !== '/account/login' ? true : false;
+    this.display = (location.pathname !== '/account/login' && location.pathname !== '/installation');
   }
 
   _assertLanguage(lang: string) {

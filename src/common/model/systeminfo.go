@@ -1,6 +1,7 @@
 package model
 
 type SystemInfo struct {
+	Mode              string `json:"mode"`
 	BoardHost         string `json:"board_host"`
 	AuthMode          string `json:"auth_mode"`
 	SetAdminPassword  string `json:"set_auth_password"`

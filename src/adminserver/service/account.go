@@ -1,11 +1,8 @@
 package service
 
 import (
-	"encoding/base64"
-	"errors"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
-	"git/inspursoft/board/src/adminserver/encryption"
 	"git/inspursoft/board/src/adminserver/models"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
@@ -15,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alyu/configparser"
 	"github.com/astaxie/beego/logs"
 	uuid "github.com/satori/go.uuid"
 )
@@ -23,72 +19,31 @@ import (
 var TokenServerURL = fmt.Sprintf("http://%s:%s/tokenservice/token", "tokenserver", "4000")
 var TokenCacheExpireSeconds int
 
-var ErrInvalidToken = errors.New("error for invalid token")
-
 const (
 	defaultInitialPassword = "123456a?"
 	adminUserID            = 1
 )
 
-//VerifyPassword compares the password in cfg with the input one.
-func VerifyPassword(passwd *models.Password) (bool, error) {
-
-	configparser.Delimiter = "="
-	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
-	//use configparser to read indicated cfg file.
-	config, _ := configparser.Read(cfgPath)
-	//section sensitive, global refers to all sections.
-	section, _ := config.Section("global")
-	password := section.ValueOf("board_admin_password")
-
-	//ENCRYPTION
-	prvKey, err := ioutil.ReadFile("./private.pem")
-	if err != nil {
-		return false, err
+func Login(acc *models.Account) (bool, string, error) {
+	if err := CheckBoard(); err != nil {
+		return ValidateUUID(acc.Password)
+	} else {
+		return LoginWithDB(acc)
 	}
-	test, err := base64.StdEncoding.DecodeString(passwd.Value)
-	if err != nil {
-		return false, err
-	}
-
-	input := string(encryption.Decrypt("rsa", test, prvKey))
-
-	return (input == password), nil
 }
 
-//Initialize save the account information into a file.
-func Initialize(acc *models.Account) error {
-
-	if acc.Password == "" {
-		acc.Password = defaultInitialPassword
-	}
-	salt := utils.GenerateRandomString()
-	encryptedPassword := utils.Encrypt(acc.Password, salt)
-	user := models.User{ID: adminUserID, Username: acc.Username, Password: encryptedPassword, Salt: salt}
-	if err := dao.InitAdmin(user); err != nil {
-		return err
-	}
-
-	account := models.Account{Username: acc.Username, Password: acc.Password}
-	if err := dao.CacheAccountInfo(account); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//Login allow user to use account information to login adminserver.
-func Login(acc *models.Account) (bool, error, string) {
+//LoginWithDB allow user to use account information to login adminserver.
+func LoginWithDB(acc *models.Account) (bool, string, error) {
 
 	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
 	if err := dao.LoginCheckAuth(user); err != nil {
-		return false, err, ""
+		return false, "", err
 	}
 
 	query := models.User{Username: acc.Username, Password: acc.Password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
 	if err := dao.LoginCheckPassword(query); err != nil {
-		return false, err, ""
+		return false, "", err
 	}
 
 	payload := make(map[string]interface{})
@@ -99,7 +54,7 @@ func Login(acc *models.Account) (bool, error, string) {
 	payload["is_system_admin"] = query.SystemAdmin
 	token, err := t.SignToken(TokenServerURL, payload)
 	if err != nil {
-		return false, err, ""
+		return false, "", err
 	}
 
 	TokenCacheExpireSeconds = 1800
@@ -107,7 +62,7 @@ func Login(acc *models.Account) (bool, error, string) {
 	dao.GlobalCache.Put(query.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
 	dao.GlobalCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 
-	return true, nil, token.TokenString
+	return true, token.TokenString, nil
 }
 
 func GetCurrentUser(token string) *models.User {
@@ -171,14 +126,14 @@ func CreateUUID() error {
 }
 
 //ValidateUUID compares input with the UUID stored in the specified file.
-func ValidateUUID(input string) (bool, error) {
+func ValidateUUID(input string) (bool, string, error) {
 	uuidPath := path.Join("/go", "/secrets/initialAdminPassword")
 	f, err := ioutil.ReadFile(uuidPath)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
-	return (input == string(f)), nil
+	return (input == string(f)), input, nil
 }
 
 func VerifyUUIDToken(input string) (bool, error) {

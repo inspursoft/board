@@ -142,9 +142,10 @@ type Release struct {
 
 type ReleaseDetail struct {
 	Release        `yaml:",inline"`
-	Notes          string `json:"notes,omitempty" yaml:"notes,omitempty"`
-	Workloads      string `json:"workloads,omitempty" yaml:"workloads,omitempty"`
-	WorkloadStatus string `json:"workloadstatus,omitempty" yaml:"workloadstatus,omitempty"`
+	Notes          string  `json:"notes,omitempty" yaml:"notes,omitempty"`
+	Workloads      string  `json:"workloads,omitempty" yaml:"workloads,omitempty"`
+	WorkloadStatus string  `json:"workloadstatus,omitempty" yaml:"workloadstatus,omitempty"`
+	Pods           []PodMO `json:"pods,omitempty" yaml:"pods,omitempty"`
 }
 
 type ReleaseModel struct {

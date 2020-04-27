@@ -2,74 +2,19 @@ package service
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"os"
 	"os/exec"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
-
-func InitDB(db *models.DBconf) error {
-	if _, err := os.Stat(models.DBconfigdir); os.IsNotExist(err) {
-		os.MkdirAll(models.DBconfigdir, os.ModePerm)
-	}
-	envFile := path.Join(models.DBconfigdir, "env")
-	cnfFile := path.Join(models.DBconfigdir, "my.cnf")
-	if _, err := os.Stat(envFile); err == nil {
-		os.Remove(envFile)
-	}
-	if _, err := os.Stat(cnfFile); err == nil {
-		os.Remove(cnfFile)
-	}
-
-	env, err := os.Create(envFile)
-	defer env.Close()
-	if err != nil {
-		return err
-	}
-	env.WriteString(fmt.Sprintf("DB_PASSWORD=%s\n", db.Password))
-
-	cnf, err := os.Create(cnfFile)
-	defer cnf.Close()
-	if err != nil {
-		return err
-	}
-	cnf.WriteString("[mysqld]\n")
-	cnf.WriteString(fmt.Sprintf("max_connections=%d\n", db.MaxConnections))
-
-	return nil
-}
-
-func StartDB(host *models.Account) error {
-	shell, err := SSHtoHost(host)
-	if err != nil {
-		return err
-	}
-
-	cmdDB := fmt.Sprintf("docker-compose -f %s up -d", models.DBcompose)
-	err = shell.ExecuteCommand(cmdDB)
-	if err != nil {
-		return err
-	}
-	time.Sleep(time.Duration(10) * time.Second)
-
-	if err = dao.CheckDB(); err != nil {
-		logs.Info(err)
-		err = dao.RegisterDB()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 func StartBoard(host *models.Account) error {
 	shell, err := SSHtoHost(host)
@@ -102,11 +47,13 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
-	err = dao.RemoveUUIDToken()
-	if err != nil {
-		return err
+	UUIDpath := "/go/secrets/initialAdminPassword"
+	if _, err = os.Stat(UUIDpath); !os.IsNotExist(err) {
+		if err = dao.RemoveUUIDToken(); err != nil {
+			return err
+		}
+		os.Remove(UUIDpath)
 	}
-	os.Remove("/go/secrets/initialAdminPassword")
 
 	return nil
 }
@@ -132,12 +79,12 @@ func CheckBoard() error {
 	var err error
 
 	if err = dao.CheckDB(); err != nil {
-		if err = dao.RegisterDB(); err != nil {
+		if err = RegisterDB(); err != nil {
 			return err
 		}
 	}
 	if tokenserver := CheckTokenserver(); !tokenserver {
-		return errors.New("tokenserver is down")
+		return common.ErrTokenServer
 	}
 	return nil
 }
@@ -159,8 +106,22 @@ func CheckCfgModified() (bool, error) {
 }
 
 func CheckTokenserver() bool {
-	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1 && echo $?")
-	bytes, _ := cmd.Output()
-	result := strings.Replace(string(bytes), "\n", "", 1)
-	return (result == "0")
+	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1")
+	cmd.Run()
+	return (cmd.ProcessState.ExitCode() == 0)
+}
+
+func RegisterDB() error {
+	cfg, err := GetAllCfg("", true)
+	if err != nil {
+		return err
+	}
+	DBpassword := cfg.Other.DBPassword
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
+	if err != nil {
+		return err
+	}
+	logs.Info("register DB success")
+	return nil
 }

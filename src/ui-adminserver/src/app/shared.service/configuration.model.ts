@@ -1,49 +1,5 @@
 import { HttpBind, ResponseBase, RequestBase } from '../shared/shared.type';
 
-export class CardObject {
-  cardStatus = true;
-  showContent = true;
-
-  toObj(): { [param: string]: boolean } {
-    return {
-      cardStatus: this.cardStatus,
-      showContent: this.showContent
-    };
-  }
-}
-
-export class CfgCardObjects {
-  apiserver: CardObject;
-  gogits: CardObject;
-  jenkins: CardObject;
-  kvm: CardObject;
-  ldap: CardObject;
-  email: CardObject;
-  others: CardObject;
-
-  constructor() {
-    this.apiserver = new CardObject();
-    this.gogits = new CardObject();
-    this.jenkins = new CardObject();
-    this.kvm = new CardObject();
-    this.ldap = new CardObject();
-    this.email = new CardObject();
-    this.others = new CardObject();
-  }
-
-  toObj(): { [param: string]: object } {
-    return {
-      apiserver: this.apiserver.toObj(),
-      gogits: this.gogits.toObj(),
-      jenkins: this.jenkins.toObj(),
-      kvm: this.kvm.toObj(),
-      ldap: this.ldap.toObj(),
-      email: this.email.toObj(),
-      others: this.others.toObj(),
-    };
-  }
-}
-
 export class ApiServer extends ResponseBase implements RequestBase {
   @HttpBind('hostname') hostname: string;
   @HttpBind('api_server_port') apiServerPort: string;
@@ -225,7 +181,7 @@ export class Email extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      email_identity: this.emailIdentity.toString(),
+      email_identity: this.emailIdentity === 'null' ? '' : this.emailIdentity.toString(),
       email_server: this.emailServer.toString(),
       email_server_port: this.emailServerPort.toString(),
       email_username: this.emailUsername.toString(),
@@ -239,6 +195,7 @@ export class Email extends ResponseBase implements RequestBase {
 export class Others extends ResponseBase implements RequestBase {
   @HttpBind('arch_type') archType: string;
   @HttpBind('db_password') dbPassword: string;
+  @HttpBind('db_max_connections') dbMaxConnections: string;
   @HttpBind('token_cache_expire_seconds') tokenCacheExpireSeconds: string;
   @HttpBind('token_expire_seconds') tokenExpireSeconds: string;
   @HttpBind('elaseticsearch_memory_in_megabytes') elaseticsearchMemoryInMegabytes: string;
@@ -256,6 +213,7 @@ export class Others extends ResponseBase implements RequestBase {
     } else {
       this.archType = 'x86_64';
       this.dbPassword = 'root123';
+      this.dbMaxConnections = '1000';
       this.tokenCacheExpireSeconds = '1800';
       this.tokenExpireSeconds = '1800';
       this.elaseticsearchMemoryInMegabytes = '1024';
@@ -273,6 +231,7 @@ export class Others extends ResponseBase implements RequestBase {
     return {
       arch_type: this.archType.toString(),
       db_password: this.dbPassword.toString(),
+      db_max_connections: this.dbMaxConnections.toString(),
       token_cache_expire_seconds: this.tokenCacheExpireSeconds.toString(),
       token_expire_seconds: this.tokenExpireSeconds.toString(),
       elaseticsearch_memory_in_megabytes: this.elaseticsearchMemoryInMegabytes.toString(),
@@ -334,18 +293,6 @@ export class Configuration implements RequestBase {
       Other: this.others.PostBody(),
       Ldap: this.ldap.PostBody(),
       Email: this.email.PostBody(),
-    };
-  }
-}
-
-export class VerifyPassword implements RequestBase {
-  which = '';
-  value = '';
-
-  PostBody(): object {
-    return {
-      which: this.which,
-      value: this.value
     };
   }
 }

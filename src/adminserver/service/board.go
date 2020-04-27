@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 )
 
 //Start Board without loading cfg.
@@ -25,11 +24,13 @@ func Start(host *models.Account) error {
 		return err
 	}
 
-	err = dao.RemoveUUIDToken()
-	if err != nil {
-		return err
+	UUIDpath := "/go/secrets/initialAdminPassword"
+	if _, err = os.Stat(UUIDpath); !os.IsNotExist(err) {
+		if err = dao.RemoveUUIDToken(); err != nil {
+			return err
+		}
+		os.Remove(UUIDpath)
 	}
-	os.Remove("/go/secrets/initialAdminPassword")
 
 	return nil
 }
@@ -80,7 +81,7 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	}
 
 	if uninstall {
-		cmdRm := fmt.Sprintf("rm -rf /data/board %s/board.cfg* && cp %s/adminserver/board.cfg %s/.", models.MakePath, models.MakePath, models.MakePath)
+		cmdRm := fmt.Sprintf("rm -rf /data/board %s/board.cfg* && cp %s/adminserver/board.cfg %s/. && mkdir -p /data/board", models.MakePath, models.MakePath, models.MakePath)
 		err = shell.ExecuteCommand(cmdRm)
 		if err != nil {
 			return err
@@ -93,7 +94,7 @@ func SSHtoHost(host *models.Account) (*secureShell.SecureShell, error) {
 	var output bytes.Buffer
 	var shell *secureShell.SecureShell
 
-	HostIP, err := GetHostIP()
+	HostIP, err := Execute("ip route | awk 'NR==1 {print $3}'|xargs echo -n")
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +113,4 @@ func Execute(command string) (string, error) {
 		return "", err
 	}
 	return string(bytes), nil
-}
-
-func GetHostIP() (string, error) {
-	cmd := exec.Command("sh", "-c", "ip route | awk 'NR==1 {print $3}'")
-	bytes, err := cmd.Output()
-	if err != nil {
-		return "", err
-	}
-	HostIP := strings.Replace(string(bytes), "\n", "", 1)
-	return HostIP, nil
 }

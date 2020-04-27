@@ -24,7 +24,7 @@ import (
 
 func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	actionType nodeModel.ActionType, yamlFile string) (*nodeModel.NodeLog, error) {
-	configuration, err := service.GetAllCfg("")
+	configuration, err := service.GetAllCfg("", false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the configuration")
 	}
@@ -370,7 +370,7 @@ func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 }
 
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
-	allConfig, err := service.GetAllCfg("")
+	allConfig, err := service.GetAllCfg("", false)
 	if err != nil {
 		return fmt.Errorf("failed to get the configuration")
 	}

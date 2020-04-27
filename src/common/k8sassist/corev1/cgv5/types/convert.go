@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 // generate k8s objectmeta from model objectmeta
@@ -297,8 +298,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -402,6 +403,16 @@ func ToK8sGroupResource(gr model.GroupResource) schema.GroupResource {
 		Group:    gr.Group,
 		Resource: gr.Resource,
 	}
+}
+
+func ToK8sTerminalSizeQueue(tsq model.TerminalSizeQueue) remotecommand.TerminalSizeQueue {
+	return TerminalSizeQueueFunc(func() *remotecommand.TerminalSize {
+		size := tsq.Next()
+		return &remotecommand.TerminalSize{
+			Width:  size.Width,
+			Height: size.Height,
+		}
+	})
 }
 
 func FromK8sInfo(info *version.Info) *model.KubernetesInfo {
@@ -696,8 +707,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}

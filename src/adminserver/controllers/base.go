@@ -18,11 +18,11 @@ func (b *BaseController) Prepare() {
 		token = b.GetString("token")
 	}
 
-	if tokenserver := service.CheckTokenserver(); !tokenserver {
+	if err := service.CheckBoard(); err != nil {
 		result, err := service.VerifyUUIDToken(token)
 		if err != nil {
 			logs.Error(err)
-			b.CustomAbort(http.StatusBadRequest, err.Error())
+			b.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
 		if !result {
 			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")

@@ -1,4 +1,4 @@
-import { RequestBase } from '../shared/shared.type';
+import { RequestBase, ResponseBase, HttpBind } from '../shared/shared.type';
 
 export class User implements RequestBase {
   id = 0;
@@ -64,4 +64,8 @@ export class DBInfo implements RequestBase {
     return this.password === this.passwordConfirm;
   }
 
+}
+
+export class MyToken extends ResponseBase {
+  @HttpBind('token') token = '';
 }

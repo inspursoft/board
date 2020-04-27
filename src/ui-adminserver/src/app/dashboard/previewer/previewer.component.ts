@@ -4,6 +4,13 @@ import { DashboardService } from '../dashboard.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { User } from 'src/app/account/account.model';
 import { Router } from '@angular/router';
+<<<<<<< HEAD
+=======
+import { ClrModal } from '@clr/angular';
+import { timeout } from 'rxjs/operators';
+import { BoardService } from 'src/app/shared.service/board.service';
+import { MessageService } from 'src/app/shared/message/message.service';
+>>>>>>> dev_new2
 
 @Component({
   selector: 'app-previewer',
@@ -22,9 +29,12 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   loadingFlag = true;
   enableStop = false;
   disableApply = false;
+  showShutdown = false;
 
   constructor(private dashboardService: DashboardService,
-    private router: Router) {
+              private boardService: BoardService,
+              private messageService: MessageService,
+              private router: Router) {
     this.modal = new ComponentStatus();
     this.confirmType = new ConfirmType('rb');
     this.user = new User();
@@ -43,7 +53,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
           (res: Array<ComponentStatus>) => {
             this.componentList = res;
             this.loadingFlag = false;
-            this.enableStop = this.componentList.length > 3;
+            this.enableStop = this.componentList.length > 2;
             this.reflashDetail();
           },
           (err: HttpErrorResponse) => {
@@ -77,6 +87,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
     }
   }
 
+  /*
   confirm(type: string, containerID?: string) {
     this.confirmModal = true;
     if (containerID) {
@@ -110,6 +121,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       this.confirmModal = false;
       alert('Sorry, this feature is not yet supported. Restart container(' + containerID + ') fail.');
     } else if (type === 'sb') {
+<<<<<<< HEAD
       this.dashboardService.shutdownBoard(this.user).subscribe(
         () => {
           this.disableApply = false;
@@ -117,6 +129,13 @@ export class PreviewerComponent implements OnInit, OnDestroy {
           this.user = new User();
           this.getMonitor();
           alert('Waiting for STOP.');
+=======
+      clearInterval(this.timer);
+      this.boardService.shutdown(this.user, false).subscribe(
+        () => {
+          window.sessionStorage.removeItem('token');
+          this.router.navigateByUrl('account/login');
+>>>>>>> dev_new2
         },
         (err: HttpErrorResponse) => {
           this.loadingFlag = false;
@@ -131,13 +150,44 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       alert('Wrong parameter!');
     }
   }
+  */
+
+  shutdownBoard() {
+    this.loadingFlag = true;
+    this.disableApply = true;
+    clearInterval(this.timer);
+    this.boardService.shutdown(this.user, false).subscribe(
+      () => {
+        window.sessionStorage.removeItem('token');
+        this.router.navigateByUrl('account/login');
+      },
+      (err: HttpErrorResponse) => {
+        this.loadingFlag = false;
+        this.disableApply = false;
+        this.showShutdown = false;
+        if (err.status === 401) {
+          this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
+          this.router.navigateByUrl('account/login');
+        } else {
+          this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
+        }
+      }
+    )
+  }
 
   commonError(err: HttpErrorResponse) {
     if (err.status === 401) {
+<<<<<<< HEAD
       alert('User status error! Please login again!');
       this.router.navigateByUrl('account/login');
     } else {
       alert('Unknown Error!');
+=======
+      this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
+      this.router.navigateByUrl('account/login');
+    } else {
+      this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
+>>>>>>> dev_new2
     }
   }
 }

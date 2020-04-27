@@ -1,48 +1,28 @@
 package dao
 
 import (
-	"errors"
-	"fmt"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/models"
-	"io/ioutil"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
 )
 
-func RegisterDB() error {
-	b, err := ioutil.ReadFile(path.Join(models.DBconfigdir, "/env"))
-	if err != nil {
-		return err
-	}
-	DBpassword := strings.TrimPrefix(string(b), "DB_PASSWORD=")
-	DBpassword = strings.Replace(DBpassword, "\n", "", 1)
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
-	if err != nil {
-		return err
-	}
-	logs.Info("register DB success")
-	return nil
+func UsingDB(which string) orm.Ormer {
+	o := orm.NewOrm()
+	o.Using(which)
+	return o
 }
 
 func CheckDB() error {
-	o := orm.NewOrm()
-	err := o.Using("mysql-db2")
-	if err != nil {
-		return err
-	}
-	_, err = o.Raw("SELECT 1").Exec()
+	o := UsingDB("mysql-db2")
+	_, err := o.Raw("SELECT 1").Exec()
 	return err
 }
 
 func InitAdmin(user models.User) error {
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
+	o := UsingDB("mysql-db2")
 	user.UpdateTime = time.Now()
 	_, err := o.Update(&user, "password", "salt")
 	if err != nil {
@@ -53,8 +33,7 @@ func InitAdmin(user models.User) error {
 }
 
 func CacheAccountInfo(account models.Account) error {
-	o := orm.NewOrm()
-	o.Using("default")
+	o := UsingDB("default")
 	if o.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
 		if _, err := o.Insert(&account); err != nil {
 			return err
@@ -68,35 +47,31 @@ func CacheAccountInfo(account models.Account) error {
 }
 
 func LoginCheckAuth(user models.User) error {
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
+	o := UsingDB("mysql-db2")
 	err := o.Read(&user, "username", "system_admin", "deleted")
 	if err == orm.ErrNoRows {
-		return errors.New("Forbidden")
+		return common.ErrForbidden
 	}
 	return nil
 }
 
 func LoginCheckPassword(user models.User) error {
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
+	o := UsingDB("mysql-db2")
 	err := o.Read(&user, "username", "password")
 	if err == orm.ErrNoRows {
-		return errors.New("Wrong password")
+		return common.ErrWrongPassword
 	}
 	return nil
 }
 
 func GetUserByID(user models.User) error {
-	o := orm.NewOrm()
-	o.Using("mysql-db2")
+	o := UsingDB("mysql-db2")
 	return o.Read(&user, "id", "deleted")
 }
 
 func UpdateUUIDToken(newtoken models.Token) error {
 	existingToken := models.Token{Id: 1}
-	o := orm.NewOrm()
-	o.Using("default")
+	o := UsingDB("default")
 	if o.Read(&existingToken) == orm.ErrNoRows {
 		if _, err := o.Insert(&newtoken); err != nil {
 			return err
@@ -106,25 +81,20 @@ func UpdateUUIDToken(newtoken models.Token) error {
 			return err
 		}
 	} else {
-		return errors.New("another admin user has signed in other place")
+		return common.ErrAdminLogin
 	}
 	return nil
 }
 
 func GetUUIDToken(token models.Token) error {
-	o := orm.NewOrm()
-	o.Using("default")
+	o := UsingDB("default")
 	return o.Read(&token)
 }
 
 func RemoveUUIDToken() error {
-	o := orm.NewOrm()
-	o.Using("default")
-	token := models.Token{Id: 1}
-	if o.Read(&token) != orm.ErrNoRows {
-		if _, err := o.Delete(&token); err != nil {
-			return err
-		}
+	o := UsingDB("default")
+	if _, err := o.Delete(&models.Token{Id: 1}); err != nil {
+		return err
 	}
 	return nil
 }

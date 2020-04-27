@@ -37,11 +37,23 @@
           (click)="confirm('rb')">
     <clr-icon shape="replay-all"></clr-icon>
     {{ 'DASHBOARD.BUTTONS.RESTART_BORAD' | translate }}
+<<<<<<< HEAD
   </button>
   <button class="btn btn-danger"
+=======
+  </button> -->
+  <!-- <button class="btn btn-danger"
+>>>>>>> dev_new2
           [disabled]="loadingFlag"
           *ngIf="enableStop"
           (click)="confirm('sb')">
+    <clr-icon shape="power"></clr-icon>
+    {{ 'DASHBOARD.BUTTONS.STOP_BORAD' | translate }}
+  </button> -->
+  <button class="btn btn-danger"
+          [disabled]="loadingFlag"
+          *ngIf="enableStop"
+          (click)="showShutdown = true">
     <clr-icon shape="power"></clr-icon>
     {{ 'DASHBOARD.BUTTONS.STOP_BORAD' | translate }}
   </button>
@@ -125,7 +137,11 @@
   </div>
 </clr-modal>
 
+<<<<<<< HEAD
 <clr-modal [(clrModalOpen)]="confirmModal"
+=======
+<!-- <clr-modal #confirmModal
+>>>>>>> dev_new2
            [clrModalStaticBackdrop]="false">
   <h3 class="modal-title">{{confirmType.title}}</h3>
   <div class="modal-body">
@@ -175,5 +191,55 @@
     <button class="btn btn-danger"
             [disabled]='!sshForm.valid || disableApply'
             (click)="boardControl(confirmType.type, confirmType.containerId)">{{confirmType.button}}</button>
+  </div>
+</clr-modal> -->
+
+
+<clr-modal [(clrModalOpen)]="showShutdown"
+           [clrModalStaticBackdrop]="false">
+  <h3 class="modal-title">{{ 'DASHBOARD.BUTTONS.STOP_BORAD' | translate }}</h3>
+  <div class="modal-body">
+    <div>
+      {{ 'DASHBOARD.CONFIRM.STOP_BORAD' | translate }}
+    </div>
+    <div style="text-align: center"
+         *ngIf="loadingFlag">
+      <clr-spinner>
+        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+      </clr-spinner>
+      {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+    </div>
+
+    <form clrForm
+          #sshForm="ngForm">
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               name=sshUsername
+               #getSSHUsername="ngModel" />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+      <clr-password-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.PASSWORD' | translate }}</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword"
+               #getSSHPassword="ngModel" />
+        <clr-control-error *clrIfError="'required'">
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-password-container>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger"
+            [disabled]='!sshForm.valid || disableApply'
+            (click)="shutdownBoard()">{{confirmType.button}}</button>
   </div>
 </clr-modal>

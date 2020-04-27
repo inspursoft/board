@@ -7,8 +7,8 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-// MoniController includes operations about monitoring.
-type MoniController struct {
+// MonitorController includes operations about monitoring.
+type MonitorController struct {
 	BaseController
 }
 
@@ -16,14 +16,14 @@ type MoniController struct {
 // @Description monitor Board module containers
 // @Param	token	query 	string	true	"token"
 // @Success 200 {object} []models.Boardinfo	success
-// @Failure 400 bad request
-// @Failure 401 unauthorized
+// @Failure 500 Internal Server Error
+// @Failure 401 unauthorized: token invalid/session timeout
 // @router / [get]
-func (m *MoniController) Get() {
+func (m *MonitorController) Get() {
 	containers, err := service.GetMonitor()
 	if err != nil {
 		logs.Error(err)
-		m.CustomAbort(http.StatusBadRequest, err.Error())
+		m.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	//apply struct to JSON value.
 	m.Data["json"] = containers

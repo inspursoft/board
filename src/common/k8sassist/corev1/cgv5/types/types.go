@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	config "k8s.io/client-go/rest"
 	"k8s.io/client-go/scale"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 //define Deployment type
@@ -101,3 +102,9 @@ const (
 	maxPort              = 32765
 	minPort              = 30000
 )
+
+type TerminalSizeQueueFunc func() *remotecommand.TerminalSize
+
+func (t TerminalSizeQueueFunc) Next() *remotecommand.TerminalSize {
+	return t()
+}
