@@ -28,6 +28,7 @@ const (
 	defaultKubeConfigPath       = "/root/kubeconfig"
 	defaultSwaggerDoc           = "disabled"
 	defaultAuthMode             = "db_auth"
+	defaultMode                 = "normal"
 	adminUserID                 = 1
 	adminUsername               = "admin"
 	adminEmail                  = "admin@inspur.com"
@@ -204,6 +205,7 @@ func main() {
 	}
 
 	service.SetSystemInfo("DNS_SUFFIX", true)
+	service.SetSystemInfo("MODE", true)
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
