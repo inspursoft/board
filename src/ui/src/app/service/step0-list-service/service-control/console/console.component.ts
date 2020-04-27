@@ -1,4 +1,13 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
@@ -6,7 +15,7 @@ import { SearchAddon } from 'xterm-addon-search';
 import { Service } from '../../../service';
 import { AppInitService } from '../../../../shared.service/app-init.service';
 import { K8sService } from '../../../service.k8s';
-import { ServiceDetailInfo } from '../../../service.types';
+import { ServiceContainer, ServiceDetailInfo } from '../../../service.types';
 
 @Component({
   selector: 'app-console',
@@ -24,15 +33,11 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   curContainerName = '';
   ws: WebSocket;
   serviceDetailInfo: ServiceDetailInfo;
+  curActiveIndex = -1;
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService,
               private changeRef: ChangeDetectorRef) {
-    this.term = new Terminal({
-      cursorBlink: true,
-      disableStdin: false,
-      cursorStyle: 'block'
-    });
     this.fitAddon = new FitAddon();
     this.searchAddon = new SearchAddon();
     this.webLinkAddon = new WebLinksAddon(this.webLinksHandle);
@@ -42,50 +47,122 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.k8sService.getServiceDetail(this.service.service_id).subscribe(
       (res: ServiceDetailInfo) => {
-        res.service_Containers.push(res.service_Containers[0]);
-        res.service_Containers.push(res.service_Containers[0]);
         this.serviceDetailInfo = res;
         this.changeRef.detectChanges();
-        this.curPodName = this.serviceDetailInfo.service_Containers[0].PodName;
-        this.curContainerName = this.serviceDetailInfo.service_Containers[0].ContainerName;
-        this.ws = new WebSocket(this.wsUrl);
-        this.mountWebSocket();
-        this.term.open(document.getElementById('terminal-container'));
-        this.term.focus();
-        this.changeRef.detectChanges();
+        if (this.serviceDetailInfo.service_Containers.length > 0) {
+          this.buildSocketConnect(this.serviceDetailInfo.service_Containers[0], 0);
+        }
       }
     );
-    this.term.loadAddon(this.webLinkAddon);
-    this.term.loadAddon(this.searchAddon);
-    this.term.loadAddon(this.fitAddon);
     this.resizeListener = this.resizeListener.bind(this);
   }
 
   ngOnDestroy(): void {
+    this.ws.close();
     window.removeEventListener('resize', this.resizeListener);
   }
 
   ngAfterViewInit(): void {
-    this.term.focus();
-    this.fitAddon.fit();
     window.addEventListener('resize', this.resizeListener);
   }
 
   get wsUrl(): string {
     const host = `ws://${this.appInitService.systemInfo.board_host}`;
-    const path = `/api/v1/pods/${this.service.service_project_name}/${this.curPodName}/shell`;
+    const path = `/api/v1/pods/${this.service.service_project_id}/${this.curPodName}/shell`;
     const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;
   }
 
+  get status(): string {
+    if (this.ws) {
+      switch (this.ws.readyState) {
+        case WebSocket.OPEN:
+          return 'ServiceControlConsole.Open';
+        case WebSocket.CLOSED:
+          return 'ServiceControlConsole.Closed';
+        case WebSocket.CLOSING:
+          return 'ServiceControlConsole.Closing';
+        case WebSocket.CONNECTING:
+          return 'ServiceControlConsole.Connecting';
+        default:
+          return 'ServiceControlConsole.Unknown';
+      }
+    } else {
+      return 'ServiceControlConsole.Unknown';
+    }
+  }
+
+  get statusStyle(): { [key: string]: string } {
+    if (this.ws) {
+      switch (this.ws.readyState) {
+        case WebSocket.OPEN:
+          return {color: 'green'};
+        case WebSocket.CLOSED:
+          return {color: 'red'};
+        case WebSocket.CLOSING:
+          return {color: 'yellow'};
+        case WebSocket.CONNECTING:
+          return {color: 'lightgreen'};
+        default:
+          return {color: 'black'};
+      }
+    } else {
+      return {color: 'black'};
+    }
+  }
+
+  buildSocketConnect(serviceContainer: ServiceContainer, index: number) {
+    this.curActiveIndex = index;
+    this.curPodName = serviceContainer.PodName;
+    this.curContainerName = serviceContainer.ContainerName;
+    this.ws = new WebSocket(this.wsUrl);
+    this.mountWebSocket();
+  }
+
+  createTerm() {
+    this.term = new Terminal({
+      cursorBlink: true,
+      disableStdin: false,
+      cursorStyle: 'block',
+      cols: 59,
+      rows: 25,
+    });
+
+  }
+
+  initTerm() {
+    this.term.loadAddon(this.webLinkAddon);
+    this.term.loadAddon(this.searchAddon);
+    this.term.loadAddon(this.fitAddon);
+    const terminalContainerElement = (this.terminalContainer.nativeElement as HTMLElement);
+    while (terminalContainerElement.firstChild) {
+      terminalContainerElement.firstChild.remove();
+    }
+    this.term.open(terminalContainerElement);
+    this.term.focus();
+    this.fitAddon.fit();
+  }
+
+  mountTerm() {
+    this.term.onData((arg1: string, arg2: any): any => {
+      if (this.ws.readyState === WebSocket.OPEN) {
+        const msg = {type: 'input', input: arg1};
+        this.ws.send(JSON.stringify(msg));
+      }
+    });
+  }
+
   mountWebSocket() {
     this.ws.onopen = (ev: Event): any => {
+      this.createTerm();
+      this.initTerm();
+      this.mountTerm();
       const msg = {type: 'resize', rows: this.term.rows, cols: this.term.cols};
       this.ws.send(JSON.stringify(msg));
     };
 
     this.ws.onclose = (ev: CloseEvent): any => {
-      console.log('ws closed');
+      this.curActiveIndex = -1;
     };
 
     this.ws.onmessage = (ev: MessageEvent): any => {
@@ -93,23 +170,19 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     this.ws.onerror = (ev: Event): any => {
-      console.log(`ws error:${ev}`);
+      this.curActiveIndex = -1;
     };
-
-    this.term.onData((arg1: string, arg2: any): any => {
-      const msg = {type: 'input', input: arg1};
-      this.ws.send(JSON.stringify(msg));
-    });
   }
 
   webLinksHandle(event: MouseEvent, uri: string): void {
-    // console.log(`onWebLinks event event:${event}`);
-    // console.log(`onWebLinks event uri:${uri}`);
+    // Todo: enhancement
   }
 
   resizeListener(event: Event) {
-    this.fitAddon.fit();
-    // const msg = {type: 'resize', rows: this.term.rows, cols: this.term.cols};
-    // this.ws.send(JSON.stringify(msg));
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.fitAddon.fit();
+      const msg = {type: 'resize', rows: this.term.rows, cols: this.term.cols};
+      this.ws.send(JSON.stringify(msg));
+    }
   }
 }

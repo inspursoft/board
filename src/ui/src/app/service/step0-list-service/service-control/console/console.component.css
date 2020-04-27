@@ -1,0 +1,38 @@
+div.console-container {
+  height: 440px;
+  overflow-y: auto;
+}
+
+div.left-info-container {
+  width: 260px;
+  flex-direction: column;
+  padding: 5px;
+  margin: 5px;
+  border: solid 1px gray;
+}
+
+div.container-info-container {
+  margin: 5px;
+  border-radius: 5px;
+  border: solid 1px silver;
+  padding: 5px;
+}
+
+div.container-info-container.active {
+  background-color: lightgreen;
+}
+
+div.terminal-container {
+  margin: 5px;
+  flex-basis: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+clr-icon.connect{
+  color: darkgreen;
+}
+
+clr-icon.connect :hover{
+  cursor: pointer;
+}

@@ -702,6 +702,16 @@ export const LANG_ZH_CN = {
     "SERVICE_YAML_UPLOAD_SUCCESS":"上传成功!目前服务处于'准备'状态，点击'创建'，运行该服务",
     "SERVICE_YAML_UPLOAD_FAILED":"上传失败。"
   },
+  ServiceControlConsole: {
+    Status: '状态',
+    PodName: 'Pod名称',
+    ContainerName: '容器名称',
+    Open: '连接',
+    Closed: '断开',
+    Closing: '正在断开',
+    Connecting: '正在连接',
+    Unknown: '未知',
+  },
   "STORAGE":{
     "PV_CREATE":"创建PV",
     "PV_NAME":"PV名称",

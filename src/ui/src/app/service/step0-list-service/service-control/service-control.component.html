@@ -57,11 +57,10 @@
       </clr-tab>
       <clr-tab>
         <button clrTabLink (click)="actionMethod = 4">
-          {{"控制台" | translate}}
+          {{"Console" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <app-console [service]="service">
-          </app-console>
+          <app-console [service]="service"></app-console>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>
