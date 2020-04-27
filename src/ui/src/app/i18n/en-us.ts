@@ -138,6 +138,7 @@ export const LANG_EN_US = {
     "CONFIG_MAP": "Config map",
     "STORAGE": "Storage",
     "ADMIN_OPTIONS": "Admin Options",
+    "USER_MANAGEMENT": "User management",
     "AUDIT": "Operation Audit",
     "KIBANA": "Kibana",
     "GRAFANA": "Grafana",

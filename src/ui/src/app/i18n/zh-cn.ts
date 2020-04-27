@@ -138,6 +138,7 @@ export const LANG_ZH_CN = {
     "CONFIG_MAP": "Config map",
     "STORAGE": "存储",
     "ADMIN_OPTIONS": "管理员选项",
+    "USER_MANAGEMENT": "用户管理",
     "AUDIT": "操作审计",
     "KIBANA": "Kibana",
     "GRAFANA": "Grafana",

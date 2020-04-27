@@ -79,6 +79,7 @@ rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 
 arch_type = rcp.get("configuration", "arch_type")
+mode = rcp.get("configuration", "mode")
 hostname = rcp.get("configuration", "hostname")
 api_server_port = rcp.get("configuration", "api_server_port")
 db_password = rcp.get("configuration", "db_password")
@@ -217,6 +218,7 @@ kibana_config_dir = os.path.join(config_dir, "kibana")
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
+        mode=mode,
         hostname=hostname,
         api_server_port=api_server_port,
         db_password=db_password,
@@ -332,6 +334,9 @@ if arch_type == "mips":
 		proxy_conf)
 elif arch_type == "arm64v8":
 	render(os.path.join(templates_dir, "proxy", "nginx.http.arm64v8.conf"),
+		proxy_conf)
+elif mode == "security":
+	render(os.path.join(templates_dir, "proxy", "nginx.http.blind.conf"),
 		proxy_conf)
 else:
 	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),

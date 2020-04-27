@@ -1190,6 +1190,80 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/services/{service_id}/logs/{pod_name}:
+    get:
+      summary: Return specific service pods logs.
+      description: |
+        This endpoint returns specific job relate pods by job_id.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: service_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Service ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: follow 
+          in: query
+          description: Whether follow the logs or not.
+          required: false
+          type: boolean
+        - name: previous 
+          in: query
+          description: Whether show previous container logs.
+          required: false
+          type: boolean
+        - name: since_seconds 
+          in: query
+          description: The start seconds of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: since_time 
+          in: query
+          description: The start time of logs.
+          required: false
+          type: string
+        - name: timestamps 
+          in: query
+          description: Whether show the timestamps in logs.
+          required: false
+          type: boolean
+        - name: tail_lines 
+          in: query
+          description: The tail lines of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: limit_bytes 
+          in: query
+          description: The limit size in bytes of logs.
+          required: false
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched pod log.          
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
   /v1/images/dockerfile/upload:
     post:
       summary: Return upload status.
@@ -4134,6 +4208,80 @@ paths:
           description: Release does not exist.
         500:
           description: Internal errors.
+  /v1/helm/release/{id}/logs/{pod_name}:
+    get:
+      summary: Return specific release relate pod logs.
+      description: |
+        This endpoint returns specific pod logs.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Release ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: follow 
+          in: query
+          description: Whether follow the logs or not.
+          required: false
+          type: boolean
+        - name: previous 
+          in: query
+          description: Whether show previous container logs.
+          required: false
+          type: boolean
+        - name: since_seconds 
+          in: query
+          description: The start seconds of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: since_time 
+          in: query
+          description: The start time of logs.
+          required: false
+          type: string
+        - name: timestamps 
+          in: query
+          description: Whether show the timestamps in logs.
+          required: false
+          type: boolean
+        - name: tail_lines 
+          in: query
+          description: The tail lines of logs.
+          required: false
+          type: integer
+          format: int64
+        - name: limit_bytes 
+          in: query
+          description: The limit size in bytes of logs.
+          required: false
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched pod logs.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
   /v1/jobs:
     get:
       summary: Get jobs infomation.
@@ -5994,6 +6142,8 @@ definitions:
   SystemInfo:
     type: object
     properties:
+      mode:
+        type: string
       board_host:
         type: string
       auth_mode:
@@ -6641,6 +6791,11 @@ definitions:
         workloadstatus:
           type: string
           description: The work loads status of this release.
+        pods:
+          type: array
+          items:
+            $ref: '#/definitions/Pod'
+          description: The pods of this release related.
   Pagination:
     type: object
     properties:
