@@ -12,8 +12,11 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 )
+
+var ErrTokenServer = errors.New("tokenserver is down")
 
 func StartBoard(host *models.Account) error {
 	shell, err := SSHtoHost(host)
@@ -78,12 +81,12 @@ func CheckBoard() error {
 	var err error
 
 	if err = dao.CheckDB(); err != nil {
-		if err = dao.RegisterDB(); err != nil {
+		if err = RegisterDB(); err != nil {
 			return err
 		}
 	}
 	if tokenserver := CheckTokenserver(); !tokenserver {
-		return errors.New("tokenserver is down")
+		return ErrTokenServer
 	}
 	return nil
 }
@@ -105,8 +108,22 @@ func CheckCfgModified() (bool, error) {
 }
 
 func CheckTokenserver() bool {
-	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1 && echo $?")
-	bytes, _ := cmd.Output()
-	result := strings.Replace(string(bytes), "\n", "", 1)
-	return (result == "0")
+	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1")
+	cmd.Run()
+	return (cmd.ProcessState.ExitCode() == 0)
+}
+
+func RegisterDB() error {
+	cfg, err := GetAllCfg("", true)
+	if err != nil {
+		return err
+	}
+	DBpassword := cfg.Other.DBPassword
+	orm.RegisterDriver("mysql", orm.DRMySQL)
+	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
+	if err != nil {
+		return err
+	}
+	logs.Info("register DB success")
+	return nil
 }

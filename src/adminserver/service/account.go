@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
@@ -20,15 +19,21 @@ import (
 var TokenServerURL = fmt.Sprintf("http://%s:%s/tokenservice/token", "tokenserver", "4000")
 var TokenCacheExpireSeconds int
 
-var ErrInvalidToken = errors.New("error for invalid token")
-
 const (
 	defaultInitialPassword = "123456a?"
 	adminUserID            = 1
 )
 
-//Login allow user to use account information to login adminserver.
 func Login(acc *models.Account) (bool, string, error) {
+	if err := CheckBoard(); err != nil {
+		return ValidateUUID(acc.Password)
+	} else {
+		return LoginWithDB(acc)
+	}
+}
+
+//LoginWithDB allow user to use account information to login adminserver.
+func LoginWithDB(acc *models.Account) (bool, string, error) {
 
 	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
 	if err := dao.LoginCheckAuth(user); err != nil {

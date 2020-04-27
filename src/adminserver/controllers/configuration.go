@@ -14,15 +14,15 @@ type CfgController struct {
 	BaseController
 }
 
-// @Title Post
+// @Title Put
 // @Description update cfg
 // @Param	body	body	models.Configuration	true	"parameters"
 // @Param	token	query 	string	true	"token"
 // @Success 200 success
 // @Failure 400 bad request
 // @Failure 401 unauthorized
-// @router / [post]
-func (c *CfgController) Post() {
+// @router / [put]
+func (c *CfgController) Put() {
 	var cfg models.Configuration
 
 	//transferring JSON to struct.
@@ -51,7 +51,7 @@ func (c *CfgController) Post() {
 func (c *CfgController) GetAll() {
 
 	which := c.GetString("which")
-	cfg, err := service.GetAllCfg(which)
+	cfg, err := service.GetAllCfg(which, false)
 	if err != nil {
 		logs.Error(err)
 		c.CustomAbort(http.StatusBadRequest, err.Error())

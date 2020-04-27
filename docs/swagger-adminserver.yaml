@@ -162,11 +162,11 @@ paths:
           description: bad request
         "401":
           description: unauthorized
-    post:
+    put:
       tags:
       - configuration
       description: update cfg
-      operationId: CfgController.Post
+      operationId: CfgController.Put
       parameters:
       - in: body
         name: body
@@ -191,7 +191,7 @@ paths:
       tags:
       - monitor
       description: monitor Board module containers
-      operationId: MoniController.Get
+      operationId: MonitorController.Get
       parameters:
       - in: query
         name: token
@@ -688,7 +688,7 @@ tags:
     BoardController controlls Board up and down.
 - name: monitor
   description: |
-    MoniController includes operations about monitoring.
+    MonitorController includes operations about monitoring.
 - name: boot
   description: |
     BootController includes operations about booting config.

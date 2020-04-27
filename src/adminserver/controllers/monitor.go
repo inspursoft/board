@@ -7,8 +7,8 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-// MoniController includes operations about monitoring.
-type MoniController struct {
+// MonitorController includes operations about monitoring.
+type MonitorController struct {
 	BaseController
 }
 
@@ -19,7 +19,7 @@ type MoniController struct {
 // @Failure 400 bad request
 // @Failure 401 unauthorized
 // @router / [get]
-func (m *MoniController) Get() {
+func (m *MonitorController) Get() {
 	containers, err := service.GetMonitor()
 	if err != nil {
 		logs.Error(err)

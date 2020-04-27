@@ -18,7 +18,7 @@ func (b *BaseController) Prepare() {
 		token = b.GetString("token")
 	}
 
-	if tokenserver := service.CheckTokenserver(); !tokenserver {
+	if err := service.CheckBoard(); err != nil {
 		result, err := service.VerifyUUIDToken(token)
 		if err != nil {
 			logs.Error(err)

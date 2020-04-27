@@ -10,7 +10,7 @@ import (
 )
 
 //GetAllCfg returns the original data read from cfg file.
-func GetAllCfg(which string) (*models.Configuration, error) {
+func GetAllCfg(which string, show bool) (*models.Configuration, error) {
 	var cfgPath string
 	configparser.Delimiter = "="
 	if which == "" {
@@ -33,10 +33,13 @@ func GetAllCfg(which string) (*models.Configuration, error) {
 	//assigning values for each properties.
 	Cfgi := models.GetConfiguration(section)
 
-	Cfgi.Other.BoardAdminPassword = ""
-	Cfgi.Other.DBPassword = ""
-	Cfgi.Jenkinsserver.NodePassword = ""
-	Cfgi.Email.Password = ""
+	if !show {
+		Cfgi.Other.BoardAdminPassword = ""
+		Cfgi.Other.DBPassword = ""
+		Cfgi.Jenkinsserver.NodePassword = ""
+		Cfgi.Email.Password = ""
+	}
+
 	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
 	Cfgi.FirstTimePost = !encryption.CheckFileIsExist(backupPath)
 	tmpPath := path.Join("/go", "/cfgfile/board.cfg.tmp")

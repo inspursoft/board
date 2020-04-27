@@ -63,9 +63,9 @@ func init() {
 
     beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"],
         beego.ControllerComments{
-            Method: "Post",
+            Method: "Put",
             Router: `/`,
-            AllowHTTPMethods: []string{"post"},
+            AllowHTTPMethods: []string{"put"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
@@ -79,7 +79,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MoniController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MoniController"],
+    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MonitorController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MonitorController"],
         beego.ControllerComments{
             Method: "Get",
             Router: `/`,

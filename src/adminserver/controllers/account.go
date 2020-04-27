@@ -36,23 +36,18 @@ func (a *AccController) Login() {
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
 
-	if err = dao.CheckDB(); err != nil {
-		permission, token, err = service.ValidateUUID(acc.Password)
-	} else {
-		permission, token, err = service.Login(&acc)
-	}
-
+	permission, token, err = service.Login(&acc)
 	if err != nil {
 		logs.Error(err)
-		if err.Error() == "Forbidden" {
+		if err == dao.ErrForbidden {
 			a.CustomAbort(http.StatusForbidden, err.Error())
 		}
 		a.CustomAbort(http.StatusBadRequest, err.Error())
 	}
-	if permission {
-		a.Data["json"] = models.TokenString{TokenString: token}
-	} else {
+	if !permission {
 		a.CustomAbort(http.StatusBadRequest, "login failed")
+	} else {
+		a.Data["json"] = models.TokenString{TokenString: token}
 	}
 	a.ServeJSON()
 }
@@ -67,7 +62,7 @@ func (a *AccController) CreateUUID() {
 	err := service.CreateUUID()
 	if err != nil {
 		logs.Error(err)
-		if err.Error() == "another admin user has signed in other place" {
+		if err == dao.ErrAdminLogin {
 			a.Ctx.ResponseWriter.WriteHeader(http.StatusAccepted)
 			return
 		}
