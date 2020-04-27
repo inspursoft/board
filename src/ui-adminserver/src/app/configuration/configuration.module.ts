@@ -12,7 +12,6 @@ import { OthersComponent } from './others/others.component';
 import { ToTopDirective } from '../shared/to-top.directive';
 import { ClarityModule } from '@clr/angular';
 import { BoardComponentsLibraryModule } from 'board-components-library';
-import { CfgCardsService } from './cfg-cards.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from '../shared/shared.module';
@@ -31,9 +30,7 @@ import { FormsModule } from '@angular/forms';
     OthersComponent,
     ToTopDirective
   ],
-  providers: [
-    CfgCardsService,
-  ],
+  providers: [ ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
