@@ -5,11 +5,20 @@
        style="margin-right: 0; margin-left: 0;">
     <div class="clr-col-lg-9 clr-col-12 clr-align-self-center end-with-blank">
       <div style="text-align: center; padding-top: 3rem;"
-           *ngIf="!enableInitialization && loadingFlag">
-        <clr-spinner>
+           *ngIf="!enableInitialization">
+        <div *ngIf="loadingFlag">
+          <clr-spinner>
+            {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+          </clr-spinner>
           {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
-        </clr-spinner>
-        {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+        </div>
+        <div style="font-size: 36px;"
+             *ngIf="disconnect">
+          <clr-icon shape="disconnect"
+                    class="is-error"
+                    size="48"></clr-icon>
+          {{'INITIALIZATION.ALERTS.INITIALIZATION' | translate}}
+        </div>
       </div>
 
       <div class="card"
@@ -80,17 +89,32 @@
                 {{'CONFIGURATIONS.OTHERS.TITLE' | translate}}
               </div>
 
-              <app-my-input-template [label]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.NAME' | translate"
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.NAME' | translate"
                                      [type]="'enum'"
                                      [required]="true"
                                      [defaultValue]="config.others.archType"
                                      [enumType]="'text'"
-                                     [enumItem]="{x86_64:'x86_64',ARM64:'arm64',MIPS:'mips'}"
+                                     [enumItem]="{x86_64:'x86_64',ARM64v8:'arm64v8',MIPS:'mips'}"
                                      [enumInline]="true"
                                      [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
                                      [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                                      [inputUpdateOn]="'change'"
                                      (commitEvent)="config.others.archType = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.SECURITY_MODE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.securityMode"
+                                     [enumType]="'text'"
+                                     [enumItem]="{Normal:'normal',Security:'security'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.OTHERS.SECURITY_MODE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.others.securityMode = $event">
               </app-my-input-template>
 
               <app-my-input-template *ngIf="!simpleMode"
@@ -830,6 +854,14 @@
                       style="transform: rotate(180deg);"></clr-icon>
             <span> {{'INITIALIZATION.BUTTONS.GO_TO_ADMINSERVER' | translate}}</span>
           </button>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="installStep === 4">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.REINSTALL' | translate}}</span>
+          </a>
         </div>
       </div>
 

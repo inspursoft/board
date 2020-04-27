@@ -143,7 +143,6 @@ export class PreviewerComponent implements OnInit, OnDestroy {
   shutdownBoard() {
     this.loadingFlag = true;
     this.disableApply = true;
-    clearInterval(this.timer);
     this.boardService.shutdown(this.user, false).subscribe(
       () => {
         window.sessionStorage.removeItem('token');
@@ -157,6 +156,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
           this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
           this.router.navigateByUrl('account/login');
         } else {
+          console.error(err.message);
           this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
         }
       }
@@ -168,6 +168,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
       this.router.navigateByUrl('account/login');
     } else {
+      console.error(err.message);
       this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
     }
   }
