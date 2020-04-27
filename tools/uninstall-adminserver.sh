@@ -1,19 +1,30 @@
 #!/bin/bash
 
-#docker version: 17.0 
-#docker-compose version: 1.7.1 
-#Board version: 0.8.0
+#docker version: 17.0+
+#docker-compose version: 1.7.1+
+#Board version: 0.8.0+
 
 set -e
 
-usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
+usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
 item=0
+defaultDataVolume="/data/board"
+adminserverDataVolume="/data/adminserver"
+silentFlag=flase
+
+workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $workdir
+sed -i "s|$workdir|__CURDIR__|g"  $workdir/env
 
 while [ $# -gt 0 ]; do
         case $1 in
             --help)
             echo "$usage"
             exit 0;;
+            -s)
+            echo "Uninstall without any user interaction."
+            silentFlag=true
+            ;;
             *)
             echo "$usage"
             exit 1;;
@@ -21,11 +32,8 @@ while [ $# -gt 0 ]; do
         shift || true
 done
 
-workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $workdir
-
 # The hostname in board.cfg has not been modified
-if grep 'hostname = reg.mydomain.com' &> /dev/null board.cfg
+if  [ ! -f docker-compose*.yml ] 
 then
 	echo $usage
 	exit 1
@@ -86,53 +94,60 @@ function check_dockercompose {
 	fi
 }
 
-echo "[Step $item]: checking installation environment ..."; let item+=1
+function delete_images {
+	docker-compose -f docker-compose-new.yml down --rmi all
+	docker-compose -f docker-compose-adminserver.yml down --rmi all
+}
+
+function remove_data {
+	rm -rf $defaultDataVolume $adminserverDataVolume
+}
+
+echo "[Step $item]: checking uninstallation environment ..."; let item+=1
 check_docker
 check_dockercompose
-
-if [ -f board*.tgz ]
-then
-	echo "[Step $item]: loading Board images ..."; let item+=1
-	docker load -i ./board*.tgz
-fi
-echo ""
-
-echo "[Step $item]: preparing environment ...";  let item+=1
-#if [ -n "$host" ]
-#then
-#	sed "s/^hostname = .*/hostname = $host/g" -i ./board.cfg
-#fi
-./prepare
-echo ""
 
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
-	docker-compose down
+	docker-compose -f docker-compose-new.yml down
 	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
 
-echo "[Step $item]: starting Board ..."
-docker-compose up -d
-
-protocol=http
-hostname=reg.mydomain.com
-
-if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
-then
-protocol=${BASH_REMATCH[1]}
-fi
-
-if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
-then
-hostname=${BASH_REMATCH[1]}
-fi
+echo "[Step $item]: remove Board images..."; let item+=1
+	delete_images
 echo ""
 
-echo $"----Board has been installed and started successfully.----
+echo "[Step $item]: prepare removing Board data..."
 
-Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
-For more details, please visit http://10.110.18.40:10080/inspursoft/board .
-"
+if [ $silentFlag == "true" ]
+then 
+        echo "start deleting..."
+        remove_data
+        echo "Done."
+else
+        if read -t 10 -p "Really want to delete Board data? Please input [yes] to confirm: " flag
+        then
+                if [ $flag == "yes" ]
+                then
+                        echo "You input [$flag] for deletion, start data deletion after 5 seconds..."
+                        sleep 5s
+                        echo "start deleting..."
+                        remove_data
+                        echo "Done."
+                else
+                        echo "You input [$flag], skip data deletion."
+                fi
+        else
+                echo ""
+                echo "Sorry ,timeout!"
+        fi
+fi
+	
+echo ""
+
+echo $"----Board uninstaller running complete.----
+For more information, please visit http://10.110.18.40:10080/inspursoft/board"
+

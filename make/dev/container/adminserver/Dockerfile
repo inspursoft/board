@@ -7,7 +7,6 @@ RUN go version
 COPY src/adminserver /go/src/git/inspursoft/board/src/adminserver
 COPY src/common /go/src/git/inspursoft/board/src/common
 COPY src/vendor /go/src/git/inspursoft/board/src/vendor
-COPY src/common/utils /go/src/git/inspursoft/board/src/common/utils
 COPY VERSION /go/bin/VERSION
 
 ENV GO111MODULE=off
@@ -19,7 +18,7 @@ RUN go build -v -o /go/bin/adminserver && \
 
 WORKDIR /go/bin/
 
-VOLUME ["/data/board/"]
+VOLUME ["/data/adminserver/"]
 
 CMD ["adminserver"]
 
