@@ -862,6 +862,13 @@
                       style="transform: rotate(180deg);"></clr-icon>
             <span> {{'INITIALIZATION.BUTTONS.REINSTALL' | translate}}</span>
           </a>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="refresh">
+             <clr-icon shape="refresh"></clr-icon>
+            <span> {{'BUTTON.REFRESH' | translate}}</span>
+          </a>
         </div>
       </div>
 

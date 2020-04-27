@@ -33,6 +33,7 @@ export class InstallationComponent implements OnInit {
   ignoreStep2 = false;
   installProgress = 0;
   enableBtn = true;
+  refresh = false;
 
   // TODO put some config into default.
   simpleMode = false;
@@ -183,7 +184,7 @@ export class InstallationComponent implements OnInit {
             (err: HttpErrorResponse) => {
               if (err.status === 401) {
                 this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-                location.reload();
+                this.refresh = true;
               } else {
                 console.log('Can not read tmp file: ' + err.message);
                 this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED', 'GLOBAL_ALERT.HINT');
@@ -342,7 +343,7 @@ export class InstallationComponent implements OnInit {
     this.submitBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-      // location.reload();
+      this.refresh = true;
       return;
     }
     errorList.forEach((msg, e) => {

@@ -10,6 +10,7 @@ export const LANG_ZH_CN = {
     NEXT: '下一步',
     BACK: '上一步',
     TEST: '测试',
+    REFRESH: '刷新',
   },
   DATAGRID: {
     ITEMS: '条记录',

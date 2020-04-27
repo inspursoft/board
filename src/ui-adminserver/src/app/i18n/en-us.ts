@@ -10,6 +10,7 @@ export const LANG_EN_US = {
     NEXT: 'Next',
     BACK: 'Back',
     TEST: 'Test',
+    REFRESH: 'Refresh',
   },
   DATAGRID: {
     ITEMS: 'items',
