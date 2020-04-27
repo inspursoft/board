@@ -83,6 +83,7 @@ func (h *WSStreamHandler) Read(b []byte) (int, error) {
 }
 
 func (h *WSStreamHandler) Write(b []byte) (int, error) {
+	logs.Info(b)
 	return len(b), h.conn.WriteMessage(websocket.TextMessage, b)
 }
 
