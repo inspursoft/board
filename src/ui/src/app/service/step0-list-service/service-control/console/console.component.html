@@ -1,3 +1,18 @@
-<div class="container">
-  <div #terminalContainer></div>
+<div class="clr-row">
+  <div *ngFor="let serviceContainer of serviceDetailInfo.service_Containers"
+       class="clr-row clr-flex-column"
+       style="margin-right: 10px;margin-bottom: 10px;border-radius: 5px;
+  border: solid 1px silver;padding: 5px;margin-top: 10px;width: 250px; background-color: lightgreen">
+    <div class="clr-row">
+      <span style="width: 120px;">Pod name:</span>
+      <span>{{serviceContainer.PodName}}</span>
+    </div>
+    <div class="clr-row">
+      <span style="width: 120px;">Container name:</span>
+      <span>{{serviceContainer.ContainerName}}</span>
+    </div>
+  </div>
+</div>
+<div *ngIf="serviceDetailInfo.service_Containers.length > 0" class="container">
+  <div #terminalContainer id="terminal-container"></div>
 </div>

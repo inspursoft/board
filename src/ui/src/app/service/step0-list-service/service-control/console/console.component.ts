@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
@@ -6,6 +6,7 @@ import { SearchAddon } from 'xterm-addon-search';
 import { Service } from '../../../service';
 import { AppInitService } from '../../../../shared.service/app-init.service';
 import { K8sService } from '../../../service.k8s';
+import { ServiceDetailInfo } from '../../../service.types';
 
 @Component({
   selector: 'app-console',
@@ -14,17 +15,19 @@ import { K8sService } from '../../../service.k8s';
 })
 export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() service: Service;
-  @Input() podName = '';
-  @Input() containerName = '';
   @ViewChild('terminalContainer') terminalContainer: ElementRef;
   term: Terminal;
   fitAddon: FitAddon;
   webLinkAddon: WebLinksAddon;
   searchAddon: SearchAddon;
+  curPodName = '';
+  curContainerName = '';
   ws: WebSocket;
+  serviceDetailInfo: ServiceDetailInfo;
 
   constructor(private appInitService: AppInitService,
-              private k8sService: K8sService) {
+              private k8sService: K8sService,
+              private changeRef: ChangeDetectorRef) {
     this.term = new Terminal({
       cursorBlink: true,
       disableStdin: false,
@@ -33,21 +36,29 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.fitAddon = new FitAddon();
     this.searchAddon = new SearchAddon();
     this.webLinkAddon = new WebLinksAddon(this.webLinksHandle);
-    // this.ws = new WebSocket(this.wsUrl);
+    this.serviceDetailInfo = new ServiceDetailInfo();
   }
 
   ngOnInit() {
     this.k8sService.getServiceDetail(this.service.service_id).subscribe(
-      res => {
-        console.log(res);
+      (res: ServiceDetailInfo) => {
+        res.service_Containers.push(res.service_Containers[0]);
+        res.service_Containers.push(res.service_Containers[0]);
+        this.serviceDetailInfo = res;
+        this.changeRef.detectChanges();
+        this.curPodName = this.serviceDetailInfo.service_Containers[0].PodName;
+        this.curContainerName = this.serviceDetailInfo.service_Containers[0].ContainerName;
+        this.ws = new WebSocket(this.wsUrl);
+        this.mountWebSocket();
+        this.term.open(document.getElementById('terminal-container'));
+        this.term.focus();
+        this.changeRef.detectChanges();
       }
     );
     this.term.loadAddon(this.webLinkAddon);
     this.term.loadAddon(this.searchAddon);
     this.term.loadAddon(this.fitAddon);
-    this.term.open(this.terminalContainer.nativeElement);
     this.resizeListener = this.resizeListener.bind(this);
-    // this.mountWebSocket();
   }
 
   ngOnDestroy(): void {
@@ -62,8 +73,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get wsUrl(): string {
     const host = `ws://${this.appInitService.systemInfo.board_host}`;
-    const path = `/api/v1/pods/${this.service.service_project_name}/${this.podName}/shell`;
-    const params = `?token=${this.appInitService.token}&container=${this.containerName}`;
+    const path = `/api/v1/pods/${this.service.service_project_name}/${this.curPodName}/shell`;
+    const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;
   }
 
