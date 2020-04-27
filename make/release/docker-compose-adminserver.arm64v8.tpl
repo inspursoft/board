@@ -17,7 +17,7 @@ services:
     ports:
       - 8081:8080
   proxy-adminserver:
-    image: board_adminserver_proxy:__version__
+    image: board_proxy_adminserver:__version__
     depends_on: 
       - adminserver
     restart: always
