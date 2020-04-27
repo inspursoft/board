@@ -97,7 +97,7 @@ export class InstallationComponent implements OnInit {
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
       this.submitBtnState = ClrLoadingState.LOADING;
-      this.user.username = '';
+      this.user.username = 'admin';
       this.user.password = this.uuid;
       this.accountService.signIn(this.user).subscribe(
         () => {
@@ -342,7 +342,7 @@ export class InstallationComponent implements OnInit {
     this.submitBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-      location.reload();
+      // location.reload();
       return;
     }
     errorList.forEach((msg, e) => {
