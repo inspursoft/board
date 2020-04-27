@@ -1,3 +1,4 @@
+MODE=$mode
 BOARD_HOST_IP=$hostname
 API_SERVER_PORT=$api_server_port
 DB_PASSWORD=$db_password
