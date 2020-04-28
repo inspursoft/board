@@ -2,4 +2,4 @@ BOARD_COMPOSE=__CURDIR__/docker-compose-new.yml
 PREPARE_FILE=__CURDIR__/../prepare
 MAKE_PATH=__CURDIR__/../
 IMAGE_PREFIX=board
-CONTAINER_PREFIX=deploy
+CONTAINER_PREFIX=adminserver
