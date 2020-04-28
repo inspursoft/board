@@ -383,8 +383,8 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 }
 
 func getResponseJsonFromApiServer(urlPath string, res interface{}) error  {
-	allConfig, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
+	allConfig, errCfg := service.GetAllCfg("", false)
+	if errCfg != nil {
 		return fmt.Errorf("failed to get the configuration")
 	}
 	host := allConfig.Apiserver.Hostname
