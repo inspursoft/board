@@ -1,12 +1,12 @@
-import {HTTP_INTERCEPTORS, HttpErrorResponse, HttpInterceptor, HttpRequest, HttpResponse} from '@angular/common/http';
-import {HttpHandler} from '@angular/common/http/src/backend';
-import {HttpEvent} from '@angular/common/http/src/response';
-import {Injectable} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {Observable, of, throwError, TimeoutError} from 'rxjs';
-import {catchError, timeout} from 'rxjs/operators';
-import {MessageService} from './message/message.service';
-import {GlobalAlertType} from './message/message.types';
+import { HTTP_INTERCEPTORS, HttpErrorResponse, HttpInterceptor, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpHandler } from '@angular/common/http/src/backend';
+import { HttpEvent } from '@angular/common/http/src/response';
+import { Injectable } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { Observable, of, throwError, TimeoutError } from 'rxjs';
+import { catchError, timeout } from 'rxjs/operators';
+import { MessageService } from './message/message.service';
+import { GlobalAlertType } from './message/message.types';
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
@@ -20,9 +20,16 @@ export class HttpClientInterceptor implements HttpInterceptor {
     let authReq: HttpRequest<any> = req.clone({
       headers: req.headers
     });
-    authReq = authReq.clone({
-      params: authReq.params.set('Timestamp', Date.now().toString())
-    });
+    const token = window.sessionStorage.getItem('token');
+    if (req.url.startsWith('/v1/admin/node')) {
+      authReq = authReq.clone({
+        params: authReq.params.set('Timestamp', Date.now().toString()).set('token', token)
+      });
+    } else {
+      authReq = authReq.clone({
+        params: authReq.params.set('Timestamp', Date.now().toString())
+      });
+    }
     return next.handle(authReq)
       .pipe(
         timeout(30000),

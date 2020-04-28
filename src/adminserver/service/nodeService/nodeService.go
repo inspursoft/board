@@ -240,6 +240,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			Ip:           item.NodeIP,
 			CreationTime: item.CreateTime,
 			Status:       item.Status,
+			NodeName:     item.NodeName,
 			IsMaster:     isMaster,
 			LogTime:      logTime,
 			Origin:       origin})

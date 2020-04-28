@@ -79,6 +79,7 @@ export class NodeDetails extends ResponseArrayBase<NodeDetail> {
 
 export class NodeListType extends ResponseBase {
   @HttpBind('ip') ip: string;
+  @HttpBind('node_name') nodeName: string;
   @HttpBind('creation_time') creationTime: number;
   @HttpBind('log_time') logTime: number;
   @HttpBind('origin') origin: number;
@@ -90,4 +91,13 @@ export class NodeList extends ResponseArrayBase<NodeListType> {
   CreateOneItem(res: object): NodeListType {
     return new NodeListType(res);
   }
+}
+
+export class NodeControlStatus extends ResponseBase {
+  @HttpBind('node_name') nodeName: string;
+  @HttpBind('node_type') nodeType: string;
+  @HttpBind('node_ip') nodeIp: string;
+  @HttpBind('node_phase') nodePhase: string;
+  @HttpBind('node_deletable') nodeDeletable: boolean;
+  @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
 }

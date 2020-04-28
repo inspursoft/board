@@ -1,6 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { NodeActionsType, NodeDetails, NodeList, NodeLog, NodeLogs, NodePostData, NodePreparationData } from '../resource.types';
+import {
+  NodeActionsType,
+  NodeControlStatus,
+  NodeDetails,
+  NodeList,
+  NodeLog,
+  NodeLogs,
+  NodePostData,
+  NodePreparationData
+} from '../resource.types';
 import { CustomHttpClient } from './custom-http.service';
 import { map } from 'rxjs/operators';
 
@@ -47,6 +56,10 @@ export class ResourceService {
 
   getNodePreparation(): Observable<NodePreparationData> {
     return this.http.getJson('/v1/admin/node/preparation', NodePreparationData);
+  }
+
+  getNodeControlStatus(nodeName: string): Observable<NodeControlStatus> {
+    return this.http.getJson(`/v1/admin/node/${nodeName}`, NodeControlStatus);
   }
 
   getNodeLogDetail(ip: string, creationTime: number): Observable<NodeDetails> {
