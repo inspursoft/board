@@ -8,6 +8,7 @@ import (
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
@@ -64,6 +65,23 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL, TokenCacheExpireSeconds)
 	dao.GlobalCache.Put(query.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
 	dao.GlobalCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+
+	cache1 := make(map[string]interface{})
+	cache1["key"] = query.Username
+	cache1["value"] = token.TokenString
+
+	cache2 := make(map[string]interface{})
+	cache2["key"] = token.TokenString
+	cache2["value"] = payload
+
+	err = utils.RequestHandle(http.MethodPost, "http://10.110.27.166:8088/api/v1/cache-store", nil, cache1, nil)
+	if err != nil {
+		return false, "", err
+	}
+	err = utils.RequestHandle(http.MethodPost, "http://10.110.27.166:8088/api/v1/cache-store", nil, cache2, nil)
+	if err != nil {
+		return false, "", err
+	}
 
 	return true, token.TokenString, nil
 }
