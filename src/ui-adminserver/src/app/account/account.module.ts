@@ -35,7 +35,7 @@ import { ConfigurationModule } from '../configuration/configuration.module';
 })
 export class AccountModule { }
 
-function GetLocale(): string {
+export function GetLocale(): string {
   const currentLang = (window.localStorage.getItem('currentLang') === 'zh-cn' || window.localStorage.getItem('currentLang') === 'zh');
   if (currentLang) {
     return 'zh-Hans';

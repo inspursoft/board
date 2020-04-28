@@ -11,7 +11,7 @@ export class AccountService {
 
   constructor(private http: HttpClient) { }
 
-  postSignIn(user: User): Observable<any> {
+  signIn(user: User): Observable<any> {
     return this.http.post(
       `${ACCOUNT_URL}/login/`,
       user.PostBody()
@@ -22,13 +22,6 @@ export class AccountService {
 
   createUUID(): Observable<any> {
     return this.http.post(`${ACCOUNT_URL}/createUUID`, null);
-  }
-
-  validateUUID(uuid: string): Observable<any> {
-    return this.http.post(
-      `${ACCOUNT_URL}/ValidateUUID`,
-      { UUID: uuid }
-    );
   }
 
 }

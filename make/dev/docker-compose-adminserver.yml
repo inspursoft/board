@@ -20,11 +20,11 @@ services:
       - board
     ports:
       - 8081:8080
-  proxy-adminserver:
+  proxy_adminserver:
     build:
       context: ../../
-      dockerfile: make/dev/container/proxy-adminserver/Dockerfile
-    image: dev_adminserver_proxy:dev
+      dockerfile: make/dev/container/proxy_adminserver/Dockerfile
+    image: dev_proxy_adminserver:dev
     depends_on: 
       - adminserver
     restart: always
@@ -33,7 +33,7 @@ services:
     links:
       - adminserver
     volumes:
-      - ../templates/proxy-adminserver/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../templates/proxy_adminserver/nginx.conf:/etc/nginx/nginx.conf:z
       - ../../src/ui-adminserver/dist:/usr/share/nginx/html:z
     networks:
       - board
