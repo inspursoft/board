@@ -23,6 +23,7 @@ import (
 )
 
 var MemoryCache cache.Cache
+var DefaultCacheDuration = time.Second * time.Duration(TokenCacheExpireSeconds)
 var Cpt *captcha.Captcha
 var TokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
 var TokenExpireTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
@@ -172,10 +173,10 @@ func (b *BaseController) GetCurrentUser() *model.User {
 	if token == "" {
 		token = b.GetString("token")
 	}
-	// if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
-	// 	logs.Info("Token stored in cache has expired.")
-	// 	return nil
-	// }
+	if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
+		logs.Info("Token stored in cache has expired.")
+		return nil
+	}
 	var hasResignedToken bool
 	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
@@ -195,7 +196,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
 	}
-	MemoryCache.Put(token, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+	MemoryCache.Put(token, payload, DefaultCacheDuration)
 	b.Token = token
 
 	if strID, ok := payload["id"].(string); ok {
@@ -214,7 +215,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}
-			MemoryCache.Put(user.Username, token, time.Second*time.Duration(TokenCacheExpireSeconds))
+			MemoryCache.Put(user.Username, token, DefaultCacheDuration)
 			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
 		user.Password = ""
