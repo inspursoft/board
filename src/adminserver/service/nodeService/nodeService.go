@@ -382,7 +382,7 @@ func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) err
 	return getResponseJsonFromApiServer("api/v1/nodes", nodeList);
 }
 
-func getResponseJsonFromApiServer(urlPath string, res interface{}) error  {
+func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 	allConfig, errCfg := service.GetAllCfg("", false)
 	if errCfg != nil {
 		return fmt.Errorf("failed to get the configuration")
@@ -390,21 +390,26 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error  {
 	host := allConfig.Apiserver.Hostname
 	port := allConfig.Apiserver.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
-	err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-			"token":        []string{""},// Todo: add token value for request
-		}
-		return nil
-	}, nil, func(req *http.Request, resp *http.Response) error {
-		if resp.StatusCode == 200 {
-			return utils.UnmarshalToJSON(resp.Body, res)
-		}
-		data, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
-			resp.StatusCode, string(data))
-	})
-	return err
+
+	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+		err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
+			req.Header = http.Header{
+				"Content-Type": []string{"application/json"},
+				"token":        []string{currentToken},
+			}
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == 200 {
+				return utils.UnmarshalToJSON(resp.Body, res)
+			}
+			data, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
+				resp.StatusCode, string(data))
+		})
+		return err
+	} else {
+		return fmt.Errorf("read the token value from globalCache was failed")
+	}
 }
 
 func checkIsEndingLog(log string) bool {
