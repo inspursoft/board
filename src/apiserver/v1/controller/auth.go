@@ -28,7 +28,6 @@ func (u *AuthController) SignInAction() {
 	if err != nil {
 		return
 	}
-	logs.Debug("Decode password %s", reqUser.Password) //Remove this debug in release
 	token, _ := u.ProcessAuth(reqUser.Username, reqUser.Password)
 	if token != "" {
 		u.RenderJSON(model.Token{TokenString: token})
