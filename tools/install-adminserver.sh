@@ -82,7 +82,7 @@ echo "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-if [ -f board*.tgz ]
+if [ -f ../board*.tgz ]
 then
 	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
 	docker load -i ../board*.tgz
@@ -90,7 +90,7 @@ fi
 echo ""
 
 echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
-if [ -n "$(docker-compose ps -q)"  ]
+if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."
 	docker-compose -f ./docker-compose-adminserver.yml down
