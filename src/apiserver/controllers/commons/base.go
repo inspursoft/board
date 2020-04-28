@@ -171,10 +171,10 @@ func (b *BaseController) GetCurrentUser() *model.User {
 	if token == "" {
 		token = b.GetString("token")
 	}
-	if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
-		logs.Info("Token stored in cache has expired.")
-		return nil
-	}
+	// if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
+	// 	logs.Info("Token stored in cache has expired.")
+	// 	return nil
+	// }
 	var hasResignedToken bool
 	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
@@ -194,7 +194,6 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
 	}
-
 	MemoryCache.Put(token, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 	b.Token = token
 
