@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
+	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -139,7 +140,7 @@ func (b *BaseController) InternalError(err error) {
 func (b *BaseController) CustomAbortAudit(statusCode int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
 	b.UpdateOperationAudit(statusCode)
-	b.CustomAbort(statusCode, body)
+	b.CustomAbort(statusCode, template.HTMLEscapeString(body))
 }
 
 func ParsePostK8sError(message string) int {
