@@ -51,7 +51,7 @@ func (p *AppV1Client) ReplicaSet(namespace string) ReplicaSetClientInterface {
 }
 
 func (p *AppV1Client) Pod(namespace string) PodClientInterface {
-	return apps.NewPods(namespace, p.Clientset.CoreV1().Pods(namespace))
+	return apps.NewPods(p.Clientset, p.Config, namespace, p.Clientset.CoreV1().Pods(namespace))
 }
 
 func (p *AppV1Client) AutoScale(namespace string) AutoscaleInterface {
@@ -81,6 +81,10 @@ func (p *AppV1Client) Proxy() ProxyInterface {
 	return apps.NewProxy(p.Config)
 }
 
+func (p *AppV1Client) Extend() ExtendInterface {
+	return apps.NewExtend(p.Clientset)
+}
+
 // AppV1ClientInterface level 1 interface to access others
 type AppV1ClientInterface interface {
 	Discovery() ServerVersionInterface
@@ -98,6 +102,7 @@ type AppV1ClientInterface interface {
 	StatefulSet(namespace string) StatefulSetClientInterface
 	Job(namespace string) JobInterface
 	Proxy() ProxyInterface
+	Extend() ExtendInterface
 }
 
 // ServerVersionInterface has a method for retrieving the server's version.
@@ -178,6 +183,9 @@ type PodClientInterface interface {
 	List(opts model.ListOptions) (*model.PodList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Pod, err error)
 	GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, error)
+	Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error
+	CopyFromPod(podName, container, src, dest string, cmd []string) error
+	CopyToPod(podName, container, src, dest string) error
 }
 
 // How to:  deploymentCli, err := k8sassist.NewDeployments(nameSpace)
@@ -271,4 +279,8 @@ type JobInterface interface {
 
 type ProxyInterface interface {
 	ProxyAPI(apiProxyPrefix string) (http.Handler, error)
+}
+
+type ExtendInterface interface {
+	ListSelectRelatePods(infos []*model.K8sInfo) (*model.PodList, error)
 }

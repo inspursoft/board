@@ -19,6 +19,7 @@ const (
 	failedRetries resolveType = iota + 1
 	invalidCaptcha
 	temporaryBlock
+	invalidPassword
 )
 
 type resolveInfo struct {
@@ -41,8 +42,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		info.Type = temporaryBlock
 		info.Description = "Temporarily blocked."
 		info.Value = authCheck.TimeRemain
-		ca.Ctx.Output.SetStatus(http.StatusBadRequest)
-		ca.RenderJSON(info)
+		ca.ServeJSONOutput(http.StatusBadRequest, info)
 		return "", false
 	}
 	var validateCaptcha bool
@@ -57,8 +57,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 			message = "Invalid captcha."
 			info.Type = invalidCaptcha
 			info.Description = message
-			ca.Ctx.Output.SetStatus(http.StatusBadRequest)
-			ca.RenderJSON(info)
+			ca.ServeJSONOutput(http.StatusBadRequest, info)
 			return "", false
 		}
 	}
@@ -72,6 +71,13 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		ca.InternalError(err)
 		return "", false
 	}
+	password, err = service.DecodeUserPassword(password)
+	if err != nil {
+		message = "Invalid password content."
+		info.Type = invalidPassword
+		info.Description = "Invalid password content."
+		ca.ServeJSONOutput(http.StatusBadRequest, info)
+	}
 
 	user, err := (*currentAuth).DoAuth(principal, password)
 	if err != nil {
@@ -83,8 +89,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		message = "Incorrect username or password."
 		info.Type = failedRetries
 		info.Description = message
-		ca.Ctx.Output.SetStatus(http.StatusBadRequest)
-		ca.RenderJSON(info)
+		ca.ServeJSONOutput(http.StatusBadRequest, info)
 		return "", false
 	}
 	MemoryCache.Delete("validate_captcha")

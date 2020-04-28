@@ -1,0 +1,967 @@
+<app-header></app-header>
+<div id="container"
+     #divTarget>
+  <div class="clr-row clr-justify-content-center"
+       style="margin-right: 0; margin-left: 0;">
+    <div class="clr-col-lg-9 clr-col-12 clr-align-self-center end-with-blank">
+      <div style="text-align: center; padding-top: 3rem;"
+           *ngIf="!enableInitialization">
+        <div *ngIf="loadingFlag">
+          <clr-spinner>
+            {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+          </clr-spinner>
+          {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+        </div>
+        <div style="font-size: 36px;"
+             *ngIf="disconnect">
+          <clr-icon shape="disconnect"
+                    class="is-error"
+                    size="48"></clr-icon>
+          {{'INITIALIZATION.ALERTS.INITIALIZATION' | translate}}
+        </div>
+      </div>
+
+      <div class="card"
+           *ngIf="enableInitialization">
+
+        <div class="card-header"
+             *ngIf="installStep >= 0">
+          {{'INITIALIZATION.PAGE_TITLE.WELCOME' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 0">
+          <h4 class="card-title">{{'INITIALIZATION.CONTENTS.UUID' | translate}}</h4>
+          <form clrForm>
+            <app-my-input-template [disabled]="installStep >= 1"
+                                   [label]="'UUID'"
+                                   [type]="'text'"
+                                   [required]="true"
+                                   [pattern]="uuidPattern"
+                                   [placeholder]="'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+                                   [helper]="'UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+                                   [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                   [patternMsg]="'INITIALIZATION.ALERTS.UUID' | translate"
+                                   [firstItem]="true"
+                                   (commitEvent)="uuid = $event"
+                                   #UUID>
+            </app-my-input-template>
+          </form>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep >= 1 && !ignoreStep1">
+          {{'INITIALIZATION.PAGE_TITLE.EDIT_CONFIG_CONFIRM' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 1 && !ignoreStep1">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.EDIT_CONFIG_CONFIRM' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep >= 2 && !ignoreStep2">
+          {{'INITIALIZATION.PAGE_TITLE.EDIT_CONFIG' | translate}}
+          <clr-toggle-wrapper>
+            <input type="checkbox"
+                   clrToggle
+                   name="simpleMode"
+                   required
+                   [(ngModel)]="simpleMode" />
+            <label>
+              {{'INITIALIZATION.BUTTONS.FAST_MODE' | translate}}
+              <a role="tooltip"
+                 aria-haspopup="true"
+                 class="tooltip tooltip-md tooltip-bottom-left">
+                <clr-icon shape="info-circle"
+                          size="20"></clr-icon>
+                <span class="tooltip-content">{{'INITIALIZATION.HELPER.FAST_MODE' | translate}}<br></span>
+              </a>
+            </label>
+          </clr-toggle-wrapper>
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 2 && !ignoreStep2">
+          <form clrForm>
+
+            <div>
+              <div class="card-title">
+                {{'CONFIGURATIONS.OTHERS.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.archType"
+                                     [enumType]="'text'"
+                                     [enumItem]="{x86_64:'x86_64',ARM64v8:'arm64v8',MIPS:'mips'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.others.archType = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.SECURITY_MODE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.securityMode"
+                                     [enumType]="'text'"
+                                     [enumItem]="{Normal:'normal',Security:'security'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.OTHERS.SECURITY_MODE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.others.securityMode = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="60"
+                                     [max]="99999"
+                                     [defaultValue]="config.others.tokenCacheExpireSeconds"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 60'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                                     (commitEvent)="config.others.tokenCacheExpireSeconds = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.TOKEN_EXPIRE.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="60"
+                                     [max]="99999"
+                                     [defaultValue]="config.others.tokenExpireSeconds"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_EXPIRE.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 60'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                                     (commitEvent)="config.others.tokenExpireSeconds = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.ELASETICSEARCH_MEMORY.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="128"
+                                     [defaultValue]="config.others.elaseticsearchMemoryInMegabytes"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.ELASETICSEARCH_MEMORY.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.ELASETICSEARCH_MEMORY.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 128'"
+                                     (commitEvent)="config.others.elaseticsearchMemoryInMegabytes = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.TILLER_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.others.tillerPort"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.TILLER_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.TILLER_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.others.tillerPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.AUTH_MODE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.authMode"
+                                     [enumType]="'text'"
+                                     [enumItem]="{Database:'db_auth',LDAP:'ldap_auth',Indata:'indata_auth'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.OTHERS.AUTH_MODE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.others.authMode = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.NAME' | translate"
+                                     [type]="'password'"
+                                     [required]="true"
+                                     [pattern]="passwordPattern"
+                                     [defaultValue]="config.others.dbPassword"
+                                     [confirmPassword]="true"
+                                     [confirmLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.NAME' | translate"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [patternMsg]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.PATTERN_ERROR' | translate"
+                                     [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
+                                     (commitEvent)="config.others.dbPassword = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.OTHERS.DB_MAX_CONNECTION.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="16384"
+                                     [defaultValue]="config.others.dbMaxConnections"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.DB_MAX_CONNECTION.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.DB_MAX_CONNECTION.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 16384'"
+                                     (commitEvent)="config.others.dbMaxConnections = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.NAME' | translate"
+                                     [type]="'password'"
+                                     [required]="true"
+                                     [pattern]="passwordPattern"
+                                     [defaultValue]="config.others.boardAdminPassword"
+                                     [confirmPassword]="true"
+                                     [confirmLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.NAME' | translate"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [patternMsg]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.PATTERN_ERROR' | translate"
+                                     [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
+                                     (commitEvent)="config.others.boardAdminPassword = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="config.others.authMode === 'indata_auth'"
+                                     [disabled]="config.others.authMode !== 'indata_auth'"
+                                     [label]="'CONFIGURATIONS.OTHERS.VERIFICATION_URL.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.verificationUrl"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.others.verificationUrl = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="config.others.authMode === 'indata_auth'"
+                                     [disabled]="config.others.authMode !== 'indata_auth' && !isEditable"
+                                     [label]="'CONFIGURATIONS.OTHERS.REDIRECTION_URL.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.redirectionUrl"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.others.redirectionUrl = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.AUDIT_DEBUG.NAME' | translate"
+                                     [type]="'boolean'"
+                                     [defaultValue]="config.others.auditDebug === 'true'"
+                                     [helper]="'CONFIGURATIONS.OTHERS.AUDIT_DEBUG.TIPS' | translate"
+                                     [showHelper]="'onfocus'"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.others.auditDebug = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.OTHERS.DNS_SUFFIX.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.others.dnsSuffix"
+                                     [placeholder]="'CONFIGURATIONS.OTHERS.DNS_SUFFIX.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.OTHERS.DNS_SUFFIX.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.others.dnsSuffix = $event">
+              </app-my-input-template>
+
+            </div>
+
+            <hr *ngIf="config.others.authMode === 'ldap_auth'">
+
+            <div *ngIf="config.others.authMode === 'ldap_auth'">
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.LDAP.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [disabled]="config.others.authMode !== 'ldap_auth'"
+                                     [label]="'CONFIGURATIONS.LDAP.LDAP_URL.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.ldap.ldapUrl"
+                                     [placeholder]="'CONFIGURATIONS.LDAP.LDAP_URL.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.LDAP.LDAP_URL.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.ldap.ldapUrl = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="config.others.authMode !== 'ldap_auth'"
+                                     [label]="'CONFIGURATIONS.LDAP.LDAP_BASEDN.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.ldap.ldapBasedn"
+                                     [placeholder]="'CONFIGURATIONS.LDAP.LDAP_BASEDN.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.LDAP.LDAP_BASEDN.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.ldap.ldapBasedn = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="config.others.authMode !== 'ldap_auth'"
+                                     [label]="'CONFIGURATIONS.LDAP.LDAP_UID.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.ldap.ldapUid"
+                                     [placeholder]="'CONFIGURATIONS.LDAP.LDAP_UID.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.LDAP.LDAP_UID.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.ldap.ldapUid = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="config.others.authMode !== 'ldap_auth'"
+                                     [label]="'CONFIGURATIONS.LDAP.LDAP_SCOPE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.ldap.ldapScope"
+                                     [enumType]="'text'"
+                                     [enumItem]="{Base:'LDAP_SCOPE_BASE','One level':'LDAP_SCOPE_ONELEVEL',Subtree:'LDAP_SCOPE_SUBTREE'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.LDAP.LDAP_SCOPE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.ldap.ldapScope = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="config.others.authMode !== 'ldap_auth'"
+                                     [label]="'CONFIGURATIONS.LDAP.LDAP_TIMEOUT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="99999"
+                                     [defaultValue]="config.ldap.ldapTimeout"
+                                     [placeholder]="'CONFIGURATIONS.LDAP.LDAP_TIMEOUT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.LDAP.LDAP_TIMEOUT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                                     (commitEvent)="config.ldap.ldapTimeout = $event">
+              </app-my-input-template>
+
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.API_SERVER.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.HOSTNAME.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.apiserver.hostname"
+                                     [placeholder]="'CONFIGURATIONS.API_SERVER.HOSTNAME.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.HOSTNAME.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.apiserver.hostname = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.API_SERVER_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.apiserver.apiServerPort"
+                                     [placeholder]="'CONFIGURATIONS.API_SERVER.API_SERVER_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.API_SERVER_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.apiserver.apiServerPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.KUBE_MASTER_IP.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.apiserver.kubeMasterIp"
+                                     [placeholder]="'CONFIGURATIONS.API_SERVER.KUBE_MASTER_IP.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.KUBE_MASTER_IP.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.apiserver.kubeMasterIp = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.KUBE_HTTP_SCHEME.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.apiserver.kubeHttpScheme"
+                                     [enumType]="'text'"
+                                     [enumItem]="{HTTP:'http',HTTPS:'https'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.KUBE_HTTP_SCHEME.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.apiserver.kubeHttpScheme = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.KUBE_MASTER_PORT.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.apiserver.kubeHttpScheme === 'http' ? 8080 : 6443"
+                                     [enumType]="'number'"
+                                     [enumItem]="{'8080':8080,'6443':6443}"
+                                     [enumInline]="true"
+                                     [enableCustomItem]="true"
+                                     [customItemPlaceholder]="'1~65535'"
+                                     [customItemWidth]="'3.5rem'"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.KUBE_MASTER_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.apiserver.kubeMasterPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.REGISTRY_IP.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.apiserver.registryIp"
+                                     [placeholder]="'CONFIGURATIONS.API_SERVER.REGISTRY_IP.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.REGISTRY_IP.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.apiserver.registryIp = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.API_SERVER.REGISTRY_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.apiserver.registryPort"
+                                     [placeholder]="'CONFIGURATIONS.API_SERVER.REGISTRY_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.API_SERVER.REGISTRY_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.apiserver.registryPort = $event">
+              </app-my-input-template>
+
+              <clr-date-container *ngIf="!simpleMode">
+                <label>{{'CONFIGURATIONS.API_SERVER.IMAGE_BASELINE_TIME.NAME' | translate}}</label>
+                <input type="date"
+                       [(clrDate)]="newDate"
+                       style="width: 10.6rem;"
+                       newFormLayout="true"
+                       (focus)="onFocusBaselineHelper()"
+                       (blur)="onBlurBaselineHelper()">
+                <clr-control-helper *ngIf="showBaselineHelper">
+                  {{ 'CONFIGURATIONS.API_SERVER.IMAGE_BASELINE_TIME.TIPS' | translate }}
+                </clr-control-helper>
+              </clr-date-container>
+
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.GOGITS.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_IP.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.gogits.gogitsHostIp"
+                                     [placeholder]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_IP.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_IP.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.gogits.gogitsHostIp = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.gogits.gogitsHostPort"
+                                     [placeholder]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.GOGITS.GOGITS_HOST_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.gogits.gogitsHostPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.GOGITS.GOGITS_SSH_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.gogits.gogitsSshPort"
+                                     [placeholder]="'CONFIGURATIONS.GOGITS.GOGITS_SSH_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.GOGITS.GOGITS_SSH_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.gogits.gogitsSshPort = $event">
+              </app-my-input-template>
+
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.JENKINS.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_IP.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.jenkins.jenkinsHostIp"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_IP.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_IP.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.jenkins.jenkinsHostIp = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.jenkins.jenkinsHostPort"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_HOST_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.jenkins.jenkinsHostPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_IP.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.jenkins.jenkinsNodeIp"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_IP.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_IP.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.jenkins.jenkinsNodeIp = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_SSH_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.jenkins.jenkinsNodeSshPort"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_SSH_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_SSH_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.jenkins.jenkinsNodeSshPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_USERNAME.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.jenkins.jenkinsNodeUsername"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_USERNAME.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_USERNAME.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.jenkins.jenkinsNodeUsername = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="!isEditable"
+                                     [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.NAME' | translate"
+                                     [type]="'password'"
+                                     [required]="true"
+                                     [pattern]="passwordPattern"
+                                     [defaultValue]="config.jenkins.jenkinsNodePassword"
+                                     [confirmPassword]="true"
+                                     [confirmLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.NAME' | translate"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [patternMsg]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.PATTERN_ERROR' | translate"
+                                     [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
+                                     (commitEvent)="config.jenkins.jenkinsNodePassword = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_VOLUME.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.jenkins.jenkinsNodeVolume"
+                                     [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_VOLUME.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_VOLUME.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.jenkins.jenkinsNodeVolume = $event">
+              </app-my-input-template>
+
+              <app-my-input-template *ngIf="!simpleMode"
+                                     [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.JENKINS.JENKINS_EXECUTION_MODE.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.jenkins.jenkinsExecutionMode"
+                                     [enumType]="'text'"
+                                     [enumItem]="{Single:'single',Multi:'multi'}"
+                                     [enumInline]="true"
+                                     [helper]="'CONFIGURATIONS.JENKINS.JENKINS_EXECUTION_MODE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.jenkins.jenkinsExecutionMode = $event">
+              </app-my-input-template>
+
+            </div>
+
+            <hr *ngIf="!simpleMode">
+
+            <div *ngIf="!simpleMode">
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.KVM.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.KVM.KVM_REGISTRY_SIZE.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [defaultValue]="config.kvm.kvmRegistrySize"
+                                     [placeholder]="'CONFIGURATIONS.KVM.KVM_REGISTRY_SIZE.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.KVM.KVM_REGISTRY_SIZE.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     (commitEvent)="config.kvm.kvmRegistrySize = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.kvm.kvmRegistryPort"
+                                     [placeholder]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.kvm.kvmRegistryPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [label]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PATH.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.kvm.kvmToolkitsPath"
+                                     [placeholder]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PATH.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.KVM.KVM_REGISTRY_PATH.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.kvm.kvmToolkitsPath = $event">
+              </app-my-input-template>
+
+            </div>
+
+            <hr *ngIf="!simpleMode">
+
+            <div *ngIf="!simpleMode">
+              <div class="card-title card-title-no-first">
+                {{'CONFIGURATIONS.EMAIL.TITLE' | translate}}
+              </div>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.NAME' | translate"
+                                     [type]="'enum'"
+                                     [required]="true"
+                                     [defaultValue]="config.email.emailIdentity?config.email.emailIdentity:'null'"
+                                     [enumType]="'text'"
+                                     [enumItem]="{NULL:'null'}"
+                                     [enumInline]="true"
+                                     [enableCustomItem]="true"
+                                     [customItemPlaceholder]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.PLACEHOLDER' | translate"
+                                     [customItemWidth]="'8.3rem'"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.email.emailIdentity = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.email.emailServer"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.email.emailServer = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER_PORT.NAME' | translate"
+                                     [type]="'number'"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="65535"
+                                     [defaultValue]="config.email.emailServerPort"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER_PORT.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_SERVER_PORT.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                                     [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                                     (commitEvent)="config.email.emailServerPort = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_USERNAME.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.email.emailUsername"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_USERNAME.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_USERNAME.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.email.emailUsername = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_PASSWORD.NAME' | translate"
+                                     [type]="'password'"
+                                     [required]="true"
+                                     [defaultValue]="config.email.emailPassword"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_PASSWORD.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_PASSWORD.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.email.emailPassword = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_FROM.NAME' | translate"
+                                     [type]="'text'"
+                                     [required]="true"
+                                     [defaultValue]="config.email.emailFrom"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_FROM.PLACEHOLDER' | translate"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_FROM.TIPS' | translate"
+                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                                     (commitEvent)="config.email.emailFrom = $event">
+              </app-my-input-template>
+
+              <app-my-input-template [disabled]="simpleMode"
+                                     [label]="'CONFIGURATIONS.EMAIL.EMAIL_SSL.NAME' | translate"
+                                     [type]="'boolean'"
+                                     [defaultValue]="config.email.emailSsl === 'true'"
+                                     [helper]="'CONFIGURATIONS.EMAIL.EMAIL_SSL.TIPS' | translate"
+                                     [inputUpdateOn]="'change'"
+                                     (commitEvent)="config.email.emailSsl = $event">
+              </app-my-input-template>
+
+            </div>
+
+          </form>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep === 3">
+          {{'INITIALIZATION.PAGE_TITLE.FINISH' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep === 3">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.FINISH' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep === 4">
+          {{'INITIALIZATION.PAGE_TITLE.UNINSTALL' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep === 4">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.UNINSTALL' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-footer">
+          <div class="progress">
+            <progress [value]="installProgress"
+                      max="100"></progress>
+          </div>
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onNext()"
+                  *ngIf="installStep === 0">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.NEXT' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onEditCfg()"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.EDIT_CONFIG' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="openSSH = true; uninstallConfirm = false; user.password = '';"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.START_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn btn-warning"
+                  [clrLoading]="submitBtnState"
+                  (click)="openSSH = true; uninstallConfirm = true; clearDate = false; responsibility = false; user.password = '';"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onCheckInput()"
+                  *ngIf="installStep === 2">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.APPLY_AND_START_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  (click)="goToBoard()"
+                  *ngIf="installStep === 3">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.GO_TO_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  (click)="goToAdminserver()"
+                  *ngIf="installStep === 3">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.GO_TO_ADMINSERVER' | translate}}</span>
+          </button>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="installStep === 4">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.REINSTALL' | translate}}</span>
+          </a>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="refresh">
+             <clr-icon shape="refresh"></clr-icon>
+            <span> {{'BUTTON.REFRESH' | translate}}</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <app-back-top [topTarget]="divTarget"
+                [visibilityHeight]="450"></app-back-top>
+</div>
+
+<clr-modal [(clrModalOpen)]="openSSH">
+  <h3 class="modal-title">{{ 'INITIALIZATION.PAGE_TITLE.SSH_ACCOUNT' | translate }}</h3>
+  <div class="modal-body">
+    <div>
+      {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
+    </div>
+    <form clrForm
+          #sshForm="ngForm">
+      <clr-checkbox-container *ngIf="uninstallConfirm">
+        <clr-checkbox-wrapper>
+          <input type="checkbox"
+                 clrCheckbox
+                 name="clearDate"
+                 value="true"
+                 [(ngModel)]="clearDate"
+                 [disabled]="!uninstallConfirm" />
+          <label>{{'INITIALIZATION.CONTENTS.CLEAR_DATA' | translate}}</label>
+        </clr-checkbox-wrapper>
+      </clr-checkbox-container>
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               name=sshUsername />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+
+      <clr-password-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.PASSWORD' | translate }}</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword" />
+        <clr-control-error *clrIfError="'required'">
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-password-container>
+
+      <clr-checkbox-wrapper *ngIf="uninstallConfirm">
+        <input type="checkbox"
+               clrCheckbox
+               name="responsibility"
+               required
+               value="true"
+               [(ngModel)]="responsibility"
+               [disabled]="!uninstallConfirm" />
+        <label>{{'INITIALIZATION.CONTENTS.RESPONSIBILITY' | translate}}</label>
+      </clr-checkbox-wrapper>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn"
+            [clrLoading]="submitBtnState"
+            (click)="onStartBoard()"
+            [disabled]='!sshForm.valid'
+            *ngIf="installStep === 1 && !uninstallConfirm">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.START_BOARD' | translate}}</span>
+    </button>
+
+    <button class="btn btn-warning"
+            [clrLoading]="submitBtnState"
+            (click)="onUninstallBoard()"
+            [disabled]='!sshForm.valid'
+            *ngIf="installStep === 1 && uninstallConfirm">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
+    </button>
+
+    <button class="btn"
+            [clrLoading]="submitBtnState"
+            [disabled]='!sshForm.valid'
+            (click)="onApplyAndStartBoard()"
+            *ngIf="installStep === 2">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.APPLY_AND_START_BOARD' | translate}}</span>
+    </button>
+  </div>
+</clr-modal>

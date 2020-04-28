@@ -12,8 +12,9 @@ export class AccountService {
   }
 
   signIn(signInUser: ReqSignIn): Observable<{ token: string }> {
+    const passwordBase64 = window.btoa(signInUser.password);
     return this.http.post<{ token: string }>(BASE_URL + '/sign-in',
-      {user_name: signInUser.username, user_password: signInUser.password},
+      {user_name: signInUser.username, user_password: passwordBase64},
       {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         params: {captcha_id: signInUser.captchaId, captcha: signInUser.captcha}
@@ -22,12 +23,13 @@ export class AccountService {
   }
 
   signUp(account: AccountTypes): Observable<any> {
+    const passwordBase64 = window.btoa(account.password);
     return this.http.post(
       BASE_URL + '/sign-up',
       {
         user_name: account.username,
         user_email: account.email,
-        user_password: account.password,
+        user_password: passwordBase64,
         user_realname: account.realname,
         user_comment: account.comment
       },

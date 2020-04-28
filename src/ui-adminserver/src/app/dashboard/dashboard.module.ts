@@ -6,6 +6,7 @@ import { ClarityModule } from '@clr/angular';
 import { DashboardService } from './dashboard.service';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { SharedServiceModule } from '../shared.service/shared-service.module';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
     FormsModule,
     ClarityModule,
     TranslateModule,
+    SharedServiceModule,
     RouterModule.forChild([{ path: '', component: PreviewerComponent }])
   ],
 })

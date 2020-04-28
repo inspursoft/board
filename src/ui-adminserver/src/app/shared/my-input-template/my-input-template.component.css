@@ -1,0 +1,42 @@
+.tooltip.tooltip-right>.tooltip-content {
+  position: absolute;
+  right: auto;
+  left: 100%;
+  top: 50%;
+  bottom: auto;
+  font-size: .541667rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  background: #c92100;
+  border-radius: 0 .125rem .125rem;
+  color: #fff;
+  line-height: .75rem;
+  margin: 0 0 0 .666667rem;
+  padding: .375rem .5rem;
+  width: 10rem;
+}
+
+.tooltip.tooltip-right>.tooltip-content::before {
+  position: absolute;
+  top: 0;
+  left: -.375rem;
+  bottom: auto;
+  right: auto;
+  content: '';
+  border-top: .25rem solid #c92100;
+  border-right: .208333rem solid #c92100;
+  border-bottom: .25rem solid transparent;
+  border-left: .208333rem solid transparent;
+  box-shadow: 0 0 black;
+}
+
+.first-item {
+  margin-top: 0;
+}
+
+.password-eye {
+  margin-left: -4px;
+  background: 0;
+  border: 0;
+  color: #0095d3;
+}

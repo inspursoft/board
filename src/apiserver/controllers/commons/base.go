@@ -127,7 +127,7 @@ func (b *BaseController) ServeStatus(statusCode int, message string) {
 }
 
 func (b *BaseController) ServeJSONOutput(statusCode int, data interface{}) {
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
+	b.Ctx.Output.SetStatus(statusCode)
 	b.RenderJSON(data)
 }
 
@@ -425,6 +425,59 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 		logs.Error("Failed to remove items to repo: %s, error: %+v", b.RepoPath, err)
 		b.InternalError(err)
 	}
+}
+
+func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {
+	var err error
+	opt := &model.PodLogOptions{}
+	opt.Container = b.GetString("container")
+	opt.Follow, err = b.GetBool("follow", false)
+	if err != nil {
+		logs.Warn("Follow parameter %s is invalid: %+v", b.GetString("follow"), err)
+	}
+	opt.Previous, err = b.GetBool("previous", false)
+	if err != nil {
+		logs.Warn("Privious parameter %s is invalid: %+v", b.GetString("privious"), err)
+	}
+	opt.Timestamps, err = b.GetBool("timestamps", false)
+	if err != nil {
+		logs.Warn("Timestamps parameter %s is invalid: %+v", b.GetString("timestamps"), err)
+	}
+
+	if b.GetString("since_seconds") != "" {
+		since, err := b.GetInt64("since_seconds")
+		if err != nil {
+			logs.Warn("SinceSeconds parameter %s is invalid: %+v", b.GetString("since_seconds"), err)
+		} else {
+			opt.SinceSeconds = &since
+		}
+	}
+
+	since := b.GetString("since_time")
+	if since != "" {
+		sinceTime, err := time.Parse(time.RFC3339, since)
+		if err != nil {
+			logs.Warn("since_time parameter %s is invalid: %+v", since, err)
+		} else {
+			opt.SinceTime = &sinceTime
+		}
+	}
+
+	tail, err := b.GetInt64("tail_lines", -1)
+	if err != nil {
+		logs.Warn("tail_lines parameter %s is invalid: %+v", b.GetString("tail_lines"), err)
+	} else if tail != -1 {
+		opt.TailLines = &tail
+	}
+
+	limit, err := b.GetInt64("limit_bytes", -1)
+	if err != nil {
+		logs.Warn("limit_bytes parameter %s is invalid: %+v", b.GetString("limit_bytes"), err)
+	} else if limit != -1 {
+		opt.LimitBytes = &limit
+	}
+
+	return opt
 }
 
 func InitController() {

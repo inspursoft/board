@@ -2,7 +2,6 @@ package service
 
 import (
 	"git/inspursoft/board/src/adminserver/models"
-	"os/exec"
 	"regexp"
 	"strings"
 )
@@ -10,13 +9,11 @@ import (
 //GetMonitor returns Board containers' information.
 func GetMonitor() ([]*models.Boardinfo, error) {
 
-	command := "docker ps -a --format \"table {{.ID}}\\t{{.Image}}\\t{{.CreatedAt}}\\t{{.Status}}\\t{{.Ports}}\" | grep " + models.ImagePrefix
-	cmd := exec.Command("sh", "-c", command)
-	bytes, err := cmd.Output()
+	command := `docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.CreatedAt}}\t{{.Status}}\t{{.Ports}}" | grep ` + models.ImagePrefix
+	resp, err := Execute(command)
 	if err != nil {
 		return nil, err
 	}
-	resp := string(bytes)
 	row := strings.Count(resp, "\n")
 	arr := strings.Split(resp, "\n")
 
@@ -24,13 +21,11 @@ func GetMonitor() ([]*models.Boardinfo, error) {
 	containersAdd := make([]*models.Boardinfo, row)
 	containersVal := make([]models.Boardinfo, row)
 
-	command2 := "docker stats -a --no-stream --format \"table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}\\t{{.NetIO}}\\t{{.BlockIO}}\\t{{.MemPerc}}\\t{{.PIDs}}\" | grep " + models.ContainerPrefix
-	cmd2 := exec.Command("sh", "-c", command2)
-	bytes2, err := cmd2.Output()
+	command2 := `docker stats -a --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}\t{{.MemPerc}}\t{{.PIDs}}" | grep ` + models.ContainerPrefix
+	resp2, err := Execute(command2)
 	if err != nil {
 		return nil, err
 	}
-	resp2 := string(bytes2)
 	arr2 := strings.Split(resp2, "\n")
 
 	reg, _ := regexp.Compile("\\s{2,}")

@@ -32,18 +32,24 @@
         </clr-control-helper>
       </div>
 
-      <!-- <div class="config-line">
+      <div class="config-line">
         <div class="config-container">
           <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.NAME' | translate"
-            [inputIsRequired]="true" [inputCategory]="3" [inputLabelWidth]='170' [inputDefaultValue]="others.dbPassword"
-            [inputPlaceholder]="'Database password'" [inputWidth]="'100%'" (editEvent)="onEdit(1)"
-            (commitEvent)="others.dbPassword = $event" class="lib-input-ex">
+                        [inputIsRequired]="true"
+                        [inputCategory]="3"
+                        [inputLabelWidth]='170'
+                        [inputDefaultValue]=""
+                        [inputPlaceholder]="'Database password'"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(1)"
+                        (commitEvent)="others.dbPassword = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[1]">
           {{ 'CONFIGURATIONS.OTHERS.DATABASE_PASSWORD.TIPS' | translate }}
         </clr-control-helper>
-      </div> -->
+      </div>
 
       <div class="config-line">
         <div class="config-container">
@@ -126,50 +132,25 @@
         </clr-control-helper>
       </div>
 
-      <!-- <div class="config-line" *ngIf="!isInit">
-        <div class="config-container">
-          <lib-input-ex [inputLabel]="('CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_OLD.NAME') | translate"
-            [inputIsRequired]="true" [inputCategory]="3" [inputLabelWidth]='170' [inputDefaultValue]=""
-            [inputPlaceholder]="'Old password'" [inputWidth]="'100%'" (editEvent)="onEdit(6)"
-            (commitEvent)="verifyPassword('board_admin_password', $event)" class="lib-input-ex">
-          </lib-input-ex>
-        </div>
-        <clr-control-helper *ngIf="tipsList[6] && !showVerify">
-          {{ 'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_OLD.TIPS' | translate }}
-        </clr-control-helper>
-        <clr-control-helper *ngIf="showVerify">
-          <clr-spinner *ngIf="verifySpinner" [clrInline]="true">Verifying data</clr-spinner>
-          <span *ngIf="passwordVerify"><clr-icon shape="success-standard" class="is-solid is-success" size="12"></clr-icon>Verify Success</span>
-          <span *ngIf="!passwordVerify && !verifySpinner" style="color: red;"><clr-icon shape="times-circle" class="is-solid is-error" size="12"></clr-icon>Verify failure, Please retry!</span>
-        </clr-control-helper>
-      </div>
-
       <div class="config-line">
         <div class="config-container">
-          <lib-input-ex [inputLabel]="('isInit'?'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.NAME':'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_NEW.NAME') | translate"
-            [inputIsRequired]="true" [inputCategory]="3" [inputLabelWidth]='170' [sourcePassword]="true"
-            [inputDefaultValue]="" [inputPlaceholder]="('isInit'?'ACCOUNT.INPUT_PASSWORD':'New password') | translate" [inputWidth]="'100%'"
-            (editEvent)="onEdit(6)" (commitEvent)="encryptStr($event)" class="lib-input-ex">
+          <lib-input-ex [inputLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.NAME' | translate"
+                        [inputIsRequired]="true"
+                        [inputCategory]="3"
+                        [inputLabelWidth]='170'
+                        [sourcePassword]="true"
+                        [inputDefaultValue]=""
+                        [inputPlaceholder]="'ACCOUNT.INPUT_PASSWORD' | translate"
+                        [inputWidth]="'100%'"
+                        (editEvent)="onEdit(6)"
+                        (commitEvent)="others.boardAdminPassword = $event"
+                        class="lib-input-ex">
           </lib-input-ex>
         </div>
         <clr-control-helper *ngIf="tipsList[6]">
-          {{ ('isInit'?'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.TIPS':'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_NEW.TIPS') | translate }}
+          {{ 'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.TIPS' | translate }}
         </clr-control-helper>
       </div>
-      
-      <div class="config-line">
-        <div class="config-container">
-          <lib-input-ex [inputIsRequired]="true" [inputLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.NAME' | translate"
-            [inputCategory]="3" [inputLabelWidth]='170' [inputDefaultValue]="" [verifyPassword]="true"
-            [inputPlaceholder]="'ACCOUNT.INPUT_CONFIRM_PASSWORD' | translate "
-            [validatorMessage]="[{key: 'verifyPassword', message: 'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate}]"
-            (commitEvent)="passwordConfirm = $event" (editEvent)="onEdit(6)" class="lib-input-ex">
-          </lib-input-ex>
-        </div>
-        <clr-control-helper *ngIf="tipsList[6]">
-          {{ 'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.TIPS' | translate }}
-        </clr-control-helper>
-      </div> -->
 
       <div class="config-line">
         <div class="config-container">

@@ -539,12 +539,50 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 	}()
 
 	loadChan := make(chan string)
+	podsChan := make(chan []model.PodMO)
 	go func() {
 		load, err := helmpkg.GetReleaseManifest(release.Name, helmhost)
 		if err != nil {
 			logs.Warning("Get release %s workloads from helm error:%+v", release.Name, err)
 		}
 		loadChan <- load
+		// analysis the manifest and get the pods.
+		var pods []model.PodMO
+		model.NewK8sHelper().Visit(load, func(infos []*model.K8sInfo, err error) error {
+			// add the kubernetes resources to board
+			k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+				KubeConfigPath: kubeConfigPath(),
+			})
+			podlist, err := k8sclient.AppV1().Extend().ListSelectRelatePods(infos)
+			if err != nil {
+				logs.Warn("list release %s relate pods error:%+v", release.Name, err)
+				return err
+			}
+			if podlist != nil {
+				for i := range podlist.Items {
+					var containers []model.ContainerMO
+					for j := range podlist.Items[i].Spec.Containers {
+						containers = append(containers, model.ContainerMO{
+							Name:  podlist.Items[i].Spec.Containers[j].Name,
+							Image: podlist.Items[i].Spec.Containers[j].Image,
+						})
+					}
+					pods = append(pods, model.PodMO{
+						Name:        podlist.Items[i].Name,
+						ProjectName: podlist.Items[i].Namespace,
+						Spec: model.PodSpecMO{
+							Containers: containers,
+						},
+					})
+				}
+				// sort the pods by project and name.
+				sort.SliceStable(pods, func(i, j int) bool {
+					return strings.Compare(pods[i].ProjectName+"/"+pods[i].Name, pods[j].ProjectName+"/"+pods[j].Name) <= 0
+				})
+			}
+			return nil
+		})
+		podsChan <- pods
 	}()
 
 	//get the result
@@ -553,12 +591,13 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 	notes := <-notesChan
 	workloads := <-loadChan
 	status := <-statusChan
-
+	pods := <-podsChan
 	detail := model.ReleaseDetail{
 		Release:        generateModelRelease(release, helmrelease),
 		Workloads:      workloads,
 		Notes:          notes,
 		WorkloadStatus: status,
+		Pods:           pods,
 	}
 	return &detail, err
 }

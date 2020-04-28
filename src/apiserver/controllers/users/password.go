@@ -16,6 +16,7 @@ type PasswordController struct {
 }
 
 func (u *PasswordController) Prepare() {
+	u.EnableXSRF = false
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
