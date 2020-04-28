@@ -1,13 +1,12 @@
 package commons
 
 import (
-	"errors"
+	"git/inspursoft/board/src/common/model"
+	t "git/inspursoft/board/src/common/token"
+	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
 
 	"git/inspursoft/board/src/apiserver/service"
 
@@ -19,14 +18,14 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/utils/captcha"
 )
 
+var MemoryCache cache.Cache
+var Cpt *captcha.Captcha
 var TokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
 var TokenExpireTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
 var TokenCacheExpireSeconds int
-var MemoryCache cache.Cache
-
-var ErrInvalidToken = errors.New("error for invalid token")
 
 var APIServerURL = utils.GetConfig("API_SERVER_URL")
 
@@ -58,6 +57,7 @@ type BaseController struct {
 }
 
 func (b *BaseController) Prepare() {
+	b.EnableXSRF = false
 	b.ResolveSignedInUser()
 	b.RecordOperationAudit()
 }
@@ -127,7 +127,7 @@ func (b *BaseController) ServeStatus(statusCode int, message string) {
 }
 
 func (b *BaseController) ServeJSONOutput(statusCode int, data interface{}) {
-	b.Ctx.ResponseWriter.WriteHeader(statusCode)
+	b.Ctx.Output.SetStatus(statusCode)
 	b.RenderJSON(data)
 }
 
@@ -176,11 +176,11 @@ func (b *BaseController) GetCurrentUser() *model.User {
 		return nil
 	}
 	var hasResignedToken bool
-	payload, err := verifyToken(token)
+	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
-		if err == ErrInvalidToken {
+		if err == t.ErrInvalidToken {
 			if lastPayload, ok := MemoryCache.Get(token).(map[string]interface{}); ok {
-				newToken, err := b.SignToken(lastPayload)
+				newToken, err := t.SignToken(TokenServerURL(), lastPayload)
 				if err != nil {
 					logs.Error("failed to sign token: %+v\n", err)
 					return nil
@@ -427,32 +427,57 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 	}
 }
 
-func (b *BaseController) SignToken(payload map[string]interface{}) (*model.Token, error) {
-	var token model.Token
-	err := utils.RequestHandle(http.MethodPost, TokenServerURL(), func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-		}
-		return nil
-	}, payload, func(req *http.Request, resp *http.Response) error {
-		return utils.UnmarshalToJSON(resp.Body, &token)
-	})
-	return &token, err
-}
-
-func verifyToken(tokenString string) (map[string]interface{}, error) {
-	if strings.TrimSpace(tokenString) == "" {
-		return nil, fmt.Errorf("no token provided")
+func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {
+	var err error
+	opt := &model.PodLogOptions{}
+	opt.Container = b.GetString("container")
+	opt.Follow, err = b.GetBool("follow", false)
+	if err != nil {
+		logs.Warn("Follow parameter %s is invalid: %+v", b.GetString("follow"), err)
 	}
-	var payload map[string]interface{}
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", TokenServerURL(), tokenString), nil, nil, func(req *http.Request, resp *http.Response) error {
-		if resp.StatusCode == http.StatusUnauthorized {
-			logs.Error("Invalid token due to session timeout.")
-			return ErrInvalidToken
+	opt.Previous, err = b.GetBool("previous", false)
+	if err != nil {
+		logs.Warn("Privious parameter %s is invalid: %+v", b.GetString("privious"), err)
+	}
+	opt.Timestamps, err = b.GetBool("timestamps", false)
+	if err != nil {
+		logs.Warn("Timestamps parameter %s is invalid: %+v", b.GetString("timestamps"), err)
+	}
+
+	if b.GetString("since_seconds") != "" {
+		since, err := b.GetInt64("since_seconds")
+		if err != nil {
+			logs.Warn("SinceSeconds parameter %s is invalid: %+v", b.GetString("since_seconds"), err)
+		} else {
+			opt.SinceSeconds = &since
 		}
-		return utils.UnmarshalToJSON(resp.Body, &payload)
-	})
-	return payload, err
+	}
+
+	since := b.GetString("since_time")
+	if since != "" {
+		sinceTime, err := time.Parse(time.RFC3339, since)
+		if err != nil {
+			logs.Warn("since_time parameter %s is invalid: %+v", since, err)
+		} else {
+			opt.SinceTime = &sinceTime
+		}
+	}
+
+	tail, err := b.GetInt64("tail_lines", -1)
+	if err != nil {
+		logs.Warn("tail_lines parameter %s is invalid: %+v", b.GetString("tail_lines"), err)
+	} else if tail != -1 {
+		opt.TailLines = &tail
+	}
+
+	limit, err := b.GetInt64("limit_bytes", -1)
+	if err != nil {
+		logs.Warn("limit_bytes parameter %s is invalid: %+v", b.GetString("limit_bytes"), err)
+	} else if limit != -1 {
+		opt.LimitBytes = &limit
+	}
+
+	return opt
 }
 
 func InitController() {
@@ -462,11 +487,11 @@ func InitController() {
 		logs.Error("Failed to get token expire seconds: %+v", err)
 	}
 	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL(), TokenCacheExpireSeconds)
-
-	MemoryCache, err = cache.NewCache("memory", `{"interval": 3600}`)
+	beego.BConfig.MaxMemory = 1 << 22
+	MemoryCache, err = cache.NewCache("memory", `{"interval":3600}`)
 	if err != nil {
 		logs.Error("Failed to initialize cache: %+v", err)
 	}
-	beego.BConfig.MaxMemory = 1 << 22
+	Cpt = captcha.NewWithFilter("/captcha/", MemoryCache)
 	logs.Debug("Current auth mode is: %s", AuthMode())
 }

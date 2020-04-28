@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"git/inspursoft/board/src/apiserver/controllers/commons"
+
 	"github.com/astaxie/beego"
 )
 
@@ -10,6 +12,8 @@ func InitRouter() {
 			beego.NSRouter("/sign-in",
 				&AuthController{},
 				"post:SignInAction"),
+			beego.NSRouter("/captcha",
+				&commons.CaptchaController{}),
 			beego.NSRouter("/ext-auth",
 				&AuthController{},
 				"get:ExternalAuthAction"),
@@ -226,6 +230,9 @@ func InitRouter() {
 			beego.NSRouter("/services/:id([0-9]+)/info",
 				&ServiceController{},
 				"get:GetServiceInfoAction"),
+			beego.NSRouter("/services/:id([0-9]+)/logs/:podname(.+)",
+				&ServiceController{},
+				"get:GetServicePodLogsAction"),
 			beego.NSRouter("/services/info",
 				&ServiceController{},
 				"post:StoreServiceRoute"),
@@ -298,6 +305,9 @@ func InitRouter() {
 			beego.NSRouter("/helm/release/:id([0-9]+)",
 				&HelmController{},
 				"delete:DeleteHelmReleaseAction;get:GetHelmReleaseAction"),
+			beego.NSRouter("/helm/release/:id([0-9]+)/logs/:podname(.+)",
+				&HelmController{},
+				"get:GetReleasePodLogsAction"),
 			beego.NSRouter("/jobs",
 				&JobController{},
 				"get:GetJobListAction"),
@@ -322,6 +332,15 @@ func InitRouter() {
 			beego.NSRouter("/jobs/selectjobs",
 				&JobController{},
 				"get:GetSelectableJobsAction"),
+			beego.NSRouter("/pods/:projectid([0-9]+)/:podname(.+)/shell",
+				&PodController{},
+				"get:PodShellAction"),
+			beego.NSRouter("/pods/:projectid([0-9]+)/:podname(.+)/download",
+				&PodController{},
+				"get:CopyFromPodAction"),
+			beego.NSRouter("/pods/:projectid([0-9]+)/:podname(.+)/upload",
+				&PodController{},
+				"post:CopyToPodAction"),
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),

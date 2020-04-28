@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { User, DBInfo, UserVerify } from './account.model';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { User, MyToken } from './account.model';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 const ACCOUNT_URL = '/v1/admin/account';
-const BOOT_URL = '/v1/admin/boot';
 
 @Injectable()
 export class AccountService {
@@ -15,20 +15,9 @@ export class AccountService {
     return this.http.post(
       `${ACCOUNT_URL}/login/`,
       user.PostBody()
-    );
-  }
-
-  postSignUp(user: UserVerify): Observable<any> {
-    return this.http.post(
-      `${ACCOUNT_URL}/initialize/`,
-      user.PostBody()
-    );
-  }
-
-  checkInit(): Observable<any> {
-    return this.http.get(`${ACCOUNT_URL}/install`, {
-      observe: 'response',
-    });
+    ).pipe(map((res: HttpResponse<MyToken>) => {
+      return res;
+    }));
   }
 
   createUUID(): Observable<any> {
@@ -42,24 +31,4 @@ export class AccountService {
     );
   }
 
-  initDB(dbInfo: DBInfo): Observable<any> {
-    return this.http.post(
-      `${BOOT_URL}/initdb`,
-      dbInfo.PostBody()
-    );
-  }
-
-  initSSH(user: UserVerify): Observable<any> {
-    return this.http.post(
-      `${BOOT_URL}/startdb`,
-      user.PostBody()
-    );
-  }
-
-  checkDB(): Observable<any> {
-    return this.http.get(
-      `${BOOT_URL}/checkdb`,
-      { observe: 'response', }
-    );
-  }
 }

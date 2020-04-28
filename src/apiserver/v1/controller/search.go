@@ -12,6 +12,7 @@ type SearchSourceController struct {
 }
 
 func (pm *SearchSourceController) Prepare() {
+	pm.EnableXSRF = false
 	user := pm.GetCurrentUser()
 	pm.CurrentUser = user
 	pm.RecordOperationAudit()

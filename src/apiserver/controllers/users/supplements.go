@@ -11,7 +11,9 @@ type SupplementController struct {
 	c.BaseController
 }
 
-func (u *SupplementController) Prepare() {}
+func (u *SupplementController) Prepare() {
+	u.EnableXSRF = false
+}
 
 // @Title Supplement checking user existing.
 // @Description Supplement for user existing.

@@ -1,8 +1,8 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { cardSlide, rotateNega90 } from 'src/app/shared/animations';
 import { initTipsArray } from 'src/app/shared/tools';
 import { CfgComponent } from '../cfg-component.template';
-import { Jenkins } from '../cfg.models';
+import { Jenkins } from 'src/app/shared.service/configuration.model';
 
 @Component({
   selector: 'app-jenkins',

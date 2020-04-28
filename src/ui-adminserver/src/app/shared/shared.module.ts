@@ -12,6 +12,8 @@ import { DialogComponent } from './message/dialog/dialog.component';
 import { GlobalAlertComponent } from './message/global-alert/global-alert.component';
 import { HttpInterceptorService } from './http-client-interceptor';
 import { MessageService } from './message/message.service';
+import { MyInputTemplateComponent } from './my-input-template/my-input-template.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,8 @@ import { MessageService } from './message/message.service';
     BackTopComponent,
     AlertComponent,
     DialogComponent,
-    GlobalAlertComponent
+    GlobalAlertComponent,
+    MyInputTemplateComponent
   ],
   entryComponents: [
     AlertComponent,
@@ -32,10 +35,13 @@ import { MessageService } from './message/message.service';
     ClarityModule,
     TranslateModule,
     AppRoutingModule,
+    FormsModule,
+    ReactiveFormsModule,
   ],
   exports: [
     HeaderComponent,
     BackTopComponent,
+    MyInputTemplateComponent
   ],
   providers: [
     ScrollTools,

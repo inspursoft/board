@@ -1,6 +1,5 @@
-DB_CONFIG_DIR=/data/board/Deploy/config/db
-DB_COMPOSE=/data/board/Deploy/docker-compose-db.yml
-BOARD_COMPOSE=/data/board/Deploy/docker-compose-rest.yml
-PREPARE_FILE=/data/board/Deploy/prepare
+BOARD_COMPOSE=__CURDIR__/docker-compose-new.yml
+PREPARE_FILE=__CURDIR__/../prepare
+MAKE_PATH=__CURDIR__/../
 IMAGE_PREFIX=board
 CONTAINER_PREFIX=deploy

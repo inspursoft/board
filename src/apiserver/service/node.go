@@ -14,7 +14,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/google/cadvisor/info/v2"
+	v2 "github.com/google/cadvisor/info/v2"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -28,7 +28,8 @@ const (
 )
 
 const (
-	K8sLabel = "kubernetes.io"
+	K8sLabel      = "kubernetes.io"
+	K8sNamespaces = "kube-system cadvisor"
 )
 
 type NodeListResult struct {
@@ -552,7 +553,19 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 	nodecontrol.NodeIP = nNode.NodeIP
 	nodecontrol.NodePhase = string(nNode.Status.Phase)
 	nodecontrol.NodeUnschedule = nNode.Unschedulable
+	nodecontrol.NodeDeletable = true
 
+	// Phase is deprecated, if null, use Status, fix me
+	if nodecontrol.NodePhase == "" {
+		nodecontrol.NodePhase = func() string {
+			for _, cond := range nNode.Status.Conditions {
+				if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+					return "Running"
+				}
+			}
+			return "Unknown"
+		}()
+	}
 	// Get service instances
 	// si, err := GetNodeServiceInstances(nodeName)
 	// if err != nil {
@@ -574,9 +587,12 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 		instance.ProjectName = podinstance.Namespace
 		instance.ServiceInstanceName = podinstance.Name
 		nodecontrol.Service_Instances = append(nodecontrol.Service_Instances, instance)
+
+		//TODO Need check the deletable by pod list information, owner reference
+		if !strings.Contains(K8sNamespaces, podinstance.Namespace) {
+			nodecontrol.NodeDeletable = false
+		}
 	}
-	//TODO Need check the deletable by pod list information
-	nodecontrol.NodeDeletable = true
 	return &nodecontrol, nil
 }
 
@@ -622,14 +638,22 @@ func DrainNodeServiceInstance(nodeName string) error {
 
 		//TODO Need to delete the pod based on its owner reference
 		logs.Debug("pod %s, kind %v", podinstance.Name, podinstance.ObjectMeta.Labels)
+
 		//TODO Need to support pod evict
 
 		//If not support evict, use pod delete simply
-		err = pInterface.Delete(podinstance.Name)
+		if strings.Contains(K8sNamespaces, podinstance.Namespace) {
+			//Skip the pods of k8s self
+			continue
+		}
+		podcli := k8sclient.AppV1().Pod(podinstance.Namespace)
+		err = podcli.Delete(podinstance.Name)
 		if err != nil {
-			logs.Error("Failed to delete pod %s", podinstance.Name)
+			logs.Error("Failed to delete pod %s %v", podinstance.Name, err)
 			//TODO fix me, whether continue to delete the rest
-			return err
+			//return err
+		} else {
+			logs.Debug("pod %s deleted", podinstance.Name)
 		}
 	}
 	return nil

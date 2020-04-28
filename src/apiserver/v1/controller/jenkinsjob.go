@@ -30,7 +30,9 @@ type JenkinsJobCallbackController struct {
 	c.BaseController
 }
 
-func (j *JenkinsJobCallbackController) Prepare() {}
+func (j *JenkinsJobCallbackController) Prepare() {
+	j.EnableXSRF=false
+}
 
 func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")

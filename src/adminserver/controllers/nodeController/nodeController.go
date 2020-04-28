@@ -7,11 +7,11 @@ import (
 	"git/inspursoft/board/src/adminserver/service/nodeService"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strconv"
 	"strings"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type Controller struct {
@@ -122,8 +122,9 @@ func (controller *Controller) DeleteNodeLog() {
 // @Failure 500 Internal Server Error
 // @router /preparation [get]
 func (controller *Controller) PreparationAction() {
-	configuration, statusMessage := service.GetAllCfg("")
-	if statusMessage == "BadRequest" {
+	configuration, err := service.GetAllCfg("", false)
+	if err != nil {
+		logs.Error(err)
 		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
 		return
 	}
@@ -244,5 +245,3 @@ func (controller *Controller) resolveBody(target interface{}) (err error) {
 	}
 	return
 }
-
-
