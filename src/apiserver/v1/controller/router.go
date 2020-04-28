@@ -14,6 +14,8 @@ func InitRouter() {
 				"post:SignInAction"),
 			beego.NSRouter("/captcha",
 				&commons.CaptchaController{}),
+			beego.NSRouter("/cache-store",
+				&commons.CacheStoreController{}),
 			beego.NSRouter("/ext-auth",
 				&AuthController{},
 				"get:ExternalAuthAction"),
