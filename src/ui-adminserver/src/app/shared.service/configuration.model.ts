@@ -194,6 +194,7 @@ export class Email extends ResponseBase implements RequestBase {
 
 export class Others extends ResponseBase implements RequestBase {
   @HttpBind('arch_type') archType: string;
+  @HttpBind('mode') securityMode: string;
   @HttpBind('db_password') dbPassword: string;
   @HttpBind('db_max_connections') dbMaxConnections: string;
   @HttpBind('token_cache_expire_seconds') tokenCacheExpireSeconds: string;
@@ -212,6 +213,7 @@ export class Others extends ResponseBase implements RequestBase {
       super(res);
     } else {
       this.archType = 'x86_64';
+      this.securityMode = 'normal';
       this.dbPassword = 'root123';
       this.dbMaxConnections = '1000';
       this.tokenCacheExpireSeconds = '1800';
@@ -230,6 +232,7 @@ export class Others extends ResponseBase implements RequestBase {
   PostBody(): object {
     return {
       arch_type: this.archType.toString(),
+      mode: this.securityMode.toString(),
       db_password: this.dbPassword.toString(),
       db_max_connections: this.dbMaxConnections.toString(),
       token_cache_expire_seconds: this.tokenCacheExpireSeconds.toString(),
