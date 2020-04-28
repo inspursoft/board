@@ -19,11 +19,8 @@ type NodeController struct {
 
 func (n *NodeController) Prepare() {
 	n.EnableXSRF = false
-	skip := n.GetString("skip", "")
-	if !(skip == "AMS" && n.Ctx.Input.Method() == http.MethodGet && strings.Index(n.Ctx.Input.URL(), "/nodes") > 0) {
-		n.ResolveSignedInUser()
-		n.RecordOperationAudit()
-	}
+	n.ResolveSignedInUser()
+	n.RecordOperationAudit()
 }
 
 func (n *NodeController) GetNode() {
