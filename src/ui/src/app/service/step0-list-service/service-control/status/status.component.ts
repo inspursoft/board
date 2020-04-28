@@ -1,12 +1,12 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { SERVICE_STATUS } from "../../../../shared/shared.const";
-import { Service } from "../../../service";
-import { K8sService } from "../../../service.k8s";
-import { IScaleInfo } from "../service-control.component";
-import { Subject } from "rxjs";
+import { Subject } from 'rxjs';
+import { SERVICE_STATUS } from '../../../../shared/shared.const';
+import { Service } from '../../../service';
+import { K8sService } from '../../../service.k8s';
+import { IScaleInfo } from '../service-control.component';
 
 @Component({
-  selector: 'status',
+  selector: 'app-status',
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.css']
 })
@@ -33,17 +33,17 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   refreshScaleInfo() {
     this.k8sService.getServiceScaleInfo(this.service.service_id)
-      .subscribe((scaleInfo: IScaleInfo) => {//needn't handle error~!
+      .subscribe((scaleInfo: IScaleInfo) => {// needn't handle error~!
         this.scaleInfo = scaleInfo;
-      })
+      });
   }
 
   getStatusClass(status: SERVICE_STATUS) {
     return {
-      'running': status == SERVICE_STATUS.RUNNING,
-      'stopped': status == SERVICE_STATUS.STOPPED,
-      'warning': status == SERVICE_STATUS.WARNING
-    }
+      running: status === SERVICE_STATUS.RUNNING,
+      stopped: status === SERVICE_STATUS.STOPPED,
+      warning: status === SERVICE_STATUS.WARNING
+    };
   }
 
   getServiceStatus(status: SERVICE_STATUS): string {
@@ -60,9 +60,9 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   get reason(): string {
-    let result: string = this.service["service_comment"];
-    if (result.toLowerCase().startsWith("reason:")) {
-      result = result.slice(7)
+    let result: string = this.service.service_comment;
+    if (result.toLowerCase().startsWith('reason:')) {
+      result = result.slice(7);
     }
     return result;
   }

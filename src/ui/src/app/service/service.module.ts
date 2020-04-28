@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { ServiceComponent } from './service.component';
-import { ServiceHostDirective } from './service-host.directive';
 import { StepService } from './service-step.service';
 import { K8sService } from './service.k8s';
 import { ListServiceComponent } from './step0-list-service/list-service.component';
@@ -27,6 +26,7 @@ import { LoadBalanceComponent } from './step0-list-service/service-control/loadB
 import { CoreModule } from '../core/core.module';
 import { ServiceGuard } from './service-guard.service';
 import { ConfigParamsComponent } from './step2-config-container/config-params/config-params.component';
+import { ConsoleComponent } from './step0-list-service/service-control/console/console.component';
 
 @NgModule({
   imports: [
@@ -36,7 +36,6 @@ import { ConfigParamsComponent } from './step2-config-container/config-params/co
   ],
   declarations: [
     ServiceComponent,
-    ServiceHostDirective,
     ListServiceComponent,
     ChooseProjectComponent,
     ConfigContainerComponent,
@@ -57,6 +56,7 @@ import { ConfigParamsComponent } from './step2-config-container/config-params/co
     AffinityCardListComponent,
     SetAffinityComponent,
     ConfigParamsComponent,
+    ConsoleComponent,
   ],
   entryComponents: [
     ListServiceComponent,

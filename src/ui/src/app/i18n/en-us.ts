@@ -703,6 +703,17 @@ export const LANG_EN_US = {
     "SERVICE_YAML_UPLOAD_SUCCESS":"Upload success!This service in 'preparing' status, click 'create' for run it",
     "SERVICE_YAML_UPLOAD_FAILED":"Upload failed."
   },
+  ServiceControlConsole: {
+    Name: 'Console',
+    Status: 'Status',
+    PodName: 'Pod name',
+    ContainerName: 'Container name',
+    Open: 'OPEN',
+    Closed: 'CLOSED',
+    Closing: 'CLOSING',
+    Connecting: 'CONNECTING',
+    Unknown: 'UNKNOWN',
+  },
   "STORAGE":{
     "PV_CREATE":"New PV",
     "PV_NAME":"PV name",
