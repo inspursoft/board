@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/common/model"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
@@ -34,15 +35,17 @@ func Login(acc *models.Account) (bool, string, error) {
 
 //LoginWithDB allow user to use account information to login adminserver.
 func LoginWithDB(acc *models.Account) (bool, string, error) {
-
-	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
-	if err := dao.LoginCheckAuth(user); err != nil {
+	var err error
+	user := model.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
+	user, err = dao.LoginCheckAuth(user)
+	if err != nil {
 		return false, "", err
 	}
 
-	query := models.User{Username: acc.Username, Password: acc.Password}
+	query := model.User{Username: acc.Username, Password: acc.Password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
-	if err := dao.LoginCheckPassword(query); err != nil {
+	query, err = dao.LoginCheckPassword(query)
+	if err != nil {
 		return false, "", err
 	}
 
@@ -65,7 +68,7 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 	return true, token.TokenString, nil
 }
 
-func GetCurrentUser(token string) *models.User {
+func GetCurrentUser(token string) *model.User {
 	if isTokenExists := dao.GlobalCache.IsExist(token); !isTokenExists {
 		logs.Info("Token stored in cache has expired.")
 		return nil
@@ -82,8 +85,8 @@ func GetCurrentUser(token string) *models.User {
 			logs.Error("Error occurred on converting userID: %+v\n", err)
 			return nil
 		}
-		user := models.User{ID: int64(userID), Deleted: 0}
-		err = dao.GetUserByID(user)
+		user := model.User{ID: int64(userID), Deleted: 0}
+		user, err = dao.GetUserByID(user)
 		if err != nil {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
@@ -138,7 +141,7 @@ func ValidateUUID(input string) (bool, string, error) {
 
 func VerifyUUIDToken(input string) (bool, error) {
 	token := models.Token{Id: 1}
-	err := dao.GetUUIDToken(token)
+	token, err := dao.GetUUIDToken(token)
 	if err != nil {
 		return false, err
 	}
