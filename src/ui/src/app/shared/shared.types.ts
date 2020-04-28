@@ -115,6 +115,7 @@ export class SystemInfo {
   kubernetes_version = '';
   processor_type = '';
   dns_suffix = '';
+  mode = '';
   constructor() {
   }
 }
