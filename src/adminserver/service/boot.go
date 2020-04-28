@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/astaxie/beego/logs"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func StartBoard(host *models.Account) error {
