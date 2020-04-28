@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
+	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -139,7 +140,7 @@ func (b *BaseController) InternalError(err error) {
 func (b *BaseController) CustomAbortAudit(statusCode int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
 	b.UpdateOperationAudit(statusCode)
-	b.CustomAbort(statusCode, body)
+	b.CustomAbort(statusCode, template.HTMLEscapeString(body))
 }
 
 func ParsePostK8sError(message string) int {
@@ -171,10 +172,10 @@ func (b *BaseController) GetCurrentUser() *model.User {
 	if token == "" {
 		token = b.GetString("token")
 	}
-	if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
-		logs.Info("Token stored in cache has expired.")
-		return nil
-	}
+	// if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
+	// 	logs.Info("Token stored in cache has expired.")
+	// 	return nil
+	// }
 	var hasResignedToken bool
 	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
@@ -194,7 +195,6 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
 	}
-
 	MemoryCache.Put(token, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 	b.Token = token
 

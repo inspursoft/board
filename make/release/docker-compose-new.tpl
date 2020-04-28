@@ -235,4 +235,4 @@ services:
 networks:
   dvserver_net:
     external:
-      name: deploy_board
+      name: adminserver_board
