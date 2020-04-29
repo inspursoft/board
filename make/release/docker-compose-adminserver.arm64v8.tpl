@@ -8,7 +8,7 @@ services:
       - /data/adminserver/secrets:/go/secrets
       - /var/run/docker.sock:/var/run/docker.sock
       - /data/adminserver/database:/data/adminserver/database
-      - /data/adminserver/ansible_k8s:/data/adminserver/ansible_k8s
+      - /data/board/ansible_k8s:/data/board/ansible_k8s
       - ../config:/data/board/make/config
     env_file:
       - ./env
