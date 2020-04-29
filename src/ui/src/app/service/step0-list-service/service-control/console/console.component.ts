@@ -2,10 +2,10 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  ElementRef,
+  ElementRef, EventEmitter,
   Input,
   OnDestroy,
-  OnInit,
+  OnInit, Output,
   ViewChild
 } from '@angular/core';
 import { Terminal } from 'xterm';
@@ -25,6 +25,7 @@ import { ServiceContainer, ServiceDetailInfo } from '../../../service.types';
 export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() service: Service;
   @ViewChild('terminalContainer') terminalContainer: ElementRef;
+  @Output() actionIsEnabledEvent: EventEmitter<boolean>;
   term: Terminal;
   fitAddon: FitAddon;
   webLinkAddon: WebLinksAddon;
@@ -42,6 +43,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.searchAddon = new SearchAddon();
     this.webLinkAddon = new WebLinksAddon(this.webLinksHandle);
     this.serviceDetailInfo = new ServiceDetailInfo();
+    this.actionIsEnabledEvent = new EventEmitter<boolean>();
   }
 
   ngOnInit() {
@@ -55,6 +57,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     );
     this.resizeListener = this.resizeListener.bind(this);
+    this.actionIsEnabledEvent.emit(true);
   }
 
   ngOnDestroy(): void {
