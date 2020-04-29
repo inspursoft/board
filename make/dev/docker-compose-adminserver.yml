@@ -8,7 +8,7 @@ services:
     restart: always
     volumes:
       - ../:/go/cfgfile
-      - /data/board/secrets:/go/secrets
+      - /data/adminserver/secrets:/go/secrets
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
       - /data/adminserver/database:/data/adminserver/database:rw
