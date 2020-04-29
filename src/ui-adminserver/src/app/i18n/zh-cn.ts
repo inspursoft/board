@@ -68,8 +68,8 @@ export const LANG_ZH_CN = {
     TITLES: {
       SYSTEM_INFO: '系统信息:',
       SYSTEM_CONTENT: '空',
-      CONTAINER_INFO: '容器信息:',
-      CONTAINER_CONTENT: '个容器正在运行',
+      CONTAINER_INFO: '容器信息: 共计',
+      CONTAINER_CONTENT: '个容器',
     },
     CONTAINER_INFO: {
       NAME: '容器名: ',
@@ -561,7 +561,7 @@ export const LANG_ZH_CN = {
     },
     CONTENTS: {
       WELCOME: '欢迎使用Adminserver！由于这是第一次进行初始化流程，因此需要完成以下几项配置后才能正常启动系统。',
-      UUID: '为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步。',
+      UUID: '为了确认您的身份，需要您输入/data/adminserver/secrets 文件夹中的UUID以进行下一步。',
       DATABASE: '您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。',
       SSH: '请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。',
       ACCOUNT: '初始化Adminserver的管理员密码。该admin账户将与Board共用。',

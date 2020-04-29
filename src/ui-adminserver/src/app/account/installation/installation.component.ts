@@ -61,6 +61,10 @@ export class InstallationComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (window.sessionStorage.getItem('token') && !/^\w{8}(-\w{4}){3}-\w{12}$/.test(window.sessionStorage.getItem('token'))) {
+      this.router.navigateByUrl('account/login');
+      return;
+    }
     this.accountService.createUUID().subscribe(
       () => {
         this.loadingFlag = false;
