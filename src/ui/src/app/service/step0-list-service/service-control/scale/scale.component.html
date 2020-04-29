@@ -1,5 +1,5 @@
 <div class="scale-container">
-  <status *ngIf="service" [service]="service"></status>
+  <app-status *ngIf="service" [service]="service"></app-status>
   <div class="utilization-container" #alertView>
     <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
                   [inputLabelWidth]="230"

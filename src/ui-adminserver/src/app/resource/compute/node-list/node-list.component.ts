@@ -1,7 +1,7 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { NodeActionsType, NodeList, NodeListType, NodeLog } from '../../resource.types';
+import { NodeActionsType, NodeControlStatus, NodeList, NodeListType, NodeLog } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { MessageService } from '../../../shared/message/message.service';
 import { Message, ReturnStatus } from '../../../shared/message/message.types';
@@ -44,22 +44,22 @@ export class NodeListComponent implements OnInit, OnDestroy {
   }
 
   deleteNode(node: NodeListType) {
-    if (!node.isMaster) {
-      this.translateService.get(['Node.Node_List_Remove_Ask', 'Node.Node_Logs_Stop_Ask'])
-        .subscribe(translate => {
-          const ask = Reflect.get(translate, 'Node.Node_List_Remove_Ask');
-          const title = Reflect.get(translate, 'Node.Node_List_Remove_Node');
-          this.messageService.showDeleteDialog(ask, title).subscribe(
-            (res: Message) => {
-              if (res.returnStatus === ReturnStatus.rsConfirm) {
-                const logInfo = new NodeLog({});
-                logInfo.ip = node.ip;
-                this.createNodeDetail(logInfo, NodeActionsType.Remove);
-              }
+    this.resourceService.getNodeControlStatus(node.nodeName).subscribe(
+      (res: NodeControlStatus) => {
+        if (res.nodeDeletable) {
+          const logInfo = new NodeLog({});
+          logInfo.ip = node.ip;
+          this.createNodeDetail(logInfo, NodeActionsType.Remove);
+        } else {
+          this.translateService.get(['Node.Node_Detail_Remove', 'Node.Node_Logs_Can_Not_Remove']).subscribe(
+            translate => {
+              const title = Reflect.get(translate, 'Node.Node_Detail_Remove');
+              const msg = Reflect.get(translate, 'Node.Node_Logs_Can_Not_Remove');
+              this.messageService.showDialog(msg, {title});
             }
           );
-        });
-    }
+        }
+      });
   }
 
   showLog(node: NodeListType) {

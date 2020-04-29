@@ -1,21 +1,21 @@
 version: '2'
 services:
-  uibuilder7.3:
+  uibuilder7.4:
     build:
       context: ../
       dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: 10.111.25.119/board/dev_uibuilder:7.3
+    image: 10.111.25.119/board/dev_uibuilder:7.4
     volumes:
       - ../src/ui:/board_src
     environment:
       MODE: test
     entrypoint:
       - /entrypoint.sh
-  uibuilder-adminserver7.3:
+  uibuilder-adminserver7.4:
     build:
       context: ../
       dockerfile: make/dev/container/uibuilder/Dockerfile
-    image: 10.111.25.119/board/dev_uibuilder:7.3
+    image: 10.111.25.119/board/dev_uibuilder:7.4
     volumes:
       - ../src/ui-adminserver:/board_src
     environment:
