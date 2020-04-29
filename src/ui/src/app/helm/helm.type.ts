@@ -1,5 +1,5 @@
 import { IPagination } from '../shared/shared.types';
-import { HttpBind, ResponseArrayBase, ResponseBase } from '../shared.service/shared-model-types';
+import { HttpBind, ResponseArrayBase, ResponseBase } from '../shared/ui-model/model-types';
 
 export enum QuestionType {
   qtUnknown, qtBoolean, qtString, qtInteger

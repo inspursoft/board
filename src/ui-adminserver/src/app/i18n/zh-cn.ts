@@ -121,6 +121,7 @@ export const LANG_ZH_CN = {
     Node_Logs_Stop: '停止',
     Node_Logs_Removing: '正在移除...',
     Node_Logs_Adding: '正在添加...',
+    Node_Logs_Can_Not_Remove: '此节点目前不能删除',
     Node_Detail_Add: '添加',
     Node_Detail_Remove: '移除',
     Node_Detail_Refresh: '刷新日志',
