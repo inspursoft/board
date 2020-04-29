@@ -12,7 +12,7 @@ export const LANG_EN_US = {
     "CREATE":"Create",
     "NEXT":"Next",
     "BACK":"Back",
-    "TEST":"Test",
+    "TEST":"Test1",
     CLOSE: 'Close'
   },
   "DATAGRID": {
@@ -803,7 +803,7 @@ export const LANG_EN_US = {
     "AUDIT_LOG_OUT": "log-out",
     "AUDIT_DASHBOARD": "dashboard",
     "AUDIT_NODEGROUP": "nodegroup",
-    "AUDIT_NODE": "node",
+    "AUDIT_NODE": "node.types11",
     "AUDIT_PROJECTS": "projects",
     "AUDIT_SERVICES": "services",
     "AUDIT_IMAGES": "images",
@@ -868,7 +868,6 @@ export const LANG_EN_US = {
     "NODE_GROUP_ADD_SUCCESS":"To join the node group successfully.",
     "NODE_GROUP_REMOVE_SUCCESS":"Successful remove the node from node group.",
     "NODE_LIST":"Node List",
-    "NODE_CONTROL":"Node Control",
     "NODE_CREATE":"Create Node",
     "NODE_CONTROL_COMMENT1":"The available node group list",
     "NODE_CONTROL_COMMENT2":"The node group list of include the node",
@@ -882,9 +881,25 @@ export const LANG_EN_US = {
     "NODE_GROUP_DELETE_FAILED":"Delete node group failed!",
     "NODE_GROUP_NAME":"Node Group Name",
     "NODE_GROUP_COMMENT":"Node Group Comment",
+    "NODE_GROUP_UPDATE_TIME":"Update time",
     "NODE_GROUP_CREATE_PATTERN_MESSAGE": "Node group name should be composed by numbers,alphabets,or some specific characters (.-_).",
     "CONFIRM_TO_DELETE_NODE_GROUP": "Confirm to delete node group {{0}} ?",
   },
+
+  NodeControl: {
+    Title: 'Node Control',
+    NodeGroupControl: 'Node group control',
+    NodeServiceControl: 'Node service control',
+    NodeIp: 'Node ip',
+    NodeName: 'Node name',
+    NodePhase: 'Node phase',
+    NodeSchedulable: 'Node schedulable',
+    ProjectName: 'Project name',
+    ServiceInstanceName: 'Service instance name',
+    DrainService: 'Drain service',
+    DeleteNode: 'Delete node'
+  },
+
   "GUIDE":{
     "TITLE":"Usage guide",
     "NEXT_STEP":"Next step"

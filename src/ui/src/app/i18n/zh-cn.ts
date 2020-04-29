@@ -869,7 +869,6 @@ export const LANG_ZH_CN = {
     "NODE_GROUP_REMOVE_SUCCESS":"成功从节点组中移除。",
     "NODE_LIST":"节点列表",
     "NODE_CREATE":"创建节点",
-    "NODE_CONTROL":"节点控制",
     "NODE_CONTROL_COMMENT1":"可用的节点组列表",
     "NODE_CONTROL_COMMENT2":"属于节点组列表，节点名",
     "NODE_GROUP_CREATE":"创建节点组",
@@ -882,9 +881,25 @@ export const LANG_ZH_CN = {
     "NODE_GROUP":"节点组列表",
     "NODE_GROUP_NAME":"节点组名称",
     "NODE_GROUP_COMMENT":"节点组注释",
+    "NODE_GROUP_UPDATE_TIME":"更新时间",
     "NODE_GROUP_CREATE_PATTERN_MESSAGE":"由小写字母、大写字母、数字、'.'、'_'、'-'组成的字符串",
     "CONFIRM_TO_DELETE_NODE_GROUP": "确定删除节点组 {{0}} ?",
   },
+
+  NodeControl: {
+    Title: '节点控制',
+    NodeGroupControl: '节点组控制',
+    NodeServiceControl: '节点服务控制',
+    NodeIp: '节点Ip',
+    NodeName: '节点名称',
+    NodePhase: '阶段',
+    NodeSchedulable: '可调度',
+    ProjectName: '项目名称',
+    ServiceInstanceName: '服务实例名称',
+    DrainService: '排除服务',
+    DeleteNode: '删除服务'
+  },
+
   "GUIDE":{
     "TITLE":"使用向导",
     "NEXT_STEP":"下一步"

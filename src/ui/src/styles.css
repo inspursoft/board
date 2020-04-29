@@ -56,3 +56,9 @@ div.clr-row {
   margin-left: 0;
   margin-right: 0;
 }
+
+.clr-toggle-wrapper input[type=checkbox]:checked:disabled+label::before,
+.toggle-switch input[type=checkbox]:checked:disabled+label::before{
+  background-color: green;
+}
+
