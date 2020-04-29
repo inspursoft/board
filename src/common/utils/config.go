@@ -100,6 +100,7 @@ func InitializeDefaultConfig() {
 
 	Initialize()
 
+	AddEnv("MODE")
 	AddEnv("BOARD_HOST_IP")
 	AddEnv("API_SERVER_PORT")
 	AddEnv("DB_IP")

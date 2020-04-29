@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
@@ -152,4 +153,14 @@ func IsSysAdmin(userID int64) (bool, error) {
 		return false, err
 	}
 	return (user != nil && user.ID != 0 && user.SystemAdmin == 1), nil
+}
+
+//Use the Base64 Encode, to support others later
+func DecodeUserPassword(password string) (string, error) {
+	pwdBytes, err := base64.StdEncoding.DecodeString(password)
+	if err != nil {
+		logs.Error("Decode failed %s", password)
+		return "", err
+	}
+	return string(pwdBytes), nil
 }

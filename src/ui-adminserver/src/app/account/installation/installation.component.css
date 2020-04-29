@@ -1,0 +1,51 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#container {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.card-block {
+  padding: .75rem 2.25rem;
+}
+
+.clr-form-horizontal .clr-form-control:first-child {
+  margin-top: 0;
+}
+
+.card-header clr-toggle-wrapper {
+  display: inline-block;
+  float: right;
+}
+
+hr {
+  margin: 1rem 0;
+}
+
+.my-form-control {
+  margin-right: -.5rem;
+  margin-left: -.5rem;
+}
+
+.my-clr-control-label {
+  width: 8rem;
+  flex-shrink: 0;
+  margin-top: .125rem;
+  display: block;
+  color: #444;
+  font-size: .541667rem;
+  font-weight: 600;
+  line-height: .75rem;
+}
+
+.port-style {
+  width: 3.5rem;
+}
+
+.end-with-blank {
+  margin-bottom: 3rem;
+}

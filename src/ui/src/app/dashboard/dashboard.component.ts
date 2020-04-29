@@ -607,7 +607,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   getLinesName(lineType: LineType): Array<string> {
-    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : null;
+    return this.lineResponses.get(lineType) ? this.lineResponses.get(lineType).list : [];
   }
 
   get grafanaViewUrl(): string {
@@ -617,7 +617,8 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   get showGrafanaWindow(): boolean {
     return this.appInitService.isSystemAdmin &&
       !this.appInitService.isMipsSystem &&
-      !this.appInitService.isArmSystem;
+      !this.appInitService.isArmSystem &&
+      this.appInitService.isNormalMode;
   }
 
   get showMaxGrafanaWindow(): boolean {

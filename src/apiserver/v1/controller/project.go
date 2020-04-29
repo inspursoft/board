@@ -17,14 +17,6 @@ type ProjectController struct {
 	c.BaseController
 }
 
-func (p *ProjectController) Prepare() {
-	skip := p.GetString("skip", "")
-	if !(skip == "PRD" && p.Ctx.Input.Method() == http.MethodPost && strings.Index(p.Ctx.Input.URL(), "/pull-requests/reset") > 0) {
-		p.ResolveSignedInUser()
-		p.RecordOperationAudit()
-	}
-}
-
 func (p *ProjectController) CreateProjectAction() {
 	var reqProject model.Project
 	var err error
@@ -224,35 +216,5 @@ func (p *ProjectController) ToggleProjectPublicAction() {
 	}
 	if !isSuccess {
 		p.CustomAbortAudit(http.StatusBadRequest, "Failed to update project public.")
-	}
-}
-
-func (p *ProjectController) ResetProjectPullRequestCount() {
-	var payload map[string]interface{}
-	err := utils.UnmarshalToJSON(p.Ctx.Request.Body, &payload)
-	if err != nil {
-		p.InternalError(err)
-	}
-	if _, ok := payload["pull_request"]; !ok {
-		p.CustomAbortAudit(http.StatusBadRequest, "Payload mistype of webhook payload, aborting ...")
-	}
-
-	val := payload["action"]
-	if action, ok := val.(string); ok {
-		if action != "closed" {
-			p.CustomAbortAudit(http.StatusBadRequest, "Payload for action is not closed, aborting ...")
-		}
-	}
-
-	projectID, err := strconv.Atoi(p.Ctx.Input.Param(":projectId"))
-	if err != nil {
-		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Invalid project ID: %+v, err: %+v", projectID, err))
-	}
-	isSuccess, err := service.ModifyProjectPullRequestCount(int64(projectID), "reset")
-	if err != nil {
-		p.InternalError(err)
-	}
-	if !isSuccess {
-		p.CustomAbort(http.StatusBadRequest, "Failed to reset pull request count.")
 	}
 }

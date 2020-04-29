@@ -1,93 +1,87 @@
-:host{
-  flex-basis: 100%;
-  display: flex;
-  flex-direction: column;
+div.background-container {
+    height: 100vh;
+    background: url('../../../images/sign-in-background.jpg') no-repeat;
+    background-size: 100% 100%;
 }
 
-.custom-row {
-  width: 580px;
-  margin-left: auto;
-  margin-right: auto;
+div.left-image-container {
+    width: 580px;
+    margin-top: 100px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
-.custom-top {
-  top: 80px;
+div.circle-container {
+    background: no-repeat url('../../../images/circle-background.png');
+    width: 130px;
+    height: 155px;
+    flex-direction: column;
 }
 
-.background {
-  height: 100vh;
-  background: url('../../../images/sign-in-background.jpg') no-repeat;
-  background-size: 100% 100%;
+div.circle-container img {
+    margin-top: 40px;
+    width: 60px;
+    height: 50px;
 }
 
-.background-row-container {
-  width: 100%;
-  margin-left: 0;
+span.icon-description {
+    margin-top: auto;
+    color: #ffffff;
+    text-align: center;
 }
 
-.circle {
-  background: no-repeat url('../../../images/circle-background.png');
-  height: 132px;
-  width: 132px;
-  margin-left: auto;
-  margin-right: auto;
+div.sign-in-background {
+    margin-top: 100px;
+
 }
 
-.sign-in-background {
-  background: url('../../../images/sign-in-pad.png');
-  height: 356px;
-  width: 300px;
-  margin-left: auto;
-  margin-right: auto;
+div.sign-in-container {
+    margin-left: auto;
+    height: 324px;
+    width: 350px;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: #bbbbbb 0 0 5px;
+    flex-direction: column;
+    background-color: ghostwhite;
 }
 
-.icon-description {
-  margin-top: 0;
-  color: #ffffff;
-  text-align: center;
+div.show-verify-code{
+    height: 364px;
 }
 
-.icon-pos {
-  position: relative;
+div.input-container {
+    height: 50px;
+    margin-left: 20px;
+    margin-right: 20px;
+    border-radius: 5px;
+    flex-wrap: nowrap;
 }
 
-.icon-size {
-  width: 90px;
-  height: 70px;
+div.input-container.first {
+    margin-top: 40px;
 }
 
-.custom-row-columns {
-  top: 120px;
-  position: relative;
-  width: 520px;
-  height: 135px;
-  margin-left: auto;
-  margin-right: auto;
+div.input-container img {
+    height: 30px;
 }
 
-.custom-sign-in-top {
-  margin-top: 100px;
+div.input-container lib-input-ex {
+    width: 100%;
 }
 
-.custom-sign-in-title {
-  position: relative;
-  margin-left: auto;
-  width: 50px;
-  margin-right: auto;
-  top: 30px;
-  color: #007CBB;
+img.image-head {
+    height: 80px;
+    border-radius: 40px;
+    background-color: ghostwhite;
+    margin-top: -40px;
+    color: transparent;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.custom-sign-in-input {
-  position: relative;
-  top: 80px;
-}
-
-.custom-input-padding {
-  padding-left: 36px;
-}
-
-.custom-down-padding {
-  float: right;
-  padding-right: 12px;
+button.login-class {
+    margin-left: 30px;
+    margin-right: 30px;
+    border-radius: 5px;
 }

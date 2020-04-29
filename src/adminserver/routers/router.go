@@ -9,6 +9,7 @@ package routers
 import (
 	"git/inspursoft/board/src/adminserver/controllers"
 	"git/inspursoft/board/src/adminserver/controllers/nodeController"
+
 	"github.com/astaxie/beego"
 )
 
@@ -33,7 +34,7 @@ func init() {
 		),
 		beego.NSNamespace("/monitor",
 			beego.NSInclude(
-				&controllers.MoniController{},
+				&controllers.MonitorController{},
 			),
 		),
 		beego.NSNamespace("/boot",

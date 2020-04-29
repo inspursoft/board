@@ -18,11 +18,9 @@ type NodeController struct {
 }
 
 func (n *NodeController) Prepare() {
-	skip := n.GetString("skip", "")
-	if !(skip == "AMS" && n.Ctx.Input.Method() == http.MethodGet && strings.Index(n.Ctx.Input.URL(), "/nodes") > 0) {
-		n.ResolveSignedInUser()
-		n.RecordOperationAudit()
-	}
+	n.EnableXSRF = false
+	n.ResolveSignedInUser()
+	n.RecordOperationAudit()
 }
 
 func (n *NodeController) GetNode() {
@@ -201,6 +199,28 @@ func (n *NodeController) NodeDrainAction() {
 	}
 	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
 	logs.Debug("Drain the node %s", nodeName)
-	//TODO drain services
 
+	nodeDel, err := service.GetNodebyName(nodeName)
+	if err != nil {
+		logs.Debug("Failed to get node %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+
+	if !nodeDel.Unschedulable {
+		logs.Debug("Cannot drain a schedulable node %s", nodeName)
+		n.CustomAbortAudit(http.StatusPreconditionRequired, "Cannot drain a schedulable node.")
+		return
+	}
+
+	//TODO drain services by adminserver
+
+	//Drain services by k8s api server
+	err = service.DrainNodeServiceInstance(nodeName)
+	if err != nil {
+		logs.Debug("Failed to drain node %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	logs.Debug("Drained node %s", nodeName)
 }

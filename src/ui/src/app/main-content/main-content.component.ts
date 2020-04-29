@@ -39,7 +39,8 @@ export class MainContentComponent {
     this.getMenuItemByRoute(this.navSource, RouteKibana).visible =
       this.appInitService.isSystemAdmin &&
       !this.appInitService.isMipsSystem &&
-      !this.appInitService.isArmSystem;
+      !this.appInitService.isArmSystem &&
+      this.appInitService.isNormalMode;
     this.getMenuItemByRoute(this.navSource, RouteHelm).visible = !this.appInitService.isMipsSystem &&
       !this.appInitService.isArmSystem;
     this.route.queryParamMap.subscribe(params => {

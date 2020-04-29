@@ -242,15 +242,15 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s/issues/%d/comments", gogitsBaseURL(), ownerName, baseRepoName, issueIndex), g.getAccessHeader(), &opt)
 }
 
-func (g *gogsHandler) CreateHook(ownerName string, repoName string, configURL string, event string) error {
+func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
 	config := make(map[string]string)
-	config["url"] = configURL
+	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
 	config["content_type"] = "json"
 
 	opt := createHookOption{
 		Type:   "gogs",
 		Config: config,
-		Events: []string{event},
+		Events: []string{"push"},
 		Active: true,
 	}
 	logs.Info("Requesting Gogits API of create hook ...")

@@ -12,7 +12,7 @@ import { SharedServiceModule } from './shared.service/shared-service.module';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from "./shared/shared.module";
 import { GlobalSearchComponent } from "./global-search/global-search.component";
-import { HttpClientModule } from "@angular/common/http";
+import { HttpClientModule, HttpClientXsrfModule } from "@angular/common/http";
 import { COMPONENTS_CUR_LANG } from "board-components-library";
 
 export function appInitServiceFactory(appInitService: AppInitService) {
@@ -38,6 +38,7 @@ export function InitBoardLibraryLang(appInitService: AppInitService): string {
     BrowserAnimationsModule,
     CoreModule,
     HttpClientModule,
+    HttpClientXsrfModule.withOptions({cookieName: 'token'}),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

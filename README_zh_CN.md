@@ -5,6 +5,11 @@
 **注意**：开发过程中，`master`分支可能处于*不稳定的甚至中断的状态*。
 请使用`releases`分支，而不是`master`的分支，来获得稳定的二进制文件。
 
+|<img alt="notification" width="24" src="docs/img/bell.png">沟通会议|
+|------------------|
+|Board项目使用Webex会议进行沟通。如果想加入沟通会议或者查看之前的会议记录, 请访问Wiki [meeting schedule](http://10.10.5.9/TechnologyCenter/board/wikis/community-meeting-schedule).|
+
+
 <img alt="Board" src="docs/img/board_logo.png">
 
 "Board"产品是基于docker+ kubernetes的容器服务平台，为浪潮软件提供云解决方案，包括轻量级容器的虚拟化，微服务，DevOps，持续的交付，帮助企业和开发团队实现快速的业务应用交付和不断创新。
@@ -214,7 +219,9 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 有关如何使用BOARD，请参阅[用户指南](docs/user_guide.md).
 
 ## 社区
-（即将推出）
+[在线沟通会议](http://open.inspur.com/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
+
+[在线沟通会议 (内部链接)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## 贡献
 （即将推出）
@@ -222,8 +229,13 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ## 许可
 （即将推出）
 
-## 伙伴
-（即将推出）
+## 重点客户
+山西国土资源部
+
+中国移动
+
+中国退役军人事业部
+
 
 ## 用户
 （即将推出）

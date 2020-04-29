@@ -3,10 +3,9 @@ package main
 import (
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
-	"git/inspursoft/board/src/adminserver/service"
 	_ "git/inspursoft/board/src/adminserver/routers"
+
 	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 )
 
 func main() {
@@ -18,9 +17,5 @@ func main() {
 	dao.InitDatabase()
 	models.RegisterModels()
 	dao.InitGlobalCache()
-	if err := models.InitInstallationStatus(); err != nil {
-		logs.Error(err)
-	}
-	service.RegisterDBWhenBooting()
 	beego.Run()
 }

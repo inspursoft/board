@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -224,7 +223,7 @@ func (p *JobController) GetJobLogsAction() {
 	//Judge authority
 	p.ResolveUserPrivilegeByID(j.ProjectID)
 	podName := p.Ctx.Input.Param(":podname")
-	readCloser, err := service.GetK8sJobLogs(j, podName, p.generatePodLogOptions())
+	readCloser, err := service.GetK8sPodLogs(j.ProjectName, podName, p.GeneratePodLogOptions())
 	if err != nil {
 		p.ParseError(err, c.ParseGetK8sError)
 		return
@@ -236,58 +235,6 @@ func (p *JobController) GetJobLogsAction() {
 	}
 }
 
-func (p *JobController) generatePodLogOptions() *model.PodLogOptions {
-	var err error
-	opt := &model.PodLogOptions{}
-	opt.Container = p.GetString("container")
-	opt.Follow, err = p.GetBool("follow", false)
-	if err != nil {
-		logs.Warn("Follow parameter %s is invalid: %+v", p.GetString("follow"), err)
-	}
-	opt.Previous, err = p.GetBool("previous", false)
-	if err != nil {
-		logs.Warn("Privious parameter %s is invalid: %+v", p.GetString("privious"), err)
-	}
-	opt.Timestamps, err = p.GetBool("timestamps", false)
-	if err != nil {
-		logs.Warn("Timestamps parameter %s is invalid: %+v", p.GetString("timestamps"), err)
-	}
-
-	if p.GetString("since_seconds") != "" {
-		since, err := p.GetInt64("since_seconds")
-		if err != nil {
-			logs.Warn("SinceSeconds parameter %s is invalid: %+v", p.GetString("since_seconds"), err)
-		} else {
-			opt.SinceSeconds = &since
-		}
-	}
-
-	since := p.GetString("since_time")
-	if since != "" {
-		sinceTime, err := time.Parse(time.RFC3339, since)
-		if err != nil {
-			logs.Warn("since_time parameter %s is invalid: %+v", since, err)
-		} else {
-			opt.SinceTime = &sinceTime
-		}
-	}
-
-	tail, err := p.GetInt64("tail_lines", -1)
-	if err != nil {
-		logs.Warn("tail_lines parameter %s is invalid: %+v", p.GetString("tail_lines"), err)
-	} else if tail != -1 {
-		opt.TailLines = &tail
-	}
-
-	limit, err := p.GetInt64("limit_bytes", -1)
-	if err != nil {
-		logs.Warn("limit_bytes parameter %s is invalid: %+v", p.GetString("limit_bytes"), err)
-	} else if limit != -1 {
-		opt.LimitBytes = &limit
-	}
-
-	return opt
-}
 func (p *JobController) GetSelectableJobsAction() {
 	projectName := p.GetString("project_name")
 	p.ResolveProjectMember(projectName)

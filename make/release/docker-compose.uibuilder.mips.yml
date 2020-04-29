@@ -1,21 +1,21 @@
 version: '2'
 services:
-  uibuilder-mips7.3:
+  uibuilder-mips7.4:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile.mips
-    image: inspursoft/uibuilder-mips:7.3
+    image: inspursoft/uibuilder-mips:7.4
     volumes:
       - ../../src/ui:/board_src
     environment:
        MODE: prod
     entrypoint:
       - /entrypoint.sh
-  uibuilder-adminserver-mips7.3:
+  uibuilder-adminserver-mips7.4:
     build:
       context: ../../
       dockerfile: make/dev/container/uibuilder/Dockerfile.mips
-    image: inspursoft/uibuilder-mips:7.3
+    image: inspursoft/uibuilder-mips:7.4
     volumes:
       - ../../src/ui-adminserver:/board_src
     environment:
