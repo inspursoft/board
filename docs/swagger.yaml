@@ -3482,6 +3482,39 @@ paths:
           description: The image tag existing.          
         500:
           description: Internal errors.     
+  /v1/dashboard/adminservercheck:          
+    get:
+      summary: Return the adminserver monitor info.
+      description: |
+        This endpoint checks the adminserver monitor info.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: module_name
+          in: query
+          type: string
+          required: false
+          description: The module name to be checked             
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the adminserver monitor modules.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BoardInfo'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        404:
+          description: The adminserver monitor is not exsiting.          
+        500:
+          description: Internal errors.        
   /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
@@ -7037,3 +7070,15 @@ definitions:
         type: array
         items:
           type: string
+  BoardInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The module integer ID of this service.    
+      name:
+        type: string
+        description: The name of this module.
+      status:
+        type: string
+        description: The status of this module.        

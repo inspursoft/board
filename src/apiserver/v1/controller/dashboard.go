@@ -93,3 +93,14 @@ func (s *Dashboard) GetData() {
 	}
 	s.RenderJSON(resp)
 }
+
+//TODO check the adminserver monitor modules
+func (s *Dashboard) AdminserverCheck() {
+	if s.IsSysAdmin == false {
+		s.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	moduleName := s.GetString("module_name")
+
+	s.RenderJSON(moduleName)
+}
