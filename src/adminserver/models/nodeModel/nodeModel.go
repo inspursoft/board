@@ -89,6 +89,7 @@ type ApiServerNodeListResult struct {
 
 type NodeListResponse struct {
 	Ip           string `json:"ip"`
+	NodeName     string `json:"node_name"`
 	CreationTime int64  `json:"creation_time"`
 	LogTime      int64  `json:"log_time"`
 	Status       int    `json:"status"`

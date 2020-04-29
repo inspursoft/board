@@ -121,6 +121,7 @@ export const LANG_EN_US = {
     Node_Logs_Stop: 'Stop',
     Node_Logs_Removing: 'Removing...',
     Node_Logs_Adding: 'Adding...',
+    Node_Logs_Can_Not_Remove: 'The node can not be remove at present.',
     Node_Detail_Add: 'Add',
     Node_Detail_Remove: 'Remove',
     Node_Detail_Refresh: 'Refresh log',
