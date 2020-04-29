@@ -25,6 +25,7 @@ import { CreatePvcComponent } from './create-pvc/create-pvc.component';
 import { CoreModule } from '../core/core.module';
 import { LibCheckPatternExDirective } from './lib-directives/input-check-pattern.directive';
 import { LibCheckExistingExDirective } from './lib-directives/input-check-existing.directive';
+import { CustomHttpProvider } from './ui-model/model-http-client';
 
 @NgModule({
   imports: [CoreModule],
@@ -75,6 +76,9 @@ import { LibCheckExistingExDirective } from './lib-directives/input-check-existi
     CreateProjectComponent,
     MemberComponent,
     CreatePvcComponent
+  ],
+  providers: [
+    CustomHttpProvider
   ]
 })
 export class SharedModule {

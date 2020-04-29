@@ -23,21 +23,12 @@ export class ConfigurationService {
     }));
   }
 
-  postConfig(config: Configuration): Observable<any> {
+  putConfig(config: Configuration): Observable<any> {
     const token = window.sessionStorage.getItem('token');
-    return this.http.post(
+    return this.http.put(
       `${BASE_URL}?token=${token}`,
       config.PostBody()
     );
-  }
-
-  getPubKey(): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
-    return this.http.get(`${BASE_URL}/pubkey?token=${token}`, {
-      observe: 'response',
-    }).pipe(map((res: HttpResponse<any>) => {
-      return res.body;
-    }));
   }
 
 }

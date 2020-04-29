@@ -70,7 +70,7 @@ type UpdateNodeLog struct {
 	Success     int    `json:"success"`
 }
 
-type NodeLogDetailArray = []NodeLogDetail;
+type NodeLogDetailArray = []NodeLogDetail
 
 // database table's name: node-status
 type NodeStatus struct {
@@ -89,6 +89,7 @@ type ApiServerNodeListResult struct {
 
 type NodeListResponse struct {
 	Ip           string `json:"ip"`
+	NodeName     string `json:"node_name"`
 	CreationTime int64  `json:"creation_time"`
 	Status       int    `json:"status"`
 	IsMaster     bool   `json:"is_master"`

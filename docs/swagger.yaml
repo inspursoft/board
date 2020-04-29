@@ -4583,6 +4583,124 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/pods/{project_id}/{pod_name}/shell:
+    get:
+      summary: Return specific project pods console shell.
+      description: |
+        This endpoint returns specific project pods console shell by project_id and pod_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container
+          in: query
+          description: The container name of this pod.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched pod console shell.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/pods/{project_id}/{pod_name}/download:
+    get:
+      summary: Return download status.
+      description: |
+        This endpoint is used to download specified file from specified path in specific project pods.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container
+          in: query
+          description: The container name of this pod.
+          required: false
+          type: string
+        - name: src
+          in: query
+          description: The file source path in this container.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return downloaded file.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
+  /v1/pods/{project_id}/{pod_name}/upload:
+    post:
+      summary: Upload file tp specific project pods.
+      description: |
+        This endpoint is used to upload file to specified path in specific project pods.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: dest
+          in: query
+          description: The file destination path in this container.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: File uploaded successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"

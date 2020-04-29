@@ -10,6 +10,7 @@ export const LANG_EN_US = {
     NEXT: 'Next',
     BACK: 'Back',
     TEST: 'Test',
+    REFRESH: 'Refresh',
   },
   DATAGRID: {
     ITEMS: 'items',
@@ -66,8 +67,8 @@ export const LANG_EN_US = {
     TITLES: {
       SYSTEM_INFO: 'System Info:',
       SYSTEM_CONTENT: 'NULL',
-      CONTAINER_INFO: 'Container Info:',
-      CONTAINER_CONTENT: 'Containers are Running',
+      CONTAINER_INFO: 'Container Info: ',
+      CONTAINER_CONTENT: 'containers in total',
     },
     CONTAINER_INFO: {
       NAME: 'NAME: ',
@@ -119,6 +120,7 @@ export const LANG_EN_US = {
     Node_Logs_Stop: 'Stop',
     Node_Logs_Removing: 'Removing...',
     Node_Logs_Adding: 'Adding...',
+    Node_Logs_Can_Not_Remove: 'The node can not be remove at present.',
     Node_Detail_Add: 'Add',
     Node_Detail_Remove: 'Remove',
     Node_Detail_Refresh: 'Refresh log',
@@ -344,7 +346,12 @@ export const LANG_EN_US = {
       ARCH_TYPE: {
         NAME: 'Architecture',
         PLACEHOLDER: '',
-        TIPS: 'The default arch for Board is x86_64, also support mips and arm64 now'
+        TIPS: 'The default arch for Board is x86_64, also support mips and arm64v8 now'
+      },
+      SECURITY_MODE: {
+        NAME: 'Security mode',
+        PLACEHOLDER: '',
+        TIPS: 'Security mode of Board, by default it\'s "Normal". "Security" mode will hide Kibana, Grafana in UI',
       },
       DATABASE_PASSWORD: {
         NAME: 'Database password',
@@ -487,7 +494,7 @@ export const LANG_EN_US = {
     INVALID_RESET_UUID: 'The Link is Invalid.',
     REGISTER_INFO: 'The system has just been initialized and you need to set up an account & password before using it.',
     FORBIDDEN: 'Forbidden access!',
-    FORGOT_PASSWORD_HELPER: 'If you have configured an email, please change the password in the board. If you have not configured an email, please contact the administrator for assistance.',
+    FORGOT_PASSWORD_HELPER: 'If you have configured an email, please change the password in the Board. If you have not configured an email, please contact the administrator for assistance.',
     TOKEN_ERROR: 'User status error! Please login again!',
   },
   CONFIGURATIONPAGE: {
@@ -503,7 +510,7 @@ export const LANG_EN_US = {
     SAVECONFIGURATION: {
       TITLE: 'Whether the configuration takes effect?',
       SAVE: 'Save successfully',
-      COMMENT: 'The new configuration has been saved successfully. Is the configuration applied in the board?It takes some time to restart the system for the configuration to take effect. To confirm the effect, enter the administrator account of the host.',
+      COMMENT: 'The new configuration has been saved successfully. Is the configuration applied in the Board?It takes some time to restart the system for the configuration to take effect. To confirm the effect, enter the administrator account of the host.',
       ACCOUNT: {
         NAME: 'Account',
         PASSWORD: 'Password',
@@ -527,6 +534,7 @@ export const LANG_EN_US = {
       APPLY_AND_START_BOARD: 'Apply & Start Board',
       GO_TO_BOARD: 'Go to Board',
       GO_TO_ADMINSERVER: 'Go to Adminserver',
+      REINSTALL: 'Re-install Board',
     },
     PAGE_TITLE: {
       WELCOME: 'Welcome to Adminserver',
@@ -559,7 +567,7 @@ export const LANG_EN_US = {
       SSH: 'Network error or account error, please try again!',
       ACCOUNT: 'Network error or docker error, please try again!',
       GET_SYS_STATUS_FAILED: 'Failed to get system status. Please check whether the service is running normally.',
-      VALIDATE_UUID: 'UUID verification failed! Please check whether the network is normal or the UUID is filled in correctly.',
+      VALIDATE_UUID_FAILED: 'UUID verification failed! Please check whether the network is normal or the UUID is filled in correctly.',
       GET_CFG_FAILED: 'Failed to get the configuration. Please check whether the service is running normally.',
       GET_TMP_FAILED: 'Failed to get temporary configuration, use current configuration.',
       START_BOARD_FAILED: 'Failed to start Board. Please check whether the configuration is correct or the service is running normally.',
@@ -569,11 +577,11 @@ export const LANG_EN_US = {
     },
     CONTENTS: {
       WELCOME: 'Welcome to Adminserver! Because this is the first time for the initialization process, you need to complete the following configurations to start the system normally.',
-      UUID: 'In order to confirm your identity, you need to enter the UUID in the /data/board/secrets folder for the next.',
+      UUID: 'In order to confirm your identity, you need to enter the UUID in the /data/adminserver/secrets folder for the next.',
       DATABASE: 'Requires to configure the database password to initialize the database. This step may take some time.',
       SSH: 'Please enter the account and password of the host machine. Note: The account needs certain permissions to install and run related components. It will take some time to run.The system will not store your account and password.',
-      ACCOUNT: 'Initialize the administrator password of adminserver. The admin account will be shared with the board.',
-      EDIT_CONFIG_CONFIRM: 'It seems that there is already a configured cfg, do you want to re-edit it or start the board directly?',
+      ACCOUNT: 'Initialize the administrator password of Adminserver. The admin account will be shared with the Board.',
+      EDIT_CONFIG_CONFIRM: 'It seems that there is already a configured cfg, do you want to re-edit it or start the Board directly?',
       FINISH: 'Board have been successfully started. Initialization needs to wait for a while, after waiting, you can access the following connection to access the Board or Adminserver.',
       UNINSTALL: 'Board component uninstallation is complete!You can now go to the background to uninstall Adminserver and clear related data.',
       CLEAR_DATA: 'Clear all relevant data of Board',

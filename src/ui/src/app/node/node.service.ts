@@ -1,103 +1,92 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../shared/shared.const";
-import { INode, INodeGroup } from "../shared/shared.types";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
-
-export interface INodeDetail {
-  node_name: string,
-  node_ip: string,
-  create_time: number,
-  cpu_usage: number,
-  memory_usage: number,
-  memory_size: string,
-  storage_total: string,
-  storage_use: string
-}
+import { Observable } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus } from './node.types';
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
+import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
 @Injectable()
 export class NodeService {
-  constructor(private http: HttpClient) {
+  constructor(private http: ModelHttpClient) {
   }
 
-  getNodes(): Observable<Array<INode>> {
-    return this.http
-      .get(`/api/v1/nodes`, {observe: "response"})
-      .pipe(map((res: HttpResponse<Array<INode>>) => res.body));
+  getNodes(): Observable<Array<NodeStatus>> {
+    return this.http.getArray(`/api/v1/nodes`, NodeStatus);
   }
 
-  getNodeByName(nodeName: string): Observable<INodeDetail> {
-    return this.http
-      .get(`/api/v1/node`, {
-        observe: "response",
-        params: {
-          'node_name': nodeName
-        }
-      }).pipe(map((res: HttpResponse<INodeDetail>) => res.body));
+  getNodeDetailByName(nodeName: string): Observable<NodeDetail> {
+    return this.http.getJson(`/api/v1/node`, NodeDetail, {param: {node_name: nodeName}});
   }
 
-  toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<Object>> {
+  toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<object>> {
     return this.http
       .get(`/api/v1/node/toggle`, {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        observe: "response",
+        observe: 'response',
         params: {
-          'node_name': nodeName,
-          'node_status': status ? "1" : "0"
+          node_name: nodeName,
+          node_status: status ? '1' : '0'
         }
       });
   }
 
   getNodeGroupsOfOneNode(nodeName: string): Observable<Array<string>> {
     return this.http.get<Array<string>>(`/api/v1/node/0/group`,
-      {observe: "response", params: {node_name: nodeName}})
+      {observe: 'response', params: {node_name: nodeName}})
       .pipe(map((res: HttpResponse<Array<string>>) => res.body || []));
   }
 
-  addNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
-    return this.http.post<Object>(`/api/v1/node/0/group`, null,
+  addNodeToNodeGroup(nodeName: string, nodeGroupName: string): Observable<object> {
+    return this.http.post<object>(`/api/v1/node/0/group`, null,
       {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        observe: "response",
+        observe: 'response',
         params: {node_name: nodeName, groupname: nodeGroupName}
-      }).pipe(map((res: HttpResponse<Object>) => res.body));
+      }).pipe(map((res: HttpResponse<object>) => res.body));
   }
 
-  deleteNodeToNodeGroup(nodeName:string,nodeGroupName:string): Observable<Object> {
-    return this.http.delete<Object>(`/api/v1/node/0/group`,
+  deleteNodeToNodeGroup(nodeName: string, nodeGroupName: string): Observable<object> {
+    return this.http.delete<object>(`/api/v1/node/0/group`,
       {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        observe: "response",
+        observe: 'response',
         params: {node_name: nodeName, groupname: nodeGroupName}
       })
-      .pipe(map((res: HttpResponse<Object>) => res.body));
+      .pipe(map((res: HttpResponse<object>) => res.body));
   }
 
-  getNodeGroups(): Observable<Array<INodeGroup>> {
-    return this.http.get<Array<INodeGroup>>(`/api/v1/nodegroup`, {observe: "response"})
-      .pipe(map((res: HttpResponse<Array<INodeGroup>>) => res.body || []));
+  getNodeGroups(): Observable<Array<NodeGroupStatus>> {
+    return this.http.getArray(`/api/v1/nodegroup`, NodeGroupStatus);
   }
 
-  addNodeGroup(group: INodeGroup): Observable<HttpResponse<Object>> {
-    return this.http.post(`/api/v1/nodegroup`, group, {
+  addNodeGroup(group: NodeGroupStatus): Observable<HttpResponse<object>> {
+    return this.http.post(`/api/v1/nodegroup`, group.postBody(), {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-      observe: "response"
-    })
+      observe: 'response'
+    });
   }
 
-  deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<Object>> {
+  deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<object>> {
     return this.http.delete(`/api/v1/nodegroup/${groupId}`,
       {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        observe: "response",
+        observe: 'response',
         params: {groupname: nodeGroupName}
-      })
+      });
   }
 
-  checkNodeGroupExist(groupName: string): Observable<HttpResponse<Object>> {
+  checkNodeGroupExist(groupName: string): Observable<HttpResponse<object>> {
     return this.http.get(`/api/v1/nodegroup/existing`,
-      {observe: "response", params: {nodegroup_name: groupName}})
+      {observe: 'response', params: {nodegroup_name: groupName}});
   }
 
+  getNodeControlStatus(nodeName: string): Observable<NodeControlStatus> {
+    return this.http.getJson(`/api/v1/nodes/${nodeName}`, NodeControlStatus);
+  }
+
+  drainNodeService(nodeName: string, serviceInstanceCount: number): Observable<any> {
+    return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null)
+      .pipe(delay(500 * serviceInstanceCount));
+  }
 }

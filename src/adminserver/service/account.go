@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/common/model"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
@@ -34,15 +36,17 @@ func Login(acc *models.Account) (bool, string, error) {
 
 //LoginWithDB allow user to use account information to login adminserver.
 func LoginWithDB(acc *models.Account) (bool, string, error) {
-
-	user := models.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
-	if err := dao.LoginCheckAuth(user); err != nil {
+	var err error
+	user := model.User{Username: acc.Username, SystemAdmin: 1, Deleted: 0}
+	user, err = dao.LoginCheckAuth(user)
+	if err != nil {
 		return false, "", err
 	}
 
-	query := models.User{Username: acc.Username, Password: acc.Password}
+	query := model.User{Username: acc.Username, Password: acc.Password}
 	query.Password = utils.Encrypt(query.Password, user.Salt)
-	if err := dao.LoginCheckPassword(query); err != nil {
+	query, err = dao.LoginCheckPassword(query)
+	if err != nil {
 		return false, "", err
 	}
 
@@ -62,10 +66,27 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 	dao.GlobalCache.Put(query.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
 	dao.GlobalCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
 
+	cache1 := make(map[string]interface{})
+	cache1["key"] = query.Username
+	cache1["value"] = token.TokenString
+
+	cache2 := make(map[string]interface{})
+	cache2["key"] = token.TokenString
+	cache2["value"] = payload
+
+	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache1, nil)
+	if err != nil {
+		return false, "", err
+	}
+	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache2, nil)
+	if err != nil {
+		return false, "", err
+	}
+
 	return true, token.TokenString, nil
 }
 
-func GetCurrentUser(token string) *models.User {
+func GetCurrentUser(token string) *model.User {
 	if isTokenExists := dao.GlobalCache.IsExist(token); !isTokenExists {
 		logs.Info("Token stored in cache has expired.")
 		return nil
@@ -82,8 +103,8 @@ func GetCurrentUser(token string) *models.User {
 			logs.Error("Error occurred on converting userID: %+v\n", err)
 			return nil
 		}
-		user := models.User{ID: int64(userID), Deleted: 0}
-		err = dao.GetUserByID(user)
+		user := model.User{ID: int64(userID), Deleted: 0}
+		user, err = dao.GetUserByID(user)
 		if err != nil {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
 			return nil
@@ -138,10 +159,18 @@ func ValidateUUID(input string) (bool, string, error) {
 
 func VerifyUUIDToken(input string) (bool, error) {
 	token := models.Token{Id: 1}
-	err := dao.GetUUIDToken(token)
+	token, err := dao.GetUUIDToken(token)
 	if err != nil {
 		return false, err
 	}
 
 	return (input == token.Token && (time.Now().Unix()-token.Time) <= 1800), nil
+}
+
+func RemoveUUIDTokenCache() {
+	UUIDpath := "/go/secrets/initialAdminPassword"
+	if _, err := os.Stat(UUIDpath); !os.IsNotExist(err) {
+		dao.RemoveUUIDToken()
+		os.Remove(UUIDpath)
+	}
 }

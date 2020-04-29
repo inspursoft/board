@@ -79,6 +79,7 @@ export class CfgCardsComponent implements OnInit {
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
       this.router.navigateByUrl('account/login');
     } else {
+      console.error(err.message);
       this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
 >>>>>>> dev_new2
     }

@@ -169,10 +169,12 @@ export class PreviewerComponent implements OnInit, OnDestroy {
           this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
           this.router.navigateByUrl('account/login');
         } else {
+          this.getMonitor();
+          console.error(err.message);
           this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
         }
       }
-    )
+    );
   }
 
   commonError(err: HttpErrorResponse) {
@@ -186,6 +188,7 @@ export class PreviewerComponent implements OnInit, OnDestroy {
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
       this.router.navigateByUrl('account/login');
     } else {
+      console.error(err.message);
       this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
 >>>>>>> dev_new2
     }

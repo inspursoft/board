@@ -1,5 +1,3 @@
-import { COMMENT_MARKER } from '@angular/core/src/render3/interfaces/i18n';
-
 export const LANG_ZH_CN = {
   BUTTON: {
     OK: '确定',
@@ -12,6 +10,7 @@ export const LANG_ZH_CN = {
     NEXT: '下一步',
     BACK: '上一步',
     TEST: '测试',
+    REFRESH: '刷新',
   },
   DATAGRID: {
     ITEMS: '条记录',
@@ -68,8 +67,8 @@ export const LANG_ZH_CN = {
     TITLES: {
       SYSTEM_INFO: '系统信息:',
       SYSTEM_CONTENT: '空',
-      CONTAINER_INFO: '容器信息:',
-      CONTAINER_CONTENT: '个容器正在运行',
+      CONTAINER_INFO: '容器信息: 共计',
+      CONTAINER_CONTENT: '个容器',
     },
     CONTAINER_INFO: {
       NAME: '容器名: ',
@@ -121,6 +120,7 @@ export const LANG_ZH_CN = {
     Node_Logs_Stop: '停止',
     Node_Logs_Removing: '正在移除...',
     Node_Logs_Adding: '正在添加...',
+    Node_Logs_Can_Not_Remove: '此节点目前不能删除',
     Node_Detail_Add: '添加',
     Node_Detail_Remove: '移除',
     Node_Detail_Refresh: '刷新日志',
@@ -345,7 +345,12 @@ export const LANG_ZH_CN = {
       ARCH_TYPE: {
         NAME: '系统架构',
         PLACEHOLDER: '',
-        TIPS: '默认架构是x86_64，现在也支持mips、arm64',
+        TIPS: '默认架构是x86_64，现在也支持mips、arm64v8',
+      },
+      SECURITY_MODE: {
+        NAME: '安全模式',
+        PLACEHOLDER: '',
+        TIPS: 'Board安全模式，默认为Normal。Security模式将在UI中隐藏Kibana、Grafana',
       },
       DATABASE_PASSWORD: {
         NAME: '数据库密码',
@@ -488,7 +493,7 @@ export const LANG_ZH_CN = {
     INVALID_RESET_UUID: '链接失效。',
     REGISTER_INFO: '系统刚刚初始化，您需要先设置一个帐户和密码，然后才能使用它。',
     FORBIDDEN: '禁止访问。',
-    FORGOT_PASSWORD_HELPER: '如果您配置了邮箱，请在board中修改密码。如果您没有配置邮箱，请联系管理员进行协助。',
+    FORGOT_PASSWORD_HELPER: '如果您配置了邮箱，请在Board中修改密码。如果您没有配置邮箱，请联系管理员进行协助。',
     TOKEN_ERROR: '用户状态信息错误！请重新登录！',
   },
   CONFIGURATIONPAGE: {
@@ -528,6 +533,7 @@ export const LANG_ZH_CN = {
       APPLY_AND_START_BOARD: '应用并启动Board',
       GO_TO_BOARD: '前往Board',
       GO_TO_ADMINSERVER: '前往Adminserver',
+      REINSTALL: '重新安装Board',
     },
     PAGE_TITLE: {
       WELCOME: '欢迎使用Adminserver',
@@ -570,10 +576,10 @@ export const LANG_ZH_CN = {
     },
     CONTENTS: {
       WELCOME: '欢迎使用Adminserver！由于这是第一次进行初始化流程，因此需要完成以下几项配置后才能正常启动系统。',
-      UUID: '为了确认您的身份，需要您输入/data/board/secrets 文件夹中的UUID以进行下一步。',
+      UUID: '为了确认您的身份，需要您输入/data/adminserver/secrets 文件夹中的UUID以进行下一步。',
       DATABASE: '您需要配置数据库密码以初始化数据库。该步骤可能需要一些时间。',
       SSH: '请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。',
-      ACCOUNT: '初始化adminserver的管理员密码。该admin账户将与board共用。',
+      ACCOUNT: '初始化Adminserver的管理员密码。该admin账户将与Board共用。',
       EDIT_CONFIG_CONFIRM: '似乎已经有一个已配置的cfg，您要重新编辑它还是直接启动Board？',
       FINISH: 'Board已成功启动它。初始化需要等待一段时间，等待之后，您可以访问以下连接来访问Board或Adminserver。',
       UNINSTALL: 'Board组件卸载完成！您现在可以前往后台卸载Adminserver以及清除相关数据。',

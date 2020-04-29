@@ -11,6 +11,7 @@ import { BoardService } from 'src/app/shared.service/board.service';
 import { ConfigurationService } from 'src/app/shared.service/configuration.service';
 import { Configuration } from 'src/app/shared.service/configuration.model';
 import { Router } from '@angular/router';
+import { Message, ReturnStatus } from 'src/app/shared/message/message.types';
 
 @Component({
   selector: 'app-installation',
@@ -33,10 +34,12 @@ export class InstallationComponent implements OnInit {
   ignoreStep2 = false;
   installProgress = 0;
   enableBtn = true;
+  refresh = false;
 
   // TODO put some config into default.
   simpleMode = false;
   loadingFlag = true;
+  disconnect = false;
   enableInitialization = false;
   openSSH = false;
   uninstallConfirm = false;
@@ -59,15 +62,37 @@ export class InstallationComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.accountService.createUUID().subscribe(
-      () => {
-        this.loadingFlag = false;
-        this.enableInitialization = true;
+    this.appInitService.getSystemStatus().subscribe(
+      (res: InitStatus) => {
+        if (InitStatusCode.InitStatusThird === res.status) {
+          this.messageService.showOnlyOkDialogObservable('INITIALIZATION.ALERTS.ALREADY_START').subscribe(
+            (msg: Message) => {
+              if (msg.returnStatus === ReturnStatus.rsConfirm) {
+                this.router.navigateByUrl('account');
+              }
+            }
+          );
+        } else {
+          this.accountService.createUUID().subscribe(
+            () => {
+              this.loadingFlag = false;
+              this.enableInitialization = true;
+            },
+            (err: HttpErrorResponse) => {
+              this.loadingFlag = false;
+              this.disconnect = true;
+              console.error(err.message);
+              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
+            });
+        }
       },
       (err: HttpErrorResponse) => {
-        console.error(err);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
-      });
+        console.error(err.message);
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
+        this.submitBtnState = ClrLoadingState.DEFAULT;
+      }
+    );
+
   }
 
   onNext() {
@@ -89,13 +114,16 @@ export class InstallationComponent implements OnInit {
     // this.ignoreStep2 = true;
     // this.installStep = 3;
     // this.installProgress = 100;
-    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
 
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
       this.submitBtnState = ClrLoadingState.LOADING;
-      this.accountService.validateUUID(this.uuid).subscribe(
+      this.user.username = 'admin';
+      this.user.password = this.uuid;
+      this.accountService.signIn(this.user).subscribe(
         () => {
+          this.user = new User();
           sessionStorage.setItem('token', this.uuid);
           this.appInitService.getSystemStatus().subscribe(
             (res: InitStatus) => {
@@ -112,9 +140,8 @@ export class InstallationComponent implements OnInit {
                       this.submitBtnState = ClrLoadingState.DEFAULT;
                     },
                     (err: HttpErrorResponse) => {
-                      console.error(err);
-                      this.submitBtnState = ClrLoadingState.DEFAULT;
-                      this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_CFG_FAILED', 'ACCOUNT.ERROR');
+                      // COMMON
+                      this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
                     }
                   );
                   break;
@@ -132,21 +159,21 @@ export class InstallationComponent implements OnInit {
                   this.ignoreStep2 = true;
                   this.installStep = 3;
                   this.installProgress = 100;
-                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
                   this.submitBtnState = ClrLoadingState.DEFAULT;
                   break;
                 }
               }
             },
             (err: HttpErrorResponse) => {
-              console.error(err);
+              console.error(err.message);
               this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
               this.submitBtnState = ClrLoadingState.DEFAULT;
             }
           );
         },
         (err: HttpErrorResponse) => {
-          console.error(err);
+          console.error(err.message);
           this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID_FAILED', 'ACCOUNT.ERROR');
           this.submitBtnState = ClrLoadingState.DEFAULT;
         }
@@ -176,13 +203,18 @@ export class InstallationComponent implements OnInit {
               this.submitBtnState = ClrLoadingState.DEFAULT;
             },
             (err: HttpErrorResponse) => {
-              console.log('Can not read tmp file: ' + err.message);
-              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED', 'GLOBAL_ALERT.HINT');
-              this.newDate = new Date(this.config.apiserver.imageBaselineTime);
-              this.isEditable = this.config.isInit;
-              this.installStep++;
-              this.installProgress += 33;
-              this.submitBtnState = ClrLoadingState.DEFAULT;
+              if (err.status === 401) {
+                this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
+                this.refresh = true;
+              } else {
+                console.log('Can not read tmp file: ' + err.message);
+                this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED');
+                this.newDate = new Date(this.config.apiserver.imageBaselineTime);
+                this.isEditable = this.config.isInit;
+                this.installStep++;
+                this.installProgress += 33;
+                this.submitBtnState = ClrLoadingState.DEFAULT;
+              }
             }
           );
         } else {
@@ -194,9 +226,8 @@ export class InstallationComponent implements OnInit {
         }
       },
       (err: HttpErrorResponse) => {
-        console.error(err);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_CFG_FAILED', 'ACCOUNT.ERROR');
-        this.submitBtnState = ClrLoadingState.DEFAULT;
+        // COMMON
+        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
     );
   }
@@ -218,9 +249,8 @@ export class InstallationComponent implements OnInit {
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
-        console.error(err);
-        this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.START_BOARD_FAILED', 'ACCOUNT.ERROR');
+        // COMMON
+        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
       },
     );
   }
@@ -245,9 +275,8 @@ export class InstallationComponent implements OnInit {
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
-        console.error(err);
-        this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED', 'ACCOUNT.ERROR');
+        // COMMON
+        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
       },
     );
   }
@@ -262,7 +291,7 @@ export class InstallationComponent implements OnInit {
 
     this.submitBtnState = ClrLoadingState.LOADING;
     this.openSSH = false;
-    this.configurationService.postConfig(this.config).subscribe(
+    this.configurationService.putConfig(this.config).subscribe(
       () => {
         this.boardService.applyCfg(this.user).subscribe(
           () => {
@@ -271,26 +300,24 @@ export class InstallationComponent implements OnInit {
             this.submitBtnState = ClrLoadingState.DEFAULT;
           },
           (err: HttpErrorResponse) => {
-            console.error(err);
-            this.submitBtnState = ClrLoadingState.DEFAULT;
-            this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.START_BOARD_FAILED', 'ACCOUNT.ERROR');
+            // COMMON
+            this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
           },
         );
       },
       (err: HttpErrorResponse) => {
-        console.error(err);
-        this.submitBtnState = ClrLoadingState.DEFAULT;
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.POST_CFG_FAILED', 'ACCOUNT.ERROR');
+        // COMMON
+        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.POST_CFG_FAILED');
       },
     );
   }
 
   goToBoard() {
     if (this.config) {
-      window.open(this.config.apiserver.hostname);
+      window.open('http://' + this.config.apiserver.hostname);
     } else {
       const boardURL = window.location.hostname;
-      window.open(boardURL + ':80');
+      window.open('http://' + boardURL);
     }
   }
 
@@ -332,4 +359,20 @@ export class InstallationComponent implements OnInit {
     return result;
   }
 
+  commonError(err: HttpErrorResponse, errorList: Map<number, string>, finnalError: string) {
+    console.error(err.message);
+    this.submitBtnState = ClrLoadingState.DEFAULT;
+    if (err.status === 401) {
+      this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
+      this.refresh = true;
+      return;
+    }
+    errorList.forEach((msg, e) => {
+      if (err.status === e) {
+        this.messageService.showOnlyOkDialog(msg, 'ACCOUNT.ERROR');
+        return;
+      }
+    });
+    this.messageService.showOnlyOkDialog(finnalError, 'ACCOUNT.ERROR');
+  }
 }

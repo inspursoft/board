@@ -13,12 +13,6 @@ export class AppInitService {
 
   constructor(private http: HttpClient) { }
 
-  getVerify(): Observable<any> {
-    return this.http.get(`${BASE_URL}/account/install`, {
-      observe: 'response',
-    });
-  }
-
   getSystemStatus(): Observable<InitStatus>  {
     return this.http.get(
       `${BASE_URL}/boot/checksysstatus`, {

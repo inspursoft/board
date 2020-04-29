@@ -31,7 +31,7 @@ export class SignInComponent implements OnInit {
     // window.sessionStorage.setItem('token', `username=${this.user.username}&password=${this.user.password}`);
     // this.router.navigateByUrl('dashboard');
 
-    this.accountService.postSignIn(this.user).subscribe(
+    this.accountService.signIn(this.user).subscribe(
       (res: MyToken) => {
         if (res) {
 <<<<<<< HEAD
@@ -52,8 +52,10 @@ export class SignInComponent implements OnInit {
       (err: HttpErrorResponse) => {
         if (err.status === 403) {
           this.messageService.showOnlyOkDialog('ACCOUNT.FORBIDDEN', 'ACCOUNT.ERROR');
-        } else {
+        } else if (err.status === 500) {
           this.messageService.showOnlyOkDialog('ACCOUNT.INCORRECT_USERNAME_OR_PASSWORD', 'ACCOUNT.ERROR');
+        } else {
+          this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
         }
 >>>>>>> dev_new2
       }

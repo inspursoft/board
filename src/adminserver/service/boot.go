@@ -9,11 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func StartBoard(host *models.Account) error {
@@ -30,7 +27,7 @@ func StartBoard(host *models.Account) error {
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Duration(3) * time.Second)
+	//time.Sleep(time.Duration(3) * time.Second)
 	/*
 		// TODO:
 		delete account in sqlite
@@ -40,20 +37,14 @@ func StartBoard(host *models.Account) error {
 	if err != nil {
 		return err
 	}
-	time.Sleep(time.Duration(10) * time.Second)
+	//time.Sleep(time.Duration(10) * time.Second)
 
 	err = shell.ExecuteCommand(cmdComposeUp)
 	if err != nil {
 		return err
 	}
 
-	UUIDpath := "/go/secrets/initialAdminPassword"
-	if _, err = os.Stat(UUIDpath); !os.IsNotExist(err) {
-		if err = dao.RemoveUUIDToken(); err != nil {
-			return err
-		}
-		os.Remove(UUIDpath)
-	}
+	RemoveUUIDTokenCache()
 
 	return nil
 }
@@ -79,7 +70,7 @@ func CheckBoard() error {
 	var err error
 
 	if err = dao.CheckDB(); err != nil {
-		if err = RegisterDB(); err != nil {
+		if err = dao.RegisterDB(); err != nil {
 			return err
 		}
 	}
@@ -109,19 +100,4 @@ func CheckTokenserver() bool {
 	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1")
 	cmd.Run()
 	return (cmd.ProcessState.ExitCode() == 0)
-}
-
-func RegisterDB() error {
-	cfg, err := GetAllCfg("", true)
-	if err != nil {
-		return err
-	}
-	DBpassword := cfg.Other.DBPassword
-	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err = orm.RegisterDataBase("mysql-db2", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", DBpassword, "db", 3306))
-	if err != nil {
-		return err
-	}
-	logs.Info("register DB success")
-	return nil
 }
