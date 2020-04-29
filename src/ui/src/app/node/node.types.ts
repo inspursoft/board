@@ -59,7 +59,7 @@ export class NodeControlStatus extends ResponseBase {
 export class NodeDetail extends ResponseBase {
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
-  @HttpBind('create_time') createTime: string;
+  @HttpBind('create_time') createTime: number;
   @HttpBind('memory_size') memorySize: string;
   @HttpBind('cpu_usage') cpuUsage: number;
   @HttpBind('memory_usage') memoryUsage: number;
