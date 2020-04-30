@@ -100,7 +100,7 @@ function delete_images {
 }
 
 function remove_data {
-	rm -rf $defaultDataVolume $adminserverDataVolume
+	rm -rf $defaultDataVolume $adminserverDataVolume ../config
 }
 
 echo "[Step $item]: checking uninstallation environment ..."; let item+=1
