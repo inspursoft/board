@@ -12,7 +12,7 @@
       {{node.nodeIp}}
     </clr-dg-cell>
     <clr-dg-cell>{{getStatus(node.status) | translate }}</clr-dg-cell>
-    <clr-dg-cell>{{node.createTime | date: 'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{node.createTime * 1000 | date: 'short'}}</clr-dg-cell>
     <clr-dg-cell>
       <a href="javascript:void(0)"
          *ngIf="node.status === 1"
