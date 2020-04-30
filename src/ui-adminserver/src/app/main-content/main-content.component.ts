@@ -11,8 +11,11 @@ export class MainContentComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit() {
-    if (!window.sessionStorage.getItem('token')) {
+    if (!window.sessionStorage.getItem('token') ||
+      /^\w{8}(-\w{4}){3}-\w{12}$/.test(window.sessionStorage.getItem('token'))) {
       this.router.navigateByUrl('account/login');
+    } else {
+      this.router.navigateByUrl('dashboard');
     }
   }
 

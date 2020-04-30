@@ -32,7 +32,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
     }
     return next.handle(authReq)
       .pipe(
-        timeout(30000),
+        timeout(120 * 1000),
         catchError((err: HttpErrorResponse | TimeoutError) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status >= 200 && err.status < 300) {

@@ -11,6 +11,7 @@ import { BoardService } from 'src/app/shared.service/board.service';
 import { ConfigurationService } from 'src/app/shared.service/configuration.service';
 import { Configuration } from 'src/app/shared.service/configuration.model';
 import { Router } from '@angular/router';
+import { Message, ReturnStatus } from 'src/app/shared/message/message.types';
 
 @Component({
   selector: 'app-installation',
@@ -61,17 +62,37 @@ export class InstallationComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.accountService.createUUID().subscribe(
-      () => {
-        this.loadingFlag = false;
-        this.enableInitialization = true;
+    this.appInitService.getSystemStatus().subscribe(
+      (res: InitStatus) => {
+        if (InitStatusCode.InitStatusThird === res.status) {
+          this.messageService.showOnlyOkDialogObservable('INITIALIZATION.ALERTS.ALREADY_START').subscribe(
+            (msg: Message) => {
+              if (msg.returnStatus === ReturnStatus.rsConfirm) {
+                this.router.navigateByUrl('account');
+              }
+            }
+          );
+        } else {
+          this.accountService.createUUID().subscribe(
+            () => {
+              this.loadingFlag = false;
+              this.enableInitialization = true;
+            },
+            (err: HttpErrorResponse) => {
+              this.loadingFlag = false;
+              this.disconnect = true;
+              console.error(err.message);
+              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
+            });
+        }
       },
       (err: HttpErrorResponse) => {
-        this.loadingFlag = false;
-        this.disconnect = true;
         console.error(err.message);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
-      });
+        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
+        this.submitBtnState = ClrLoadingState.DEFAULT;
+      }
+    );
+
   }
 
   onNext() {
@@ -93,7 +114,7 @@ export class InstallationComponent implements OnInit {
     // this.ignoreStep2 = true;
     // this.installStep = 3;
     // this.installProgress = 100;
-    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
 
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
@@ -138,7 +159,7 @@ export class InstallationComponent implements OnInit {
                   this.ignoreStep2 = true;
                   this.installStep = 3;
                   this.installProgress = 100;
-                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
                   this.submitBtnState = ClrLoadingState.DEFAULT;
                   break;
                 }
@@ -187,7 +208,7 @@ export class InstallationComponent implements OnInit {
                 this.refresh = true;
               } else {
                 console.log('Can not read tmp file: ' + err.message);
-                this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED', 'GLOBAL_ALERT.HINT');
+                this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED');
                 this.newDate = new Date(this.config.apiserver.imageBaselineTime);
                 this.isEditable = this.config.isInit;
                 this.installStep++;

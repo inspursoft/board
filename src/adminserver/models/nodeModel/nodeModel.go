@@ -70,7 +70,7 @@ type UpdateNodeLog struct {
 	Success     int    `json:"success"`
 }
 
-type NodeLogDetailArray = []NodeLogDetail;
+type NodeLogDetailArray = []NodeLogDetail
 
 // database table's name: node-status
 type NodeStatus struct {

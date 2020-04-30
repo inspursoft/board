@@ -166,3 +166,11 @@ func VerifyUUIDToken(input string) (bool, error) {
 
 	return (input == token.Token && (time.Now().Unix()-token.Time) <= 1800), nil
 }
+
+func RemoveUUIDTokenCache() {
+	UUIDpath := "/go/secrets/initialAdminPassword"
+	if _, err := os.Stat(UUIDpath); !os.IsNotExist(err) {
+		dao.RemoveUUIDToken()
+		os.Remove(UUIDpath)
+	}
+}
