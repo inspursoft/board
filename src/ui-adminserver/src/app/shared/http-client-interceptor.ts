@@ -4,7 +4,7 @@ import { HttpEvent } from '@angular/common/http/src/response';
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable, of, throwError, TimeoutError } from 'rxjs';
-import { catchError, timeout } from 'rxjs/operators';
+import { catchError, timeout, tap } from 'rxjs/operators';
 import { MessageService } from './message/message.service';
 import { GlobalAlertType } from './message/message.types';
 
@@ -21,8 +21,9 @@ export class HttpClientInterceptor implements HttpInterceptor {
       headers: req.headers
     });
     const token = window.sessionStorage.getItem('token');
-    if (req.url.startsWith('/v1/admin/node')) {
+    if (token) {
       authReq = authReq.clone({
+        headers: authReq.headers.set('token', token),
         params: authReq.params.set('Timestamp', Date.now().toString()).set('token', token)
       });
     } else {
@@ -32,6 +33,14 @@ export class HttpClientInterceptor implements HttpInterceptor {
     }
     return next.handle(authReq)
       .pipe(
+        tap((event: HttpEvent<any>) => {
+          if (event instanceof HttpResponse) {
+            const res = event as HttpResponse<object>;
+            if (res.ok && res.headers.has('token') && token !== res.headers.get('token')) {
+              window.sessionStorage.setItem('token', res.headers.get('token'));
+            }
+          }
+        }),
         timeout(120 * 1000),
         catchError((err: HttpErrorResponse | TimeoutError) => {
           if (err instanceof HttpErrorResponse) {
