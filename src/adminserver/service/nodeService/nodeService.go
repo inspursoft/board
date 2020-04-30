@@ -103,13 +103,12 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 
 	LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 	HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-	PreEnvPath := path.Join(nodeModel.BasePath, nodeModel.PreEnvDir)
 	cmdStr := fmt.Sprintf("docker run -td \\\n "+
 		"-v %s:/tmp/log \\\n "+
 		"-v %s:/tmp/hosts_dir \\\n"+
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
-		LogFilePath, HostDirPath, PreEnvPath, envStr)
+		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 	err = secure.ExecuteCommand(cmdStr)
 
 	if err != nil {
@@ -230,9 +229,11 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 	for _, item := range apiServerNodeList {
 		_, isMaster := item.Labels["node-role.kubernetes.io/master"]
 		var origin = 0
+		var logTime = item.CreateTime
 		for _, adminItem := range nodeStatusList {
 			if item.NodeIP == adminItem.Ip {
 				origin = 1
+				logTime = adminItem.CreationTime
 			}
 		}
 		*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
@@ -241,6 +242,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			Status:       item.Status,
 			NodeName:     item.NodeName,
 			IsMaster:     isMaster,
+			LogTime:      logTime,
 			Origin:       origin})
 	}
 
@@ -255,6 +257,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
 				Ip:           item.Ip,
 				CreationTime: item.CreationTime,
+				LogTime:      item.CreationTime,
 				IsMaster:     false,
 				Status:       3,
 				Origin:       0})

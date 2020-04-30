@@ -70,18 +70,11 @@ export class CfgCardsComponent implements OnInit {
 
   commonError(err: HttpErrorResponse) {
     if (err.status === 401) {
-<<<<<<< HEAD
-      alert('User status error! Please login again!');
-      this.router.navigateByUrl('account/login');
-    } else {
-      alert('Unknown Error!');
-=======
       this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
       this.router.navigateByUrl('account/login');
     } else {
       console.error(err.message);
       this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
->>>>>>> dev_new2
     }
   }
 }

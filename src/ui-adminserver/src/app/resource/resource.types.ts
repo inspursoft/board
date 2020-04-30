@@ -81,6 +81,7 @@ export class NodeListType extends ResponseBase {
   @HttpBind('ip') ip: string;
   @HttpBind('node_name') nodeName: string;
   @HttpBind('creation_time') creationTime: number;
+  @HttpBind('log_time') logTime: number;
   @HttpBind('origin') origin: number;
   @HttpBind('status') status: number;
   @HttpBind('is_master') isMaster: boolean;

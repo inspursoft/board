@@ -55,6 +55,7 @@ export const LANG_ZH_CN = {
     RESOURCES: '资源',
     LANG_EN_US: 'English',
     LANG_ZH_CN: '中文',
+    LOGOUT: '登出',
   },
   DASHBOARD: {
     BUTTONS: {
@@ -102,7 +103,7 @@ export const LANG_ZH_CN = {
     Node_List_Empty: '节点列表为空',
     Node_List_Remove_Node: '移除节点',
     Node_List_Remove_Ask: '确定要移除节点么？',
-    Node_List_Status_Unknown: '未知',
+    Node_List_Status_Unknown: '未知节点',
     Node_List_Status_Schedulable: '可调度',
     Node_List_Status_Unschedulable: '不可调度',
     Node_Logs_Ip: 'IP',
@@ -162,12 +163,8 @@ export const LANG_ZH_CN = {
       },
       KUBE_MASTER_IP: {
         NAME: 'K8s主节点IP',
-<<<<<<< HEAD
-        TIPS: 'Kubernetes(K8s)部署的主机地址，*不要*使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
-=======
         PLACEHOLDER: '如：192.168.1.10',
         TIPS: 'Kubernetes(K8s)部署的主机地址，不要使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
->>>>>>> dev_new2
       },
       KUBE_MASTER_PORT: {
         NAME: 'K8s主节点端口号',
@@ -194,12 +191,8 @@ export const LANG_ZH_CN = {
       TITLE: 'Gogs',
       GOGITS_HOST_IP: {
         NAME: '服务IP地址',
-<<<<<<< HEAD
-        TIPS: '服务部署的主机地址，*不要*使用localhost或者127.0.0.1上，因为需要被其他节点访问'
-=======
         PLACEHOLDER: '如：192.168.1.10',
         TIPS: 'gogs部署的主机地址，不要使用localhost或者127.0.0.1，因为需要被其他节点访问'
->>>>>>> dev_new2
       },
       GOGITS_HOST_PORT: {
         NAME: '服务端口号',
@@ -411,13 +404,6 @@ export const LANG_ZH_CN = {
       },
       VERIFICATION_URL: {
         NAME: '验证地址',
-<<<<<<< HEAD
-        TIPS: '外部令牌验证URL，用于与其他平台集成授权。*注：*仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
-      },
-      REDIRECTION_URL: {
-        NAME: '重定向地址',
-        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。*注：*仅当auth_mode设置为\'indata_auth\'时，此选项才可用',
-=======
         PLACEHOLDER: '如：http://verification.mydomain.com',
         TIPS: '外部令牌验证URL，用于与其他平台集成授权。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
       },
@@ -425,7 +411,6 @@ export const LANG_ZH_CN = {
         NAME: '重定向地址',
         PLACEHOLDER: '如：http://redirection.mydomain.com',
         TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
->>>>>>> dev_new2
       },
       AUDIT_DEBUG: {
         NAME: '审计',
@@ -515,6 +500,7 @@ export const LANG_ZH_CN = {
         PASSWORD: '密码',
         REQUIRED: '必填项'
       },
+      HELPER: '请确保您已停止Board实例。',
       CANCEL: '不生效',
       APPLY: '生效配置',
     }
