@@ -897,7 +897,9 @@ export const LANG_ZH_CN = {
     ProjectName: '项目名称',
     ServiceInstanceName: '服务实例名称',
     DrainService: '排除服务',
-    DeleteNode: '删除服务'
+    DrainServiceTip: '只有节点处于不可调度状态，才能排除服务。',
+    DeleteNode: '删除节点',
+    DeleteNodeTip: '只有排除完服务后，才能在AdminServer里删除节点.'
   },
 
   "GUIDE":{

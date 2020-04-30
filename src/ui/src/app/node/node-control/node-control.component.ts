@@ -27,7 +27,7 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
 
   }
 
-  get btnDeleteDisable(): boolean {
+  get deleteNodeDisable(): boolean {
     return !this.nodeDeletable ||
       this.isActionWip ||
       this.tabServiceControlActive === false;
@@ -40,7 +40,11 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
   }
 
   get adminServerDeleteNodeUrl(): string {
-    return `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
+    if (this.deleteNodeDisable) {
+      return `javascript:void(0)`;
+    } else {
+      return `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
+    }
   }
 
   drainService() {
