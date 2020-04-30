@@ -74,21 +74,11 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 	cache2["key"] = token.TokenString
 	cache2["value"] = payload
 
-	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-		}
-		return nil
-	}, cache1, nil)
+	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache1, nil)
 	if err != nil {
 		return false, "", err
 	}
-	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", func(req *http.Request) error {
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-		}
-		return nil
-	}, cache2, nil)
+	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache2, nil)
 	if err != nil {
 		return false, "", err
 	}

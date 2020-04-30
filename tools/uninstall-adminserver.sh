@@ -33,7 +33,7 @@ while [ $# -gt 0 ]; do
 done
 
 # The hostname in board.cfg has not been modified
-if  [ ! -f docker-compose*.yml ] 
+if  [ ! -f docker-compose-adminserver.yml ] 
 then
 	echo $usage
 	exit 1
