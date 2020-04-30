@@ -67,7 +67,7 @@ export class ServiceDetailComponent {
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
     this.k8sService.getServiceDetail(serviceId).subscribe(res => {
-      if (!res["details"] && this.curService.service_type == ServiceType.ServiceTypeNormalNodePort) {
+      if (!res["details"] && Reflect.has(res, 'node_Port')) {
         let arrNodePort = res["node_Port"] as Array<number>;
         this.k8sService.getNodesList({"ping": true}).subscribe(res => {
           let arrNode = res as Array<{node_name: string, node_ip: string, status: number}>;
