@@ -27,6 +27,7 @@ func (b *BaseController) Prepare() {
 		if !result {
 			b.CustomAbort(http.StatusUnauthorized, "UUID invalid or timeout")
 		}
+		b.Ctx.ResponseWriter.Header().Set("token", token)
 	} else {
 		user, newtoken := service.GetCurrentUser(token)
 		if user == nil {
