@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { User } from '../account/account.model';
-import { Observable, of, TimeoutError } from 'rxjs';
+import { Observable, of, TimeoutError, throwError } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 import { MessageService } from '../shared/message/message.service';
 
@@ -22,17 +22,8 @@ export class BoardService {
       catchError((err: HttpErrorResponse | TimeoutError) => {
         if (err instanceof TimeoutError) {
           this.messageService.showOnlyOkDialog('ERROR.HTTP_TIME_OUT', 'GLOBAL_ALERT.WARNING');
-          return of(null);
-        } else {
-          const res = new HttpResponse({
-            body: err.message,
-            headers: err.headers,
-            status: err.status,
-            statusText: err.statusText,
-            url: err.url
-          });
-          return of(res);
         }
+        return throwError(err);
       })
     );
   }
