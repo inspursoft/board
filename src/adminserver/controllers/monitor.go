@@ -14,7 +14,7 @@ type MonitorController struct {
 
 // @Title Get
 // @Description monitor Board module containers
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Success 200 {object} []models.Boardinfo	success
 // @Failure 500 Internal Server Error
 // @Failure 401 unauthorized: token invalid/session timeout

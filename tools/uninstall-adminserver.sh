@@ -33,7 +33,7 @@ while [ $# -gt 0 ]; do
 done
 
 # The hostname in board.cfg has not been modified
-if  [ ! -f docker-compose*.yml ] 
+if  [ ! -f docker-compose-adminserver.yml ] 
 then
 	echo $usage
 	exit 1
@@ -100,18 +100,22 @@ function delete_images {
 }
 
 function remove_data {
-	rm -rf $defaultDataVolume $adminserverDataVolume
+	rm -rf $defaultDataVolume $adminserverDataVolume ../config
 }
 
 echo "[Step $item]: checking uninstallation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker-compose ps -q)"  ]
+echo "[Step $item]: checking existing instance of Board & Adminserver ..."; let item+=1
+if [ -n "$(docker-compose -f docker-compose-new.yml ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
 	docker-compose -f docker-compose-new.yml down
+fi
+if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
+then
+	echo "stopping existing Adminserver instance ..."
 	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
