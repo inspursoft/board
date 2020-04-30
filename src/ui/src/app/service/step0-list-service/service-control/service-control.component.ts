@@ -11,6 +11,7 @@ import { LocateComponent } from './locate/locate.component';
 import { ScaleComponent } from './scale/scale.component';
 import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { LoadBalanceComponent } from './loadBalance/loadBalance.component';
+import { ConsoleComponent } from './console/console.component';
 
 export interface IScaleInfo {
   desired_instance: number;
@@ -29,6 +30,7 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
   @ViewChild(ScaleComponent) scaleComponent: ScaleComponent;
   @ViewChild(LocateComponent) locateComponent: LocateComponent;
   @ViewChild(LoadBalanceComponent) loadBalanceComponent: LoadBalanceComponent;
+  @ViewChild(ConsoleComponent) consoleComponent: ConsoleComponent;
   service: Service;
   actionMethod: ActionMethod = ActionMethod.scale;
   actionEnable = false;
@@ -69,6 +71,8 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
       this.scaleComponent.actionExecute();
     } else if (this.actionMethod === ActionMethod.locate) {
       this.locateComponent.actionExecute();
+    } else if (this.actionMethod === ActionMethod.console) {
+      this.modalOpened = false;
     } else {
       this.loadBalanceComponent.actionExecute();
     }

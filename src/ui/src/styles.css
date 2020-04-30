@@ -43,10 +43,6 @@ button.btn {
   text-transform: none;
 }
 
-div.modal-header {
-  padding: 0;
-}
-
 div.modal-footer {
   align-items: center;
   padding: 0;
