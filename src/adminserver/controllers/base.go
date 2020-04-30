@@ -28,8 +28,10 @@ func (b *BaseController) Prepare() {
 			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")
 		}
 	} else {
-		if user := service.GetCurrentUser(token); user == nil {
+		user, newtoken := service.GetCurrentUser(token)
+		if user == nil {
 			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")
 		}
+		b.Ctx.ResponseWriter.Header().Set("token", newtoken)
 	}
 }
