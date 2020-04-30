@@ -107,11 +107,15 @@ echo "[Step $item]: checking uninstallation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-echo "[Step $item]: checking existing instance of Board ..."; let item+=1
-if [ -n "$(docker-compose ps -q)"  ]
+echo "[Step $item]: checking existing instance of Board & Adminserver ..."; let item+=1
+if [ -n "$(docker-compose -f docker-compose-new.yml ps -q)"  ]
 then
 	echo "stopping existing Board instance ..."
 	docker-compose -f docker-compose-new.yml down
+fi
+if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
+then
+	echo "stopping existing Adminserver instance ..."
 	docker-compose -f docker-compose-adminserver.yml down
 fi
 echo ""
