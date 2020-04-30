@@ -567,7 +567,7 @@ export const LANG_ZH_CN = {
       SSH: '请输入当前主机的账户及密码。注意：账户需要一定的权限用于安装并运行相关的组件。运行需要一些时间。系统不会存储您的账户及密码。',
       ACCOUNT: '初始化Adminserver的管理员密码。该admin账户将与Board共用。',
       EDIT_CONFIG_CONFIRM: '似乎已经有一个已配置的cfg，您要重新编辑它还是直接启动Board？',
-      FINISH: 'Board已成功启动它。初始化需要等待一段时间，等待之后，您可以访问以下连接来访问Board或Adminserver。',
+      FINISH: 'Board已成功启动。初始化需要等待一段时间，等待之后，您可以访问以下连接来访问Board或Adminserver。',
       UNINSTALL: 'Board组件卸载完成！您现在可以前往后台卸载Adminserver以及清除相关数据。',
       CLEAR_DATA: '清除Board的所有相关数据',
       RESPONSIBILITY: '我已知晓该操作会造成什么影响并对此操作的后果进行负责',
