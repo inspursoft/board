@@ -140,7 +140,7 @@ func InitRouter() {
 			beego.NSRouter("/nodes",
 				&NodeController{}, "get:NodeList;post:AddNodeAction"),
 			beego.NSRouter("/nodes/:nodename(.*)",
-				&NodeController{}, "get:GetNodeStatusAction"),
+				&NodeController{}, "get:GetNodeStatusAction;delete:RemoveNodeAction"),
 			beego.NSRouter("/nodes/:nodename(.*)/drain",
 				&NodeController{}, "put:NodeDrainAction"),
 			beego.NSRouter("/nodes/availableresources",

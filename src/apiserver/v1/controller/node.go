@@ -174,6 +174,27 @@ func (n *NodeController) AddNodeAction() {
 	logs.Info("Added node %s", node.ObjectMeta.Name)
 }
 
+//Remove a node from cluster by node name
+func (n *NodeController) RemoveNodeAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("To delete node %s", nodeName)
+	res, err := service.DeleteNode(nodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+
+	if res == false {
+		n.CustomAbortAudit(http.StatusNotFound, "Nodename Not Found.")
+		return
+	}
+	logs.Debug("Removed %s", nodeName)
+}
+
 // Get the running status of a node
 func (n *NodeController) GetNodeStatusAction() {
 	if n.IsSysAdmin == false {
