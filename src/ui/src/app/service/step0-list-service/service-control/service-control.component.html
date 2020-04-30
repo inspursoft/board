@@ -11,7 +11,7 @@
                      [(isActionInWIP)]="isActionInWIP"
                      (errorEvent)="defaultDispatchErr($event)"
                      (messageEvent)="defaultHandleMessage($event)"
-                     (onActionIsEnabled)="defaultHandleActionEnabled($event)">
+                     (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
           </app-scale>
         </clr-tab-content>
       </clr-tab>
@@ -60,7 +60,9 @@
           {{"ServiceControlConsole.Name" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <app-console [service]="service"></app-console>
+          <app-console [service]="service"
+                       (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-console>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>
