@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { User } from '../account/account.model';
-import { Observable, of, TimeoutError } from 'rxjs';
+import { Observable, of, TimeoutError, throwError } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 import { MessageService } from '../shared/message/message.service';
 
@@ -14,41 +14,29 @@ export class BoardService {
               private messageService: MessageService,) { }
 
   applyCfg(user: User): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
     return this.http.post(
-      `${BASE_URL}/board/applycfg?token=${token}`,
+      `${BASE_URL}/board/applycfg`,
       user.PostBody()
     ).pipe(
       catchError((err: HttpErrorResponse | TimeoutError) => {
         if (err instanceof TimeoutError) {
           this.messageService.showOnlyOkDialog('ERROR.HTTP_TIME_OUT', 'GLOBAL_ALERT.WARNING');
-          return of(null);
-        } else {
-          const res = new HttpResponse({
-            body: err.message,
-            headers: err.headers,
-            status: err.status,
-            statusText: err.statusText,
-            url: err.url
-          });
-          return of(res);
         }
+        return throwError(err);
       })
     );
   }
 
   shutdown(user: User, uninstall: boolean): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
     return this.http.post(
-      `${BASE_URL}/board/shutdown?token=${token}&uninstall=${uninstall}`,
+      `${BASE_URL}/board/shutdown?uninstall=${uninstall}`,
       user.PostBody()
     );
   }
 
   start(user: User): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
     return this.http.post(
-      `${BASE_URL}/board/start?token=${token}`,
+      `${BASE_URL}/board/start`,
       user.PostBody()
     );
   }

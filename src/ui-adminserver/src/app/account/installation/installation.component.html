@@ -584,15 +584,10 @@
                                      [label]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.NAME' | translate"
                                      [type]="'password'"
                                      [required]="true"
-                                     [pattern]="passwordPattern"
                                      [defaultValue]="config.jenkins.jenkinsNodePassword"
-                                     [confirmPassword]="true"
-                                     [confirmLabel]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD_CONFIRM.NAME' | translate"
                                      [placeholder]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.PLACEHOLDER' | translate"
                                      [helper]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.TIPS' | translate"
                                      [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                                     [patternMsg]="'CONFIGURATIONS.JENKINS.JENKINS_NODE_PASSWORD.PATTERN_ERROR' | translate"
-                                     [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
                                      (commitEvent)="config.jenkins.jenkinsNodePassword = $event">
               </app-my-input-template>
 

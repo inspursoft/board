@@ -24,21 +24,31 @@
     </clr-tabs>
   </div>
   <div class="modal-footer">
-    <a target="_blank" [href]="adminServerDeleteNodeUrl">
-      <button type="button"
-              class="btn btn-warning-outline"
-              *ngIf="tabServiceControlActive"
-              [disabled]="btnDeleteDisable">
-        {{ 'NodeControl.DeleteNode' | translate }}
-      </button>
+    <a *ngIf="tabServiceControlActive && nodeDeletable" target="_blank" [href]="adminServerDeleteNodeUrl">
+      {{ 'NodeControl.DeleteNode' | translate }}
     </a>
-    <button type="button"
-            class="btn btn-warning-outline"
-            *ngIf="tabServiceControlActive"
-            (click)="drainService()"
-            [disabled]="btnDrainDisable">
-      {{ 'NodeControl.DrainService' | translate }}
-    </button>
+    <clr-tooltip *ngIf="tabServiceControlActive && deleteNodeDisable">
+      <a clrTooltipTrigger class="disabled" href="javascript: void(0)">
+        {{ 'NodeControl.DeleteNode' | translate }}
+      </a>
+      <clr-tooltip-content [clrSize]="'md'" [clrPosition]="'left'">
+        {{"NodeControl.DeleteNodeTip" | translate}}
+      </clr-tooltip-content>
+    </clr-tooltip>
+    <clr-tooltip>
+      <a href="javascript: void(0)" clrTooltipTrigger>
+        <button type="button"
+                class="btn btn-warning-outline"
+                *ngIf="tabServiceControlActive"
+                (click)="drainService()"
+                [disabled]="btnDrainDisable">
+          {{ 'NodeControl.DrainService' | translate }}
+        </button>
+      </a>
+      <clr-tooltip-content [clrSize]="'md'" [clrPosition]="'left'">
+        {{"NodeControl.DrainServiceTip" | translate}}
+      </clr-tooltip-content>
+    </clr-tooltip>
     <button type="button"
             [disabled]="isActionWip"
             class="btn btn-outline"

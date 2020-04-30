@@ -16,7 +16,7 @@ type BoardController struct {
 
 // @Title Start
 // @Description start Board
-// @Param	token	query 	string	true		"token"
+// @Param	token	query 	string	false		"token"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
@@ -38,7 +38,7 @@ func (b *BoardController) Start() {
 
 // @Title Applycfg
 // @Description apply cfg and restart Board
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
@@ -60,7 +60,7 @@ func (b *BoardController) Applycfg() {
 
 // @Title Shutdown
 // @Description shutdown board
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Param	uninstall	query 	bool	true	"uninstall flag"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success

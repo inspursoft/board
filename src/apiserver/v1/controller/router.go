@@ -167,6 +167,8 @@ func InitRouter() {
 				"post:GetServiceData"),
 				beego.NSRouter("/node",
 					&DashboardNodeController{}, "post:GetNodeData"),
+				beego.NSRouter("/adminservercheck",
+					&Dashboard{}, "get:AdminserverCheck"),
 				beego.NSRouter("/data",
 					&Dashboard{}, "post:GetData"),
 				beego.NSRouter("/time",
