@@ -897,7 +897,9 @@ export const LANG_EN_US = {
     ProjectName: 'Project name',
     ServiceInstanceName: 'Service instance name',
     DrainService: 'Drain service',
-    DeleteNode: 'Delete node'
+    DrainServiceTip: 'Only the node is in unschedulable state can drain services.',
+    DeleteNode: 'Delete node',
+    DeleteNodeTip: 'You can\'t remove the node from AdminServer until you\'ve drained services.'
   },
 
   "GUIDE":{
