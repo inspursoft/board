@@ -13,9 +13,8 @@ export class DashboardService {
   }
 
   monitorContainer(): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
     return this.http.get(
-      `${BASE_URL}/monitor?token=${token}`,
+      `${BASE_URL}/monitor`,
       { observe: 'response', })
       .pipe(map((res: HttpResponse<Array<ComponentStatus>>) => {
         return res.body;
