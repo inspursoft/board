@@ -180,5 +180,9 @@ func InitializeDefaultConfig() {
 
 	AddEnv("TILLER_PORT")
 
+	AddEnv("GITLAB_HOST_IP")
+	AddEnv("GITLAB_HOST_PORT")
+	SetConfig("GITLAB_BASE_URL", "http://%s:%s", "GITLAB_HOST_IP", "GITLAB_HOST_PORT")
+
 	ShowAllConfigs()
 }
