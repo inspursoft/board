@@ -25,7 +25,7 @@ func (b *BaseController) Prepare() {
 			b.CustomAbort(http.StatusInternalServerError, err.Error())
 		}
 		if !result {
-			b.CustomAbort(http.StatusUnauthorized, "Unauthorized")
+			b.CustomAbort(http.StatusUnauthorized, "UUID invalid or timeout")
 		}
 	} else {
 		user, newtoken := service.GetCurrentUser(token)
