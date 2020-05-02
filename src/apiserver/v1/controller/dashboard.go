@@ -155,17 +155,20 @@ func (s *Dashboard) AdminserverCheck() {
 	//TODO filter the module name
 	logs.Debug("Check the module %s", moduleName)
 
-	if err.Error() == ErrServerAccessFailed.Error() {
-		logs.Debug("Access adminserver failed %v", err)
-		s.CustomAbortAudit(http.StatusNotFound, "Cannot access adminserver.")
+	if err != nil {
+		if err.Error() == ErrServerAccessFailed.Error() {
+			logs.Debug("Adminserver internal failed %v", err)
+			s.CustomAbortAudit(http.StatusNotFound, "Cannot access adminserver.")
+			return
+		}
+		if err.Error() == ErrInvalidToken.Error() {
+			logs.Debug("Token failed %v", err)
+			s.CustomAbortAudit(http.StatusUnauthorized, "Invalid token to access adminserver.")
+			return
+		}
+		logs.Error("Access adminserver err %v", err)
+		s.CustomAbortAudit(http.StatusBadRequest, "Access adminserver failed.")
 		return
 	}
-
-	if err.Error() == ErrInvalidToken.Error() {
-		logs.Debug("Token failed %v", err)
-		s.CustomAbortAudit(http.StatusBadRequest, "Invalid token to access adminserver.")
-		return
-	}
-
 	s.RenderJSON(boardinfo)
 }
