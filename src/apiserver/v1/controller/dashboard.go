@@ -139,7 +139,7 @@ func (s *Dashboard) AdminserverCheck() {
 	logs.Debug("%s/monitor?token=%s", adminServerURL, token)
 
 	var boardinfo []BoardModuleInfo
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
 			logs.Error("Access adminserver failed %s.", req.URL)
 			return ErrServerAccessFailed
