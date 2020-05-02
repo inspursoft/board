@@ -139,7 +139,7 @@ func (s *Dashboard) AdminserverCheck() {
 	logs.Debug("%s/monitor?token=%s", adminServerURL, token)
 
 	var boardinfo []BoardModuleInfo
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
 			logs.Error("Access adminserver failed %s.", req.URL)
 			return ErrServerAccessFailed
@@ -155,17 +155,20 @@ func (s *Dashboard) AdminserverCheck() {
 	//TODO filter the module name
 	logs.Debug("Check the module %s", moduleName)
 
-	if err.Error() == ErrServerAccessFailed.Error() {
-		logs.Debug("Access adminserver failed %v", err)
-		s.CustomAbortAudit(http.StatusNotFound, "Cannot access adminserver.")
+	if err != nil {
+		if err.Error() == ErrServerAccessFailed.Error() {
+			logs.Debug("Adminserver internal failed %v", err)
+			s.CustomAbortAudit(http.StatusNotFound, "Cannot access adminserver.")
+			return
+		}
+		if err.Error() == ErrInvalidToken.Error() {
+			logs.Debug("Token failed %v", err)
+			s.CustomAbortAudit(http.StatusUnauthorized, "Invalid token to access adminserver.")
+			return
+		}
+		logs.Error("Access adminserver err %v", err)
+		s.CustomAbortAudit(http.StatusBadRequest, "Access adminserver failed.")
 		return
 	}
-
-	if err.Error() == ErrInvalidToken.Error() {
-		logs.Debug("Token failed %v", err)
-		s.CustomAbortAudit(http.StatusBadRequest, "Invalid token to access adminserver.")
-		return
-	}
-
 	s.RenderJSON(boardinfo)
 }

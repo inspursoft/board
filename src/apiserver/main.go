@@ -26,7 +26,7 @@ const (
 	defaultTokenServerPort      = "4000"
 	defaultTokenCacheExpireTime = "1800"
 	defaultAdminServer          = "adminserver"
-	defaultAdminServerPort      = "8081"
+	defaultAdminServerPort      = "8080"
 	defaultKubeConfigPath       = "/root/kubeconfig"
 	defaultSwaggerDoc           = "disabled"
 	defaultAuthMode             = "db_auth"
