@@ -299,8 +299,8 @@ export const LANG_ZH_CN = {
       TITLE: '电子邮件',
       EMAIL_IDENTITY: {
         NAME: '身份',
-        PLACEHOLDER: '身份名',
-        TIPS: '默认为空身份（NULL)',
+        PLACEHOLDER: '身份标识',
+        TIPS: '当不填写该值时使用用户名作为其身份标识，默认不填写',
       },
       EMAIL_SERVER: {
         NAME: '服务IP地址',
@@ -556,6 +556,7 @@ export const LANG_ZH_CN = {
       GET_CFG_FAILED: '获取配置失败，请检查服务是否正常运行。',
       GET_TMP_FAILED: '获取临时配置失败，使用当前配置。',
       START_BOARD_FAILED: '启动Board失败，请检查配置是否正确或者服务是否正常运行。',
+      ALREADY_UNINSTALL: '清除Board的所有相关数据失败！因为/data/board目录为空',
       UNINSTALL_BOARD_FAILED: '卸载Board失败，请检查服务是否正常运行。',
       POST_CFG_FAILED: '保存配置失败，请检查服务是否正常运行。',
       ALREADY_START: '检查发现Board已经启动！无法继续操作。',
