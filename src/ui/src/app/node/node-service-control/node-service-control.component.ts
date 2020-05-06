@@ -1,15 +1,16 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { NodeService } from '../node.service';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { NodeControlStatus, NodeStatus, ServiceInstance } from '../node.types';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-service-control',
   templateUrl: './node-service-control.component.html',
   styleUrls: ['./node-service-control.component.css']
 })
-export class NodeServiceControlComponent extends CsModalChildBase implements OnInit {
+export class NodeServiceControlComponent extends CsModalChildBase implements OnInit, OnDestroy {
   @Input() nodeCurrent: NodeStatus;
   @Input() instanceCount: number;
   @Input() deletable: boolean;
@@ -19,6 +20,7 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
   serviceInstanceList: Array<ServiceInstance>;
   curPageIndex = 1;
   curPageSize = 6;
+  autoRefreshSubscription: Subscription;
 
   constructor(private nodeService: NodeService,
               private view: ViewContainerRef) {
@@ -31,6 +33,12 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
 
   ngOnInit() {
     this.refreshData();
+    this.autoRefreshSubscription = interval(3000).subscribe(() => this.refreshData());
+  }
+
+  ngOnDestroy() {
+    this.autoRefreshSubscription.unsubscribe();
+    super.ngOnDestroy();
   }
 
   get phaseStyle(): { [p: string]: string } {
