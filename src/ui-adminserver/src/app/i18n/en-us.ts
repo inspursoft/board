@@ -159,7 +159,7 @@ export const LANG_EN_US = {
       KUBE_HTTP_SCHEME: {
         NAME: 'Kube http scheme',
         PLACEHOLDER: 'Kube http scheme',
-        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https'
+        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https. Please choose according to the actual network request scheme of the K8s to be connected, otherwise the connection will fail.'
       },
       KUBE_MASTER_IP: {
         NAME: 'Kube master IP',

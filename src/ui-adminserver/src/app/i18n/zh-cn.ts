@@ -159,7 +159,7 @@ export const LANG_ZH_CN = {
       KUBE_HTTP_SCHEME: {
         NAME: 'K8s网络请求方案',
         PLACEHOLDER: 'K8s网络请求方案',
-        TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https'
+        TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https。请依据所要连接的K8s的实际网络请求方案做选择，否则会造成连接失败。'
       },
       KUBE_MASTER_IP: {
         NAME: 'K8s主节点IP',
