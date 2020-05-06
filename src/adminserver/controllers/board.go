@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
@@ -65,6 +66,7 @@ func (b *BoardController) Applycfg() {
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
+// @Failure 503 Service Unavailable
 // @Failure 401 unauthorized: token invalid/session timeout
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
@@ -81,6 +83,9 @@ func (b *BoardController) Shutdown() {
 	}
 	if err = service.Shutdown(&host, uninstall); err != nil {
 		logs.Error(err)
+		if err == common.ErrNoData {
+			b.CustomAbort(http.StatusServiceUnavailable, err.Error())
+		}
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	b.ServeJSON()
