@@ -43,10 +43,6 @@ button.btn {
   text-transform: none;
 }
 
-div.modal-header {
-  padding: 0;
-}
-
 div.modal-footer {
   align-items: center;
   padding: 0;
@@ -56,3 +52,9 @@ div.clr-row {
   margin-left: 0;
   margin-right: 0;
 }
+
+.clr-toggle-wrapper input[type=checkbox]:checked:disabled+label::before,
+.toggle-switch input[type=checkbox]:checked:disabled+label::before{
+  background-color: green;
+}
+

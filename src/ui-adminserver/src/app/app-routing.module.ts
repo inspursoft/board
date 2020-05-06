@@ -22,7 +22,6 @@ const accountPath: Routes = [
 
 const routes: Routes = [
   { path: 'account', canActivateChild: [SysStatusGuard], children: accountPath, pathMatch: 'prefix' },
-  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '', component: MainContentComponent, canActivate: [SysStatusGuard], children: childrenPath },
   { path: 'installation', component: InstallationComponent, pathMatch: 'full' },
   { path: '**', component: Error404Component },

@@ -1,0 +1,12 @@
+div.control-container {
+    display: flex;
+    flex-direction: column;
+}
+
+div.info-container {
+    display: flex;
+}
+
+div.info-container span {
+    width: 130px;
+}

@@ -25,6 +25,8 @@ const (
 	defaultTokenServer          = "tokenserver"
 	defaultTokenServerPort      = "4000"
 	defaultTokenCacheExpireTime = "1800"
+	defaultAdminServer          = "adminserver"
+	defaultAdminServerPort      = "8080"
 	defaultKubeConfigPath       = "/root/kubeconfig"
 	defaultSwaggerDoc           = "disabled"
 	defaultAuthMode             = "db_auth"
@@ -155,6 +157,10 @@ func main() {
 	utils.SetConfig("TOKEN_SERVER_IP", defaultTokenServer)
 	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
 	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
+
+	utils.SetConfig("ADMINSERVER_IP", defaultAdminServer)
+	utils.SetConfig("ADMINSERVER_PORT", defaultAdminServerPort)
+	utils.SetConfig("ADMINSERVER_URL", "http://%s:%s/v1/admin", "ADMINSERVER_IP", "ADMINSERVER_PORT")
 
 	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
