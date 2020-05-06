@@ -159,7 +159,7 @@ export const LANG_EN_US = {
       KUBE_HTTP_SCHEME: {
         NAME: 'Kube http scheme',
         PLACEHOLDER: 'Kube http scheme',
-        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https'
+        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https. Please choose according to the actual network request scheme of the K8s to be connected, otherwise the connection will fail.'
       },
       KUBE_MASTER_IP: {
         NAME: 'Kube master IP',
@@ -300,7 +300,7 @@ export const LANG_EN_US = {
       EMAIL_IDENTITY: {
         NAME: 'Identity',
         PLACEHOLDER: 'Identity',
-        TIPS: 'The default is empty identity(NULL)'
+        TIPS: 'When the blank is not filled in, the username is used as its identity, and it is not filled in by default.'
       },
       EMAIL_SERVER: {
         NAME: 'Server IP',
@@ -556,6 +556,7 @@ export const LANG_EN_US = {
       GET_CFG_FAILED: 'Failed to get the configuration. Please check whether the service is running normally.',
       GET_TMP_FAILED: 'Failed to get temporary configuration, use current configuration.',
       START_BOARD_FAILED: 'Failed to start Board. Please check whether the configuration is correct or the service is running normally.',
+      ALREADY_UNINSTALL: 'Failed to clear all relevant data of Board! Because the /data/board directory is empty.',
       UNINSTALL_BOARD_FAILED: 'Failed to uninstall Board, please check whether the service is running normally',
       POST_CFG_FAILED: 'Failed to save the configuration. Please check whether the service is running normally.',
       ALREADY_START: 'Board have been successfully started. The next steps cannot be operated.',

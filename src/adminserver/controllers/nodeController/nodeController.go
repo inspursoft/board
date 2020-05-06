@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
@@ -32,9 +33,14 @@ func (controller *Controller) GetNodeListAction() {
 	var nodeResponseList []nodeModel.NodeListResponse
 	err := nodeService.GetNodeResponseList(&nodeResponseList)
 	if err != nil {
-		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
-		logs.Error(errorMsg)
-		controller.CustomAbort(http.StatusBadRequest, errorMsg)
+		if err == common.ErrInvalidToken {
+			errorMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+			controller.CustomAbort(http.StatusUnauthorized, errorMsg)
+		} else {
+			errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
+			logs.Error(errorMsg)
+			controller.CustomAbort(http.StatusBadRequest, errorMsg)
+		}
 		return
 	}
 	controller.Data["json"] = nodeResponseList
@@ -207,9 +213,14 @@ func (controller *Controller) ControlStatusAction() {
 	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
 	var nodeControlStatus = model.NodeControlStatus{NodeName: nodeName}
 	if err := nodeService.GetNodeControlStatusFromApiServer(&nodeControlStatus); err!=nil{
-		errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
-		logs.Error(errMsg)
-		controller.CustomAbort(http.StatusBadRequest, errMsg)
+		if err == common.ErrInvalidToken {
+			errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+			controller.CustomAbort(http.StatusUnauthorized, errMsg)
+		} else {
+			errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
+			logs.Error(errMsg)
+			controller.CustomAbort(http.StatusBadRequest, errMsg)
+		}
 		return
 	}
 	controller.Data["json"] = nodeControlStatus
