@@ -219,7 +219,7 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 	var apiServerNodeList []nodeModel.ApiServerNodeListResult
 	if err := getNodeListFromApiServer(&apiServerNodeList); err != nil {
-		logs.Info(err)
+		return err
 	}
 
 	var nodeStatusList []nodeModel.NodeStatus
