@@ -97,6 +97,8 @@ paths:
           description: 'unauthorized: token invalid/session timeout'
         "500":
           description: Internal Server Error
+        "503":
+          description: Service Unavailable
   /board/start:
     post:
       tags:
