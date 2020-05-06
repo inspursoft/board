@@ -2838,7 +2838,33 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Internal errors.          
+          description: Internal errors.     
+    delete:
+      summary: Remove the node.
+      description: |
+        This endpoint to remove the node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to be removed.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Remove this node from cluster successfully             
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.                 
   /v1/nodes/{node_name}/drain:
     put:  
       summary: Drain the services from the node.

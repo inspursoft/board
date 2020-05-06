@@ -83,13 +83,13 @@ export class InstallationComponent implements OnInit {
               this.disconnect = true;
               console.error(err.message);
               this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
+              this.refresh = true;
             });
         }
       },
       (err: HttpErrorResponse) => {
         console.error(err.message);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
-        this.submitBtnState = ClrLoadingState.DEFAULT;
+        this.getSysStatusFailed();
       }
     );
 
@@ -167,14 +167,14 @@ export class InstallationComponent implements OnInit {
             },
             (err: HttpErrorResponse) => {
               console.error(err.message);
-              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
-              this.submitBtnState = ClrLoadingState.DEFAULT;
+              this.getSysStatusFailed();
             }
           );
         },
         (err: HttpErrorResponse) => {
           console.error(err.message);
           this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID_FAILED', 'ACCOUNT.ERROR');
+          this.refresh = true;
           this.submitBtnState = ClrLoadingState.DEFAULT;
         }
       );
@@ -204,8 +204,7 @@ export class InstallationComponent implements OnInit {
             },
             (err: HttpErrorResponse) => {
               if (err.status === 401) {
-                this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-                this.refresh = true;
+                this.tokenError();
               } else {
                 console.log('Can not read tmp file: ' + err.message);
                 this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED');
@@ -361,10 +360,10 @@ export class InstallationComponent implements OnInit {
 
   commonError(err: HttpErrorResponse, errorList: Map<number, string>, finnalError: string) {
     console.error(err.message);
+    this.refresh = true;
     this.submitBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
-      this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-      this.refresh = true;
+      this.tokenError();
       return;
     }
     errorList.forEach((msg, e) => {
@@ -375,4 +374,26 @@ export class InstallationComponent implements OnInit {
     });
     this.messageService.showOnlyOkDialog(finnalError, 'ACCOUNT.ERROR');
   }
+
+  getSysStatusFailed() {
+    this.messageService.showOnlyOkDialogObservable('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR').subscribe(
+      (msg: Message) => {
+        if (msg.returnStatus === ReturnStatus.rsConfirm) {
+          location.reload();
+        }
+      }
+    );
+    this.submitBtnState = ClrLoadingState.DEFAULT;
+  }
+
+  tokenError() {
+    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR').subscribe(
+      (msg: Message) => {
+        if (msg.returnStatus === ReturnStatus.rsConfirm) {
+          location.reload();
+        }
+      }
+    );
+  }
+
 }

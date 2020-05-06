@@ -19,7 +19,7 @@ import (
 )
 
 var TokenServerURL = fmt.Sprintf("http://%s:%s/tokenservice/token", "tokenserver", "4000")
-var TokenCacheExpireSeconds int
+var DefaultCacheDuration = time.Second * time.Duration(1800)
 
 const (
 	defaultInitialPassword = "123456a?"
@@ -61,24 +61,14 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 		return false, "", err
 	}
 
-	TokenCacheExpireSeconds = 1800
-	logs.Info("Set token server URL as %s and will expiration time after %d second(s) in cache.", TokenServerURL, TokenCacheExpireSeconds)
-	dao.GlobalCache.Put(query.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
-	dao.GlobalCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+	dao.GlobalCache.Put(query.Username, token.TokenString, DefaultCacheDuration)
+	dao.GlobalCache.Put(token.TokenString, payload, DefaultCacheDuration)
 
-	cache1 := make(map[string]interface{})
-	cache1["key"] = query.Username
-	cache1["value"] = token.TokenString
-
-	cache2 := make(map[string]interface{})
-	cache2["key"] = token.TokenString
-	cache2["value"] = payload
-
-	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache1, nil)
+	err = UpdateApiserverCache(query.Username, token.TokenString)
 	if err != nil {
 		return false, "", err
 	}
-	err = utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache2, nil)
+	err = UpdateApiserverCache(token.TokenString, payload)
 	if err != nil {
 		return false, "", err
 	}
@@ -86,39 +76,73 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 	return true, token.TokenString, nil
 }
 
-func GetCurrentUser(token string) *model.User {
+func GetCurrentUser(token string) (*model.User, string) {
 	if isTokenExists := dao.GlobalCache.IsExist(token); !isTokenExists {
 		logs.Info("Token stored in cache has expired.")
-		return nil
+		return nil, ""
 	}
+	var hasResignedToken bool
 	payload, err := t.VerifyToken(TokenServerURL, token)
 	if err != nil {
-		logs.Error("failed to verify token: %+v\n", err)
-		return nil
+		if err == t.ErrInvalidToken {
+			if lastPayload, ok := dao.GlobalCache.Get(token).(map[string]interface{}); ok {
+				newToken, err := t.SignToken(TokenServerURL, lastPayload)
+				if err != nil {
+					logs.Error("failed to sign token: %+v\n", err)
+					return nil, ""
+				}
+				hasResignedToken = true
+				token = newToken.TokenString
+				payload = lastPayload
+				logs.Info("Token has been re-signed due to timeout.")
+			}
+		} else {
+			logs.Error("failed to verify token: %+v\n", err)
+			return nil, ""
+		}
+	}
+	dao.GlobalCache.Put(token, payload, DefaultCacheDuration)
+	err = UpdateApiserverCache(token, payload)
+	if err != nil {
+		logs.Error("failed to update apiserver cache: %+v\n", err)
+		return nil, ""
 	}
 
 	if strID, ok := payload["id"].(string); ok {
 		userID, err := strconv.Atoi(strID)
 		if err != nil {
 			logs.Error("Error occurred on converting userID: %+v\n", err)
-			return nil
+			return nil, ""
 		}
 		user := model.User{ID: int64(userID), Deleted: 0}
 		user, err = dao.GetUserByID(user)
 		if err != nil {
 			logs.Error("Error occurred while getting user by ID: %d\n", err)
-			return nil
+			return nil, ""
 		}
 		if currentToken, ok := dao.GlobalCache.Get(user.Username).(string); ok {
-			if currentToken != "" && currentToken != token {
+			if !hasResignedToken && currentToken != "" && currentToken != token {
 				logs.Info("Another admin user has signed in other place.")
-				return nil
+				return nil, ""
+			}
+			dao.GlobalCache.Put(user.Username, token, DefaultCacheDuration)
+			err = UpdateApiserverCache(user.Username, token)
+			if err != nil {
+				logs.Error("failed to update apiserver cache: %+v\n", err)
+				return nil, ""
 			}
 		}
 		user.Password = ""
-		return &user
+		return &user, token
 	}
-	return nil
+	return nil, ""
+}
+
+func UpdateApiserverCache(key string, value interface{}) error {
+	cache := make(map[string]interface{})
+	cache["key"] = key
+	cache["value"] = value
+	return utils.RequestHandle(http.MethodPost, "http://apiserver:8088/api/v1/cache-store", nil, cache, nil)
 }
 
 //CreateUUID creates a file with an UUID in it.

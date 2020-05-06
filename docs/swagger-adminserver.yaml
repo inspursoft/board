@@ -54,7 +54,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       - in: body
         name: body
@@ -79,7 +78,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       - in: query
         name: uninstall
@@ -109,7 +107,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       - in: body
         name: body
@@ -151,7 +148,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       responses:
         "200":
@@ -177,7 +173,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       responses:
         "200":
@@ -196,7 +191,6 @@ paths:
       - in: query
         name: token
         description: token
-        required: true
         type: string
       responses:
         "200":
@@ -274,6 +268,26 @@ paths:
       responses:
         "200":
           description: ""
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/{node_name}:
+    get:
+      tags:
+      - node
+      description: Get node control status
+      operationId: Controller.Get node control status
+      parameters:
+      - in: path
+        name: node_name
+        description: "true"
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.NodeControlStatus'
         "400":
           description: bad request
         "500":
@@ -372,8 +386,11 @@ paths:
         "500":
           description: Internal Server Error
 definitions:
-  3487.<nil>.NodeLog:
+  3526.<nil>.NodeLog:
     title: NodeLog
+    type: object
+  model.NodeControlStatus:
+    title: NodeControlStatus
     type: object
   models.Account:
     title: Account
@@ -635,7 +652,7 @@ definitions:
     type: object
     properties:
       log_list:
-        $ref: '#/definitions/3487.<nil>.NodeLog'
+        $ref: '#/definitions/3526.<nil>.NodeLog'
       pagination:
         $ref: '#/definitions/nodeModel.Pagination'
   nodeModel.Pagination:
