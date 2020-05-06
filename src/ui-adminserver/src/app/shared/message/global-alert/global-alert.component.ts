@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {Observable, Subject} from 'rxjs';
 import {HttpErrorResponse} from '@angular/common/http';
 import {GlobalAlertMessage} from '../message.types';
+import { Router } from '@angular/router';
 
 @Component({
   templateUrl: './global-alert.component.html',
@@ -13,7 +14,7 @@ export class GlobalAlertComponent {
   onCloseEvent: Subject<any>;
   detailModalOpen = false;
 
-  constructor() {
+  constructor(private route: Router) {
     this.onCloseEvent = new Subject<any>();
   }
 
@@ -50,6 +51,7 @@ export class GlobalAlertComponent {
   }
 
   loginClick() {
-    // TODO: add login function;2020.2.17
+    this.isOpen = false;
+    this.route.navigateByUrl('/account/login').then();
   }
 }

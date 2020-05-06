@@ -10,6 +10,7 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 
 	"io"
@@ -409,7 +410,7 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 		})
 		return err
 	} else {
-		return fmt.Errorf("read the token value from globalCache was failed")
+		return common.ErrInvalidToken
 	}
 }
 
