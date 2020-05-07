@@ -470,6 +470,27 @@ func GetNodebyName(nodeName string) (*model.Node, error) {
 
 }
 
+// Get a node in kubernetes cluster
+func GetNodebyIP(nodeIP string) (*model.Node, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+	nodeList, err := n.List()
+	if err != nil {
+		logs.Error("Failed to get nodelist: %s, error: %+v", nodeIP, err)
+		return nil, err
+	}
+	for _, nodeitem := range nodeList.Items {
+
+		if nodeitem.NodeIP == nodeIP {
+			logs.Info("Node in K8s %+v", nodeitem)
+			return &nodeitem, nil
+		}
+	}
+	return nil, nil
+}
+
 // Create a node in kubernetes cluster
 func CreateNode(node model.NodeCli) (*model.Node, error) {
 
