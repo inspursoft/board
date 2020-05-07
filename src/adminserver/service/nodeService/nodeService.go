@@ -380,8 +380,8 @@ func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatu
 	return getResponseJsonFromApiServer(url, nodeControlStatus);
 }
 
-func DeleteNode(nodeName string) error  {
-	urlPath := fmt.Sprintf("api/v1/nodes/%s", nodeName)
+func DeleteNode(nodeIp string) error  {
+	urlPath := fmt.Sprintf("api/v1/nodes/%s?node_ip=%s", nodeIp, nodeIp)
 	return deleteActionFromApiServer(urlPath)
 }
 

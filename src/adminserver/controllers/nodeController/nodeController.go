@@ -8,11 +8,11 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strconv"
 	"strings"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 )
 
 type Controller struct {
@@ -159,22 +159,13 @@ func (controller *Controller) CallBackAction() {
 		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
 	}
-	return
-}
-
-// @Title delete node
-// @Description delete node
-// @Success 200
-// @Failure 400 bad request
-// @Failure 500 Internal Server Error
-// @router /:node_name [delete]
-func (controller *Controller) DeleteNodeAction() {
-	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
-	if err := nodeService.DeleteNode(nodeName); err != nil {
-		errMsg := fmt.Sprintf("Failed to delete node: %v", err)
-		logs.Error(errMsg)
-		controller.CustomAbort(http.StatusBadRequest, errMsg)
-		return
+	if putData.Success == 0 {
+		if err := nodeService.DeleteNode(putData.Ip); err != nil {
+			errMsg := fmt.Sprintf("Failed to delete node: %v", err)
+			logs.Error(errMsg)
+			controller.CustomAbort(http.StatusBadRequest, errMsg)
+			return
+		}
 	}
 	return
 }
@@ -218,7 +209,6 @@ func (controller *Controller) RemoveNodeAction() {
 		nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
 }
 
-
 // @Title Get node control status
 // @Description Get node control status
 // @Param	node_name	        path	string	true	""
@@ -229,7 +219,7 @@ func (controller *Controller) RemoveNodeAction() {
 func (controller *Controller) ControlStatusAction() {
 	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
 	var nodeControlStatus = model.NodeControlStatus{NodeName: nodeName}
-	if err := nodeService.GetNodeControlStatusFromApiServer(&nodeControlStatus); err!=nil{
+	if err := nodeService.GetNodeControlStatusFromApiServer(&nodeControlStatus); err != nil {
 		if err == common.ErrInvalidToken {
 			errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
 			controller.CustomAbort(http.StatusUnauthorized, errMsg)
