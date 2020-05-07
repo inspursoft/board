@@ -400,7 +400,7 @@ export const LANG_ZH_CN = {
       AUTH_MODE: {
         NAME: '用户验证模式',
         PLACEHOLDER: '',
-        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP；如果要根据InData集成平台验证用户的凭据，请将其设置为Indata',
+        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP',
       },
       VERIFICATION_URL: {
         NAME: '验证地址',

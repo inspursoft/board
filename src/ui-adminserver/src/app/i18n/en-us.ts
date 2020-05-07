@@ -400,7 +400,7 @@ export const LANG_EN_US = {
       AUTH_MODE: {
         NAME: 'Auth mode',
         PLACEHOLDER: 'Auth mode',
-        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials against an LDAP server. Set it to \'Indata\' if you want to verify a user\'s credentials against InData integration platform.'
+        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials with a LDAP server.'
       },
       VERIFICATION_URL: {
         NAME: 'Verification url',
