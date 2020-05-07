@@ -62,6 +62,10 @@ export class ResourceService {
     return this.http.getJson(`/v1/admin/node/${nodeName}`, NodeControlStatus);
   }
 
+  deleteNode(nodeName: string): Observable<any> {
+    return this.http.delete(`/v1/admin/node/${nodeName}`);
+  }
+
   getNodeLogDetail(ip: string, creationTime: number): Observable<NodeDetails> {
     return this.http.getArrayJson(`/v1/admin/node/log?`, NodeDetails, {
       node_ip: ip,

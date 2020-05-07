@@ -43,6 +43,12 @@ export class NodeListComponent implements OnInit, OnDestroy {
     this.createNodeDetail(logInfo, NodeActionsType.Add);
   }
 
+  testDeleteNode(node: NodeListType) {
+    this.resourceService.deleteNode(node.nodeName).subscribe(
+      () => this.messageService.showAlert('删除成功～！')
+    );
+  }
+
   deleteNode(node: NodeListType) {
     this.resourceService.getNodeControlStatus(node.nodeName).subscribe(
       (res: NodeControlStatus) => {

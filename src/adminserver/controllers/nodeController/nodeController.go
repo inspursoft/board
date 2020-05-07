@@ -162,6 +162,23 @@ func (controller *Controller) CallBackAction() {
 	return
 }
 
+// @Title delete node
+// @Description delete node
+// @Success 200
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /:node_name [delete]
+func (controller *Controller) DeleteNodeAction() {
+	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
+	if err := nodeService.DeleteNode(nodeName); err != nil {
+		errMsg := fmt.Sprintf("Failed to delete node: %v", err)
+		logs.Error(errMsg)
+		controller.CustomAbort(http.StatusBadRequest, errMsg)
+		return
+	}
+	return
+}
+
 // @Title add nodeModel
 // @Description Get add nodeModel
 // @Param	body	body	nodeModel.AddNodePostData	true	""
