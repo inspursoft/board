@@ -90,11 +90,6 @@ fi
 echo ""
 
 echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
-if [ -n "$(docker-compose -f docker-compose-new.yml ps -q)"  ]
-then
-	echo "Board is up, please shut it down in adminserver UI. "
-	exit 1
-fi
 if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."
