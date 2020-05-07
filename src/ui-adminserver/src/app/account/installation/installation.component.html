@@ -674,18 +674,10 @@
 
               <app-my-input-template [disabled]="simpleMode"
                                      [label]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.NAME' | translate"
-                                     [type]="'enum'"
-                                     [required]="true"
-                                     [defaultValue]="config.email.emailIdentity?config.email.emailIdentity:'null'"
-                                     [enumType]="'text'"
-                                     [enumItem]="{NULL:'null'}"
-                                     [enumInline]="true"
-                                     [enableCustomItem]="true"
-                                     [customItemPlaceholder]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.PLACEHOLDER' | translate"
-                                     [customItemWidth]="'8.3rem'"
+                                     [type]="'text'"
+                                     [defaultValue]="config.email.emailIdentity"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.PLACEHOLDER' | translate"
                                      [helper]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.TIPS' | translate"
-                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                                     [inputUpdateOn]="'change'"
                                      (commitEvent)="config.email.emailIdentity = $event">
               </app-my-input-template>
 
