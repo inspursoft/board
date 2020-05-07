@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/common/model"
@@ -19,7 +20,7 @@ import (
 )
 
 var TokenServerURL = fmt.Sprintf("http://%s:%s/tokenservice/token", "tokenserver", "4000")
-var DefaultCacheDuration = time.Second * time.Duration(1800)
+var DefaultCacheDuration time.Duration
 
 const (
 	defaultInitialPassword = "123456a?"
@@ -61,6 +62,10 @@ func LoginWithDB(acc *models.Account) (bool, string, error) {
 		return false, "", err
 	}
 
+	err = InitTokenCacheDuration()
+	if err != nil {
+		return false, "", err
+	}
 	dao.GlobalCache.Put(query.Username, token.TokenString, DefaultCacheDuration)
 	dao.GlobalCache.Put(token.TokenString, payload, DefaultCacheDuration)
 
@@ -197,4 +202,17 @@ func RemoveUUIDTokenCache() {
 		dao.RemoveUUIDToken()
 		os.Remove(UUIDpath)
 	}
+}
+
+func InitTokenCacheDuration() error {
+	TokenCacheSeconds, err := common.ReadCfgItem("token_cache_expire_seconds")
+	if err != nil {
+		return err
+	}
+	TokenCacheSecondsNum, err := strconv.Atoi(TokenCacheSeconds)
+	if err != nil {
+		return err
+	}
+	DefaultCacheDuration = time.Second * time.Duration(TokenCacheSecondsNum)
+	return err
 }
