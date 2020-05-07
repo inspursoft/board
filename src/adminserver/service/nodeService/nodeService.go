@@ -32,7 +32,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	}
 	hostName := configuration.Apiserver.Hostname
 	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.RegistryIP
+	registryIp := configuration.Apiserver.KubeMasterIP
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
