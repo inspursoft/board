@@ -32,7 +32,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	}
 	hostName := configuration.Apiserver.Hostname
 	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.RegistryIP
+	registryIp := configuration.Apiserver.KubeMasterIP
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
@@ -127,7 +127,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return err
 	}
 
-	logData.Success = putLogData.Success == 0
+	logData.Success = putLogData.ExitCode == 0
 	logData.Completed = true
 	if errUpdate := nodeDao.UpdateNodeLog(logData); errUpdate != nil {
 		return errUpdate
@@ -142,7 +142,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return errInsert
 	}
 
-	if putLogData.Success == 0 {
+	if putLogData.ExitCode == 0 {
 		if putLogData.InstallFile == nodeModel.AddNodeYamlFile {
 			if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
 				Ip:           putLogData.Ip,
@@ -380,8 +380,43 @@ func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatu
 	return getResponseJsonFromApiServer(url, nodeControlStatus);
 }
 
+func DeleteNode(nodeIp string) error  {
+	urlPath := fmt.Sprintf("api/v1/nodes/%s?node_ip=%s", nodeIp, nodeIp)
+	return deleteActionFromApiServer(urlPath)
+}
+
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
 	return getResponseJsonFromApiServer("api/v1/nodes", nodeList);
+}
+
+func deleteActionFromApiServer(urlPath string) error {
+	allConfig, errCfg := service.GetAllCfg("", false)
+	if errCfg != nil {
+		return fmt.Errorf("failed to get the configuration")
+	}
+	host := allConfig.Apiserver.Hostname
+	port := allConfig.Apiserver.APIServerPort
+	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
+
+	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+		err := utils.RequestHandle(http.MethodDelete, url, func(req *http.Request) error {
+			req.Header = http.Header{
+				"Content-Type": []string{"application/json"},
+				"token":        []string{currentToken},
+			}
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == 200 {
+				return nil
+			}
+			data, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
+				resp.StatusCode, string(data))
+		})
+		return err
+	} else {
+		return common.ErrInvalidToken
+	}
 }
 
 func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
