@@ -45,6 +45,15 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		return nil, err
 	}
 
+	logCache := dao.GlobalCache.Get(nodePostData.NodeIp).(*nodeModel.NodeLogCache)
+	var secure *secureShell.SecureShell
+	var secureErr error
+	secure, secureErr = secureShell.NewSecureShell(&logCache.DetailBuffer,
+		hostName, nodePostData.HostUsername, nodePostData.HostPassword)
+	if secureErr != nil {
+		return nil, secureErr
+	}
+
 	var newLogId int64
 	nodeLog := nodeModel.NodeLog{
 		Ip: nodePostData.NodeIp, Completed: false, Success: false, CreationTime: time.Now().Unix(), LogType: actionType}
@@ -65,20 +74,13 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		InstallFile:    yamlFile,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
-	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
+	if err := LaunchAnsibleContainer(&containerEnv, secure); err != nil {
 		return nil, err
 	}
 	return &nodeLog, nil
 }
 
-func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
-	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
-	var secure *secureShell.SecureShell
-	var err error
-	secure, err = secureShell.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
-	if err != nil {
-		return err
-	}
+func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 
 	envStr := fmt.Sprintf(""+
 		"--env MASTER_PASS=\"%s\" \\\n"+
@@ -110,9 +112,8 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
 		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
-	err = secure.ExecuteCommand(cmdStr)
 
-	if err != nil {
+	if err := secure.ExecuteCommand(cmdStr); err != nil {
 		return err
 	}
 
