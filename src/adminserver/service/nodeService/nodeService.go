@@ -45,6 +45,20 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		return nil, err
 	}
 
+	var nodeLogCache = nodeModel.NodeLogCache{}
+	if err := dao.GlobalCache.Put(nodePostData.NodeIp, &nodeLogCache, 3600*time.Second); err != nil {
+		return nil, err
+	}
+
+	var secure *secureShell.SecureShell
+	var secureErr error
+	secure, secureErr = secureShell.NewSecureShell(&nodeLogCache.DetailBuffer,
+		hostName, nodePostData.HostUsername, nodePostData.HostPassword)
+	if secureErr != nil {
+		RemoveCacheData(nodePostData.NodeIp)
+		return nil, secureErr
+	}
+
 	var newLogId int64
 	nodeLog := nodeModel.NodeLog{
 		Ip: nodePostData.NodeIp, Completed: false, Success: false, CreationTime: time.Now().Unix(), LogType: actionType}
@@ -65,20 +79,13 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		InstallFile:    yamlFile,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
-	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
+	if err := LaunchAnsibleContainer(&containerEnv, secure); err != nil {
 		return nil, err
 	}
 	return &nodeLog, nil
 }
 
-func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
-	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
-	var secure *secureShell.SecureShell
-	var err error
-	secure, err = secureShell.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
-	if err != nil {
-		return err
-	}
+func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 
 	envStr := fmt.Sprintf(""+
 		"--env MASTER_PASS=\"%s\" \\\n"+
@@ -110,9 +117,8 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
 		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
-	err = secure.ExecuteCommand(cmdStr)
 
-	if err != nil {
+	if err := secure.ExecuteCommand(cmdStr); err != nil {
 		return err
 	}
 
@@ -160,12 +166,9 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 }
 
 func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
-	var nodeLogCache = nodeModel.NodeLogCache{}
-	nodeLogCache.NodeLogPtr = nodeLog
-	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
-		return 0, err
-	}
+	nodeLogCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
 
+	nodeLogCache.NodeLogPtr = nodeLog
 	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
 		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----\n", nodeLog.Ip))
 	} else {
@@ -380,7 +383,7 @@ func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatu
 	return getResponseJsonFromApiServer(url, nodeControlStatus);
 }
 
-func DeleteNode(nodeIp string) error  {
+func DeleteNode(nodeIp string) error {
 	urlPath := fmt.Sprintf("api/v1/nodes/%s?node_ip=%s", nodeIp, nodeIp)
 	return deleteActionFromApiServer(urlPath)
 }
