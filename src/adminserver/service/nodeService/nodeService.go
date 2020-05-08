@@ -250,24 +250,6 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 			Origin:       origin})
 	}
 
-	for _, item := range nodeStatusList {
-		var existInApiServer = false
-		for _, apiItem := range apiServerNodeList {
-			if item.Ip == apiItem.NodeIP {
-				existInApiServer = true
-			}
-		}
-		if existInApiServer == false {
-			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-				Ip:           item.Ip,
-				CreationTime: item.CreationTime,
-				LogTime:      item.CreationTime,
-				IsMaster:     false,
-				Status:       3,
-				Origin:       0})
-		}
-	}
-
 	return nil
 }
 
