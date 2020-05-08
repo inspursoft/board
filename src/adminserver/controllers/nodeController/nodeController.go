@@ -159,7 +159,7 @@ func (controller *Controller) CallBackAction() {
 		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
 	}
-	if putData.Success == 0 {
+	if putData.Success == 0 && putData.InstallFile == nodeModel.RemoveNodeYamlFile {
 		if err := nodeService.DeleteNode(putData.Ip); err != nil {
 			errMsg := fmt.Sprintf("Failed to delete node: %v", err)
 			logs.Error(errMsg)
