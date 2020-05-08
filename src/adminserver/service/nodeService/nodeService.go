@@ -45,12 +45,17 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		return nil, err
 	}
 
-	logCache := dao.GlobalCache.Get(nodePostData.NodeIp).(*nodeModel.NodeLogCache)
+	var nodeLogCache = nodeModel.NodeLogCache{}
+	if err := dao.GlobalCache.Put(nodePostData.NodeIp, &nodeLogCache, 3600*time.Second); err != nil {
+		return nil, err
+	}
+
 	var secure *secureShell.SecureShell
 	var secureErr error
-	secure, secureErr = secureShell.NewSecureShell(&logCache.DetailBuffer,
+	secure, secureErr = secureShell.NewSecureShell(&nodeLogCache.DetailBuffer,
 		hostName, nodePostData.HostUsername, nodePostData.HostPassword)
 	if secureErr != nil {
+		RemoveCacheData(nodePostData.NodeIp)
 		return nil, secureErr
 	}
 
@@ -161,12 +166,9 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 }
 
 func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
-	var nodeLogCache = nodeModel.NodeLogCache{}
-	nodeLogCache.NodeLogPtr = nodeLog
-	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
-		return 0, err
-	}
+	nodeLogCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
 
+	nodeLogCache.NodeLogPtr = nodeLog
 	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
 		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----\n", nodeLog.Ip))
 	} else {
@@ -381,7 +383,7 @@ func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatu
 	return getResponseJsonFromApiServer(url, nodeControlStatus);
 }
 
-func DeleteNode(nodeIp string) error  {
+func DeleteNode(nodeIp string) error {
 	urlPath := fmt.Sprintf("api/v1/nodes/%s?node_ip=%s", nodeIp, nodeIp)
 	return deleteActionFromApiServer(urlPath)
 }
