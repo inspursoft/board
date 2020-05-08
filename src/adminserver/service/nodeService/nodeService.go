@@ -127,7 +127,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return err
 	}
 
-	logData.Success = putLogData.Success == 0
+	logData.Success = putLogData.ExitCode == 0
 	logData.Completed = true
 	if errUpdate := nodeDao.UpdateNodeLog(logData); errUpdate != nil {
 		return errUpdate
@@ -142,7 +142,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return errInsert
 	}
 
-	if putLogData.Success == 0 {
+	if putLogData.ExitCode == 0 {
 		if putLogData.InstallFile == nodeModel.AddNodeYamlFile {
 			if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
 				Ip:           putLogData.Ip,

@@ -67,7 +67,7 @@ type UpdateNodeLog struct {
 	Ip          string `json:"ip"`
 	InstallFile string `json:"install_file"`
 	LogFile     string `json:"log_file"`
-	Success     int    `json:"success"`
+	ExitCode    int    `json:"success"`
 }
 
 type NodeLogDetailArray = []NodeLogDetail
