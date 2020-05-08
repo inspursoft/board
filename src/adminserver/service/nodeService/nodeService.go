@@ -409,6 +409,9 @@ func deleteActionFromApiServer(urlPath string) error {
 			if resp.StatusCode == 200 {
 				return nil
 			}
+			if resp.StatusCode == 401 {
+				return common.ErrInvalidToken
+			}
 			data, _ := ioutil.ReadAll(resp.Body)
 			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
 				resp.StatusCode, string(data))
@@ -438,6 +441,9 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 		}, nil, func(req *http.Request, resp *http.Response) error {
 			if resp.StatusCode == 200 {
 				return utils.UnmarshalToJSON(resp.Body, res)
+			}
+			if resp.StatusCode == 401 {
+				return common.ErrInvalidToken
 			}
 			data, _ := ioutil.ReadAll(resp.Body)
 			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",

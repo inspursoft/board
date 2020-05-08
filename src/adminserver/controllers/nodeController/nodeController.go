@@ -36,11 +36,11 @@ func (controller *NodeController) GetNodeListAction() {
 		if err == common.ErrInvalidToken {
 			errorMsg := fmt.Sprintf("Token was expired.%s", err.Error())
 			controller.CustomAbort(http.StatusUnauthorized, errorMsg)
-		} else {
-			errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
-			logs.Error(errorMsg)
-			controller.CustomAbort(http.StatusBadRequest, errorMsg)
+			return
 		}
+		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
+		logs.Error(errorMsg)
+		controller.CustomAbort(http.StatusBadRequest, errorMsg)
 		return
 	}
 	controller.Data["json"] = nodeResponseList
@@ -161,6 +161,11 @@ func (controller *NodeController) CallBackAction() {
 	}
 	if putData.ExitCode == 0 && putData.InstallFile == nodeModel.RemoveNodeYamlFile {
 		if err := nodeService.DeleteNode(putData.Ip); err != nil {
+			if err == common.ErrInvalidToken {
+				errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+				controller.CustomAbort(http.StatusUnauthorized, errMsg)
+				return
+			}
 			errMsg := fmt.Sprintf("Failed to delete node: %v", err)
 			logs.Error(errMsg)
 			controller.CustomAbort(http.StatusBadRequest, errMsg)
@@ -223,11 +228,11 @@ func (controller *NodeController) ControlStatusAction() {
 		if err == common.ErrInvalidToken {
 			errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
 			controller.CustomAbort(http.StatusUnauthorized, errMsg)
-		} else {
-			errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
-			logs.Error(errMsg)
-			controller.CustomAbort(http.StatusBadRequest, errMsg)
+			return
 		}
+		errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
+		logs.Error(errMsg)
+		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
 	}
 	controller.Data["json"] = nodeControlStatus
