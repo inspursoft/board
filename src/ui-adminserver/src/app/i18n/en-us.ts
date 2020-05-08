@@ -143,7 +143,7 @@ export const LANG_EN_US = {
     Node_Detail_Node_Ip_Hint: 'Please input the node ip.',
     Node_Detail_Node_Password_Hint: 'Please input the password of the node.',
     Node_Detail_Error_Invalid_Password: 'Invalid password',
-    Node_Detail_Error_Bad_Input: 'Bad input',
+    Node_Detail_Error_Bad_Input: 'Wrong input',
     Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
   },
   CONFIGURATIONS: {
