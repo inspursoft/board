@@ -387,7 +387,7 @@ export class InstallationComponent implements OnInit {
   }
 
   tokenError() {
-    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR').subscribe(
+    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR_TO_REFRESH', 'ACCOUNT.ERROR').subscribe(
       (msg: Message) => {
         if (msg.returnStatus === ReturnStatus.rsConfirm) {
           location.reload();

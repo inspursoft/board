@@ -234,9 +234,9 @@ export const LANG_EN_US = {
       },
       JENKINS_NODE_PASSWORD: {
         NAME: 'Jenkins node password',
-        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
-        TIPS: 'The password of the Jemkins account, please use this password before production. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PLACEHOLDER: 'password of node mechine',
+        TIPS: 'The password of jenkins node mechine, please use this password before production.',
+        PATTERN_ERROR: '',
       },
       JENKINS_NODE_VOLUME: {
         NAME: 'Jenkins node volume',
@@ -480,6 +480,7 @@ export const LANG_EN_US = {
     FORBIDDEN: 'Forbidden access!',
     FORGOT_PASSWORD_HELPER: 'If you have configured an email, please change the password in the Board. If you have not configured an email, please contact the administrator for assistance.',
     TOKEN_ERROR: 'User status error! Please login again!',
+    TOKEN_ERROR_TO_REFRESH: 'User status error! Please click the "Confirm" button to reload this page!',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: 'Upload',

@@ -234,9 +234,9 @@ export const LANG_ZH_CN = {
       },
       JENKINS_NODE_PASSWORD: {
         NAME: '节点密码',
-        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
-        TIPS: 'Jemkins账户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
-        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
+        PLACEHOLDER: '节点主机密码',
+        TIPS: 'Jemkins节点主机的账户的密码，请在生产前使用此密码',
+        PATTERN_ERROR: '',
       },
       JENKINS_NODE_VOLUME: {
         NAME: '节点数据卷路径',
@@ -480,6 +480,7 @@ export const LANG_ZH_CN = {
     FORBIDDEN: '禁止访问。',
     FORGOT_PASSWORD_HELPER: '如果您配置了邮箱，请在Board中修改密码。如果您没有配置邮箱，请联系管理员进行协助。',
     TOKEN_ERROR: '用户状态信息错误！请重新登录！',
+    TOKEN_ERROR_TO_REFRESH: '用户状态信息错误！请点击“确定”刷新页面。',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: '上传',
