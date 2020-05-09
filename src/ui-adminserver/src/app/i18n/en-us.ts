@@ -127,7 +127,7 @@ export const LANG_EN_US = {
     Node_Detail_Refresh: 'Refresh log',
     Node_Detail_Title_Add: 'Add node',
     Node_Detail_Title_Remove: 'Removing node',
-    Node_Detail_Title_Log: 'Add node log',
+    Node_Detail_Title_Log: 'Log detail',
     Node_Detail_Node_Ip: 'Node ip',
     Node_Detail_Node_Password: 'Node password',
     Node_Detail_Remove_Success: 'Remove node successfully.',
@@ -141,7 +141,10 @@ export const LANG_EN_US = {
     Node_Detail_Host_Username_Hint: 'Please input the username of the host.',
     Node_Detail_Host_Password_Hint: 'Please input the password of the host.',
     Node_Detail_Node_Ip_Hint: 'Please input the node ip.',
-    Node_Detail_Node_Password_Hint: 'Please input the password of the node.'
+    Node_Detail_Node_Password_Hint: 'Please input the password of the node.',
+    Node_Detail_Error_Invalid_Password: 'Invalid password',
+    Node_Detail_Error_Bad_Input: 'Wrong input',
+    Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
   },
   CONFIGURATIONS: {
     API_SERVER: {

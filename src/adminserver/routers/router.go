@@ -44,7 +44,7 @@ func init() {
 		),
 		beego.NSNamespace("/node",
 			beego.NSInclude(
-				&nodeController.Controller{},
+				&nodeController.NodeController{},
 			),
 		),
 	)

@@ -127,7 +127,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Refresh: '刷新日志',
     Node_Detail_Title_Add: '添加节点',
     Node_Detail_Title_Remove: '正在移除节点',
-    Node_Detail_Title_Log: '添加节点日志',
+    Node_Detail_Title_Log: '节点详情',
     Node_Detail_Node_Ip: '节点IP',
     Node_Detail_Node_Password: '节点密码',
     Node_Detail_Remove_Success: '移除节点成功。',
@@ -141,7 +141,10 @@ export const LANG_ZH_CN = {
     Node_Detail_Host_Username_Hint: '请输入主机的用户名',
     Node_Detail_Host_Password_Hint: '请输入主机的密码',
     Node_Detail_Node_Ip_Hint: '请输入节点IP',
-    Node_Detail_Node_Password_Hint: '请输入节点密码'
+    Node_Detail_Node_Password_Hint: '请输入节点密码',
+    Node_Detail_Error_Invalid_Password: '无效密码',
+    Node_Detail_Error_Bad_Input: '输入信息错误',
+    Node_Detail_Error_Failed_Request: '获取数据错误'
   },
   CONFIGURATIONS: {
     API_SERVER: {
