@@ -44,6 +44,7 @@ export class UserService {
 
   newUser(userParams: User): Observable<any> {
     userParams.user_password = window.btoa(userParams.user_password);
+    userParams.user_confirm_password = window.btoa(userParams.user_confirm_password);
     return this.http.post(`${BASE_URL}/adduser`, userParams, {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: "response"
