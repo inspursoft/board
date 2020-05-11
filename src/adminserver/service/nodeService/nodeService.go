@@ -12,8 +12,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
-	"math"
-
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -231,28 +229,17 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 		return err
 	}
 
-	var nodeLogList []nodeModel.NodeLog
-	if err := nodeDao.GetNodeLogList(&nodeLogList, math.MaxInt16, 0); err != nil {
-		return err
-	}
-
 	for _, item := range apiServerNodeList {
 		_, isMaster := item.Labels["node-role.kubernetes.io/master"]
 		var origin = 0
 		var logTime = item.CreateTime
-		var isAdd = true
 		for _, adminItem := range nodeStatusList {
 			if item.NodeIP == adminItem.Ip {
 				origin = 1
 				logTime = adminItem.CreationTime
 			}
 		}
-		for _, adminLogItem := range nodeLogList {
-			if item.NodeIP == adminLogItem.Ip && adminLogItem.Completed == false {
-				isAdd = false
-			}
-		}
-		if isAdd {
+		if CheckExistsInCache(item.NodeIP) == false {
 			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
 				Ip:           item.NodeIP,
 				CreationTime: item.CreateTime,
