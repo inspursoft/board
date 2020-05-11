@@ -148,10 +148,10 @@ func (s *Dashboard) AdminserverCheck() {
 
 	adminServerURL := AdminServerURL()
 
-	logs.Debug("%s/v1/admin/monitor?token=%s", adminServerURL, token)
+	logs.Debug("%s/monitor?token=%s", adminServerURL, token)
 
 	var boardinfo []BoardModuleInfo
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/v1/admin/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
 			logs.Error("Access adminserver failed %s.", req.URL)
 			return ErrServerAccessFailed
@@ -193,10 +193,10 @@ func (s *Dashboard) CheckSysByAdminserver() {
 	}
 	adminServerURL := AdminServerURL()
 
-	logs.Debug("%s/v1/admin/boot/checksysstatus", adminServerURL)
+	logs.Debug("%s/boot/checksysstatus", adminServerURL)
 
 	var sysstatus InitSysStatus
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/v1/admin/boot/checksysstatus", adminServerURL), nil, nil, func(req *http.Request, resp *http.Response) error {
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/boot/checksysstatus", adminServerURL), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
 			logs.Error("Access adminserver failed %s.", req.URL)
 			return ErrServerAccessFailed
