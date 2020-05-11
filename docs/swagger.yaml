@@ -3541,6 +3541,32 @@ paths:
           description: The adminserver monitor is not exsiting.          
         500:
           description: Internal errors.        
+  /v1/dashboard/checksysbyadminserver:          
+    get:
+      summary: Return the system status by accessing adminserver.
+      description: |
+        This endpoint checks the system status by accessing adminserver.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the ystem status by accessing adminserver.
+          schema:
+            $ref: '#/definitions/InitSysStatus'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        404:
+          description: The adminserver monitor is not exsiting.          
+        500:
+          description: Internal errors.             
   /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
@@ -7107,4 +7133,10 @@ definitions:
         description: The name of this module.
       status:
         type: string
-        description: The status of this module.        
+        description: The status of this module.      
+  InitSysStatus:     
+    type: object
+    properties:
+      status:
+        type: integer
+        description: The sys status from adminserver.    

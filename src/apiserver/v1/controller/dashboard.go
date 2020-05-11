@@ -50,6 +50,18 @@ type BoardModuleInfo struct {
 	PIDs      string `json:"pids"`
 }
 
+type InitStatus int
+
+const (
+	InitStatusFirst  InitStatus = 1
+	InitStatusSecond InitStatus = 2
+	InitStatusThird  InitStatus = 3
+)
+
+type InitSysStatus struct {
+	Status InitStatus `json:"status"`
+}
+
 var AdminServerURL = utils.GetConfig("ADMINSERVER_URL")
 
 var ErrInvalidToken = errors.New("error for invalid token")
@@ -136,10 +148,10 @@ func (s *Dashboard) AdminserverCheck() {
 
 	adminServerURL := AdminServerURL()
 
-	logs.Debug("%s/monitor?token=%s", adminServerURL, token)
+	logs.Debug("%s/v1/admin/monitor?token=%s", adminServerURL, token)
 
 	var boardinfo []BoardModuleInfo
-	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/v1/admin/monitor?token=%s", adminServerURL, token), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode >= http.StatusInternalServerError {
 			logs.Error("Access adminserver failed %s.", req.URL)
 			return ErrServerAccessFailed
@@ -171,4 +183,46 @@ func (s *Dashboard) AdminserverCheck() {
 		return
 	}
 	s.RenderJSON(boardinfo)
+}
+
+//Check the sys status by adminserver
+func (s *Dashboard) CheckSysByAdminserver() {
+	if s.IsSysAdmin == false {
+		s.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	adminServerURL := AdminServerURL()
+
+	logs.Debug("%s/v1/admin/boot/checksysstatus", adminServerURL)
+
+	var sysstatus InitSysStatus
+	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/v1/admin/boot/checksysstatus", adminServerURL), nil, nil, func(req *http.Request, resp *http.Response) error {
+		if resp.StatusCode >= http.StatusInternalServerError {
+			logs.Error("Access adminserver failed %s.", req.URL)
+			return ErrServerAccessFailed
+		}
+
+		if resp.StatusCode == http.StatusUnauthorized {
+			logs.Error("Invalid token due to session timeout.")
+			return ErrInvalidToken
+		}
+		return utils.UnmarshalToJSON(resp.Body, &sysstatus)
+	})
+
+	if err != nil {
+		if err.Error() == ErrServerAccessFailed.Error() {
+			logs.Debug("Adminserver internal failed %v", err)
+			s.CustomAbortAudit(http.StatusNotFound, "Cannot access adminserver.")
+			return
+		}
+		if err.Error() == ErrInvalidToken.Error() {
+			logs.Debug("Token failed %v", err)
+			s.CustomAbortAudit(http.StatusUnauthorized, "Invalid token to access adminserver.")
+			return
+		}
+		logs.Error("Access adminserver err %v", err)
+		s.CustomAbortAudit(http.StatusBadRequest, "Access adminserver failed.")
+		return
+	}
+	s.RenderJSON(sysstatus)
 }
