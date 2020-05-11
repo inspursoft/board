@@ -93,4 +93,7 @@ export class AppInitService {
     return this.http.post('/api/v1/operations', auditData, {observe: 'response'});
   }
 
+  getIsShowAdminServer(): Observable<any> {
+    return this.http.get(`/api/v1/dashboard/adminservercheck`);
+  }
 }

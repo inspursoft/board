@@ -12,7 +12,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
-
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -240,14 +239,16 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				logTime = adminItem.CreationTime
 			}
 		}
-		*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-			Ip:           item.NodeIP,
-			CreationTime: item.CreateTime,
-			Status:       item.Status,
-			NodeName:     item.NodeName,
-			IsMaster:     isMaster,
-			LogTime:      logTime,
-			Origin:       origin})
+		if CheckExistsInCache(item.NodeIP) == false {
+			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+				Ip:           item.NodeIP,
+				CreationTime: item.CreateTime,
+				Status:       item.Status,
+				NodeName:     item.NodeName,
+				IsMaster:     isMaster,
+				LogTime:      logTime,
+				Origin:       origin})
+		}
 	}
 
 	return nil

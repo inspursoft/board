@@ -23,7 +23,7 @@
       <span>{{caption | translate}}</span>
       <ng-template [appVerticalNavGuide]="url"></ng-template>
     </a>
-    <a *ngIf="isShowAdminSever && isAdminServer"
+    <a *ngIf="isAdminServer && isShowAdminSever "
        target="_blank"
        clrVerticalNavLink
        [href]="adminServerUrl">
@@ -37,7 +37,8 @@
                let-caption='caption'
                let-children='children'
                #itemGroupTemp>
-    <clr-vertical-nav-group routerLinkActive="active">
+    <clr-vertical-nav-group (clrVerticalNavGroupExpandedChange)="setIsShowAdminServer()"
+                            routerLinkActive="active">
       <clr-icon [attr.shape]="icon" clrVerticalNavIcon></clr-icon>
       <span>{{caption | translate}}</span>
       <a [routerLink]="url" hidden aria-hidden="true"></a>
