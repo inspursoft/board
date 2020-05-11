@@ -19,7 +19,9 @@ export class SignInComponent implements OnInit {
     this.user = new User();
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.messageService.cleanNotification();
+  }
 
   signIn() {
     // test
