@@ -99,18 +99,18 @@ func GetCurrentUser(token string) (*model.User, string) {
 				hasResignedToken = true
 				token = newToken.TokenString
 				payload = lastPayload
+				dao.GlobalCache.Put(token, payload, DefaultCacheDuration)
+				err = UpdateApiserverCache(token, payload)
+				if err != nil {
+					logs.Error("failed to update apiserver cache: %+v\n", err)
+					return nil, ""
+				}
 				logs.Info("Token has been re-signed due to timeout.")
 			}
 		} else {
 			logs.Error("failed to verify token: %+v\n", err)
 			return nil, ""
 		}
-	}
-	dao.GlobalCache.Put(token, payload, DefaultCacheDuration)
-	err = UpdateApiserverCache(token, payload)
-	if err != nil {
-		logs.Error("failed to update apiserver cache: %+v\n", err)
-		return nil, ""
 	}
 
 	if strID, ok := payload["id"].(string); ok {
@@ -130,11 +130,13 @@ func GetCurrentUser(token string) (*model.User, string) {
 				logs.Info("Another admin user has signed in other place.")
 				return nil, ""
 			}
-			dao.GlobalCache.Put(user.Username, token, DefaultCacheDuration)
-			err = UpdateApiserverCache(user.Username, token)
-			if err != nil {
-				logs.Error("failed to update apiserver cache: %+v\n", err)
-				return nil, ""
+			if currentToken != token {
+				dao.GlobalCache.Put(user.Username, token, DefaultCacheDuration)
+				err = UpdateApiserverCache(user.Username, token)
+				if err != nil {
+					logs.Error("failed to update apiserver cache: %+v\n", err)
+					return nil, ""
+				}
 			}
 		}
 		user.Password = ""
