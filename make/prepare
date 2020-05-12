@@ -381,4 +381,13 @@ if os.path.exists(kibana_config_dir):
     shutil.rmtree(kibana_config_dir)
 shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
 
+board_data_path="/data/board"
+jenkins_nodes_dir = os.path.join(board_data_path, "jenkins_home/nodes")
+if os.path.exists(jenkins_nodes_dir):
+    shutil.rmtree(jenkins_nodes_dir)
+jenkins_credentials = os.path.join(board_data_path, "credentials.xml")
+if os.path.exists(jenkins_credentials):
+    os.remove(jenkins_credentials)
+
+
 print("The configuration files are ready, please use docker-compose to start the service.")
