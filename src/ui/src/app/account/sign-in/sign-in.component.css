@@ -22,6 +22,8 @@ div.circle-container img {
     margin-top: 40px;
     width: 60px;
     height: 50px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 span.icon-description {
@@ -72,6 +74,7 @@ div.input-container lib-input-ex {
 
 img.image-head {
     height: 80px;
+    width: 80px;
     border-radius: 40px;
     background-color: ghostwhite;
     margin-top: -40px;
