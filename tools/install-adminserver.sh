@@ -90,6 +90,7 @@ then
         exit 1
 fi
 
+echo "checking /data/board ..."
 if [ 1 -lt $(ls /data/board/ -l | wc -l) ]
 then
 	if read -t 10 -p "/data/board/ is not Empty. Continuing the installation may cause errors at your own risk. Please input [continue] to continue: " flag
