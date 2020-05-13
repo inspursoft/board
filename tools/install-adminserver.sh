@@ -82,6 +82,14 @@ echo "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
+echo "[Step $item]: checking existing instance of Board ..."; let item+=1
+if [ -n "$(docker ps -aqf name=deploy_.*_1)" ]
+then
+        echo "Board exists. Please uninstall it before installing Adminserver."
+        exit 1
+fi
+echo ""
+
 if [ -f ../board*.tgz ]
 then
 	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
