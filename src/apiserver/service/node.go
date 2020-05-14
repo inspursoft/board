@@ -28,8 +28,11 @@ const (
 )
 
 const (
-	K8sLabel      = "kubernetes.io"
-	K8sNamespaces = "kube-system cadvisor"
+	K8sLabel       = "kubernetes.io"
+	K8sNamespaces  = "kube-system cadvisor"
+	K8sMasterLabel = "node-role.kubernetes.io/master"
+	NodeTypeMaster = "master"
+	NodeTypeEdge   = "edge"
 )
 
 type NodeListResult struct {
@@ -587,6 +590,15 @@ func GetNodeControlStatus(nodeName string) (*model.NodeControlStatus, error) {
 			return "Unknown"
 		}()
 	}
+
+	//Check master, add a check for master, undeletable
+	if _, ok := nNode.ObjectMeta.Labels[K8sMasterLabel]; ok {
+		nodecontrol.NodeType = NodeTypeMaster
+		nodecontrol.NodeDeletable = false
+		logs.Debug("Master Node %s", nodecontrol.NodeName)
+		return &nodecontrol, nil
+	}
+
 	// Get service instances
 	// si, err := GetNodeServiceInstances(nodeName)
 	// if err != nil {
