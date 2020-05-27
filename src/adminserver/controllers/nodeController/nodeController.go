@@ -5,19 +5,21 @@ import (
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
+	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
-	"net/http"
-	"strconv"
-
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
-type Controller struct {
+type NodeController struct {
 	beego.Controller
 }
 
-func (controller *Controller) Render() error {
+func (controller *NodeController) Render() error {
 	return nil
 }
 
@@ -27,10 +29,15 @@ func (controller *Controller) Render() error {
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router / [get]
-func (controller *Controller) GetNodeListAction() {
+func (controller *NodeController) GetNodeListAction() {
 	var nodeResponseList []nodeModel.NodeListResponse
 	err := nodeService.GetNodeResponseList(&nodeResponseList)
 	if err != nil {
+		if err == common.ErrInvalidToken {
+			errorMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+			controller.CustomAbort(http.StatusUnauthorized, errorMsg)
+			return
+		}
 		errorMsg := fmt.Sprintf("Bad request.%s", err.Error())
 		logs.Error(errorMsg)
 		controller.CustomAbort(http.StatusBadRequest, errorMsg)
@@ -46,7 +53,7 @@ func (controller *Controller) GetNodeListAction() {
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router /logs [get]
-func (controller *Controller) GetNodeLogList() {
+func (controller *NodeController) GetNodeLogList() {
 	var paginatedNodeLogList = nodeModel.PaginatedNodeLogList{}
 	var nodeList []nodeModel.NodeLog
 	pageIndex, _ := strconv.Atoi(controller.Ctx.Input.Query("page_index"))
@@ -73,7 +80,7 @@ func (controller *Controller) GetNodeLogList() {
 // @Param	node_ip	query 	string	true	""
 // @Param	creation_time	query 	string	true	""
 // @router /log [get]
-func (controller *Controller) GetNodeLogDetail() {
+func (controller *NodeController) GetNodeLogDetail() {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
 	creationTime, _ := strconv.ParseInt(controller.Ctx.Input.Query("creation_time"), 10, 64)
 	var nodeLogDetail []nodeModel.NodeLogDetail
@@ -96,7 +103,7 @@ func (controller *Controller) GetNodeLogDetail() {
 // @Failure 500 Internal Server Error
 // @Param	creation_time	query 	string	true	""
 // @router /log [delete]
-func (controller *Controller) DeleteNodeLog() {
+func (controller *NodeController) DeleteNodeLog() {
 	creationTime, _ := strconv.ParseInt(controller.Ctx.Input.Query("creation_time"), 10, 64)
 
 	if nodeService.CheckNodeLogInfoInUse(creationTime) {
@@ -120,7 +127,7 @@ func (controller *Controller) DeleteNodeLog() {
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router /preparation [get]
-func (controller *Controller) PreparationAction() {
+func (controller *NodeController) PreparationAction() {
 	configuration, err := service.GetAllCfg("", false)
 	if err != nil {
 		logs.Error(err)
@@ -143,7 +150,7 @@ func (controller *Controller) PreparationAction() {
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router /callback [put]
-func (controller *Controller) CallBackAction() {
+func (controller *NodeController) CallBackAction() {
 	var putData nodeModel.UpdateNodeLog
 	controller.resolveBody(&putData)
 	if err := nodeService.UpdateLog(&putData); err != nil {
@@ -151,6 +158,19 @@ func (controller *Controller) CallBackAction() {
 		logs.Error(errMsg)
 		controller.CustomAbort(http.StatusBadRequest, errMsg)
 		return
+	}
+	if putData.ExitCode == 0 && putData.InstallFile == nodeModel.RemoveNodeYamlFile {
+		if err := nodeService.DeleteNode(putData.Ip); err != nil {
+			if err == common.ErrInvalidToken {
+				errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+				controller.CustomAbort(http.StatusUnauthorized, errMsg)
+				return
+			}
+			errMsg := fmt.Sprintf("Failed to delete node: %v", err)
+			logs.Error(errMsg)
+			controller.CustomAbort(http.StatusBadRequest, errMsg)
+			return
+		}
 	}
 	return
 }
@@ -162,7 +182,7 @@ func (controller *Controller) CallBackAction() {
 // @Failure 400 bad request
 // @Failure 500 Internal Server Error
 // @router / [post]
-func (controller *Controller) AddNodeAction() {
+func (controller *NodeController) AddNodeAction() {
 	var postData nodeModel.AddNodePostData
 	controller.resolveBody(&postData)
 	controller.AddRemoveNode(&postData, nodeModel.ActionTypeAddNode, nodeModel.AddNodeYamlFile)
@@ -179,7 +199,7 @@ func (controller *Controller) AddNodeAction() {
 // @Param	host_username	query	string	true	"root"
 // @Param	master_password	query	string	true	""
 // @router / [delete]
-func (controller *Controller) RemoveNodeAction() {
+func (controller *NodeController) RemoveNodeAction() {
 	nodeIp := controller.Ctx.Input.Query("node_ip")
 	nodePassword := controller.Ctx.Input.Query("node_password")
 	hostPassword := controller.Ctx.Input.Query("host_password")
@@ -194,7 +214,33 @@ func (controller *Controller) RemoveNodeAction() {
 		nodeModel.ActionTypeDeleteNode, nodeModel.RemoveNodeYamlFile)
 }
 
-func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostData,
+// @Title Get node control status
+// @Description Get node control status
+// @Param	node_name	        path	string	true	""
+// @Success 200 {object} model.NodeControlStatus  success
+// @Failure 400 bad request
+// @Failure 500 Internal Server Error
+// @router /:node_name [get]
+func (controller *NodeController) ControlStatusAction() {
+	nodeName := strings.TrimSpace(controller.Ctx.Input.Param(":node_name"))
+	var nodeControlStatus = model.NodeControlStatus{NodeName: nodeName}
+	if err := nodeService.GetNodeControlStatusFromApiServer(&nodeControlStatus); err != nil {
+		if err == common.ErrInvalidToken {
+			errMsg := fmt.Sprintf("Token was expired.%s", err.Error())
+			controller.CustomAbort(http.StatusUnauthorized, errMsg)
+			return
+		}
+		errMsg := fmt.Sprintf("Failed to get node control status: %v", err)
+		logs.Error(errMsg)
+		controller.CustomAbort(http.StatusBadRequest, errMsg)
+		return
+	}
+	controller.Data["json"] = nodeControlStatus
+	controller.ServeJSON()
+	return
+}
+
+func (controller *NodeController) AddRemoveNode(nodePostData *nodeModel.AddNodePostData,
 	actionType nodeModel.ActionType, yamlFile string) {
 	if nodeService.CheckExistsInCache(nodePostData.NodeIp) {
 		controller.Data["json"] = *nodeService.GetLogInfoInCache(nodePostData.NodeIp)
@@ -214,7 +260,7 @@ func (controller *Controller) AddRemoveNode(nodePostData *nodeModel.AddNodePostD
 	}
 }
 
-func (controller *Controller) resolveBody(target interface{}) (err error) {
+func (controller *NodeController) resolveBody(target interface{}) (err error) {
 	err = utils.UnmarshalToJSON(controller.Ctx.Request.Body, target)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)

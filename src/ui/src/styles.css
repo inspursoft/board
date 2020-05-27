@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~inspurprism/prism-default.css';
+
 .popover-pointer:before {
   border-right-color: rgba(0, 64, 96, 0.8) !important;
   border-left-color: rgba(0, 64, 96, 0.8) !important;
@@ -12,6 +13,7 @@ input[type=file]:hover {
 input[type=file]:disabled:hover {
   cursor: not-allowed;
 }
+
 /*for Chrome,safari*/
 input[type=file]::-webkit-file-upload-button {
   cursor: pointer;
@@ -33,7 +35,7 @@ button.signpost-content-header-btn-close:hover {
   color: deepskyblue !important;
 }
 
-div.signpost-content-header{
+div.signpost-content-header {
   background-color: transparent;
 }
 
@@ -41,11 +43,18 @@ button.btn {
   text-transform: none;
 }
 
-div.modal-footer{
+div.modal-footer {
   align-items: center;
+  padding: 0;
 }
 
-div.clr-row{
+div.clr-row {
   margin-left: 0;
   margin-right: 0;
 }
+
+.clr-toggle-wrapper input[type=checkbox]:checked:disabled+label::before,
+.toggle-switch input[type=checkbox]:checked:disabled+label::before{
+  background-color: green;
+}
+

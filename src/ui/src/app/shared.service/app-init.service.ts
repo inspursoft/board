@@ -69,6 +69,10 @@ export class AppInitService {
       this.systemInfo.processor_type.startsWith('aarch64');
   }
 
+  get isNormalMode(): boolean {
+    return this.systemInfo.mode === 'normal';
+  }
+
   getCurrentUser(tokenParam?: string): Observable<User> {
     const token = this.tokenService.token || tokenParam;
     return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})
@@ -89,4 +93,7 @@ export class AppInitService {
     return this.http.post('/api/v1/operations', auditData, {observe: 'response'});
   }
 
+  getIsShowAdminServer(): Observable<any> {
+    return this.http.get(`/api/v1/dashboard/adminservercheck`);
+  }
 }

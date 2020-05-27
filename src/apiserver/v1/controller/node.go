@@ -19,11 +19,8 @@ type NodeController struct {
 
 func (n *NodeController) Prepare() {
 	n.EnableXSRF = false
-	skip := n.GetString("skip", "")
-	if !(skip == "AMS" && n.Ctx.Input.Method() == http.MethodGet && strings.Index(n.Ctx.Input.URL(), "/nodes") > 0) {
-		n.ResolveSignedInUser()
-		n.RecordOperationAudit()
-	}
+	n.ResolveSignedInUser()
+	n.RecordOperationAudit()
 }
 
 func (n *NodeController) GetNode() {
@@ -175,6 +172,44 @@ func (n *NodeController) AddNodeAction() {
 		return
 	}
 	logs.Info("Added node %s", node.ObjectMeta.Name)
+}
+
+//Remove a node from cluster by node name
+func (n *NodeController) RemoveNodeAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+
+	// Workaround delete node by IP, deprecated
+	nodeIP := n.GetString("node_ip")
+	if nodeIP != "" && nodeIP != nodeName {
+		nodeitem, err := service.GetNodebyIP(nodeIP)
+		if err != nil {
+			n.InternalError(err)
+			return
+		}
+		if nodeitem == nil {
+			logs.Debug("Not found node by IP %s", nodeIP)
+			n.CustomAbortAudit(http.StatusNotFound, "Not found this node IP.")
+			return
+		}
+		nodeName = nodeitem.Name
+	}
+
+	logs.Debug("To delete node %s", nodeName)
+	res, err := service.DeleteNode(nodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+
+	if res == false {
+		n.CustomAbortAudit(http.StatusNotFound, "Nodename Not Found.")
+		return
+	}
+	logs.Debug("Removed %s", nodeName)
 }
 
 // Get the running status of a node

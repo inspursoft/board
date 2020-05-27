@@ -40,7 +40,7 @@
         <lib-input-ex [inputIsRequired]="true"
                       [inputPlaceholder]=" 'ACCOUNT.USERNAME_PLACEHOLDER' | translate"
                       [validatorMessage]="[{key:'required', message:'ACCOUNT.USERNAME_IS_REQUIRED' | translate }]"
-                      (commitEvent)="signInUser.username = $event">
+                      (inputEvent)="signInUser.username = $event">
         </lib-input-ex>
       </div>
       <div class="clr-row clr-align-content-center input-container">
@@ -49,7 +49,7 @@
                       [inputCategory]="3"
                       [inputPlaceholder]="'ACCOUNT.PASSWORD_PLACEHOLDER' | translate"
                       [validatorMessage]="[{key:'required', message:'ACCOUNT.PASSWORD_IS_REQUIRED' | translate }]"
-                      (commitEvent)="signInUser.password = $event">
+                      (inputEvent)="signInUser.password = $event">
         </lib-input-ex>
       </div>
       <div *ngIf="curShowVerifyCode"

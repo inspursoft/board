@@ -104,8 +104,8 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		ca.InternalError(err)
 		return "", false
 	}
-	MemoryCache.Put(user.Username, token.TokenString, time.Second*time.Duration(TokenCacheExpireSeconds))
-	MemoryCache.Put(token.TokenString, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+	MemoryCache.Put(user.Username, token.TokenString, DefaultCacheDuration)
+	MemoryCache.Put(token.TokenString, payload, DefaultCacheDuration)
 	ca.AuditUser, _ = service.GetUserByName(user.Username)
 
 	//Reset the user failed times

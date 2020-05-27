@@ -1,15 +1,16 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { INodeDetail, NodeService } from "../node.service";
-import { tap } from "rxjs/operators";
-import { zip } from "rxjs";
+import { NodeService } from '../node.service';
+import { tap } from 'rxjs/operators';
+import { zip } from 'rxjs';
+import { NodeDetail } from '../node.types';
 
 @Component({
-  selector: 'node-detail',
+  selector: 'app-node-detail',
   templateUrl: './node-detail.component.html'
 })
 export class NodeDetailComponent {
   nodeDetailOpened: boolean;
-  nodeDetail: INodeDetail;
+  nodeDetail: NodeDetail;
   nodeGroups: string;
 
   constructor(private nodeService: NodeService,
@@ -20,10 +21,10 @@ export class NodeDetailComponent {
   openNodeDetailModal(nodeName: string): void {
     this.changeDetectorRef.detach();
     this.nodeDetailOpened = true;
-    this.nodeGroups = "";
-    let obs1 = this.nodeService.getNodeByName(nodeName)
-      .pipe(tap((nodeDetail: INodeDetail) => this.nodeDetail = nodeDetail));
-    let obs2 = this.nodeService.getNodeGroupsOfOneNode(nodeName)
+    this.nodeGroups = '';
+    const obs1 = this.nodeService.getNodeDetailByName(nodeName)
+      .pipe(tap((nodeDetail: NodeDetail) => this.nodeDetail = nodeDetail));
+    const obs2 = this.nodeService.getNodeGroupsOfOneNode(nodeName)
       .pipe(tap((res: Array<string>) => res.forEach(value => this.nodeGroups = this.nodeGroups.concat(`${value};`))));
     zip(obs1, obs2).subscribe(
       () => this.changeDetectorRef.reattach(),
@@ -34,8 +35,8 @@ export class NodeDetailComponent {
     return Math.round(num * 100) / 100 + '%';
   }
 
-  storagePercentage(nodeDetail: INodeDetail): number {
-    return Number.parseInt(nodeDetail.storage_use) / Number.parseInt(nodeDetail.storage_total);
+  storagePercentage(nodeDetail: NodeDetail): number {
+    return Number.parseInt(nodeDetail.storageUse, 10) / Number.parseInt(nodeDetail.storageTotal, 10);
   }
 
   toGigaBytes(num: string, baseUnit?: string) {
@@ -43,6 +44,6 @@ export class NodeDetailComponent {
     if (baseUnit === 'KiB') {
       denominator = 1024 * 1024;
     }
-    return Math.round(Number.parseInt(num) / denominator) + 'GB';
+    return Math.round(Number.parseInt(num, 10) / denominator) + 'GB';
   }
 }

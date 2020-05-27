@@ -3,7 +3,7 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"git/inspursoft/board/src/adminserver/dao"
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"os"
@@ -24,13 +24,7 @@ func Start(host *models.Account) error {
 		return err
 	}
 
-	UUIDpath := "/go/secrets/initialAdminPassword"
-	if _, err = os.Stat(UUIDpath); !os.IsNotExist(err) {
-		if err = dao.RemoveUUIDToken(); err != nil {
-			return err
-		}
-		os.Remove(UUIDpath)
-	}
+	RemoveUUIDTokenCache()
 
 	return nil
 }
@@ -79,8 +73,18 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	if err != nil {
 		return err
 	}
+	RemoveUUIDTokenCache()
 
 	if uninstall {
+		//check existing files under repo.
+		cmdCheck := `ls /data/board/ -lR | grep "^-" | wc -l | xargs echo -n`
+		output, err := shell.Output(cmdCheck)
+		if err != nil {
+			return err
+		}
+		if output == "0" {
+			return common.ErrNoData
+		}
 		cmdRm := fmt.Sprintf("rm -rf /data/board/* %s/board.cfg* && cp %s/adminserver/board.cfg %s/.", models.MakePath, models.MakePath, models.MakePath)
 		err = shell.ExecuteCommand(cmdRm)
 		if err != nil {

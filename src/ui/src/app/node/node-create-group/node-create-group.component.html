@@ -5,15 +5,15 @@
                   [inputPattern]="patternNodeGroupName"
                   [inputMaxlength]="63"
                   [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
-                  [inputDefaultValue]="newNodeGroupData.nodegroup_name"
+                  [inputDefaultValue]="newNodeGroupData.name"
                   [validatorMessage]="[{key: 'pattern', message: 'NODE.NODE_GROUP_CREATE_PATTERN_MESSAGE' | translate},
                                    {key:'nodeGroupExist', message:'NODE.NODE_GROUP_NAME_EXIST' | translate}]"
                   [validatorAsyncFn]="checkNodeGroupNameFun"
-                  (commitEvent)="newNodeGroupData.nodegroup_name = $event">
+                  (commitEvent)="newNodeGroupData.name = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'NODE.NODE_GROUP_COMMENT'  | translate"
-                  [inputDefaultValue]="newNodeGroupData.nodegroup_comment"
-                  (commitEvent)="newNodeGroupData.nodegroup_comment = $event">
+                  [inputDefaultValue]="newNodeGroupData.comment"
+                  (commitEvent)="newNodeGroupData.comment = $event">
     </lib-input-ex>
   </div>
   <div class="modal-footer">

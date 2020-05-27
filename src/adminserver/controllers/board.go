@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/common/utils"
@@ -16,7 +17,7 @@ type BoardController struct {
 
 // @Title Start
 // @Description start Board
-// @Param	token	query 	string	true		"token"
+// @Param	token	query 	string	false		"token"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
@@ -38,7 +39,7 @@ func (b *BoardController) Start() {
 
 // @Title Applycfg
 // @Description apply cfg and restart Board
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
@@ -60,11 +61,12 @@ func (b *BoardController) Applycfg() {
 
 // @Title Shutdown
 // @Description shutdown board
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Param	uninstall	query 	bool	true	"uninstall flag"
 // @Param	body	body 	models.Account	true	"body for host acc info"
 // @Success 200 success
 // @Failure 500 Internal Server Error
+// @Failure 503 Service Unavailable
 // @Failure 401 unauthorized: token invalid/session timeout
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
@@ -81,6 +83,9 @@ func (b *BoardController) Shutdown() {
 	}
 	if err = service.Shutdown(&host, uninstall); err != nil {
 		logs.Error(err)
+		if err == common.ErrNoData {
+			b.CustomAbort(http.StatusServiceUnavailable, err.Error())
+		}
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 	b.ServeJSON()

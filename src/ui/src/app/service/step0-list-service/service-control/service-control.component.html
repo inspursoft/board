@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="isOpen" [clrModalSize]="'lg'" [clrModalClosable]="!isActionInWIP">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isActionInWIP">
   <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
   <div class="modal-body">
     <clr-tabs>
@@ -7,13 +7,12 @@
           {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <scale *ngIf="service"
-                 [service]="service"
-                 [(isActionInWIP)]="isActionInWIP"
-                 (onError)="defaultDispatchErr($event)"
-                 (onMessage)="defaultHandleMessage($event)"
-                 (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </scale>
+          <app-scale [service]="service"
+                     [(isActionInWIP)]="isActionInWIP"
+                     (errorEvent)="defaultDispatchErr($event)"
+                     (messageEvent)="defaultHandleMessage($event)"
+                     (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-scale>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -21,14 +20,13 @@
           {{"SERVICE.SERVICE_CONTROL_UPDATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <update *ngIf="service"
-                  [service]="service"
-                  [isActionInWIP]="isActionInWIP"
-                  (onError)="defaultDispatchErr($event)"
-                  (onMessage)="defaultHandleMessage($event)"
-                  (onAlertMessage)="defaultHandleAlertMessage($event)"
-                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </update>
+          <app-update [service]="service"
+                      [isActionInWIP]="isActionInWIP"
+                      (errorEvent)="defaultDispatchErr($event)"
+                      (messageEvent)="defaultHandleMessage($event)"
+                      (alertEvent)="defaultHandleAlertMessage($event)"
+                      (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-update>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -36,13 +34,12 @@
           {{"SERVICE.SERVICE_CONTROL_LOCATE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <locate *ngIf="service"
-                  [service]="service"
-                  [isActionInWIP]="isActionInWIP"
-                  (onError)="defaultDispatchErr($event)"
-                  (onMessage)="defaultHandleMessage($event)"
-                  (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </locate>
+          <app-locate [service]="service"
+                      [isActionInWIP]="isActionInWIP"
+                      (errorEvent)="defaultDispatchErr($event)"
+                      (messageEvent)="defaultHandleMessage($event)"
+                      (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-locate>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -50,19 +47,28 @@
           {{"SERVICE.SERVICE_CONTROL_LOAD_BALANCE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <load-balance *ngIf="service"
-                        [service]="service"
-                        [isActionInWIP]="isActionInWIP"
-                        (onError)="defaultDispatchErr($event)"
-                        (onMessage)="defaultHandleMessage($event)"
-                        (onActionIsEnabled)="defaultHandleActionEnabled($event)">
-          </load-balance>
+          <app-load-balance [service]="service"
+                            [isActionInWIP]="isActionInWIP"
+                            (errorEvent)="defaultDispatchErr($event)"
+                            (messageEvent)="defaultHandleMessage($event)"
+                            (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-load-balance>
+        </clr-tab-content>
+      </clr-tab>
+      <clr-tab>
+        <button clrTabLink (click)="actionMethod = 4">
+          {{"ServiceControlConsole.Name" | translate}}
+        </button>
+        <clr-tab-content *clrIfActive>
+          <app-console [service]="service"
+                       (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
+          </app-console>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>
   </div>
   <div class="modal-footer footer">
-    <button type="button" class="btn" [disabled]="isActionInWIP" (click)="isOpen = false">
+    <button type="button" class="btn" [disabled]="isActionInWIP" (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
     <button type="button" class="btn btn-primary" [disabled]="!actionEnable || isActionInWIP" (click)="actionExecute()">

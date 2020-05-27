@@ -67,10 +67,10 @@ type UpdateNodeLog struct {
 	Ip          string `json:"ip"`
 	InstallFile string `json:"install_file"`
 	LogFile     string `json:"log_file"`
-	Success     int    `json:"success"`
+	ExitCode    int    `json:"success"`
 }
 
-type NodeLogDetailArray = []NodeLogDetail;
+type NodeLogDetailArray = []NodeLogDetail
 
 // database table's name: node-status
 type NodeStatus struct {
@@ -89,6 +89,7 @@ type ApiServerNodeListResult struct {
 
 type NodeListResponse struct {
 	Ip           string `json:"ip"`
+	NodeName     string `json:"node_name"`
 	CreationTime int64  `json:"creation_time"`
 	LogTime      int64  `json:"log_time"`
 	Status       int    `json:"status"`

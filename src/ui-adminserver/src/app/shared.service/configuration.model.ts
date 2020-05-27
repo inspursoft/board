@@ -181,7 +181,7 @@ export class Email extends ResponseBase implements RequestBase {
 
   PostBody(): object {
     return {
-      email_identity: this.emailIdentity === 'null' ? '' : this.emailIdentity.toString(),
+      email_identity: this.emailIdentity.toString(),
       email_server: this.emailServer.toString(),
       email_server_port: this.emailServerPort.toString(),
       email_username: this.emailUsername.toString(),

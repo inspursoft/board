@@ -13,9 +13,7 @@ export class ConfigurationService {
   }
 
   getConfig(whichOne?: string): Observable<Configuration> {
-    const token = window.sessionStorage.getItem('token');
-    let url = `${BASE_URL}?token=${token}`;
-    url = whichOne ? `${url}&which=${whichOne}` : url;
+    const url = whichOne ? `${BASE_URL}?which=${whichOne}` : BASE_URL;
     return this.http.get(url, {
       observe: 'response',
     }).pipe(map((res: HttpResponse<Configuration>) => {
@@ -24,9 +22,8 @@ export class ConfigurationService {
   }
 
   putConfig(config: Configuration): Observable<any> {
-    const token = window.sessionStorage.getItem('token');
     return this.http.put(
-      `${BASE_URL}?token=${token}`,
+      BASE_URL,
       config.PostBody()
     );
   }

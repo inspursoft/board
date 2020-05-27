@@ -17,7 +17,7 @@ type CfgController struct {
 // @Title Put
 // @Description update cfg
 // @Param	body	body	models.Configuration	true	"parameters"
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Success 200 success
 // @Failure 500 Internal Server Error
 // @Failure 401 unauthorized: token invalid/session timeout
@@ -43,7 +43,7 @@ func (c *CfgController) Put() {
 // @Title GetAll
 // @Description return all cfg parameters
 // @Param	which	query 	string	false	"which file to get"
-// @Param	token	query 	string	true	"token"
+// @Param	token	query 	string	false	"token"
 // @Success 200 {object} models.Configuration	success
 // @Failure 500 Internal Server Error
 // @Failure 401 unauthorized: token invalid/session timeout

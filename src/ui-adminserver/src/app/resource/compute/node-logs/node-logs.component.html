@@ -21,7 +21,7 @@
           <clr-icon shape="info" class="is-solid" (click)="showLogDetail(nodeLog)"></clr-icon>
         </a>
         <div *ngIf="!nodeLog.completed" class="normal-container">
-          <a href="javascript:void(0)">
+          <a hidden href="javascript:void(0)">
             <clr-icon shape="pause" (click)="stopExecuting(nodeLog)"></clr-icon>
           </a>
           <span class="spinner spinner-sm"></span>

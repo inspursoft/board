@@ -2838,7 +2838,33 @@ paths:
         401:
           description: User need to log in first.
         500:
-          description: Internal errors.          
+          description: Internal errors.     
+    delete:
+      summary: Remove the node.
+      description: |
+        This endpoint to remove the node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to be removed.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Remove this node from cluster successfully             
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.                 
   /v1/nodes/{node_name}/drain:
     put:  
       summary: Drain the services from the node.
@@ -3482,6 +3508,65 @@ paths:
           description: The image tag existing.          
         500:
           description: Internal errors.     
+  /v1/dashboard/adminservercheck:          
+    get:
+      summary: Return the adminserver monitor info.
+      description: |
+        This endpoint checks the adminserver monitor info.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: module_name
+          in: query
+          type: string
+          required: false
+          description: The module name to be checked             
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the adminserver monitor modules.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BoardInfo'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        404:
+          description: The adminserver monitor is not exsiting.          
+        500:
+          description: Internal errors.        
+  /v1/dashboard/checksysbyadminserver:          
+    get:
+      summary: Return the system status by accessing adminserver.
+      description: |
+        This endpoint checks the system status by accessing adminserver.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.       
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the ystem status by accessing adminserver.
+          schema:
+            $ref: '#/definitions/InitSysStatus'
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        404:
+          description: The adminserver monitor is not exsiting.          
+        500:
+          description: Internal errors.             
   /v1/dashboard/service/:
     post:
       summary: Return the status logs of this service
@@ -4583,6 +4668,124 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors.  
+  /v1/pods/{project_id}/{pod_name}/shell:
+    get:
+      summary: Return specific project pods console shell.
+      description: |
+        This endpoint returns specific project pods console shell by project_id and pod_name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container
+          in: query
+          description: The container name of this pod.
+          required: false
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return matched pod console shell.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+  /v1/pods/{project_id}/{pod_name}/download:
+    get:
+      summary: Return download status.
+      description: |
+        This endpoint is used to download specified file from specified path in specific project pods.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container
+          in: query
+          description: The container name of this pod.
+          required: false
+          type: string
+        - name: src
+          in: query
+          description: The file source path in this container.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return downloaded file.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
+  /v1/pods/{project_id}/{pod_name}/upload:
+    post:
+      summary: Upload file tp specific project pods.
+      description: |
+        This endpoint is used to upload file to specified path in specific project pods.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_id
+          in: path
+          type: integer
+          format: int32
+          required: true
+          description: Selected Project ID.
+        - name: pod_name
+          in: path
+          type: string
+          required: true
+          description: Selected pod Name.
+        - name: container 
+          in: query
+          description: The container name of this pod to logs.
+          required: false
+          type: string
+        - name: dest
+          in: query
+          description: The file destination path in this container.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: File uploaded successfully.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors. 
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -6919,3 +7122,21 @@ definitions:
         type: array
         items:
           type: string
+  BoardInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The module integer ID of this service.    
+      name:
+        type: string
+        description: The name of this module.
+      status:
+        type: string
+        description: The status of this module.      
+  InitSysStatus:     
+    type: object
+    properties:
+      status:
+        type: integer
+        description: The sys status from adminserver.    

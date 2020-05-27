@@ -11,6 +11,7 @@ import { BoardService } from 'src/app/shared.service/board.service';
 import { ConfigurationService } from 'src/app/shared.service/configuration.service';
 import { Configuration } from 'src/app/shared.service/configuration.model';
 import { Router } from '@angular/router';
+import { Message, ReturnStatus } from 'src/app/shared/message/message.types';
 
 @Component({
   selector: 'app-installation',
@@ -61,17 +62,37 @@ export class InstallationComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.accountService.createUUID().subscribe(
-      () => {
-        this.loadingFlag = false;
-        this.enableInitialization = true;
+    this.appInitService.getSystemStatus().subscribe(
+      (res: InitStatus) => {
+        if (InitStatusCode.InitStatusThird === res.status) {
+          this.messageService.showOnlyOkDialogObservable('INITIALIZATION.ALERTS.ALREADY_START').subscribe(
+            (msg: Message) => {
+              if (msg.returnStatus === ReturnStatus.rsConfirm) {
+                this.router.navigateByUrl('account');
+              }
+            }
+          );
+        } else {
+          this.accountService.createUUID().subscribe(
+            () => {
+              this.loadingFlag = false;
+              this.enableInitialization = true;
+            },
+            (err: HttpErrorResponse) => {
+              this.loadingFlag = false;
+              this.disconnect = true;
+              console.error(err.message);
+              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
+              this.refresh = true;
+            });
+        }
       },
       (err: HttpErrorResponse) => {
-        this.loadingFlag = false;
-        this.disconnect = true;
         console.error(err.message);
-        this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.INITIALIZATION', 'ACCOUNT.ERROR');
-      });
+        this.getSysStatusFailed();
+      }
+    );
+
   }
 
   onNext() {
@@ -93,7 +114,7 @@ export class InstallationComponent implements OnInit {
     // this.ignoreStep2 = true;
     // this.installStep = 3;
     // this.installProgress = 100;
-    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
 
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
@@ -120,7 +141,7 @@ export class InstallationComponent implements OnInit {
                     },
                     (err: HttpErrorResponse) => {
                       // COMMON
-                      this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
+                      this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
                     }
                   );
                   break;
@@ -138,7 +159,7 @@ export class InstallationComponent implements OnInit {
                   this.ignoreStep2 = true;
                   this.installStep = 3;
                   this.installProgress = 100;
-                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START', 'GLOBAL_ALERT.HINT');
+                  this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
                   this.submitBtnState = ClrLoadingState.DEFAULT;
                   break;
                 }
@@ -146,14 +167,14 @@ export class InstallationComponent implements OnInit {
             },
             (err: HttpErrorResponse) => {
               console.error(err.message);
-              this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR');
-              this.submitBtnState = ClrLoadingState.DEFAULT;
+              this.getSysStatusFailed();
             }
           );
         },
         (err: HttpErrorResponse) => {
           console.error(err.message);
           this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.VALIDATE_UUID_FAILED', 'ACCOUNT.ERROR');
+          this.refresh = true;
           this.submitBtnState = ClrLoadingState.DEFAULT;
         }
       );
@@ -183,11 +204,10 @@ export class InstallationComponent implements OnInit {
             },
             (err: HttpErrorResponse) => {
               if (err.status === 401) {
-                this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-                this.refresh = true;
+                this.tokenError();
               } else {
                 console.log('Can not read tmp file: ' + err.message);
-                this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED', 'GLOBAL_ALERT.HINT');
+                this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.GET_TMP_FAILED');
                 this.newDate = new Date(this.config.apiserver.imageBaselineTime);
                 this.isEditable = this.config.isInit;
                 this.installStep++;
@@ -206,7 +226,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
     );
   }
@@ -229,7 +249,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
       },
     );
   }
@@ -255,7 +275,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
+        this.commonError(err, {503: 'INITIALIZATION.ALERTS.ALREADY_UNINSTALL'}, 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
       },
     );
   }
@@ -280,13 +300,13 @@ export class InstallationComponent implements OnInit {
           },
           (err: HttpErrorResponse) => {
             // COMMON
-            this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
+            this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
           },
         );
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.POST_CFG_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.POST_CFG_FAILED');
       },
     );
   }
@@ -338,20 +358,42 @@ export class InstallationComponent implements OnInit {
     return result;
   }
 
-  commonError(err: HttpErrorResponse, errorList: Map<number, string>, finnalError: string) {
+  commonError(err: HttpErrorResponse, errorList: object, finnalError: string) {
     console.error(err.message);
+    this.refresh = true;
     this.submitBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
-      this.messageService.showOnlyOkDialog('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR');
-      this.refresh = true;
+      this.tokenError();
       return;
     }
-    errorList.forEach((msg, e) => {
-      if (err.status === e) {
-        this.messageService.showOnlyOkDialog(msg, 'ACCOUNT.ERROR');
+    for (const key in errorList) {
+      if (err.status === Number(key)) {
+        this.messageService.showOnlyOkDialog(String(errorList[key]), 'ACCOUNT.ERROR');
         return;
       }
-    });
+    }
     this.messageService.showOnlyOkDialog(finnalError, 'ACCOUNT.ERROR');
   }
+
+  getSysStatusFailed() {
+    this.messageService.showOnlyOkDialogObservable('INITIALIZATION.ALERTS.GET_SYS_STATUS_FAILED', 'ACCOUNT.ERROR').subscribe(
+      (msg: Message) => {
+        if (msg.returnStatus === ReturnStatus.rsConfirm) {
+          location.reload();
+        }
+      }
+    );
+    this.submitBtnState = ClrLoadingState.DEFAULT;
+  }
+
+  tokenError() {
+    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR_TO_REFRESH', 'ACCOUNT.ERROR').subscribe(
+      (msg: Message) => {
+        if (msg.returnStatus === ReturnStatus.rsConfirm) {
+          location.reload();
+        }
+      }
+    );
+  }
+
 }

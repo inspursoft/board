@@ -4,6 +4,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	t "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
+	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -22,6 +23,7 @@ import (
 )
 
 var MemoryCache cache.Cache
+var DefaultCacheDuration = time.Second * time.Duration(TokenCacheExpireSeconds)
 var Cpt *captcha.Captcha
 var TokenServerURL = utils.GetConfig("TOKEN_SERVER_URL")
 var TokenExpireTime = utils.GetConfig("TOKEN_EXPIRE_TIME")
@@ -139,7 +141,7 @@ func (b *BaseController) InternalError(err error) {
 func (b *BaseController) CustomAbortAudit(statusCode int, body string) {
 	logs.Error("Error of custom aborted: %s", body)
 	b.UpdateOperationAudit(statusCode)
-	b.CustomAbort(statusCode, body)
+	b.CustomAbort(statusCode, template.HTMLEscapeString(body))
 }
 
 func ParsePostK8sError(message string) int {
@@ -194,8 +196,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 			logs.Error("failed to verify token: %+v\n", err)
 		}
 	}
-
-	MemoryCache.Put(token, payload, time.Second*time.Duration(TokenCacheExpireSeconds))
+	MemoryCache.Put(token, payload, DefaultCacheDuration)
 	b.Token = token
 
 	if strID, ok := payload["id"].(string); ok {
@@ -214,7 +215,7 @@ func (b *BaseController) GetCurrentUser() *model.User {
 				logs.Info("Another same name user has signed in other places.")
 				return nil
 			}
-			MemoryCache.Put(user.Username, token, time.Second*time.Duration(TokenCacheExpireSeconds))
+			MemoryCache.Put(user.Username, token, DefaultCacheDuration)
 			b.Ctx.ResponseWriter.Header().Set("token", token)
 		}
 		user.Password = ""

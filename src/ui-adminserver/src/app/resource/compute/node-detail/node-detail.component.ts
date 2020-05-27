@@ -147,9 +147,9 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
   getPreparationData() {
     this.resourceService.getNodePreparation().subscribe(
       (res: NodePreparationData) => this.preparationData = res,
-      (err: HttpErrorResponse) => {
+      () => {
         this.messageService.cleanNotification();
-        this.messageService.showGlobalMessage(err.message, {view: this.view});
+        this.messageService.showGlobalMessage('Node.Node_Detail_Error_Failed_Request', {view: this.view});
       }
     );
   }
@@ -159,9 +159,9 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
       this.actionStatus = ActionStatus.Preparing;
       this.resourceService.removeNode(this.postData).subscribe(
         (res: NodeLog) => this.logInfo = res,
-        (err: HttpErrorResponse) => {
+        () => {
           this.messageService.cleanNotification();
-          this.messageService.showGlobalMessage(err.message, {view: this.view});
+          this.messageService.showGlobalMessage('Node.Node_Detail_Error_Invalid_Password', {view: this.view});
         },
         () => this.actionStatus = ActionStatus.Executing
       );
@@ -173,9 +173,9 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
       this.actionStatus = ActionStatus.Preparing;
       this.resourceService.addNode(this.postData).subscribe(
         (res) => this.logInfo = res,
-        (err: HttpErrorResponse) => {
+        () => {
           this.messageService.cleanNotification();
-          this.messageService.showGlobalMessage(err.message, {view: this.view});
+          this.messageService.showGlobalMessage('Node.Node_Detail_Error_Bad_Input', {view: this.view});
         },
         () => this.actionStatus = ActionStatus.Executing
       );
@@ -220,10 +220,10 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
           }
           el.scrollTop = el.scrollHeight;
         },
-        (err: HttpErrorResponse) => {
+        () => {
           this.refreshingLog = false;
           this.messageService.cleanNotification();
-          this.messageService.showGlobalMessage(err.message, {view: this.view});
+          this.messageService.showGlobalMessage('Node.Node_Detail_Error_Failed_Request', {view: this.view});
         }
       );
     }
