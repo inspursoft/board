@@ -188,9 +188,9 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 	}
 
 	err := checkDestinationIsDir(p, podName, containerName, dest)
-	if err != nil {
-		logs.Error("Creating destination directory failed: %v", err)
-		return err
+	if err == nil {
+		logs.Info("Destination is directory.")
+		dest = dest + "/" + path.Base(src)
 	}
 
 	go func() {
@@ -198,7 +198,7 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 		err = makeTar(src, dest, writer)
 	}()
 
-	cmd := []string{"tar", "-xmf", "-"}
+	cmd := []string{"tar", "xf", "-"}
 	destDir := path.Dir(dest)
 	if len(destDir) > 0 {
 		cmd = append(cmd, "-C", destDir)
@@ -359,9 +359,9 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 // checkDestinationIsDir creates the directory dirPath if not exists
 // on the target pod container
 func checkDestinationIsDir(p *pods, podName, containerName string, dirPath string) error {
-	logs.Info("Creating '%s/%s/%s:%s' if not exists.", p.namespace, podName, containerName, dirPath)
+	logs.Info("Testing whether '%s/%s/%s:%s' is a directory.", p.namespace, podName, containerName, dirPath)
 
-	cmd := []string{"mkdir", "-p", dirPath}
+	cmd := []string{"test", "-d", dirPath}
 	_, err := p.execCommand(podName, containerName, nil, cmd)
 
 	return err
