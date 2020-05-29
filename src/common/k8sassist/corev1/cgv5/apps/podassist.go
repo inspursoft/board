@@ -126,21 +126,6 @@ func (p *pods) GetRequst(podName, containerName string, cmd []string, reader, wr
 }
 
 func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error {
-	// req := p.k8sClient.CoreV1().RESTClient().Post().
-	// 	Resource("pods").
-	// 	Name(podName).
-	// 	Namespace(p.namespace).
-	// 	SubResource("exec")
-
-	// req.VersionedParams(&corev1.PodExecOptions{
-	// 	Container: containerName,
-	// 	Command:   cmd,
-	// 	Stdin:     true,
-	// 	Stdout:    true,
-	// 	Stderr:    true,
-	// 	TTY:       true,
-	// }, scheme.ParameterCodec)
-
 	req := p.GetRequst(podName, containerName, cmd, true, true, true)
 	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", req.URL())
 	if err != nil {
@@ -164,19 +149,6 @@ func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler mode
 func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []string) error {
 	reader, outStream := io.Pipe()
 	req := p.GetRequst(podName, containerName, cmd, true, true, false)
-	// req := p.k8sClient.CoreV1().RESTClient().Get().
-	// 	Resource("pods").
-	// 	Name(podName).
-	// 	Namespace(p.namespace).
-	// 	SubResource("exec").
-	// 	VersionedParams(&corev1.PodExecOptions{
-	// 		Container: containerName,
-	// 		Command:   cmd,
-	// 		Stdin:     true,
-	// 		Stdout:    true,
-	// 		Stderr:    true,
-	// 		TTY:       false,
-	// 	}, scheme.ParameterCodec)
 
 	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "GET", req.URL())
 	if err != nil {
@@ -231,21 +203,7 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 
 // execCommand executes the given command inside the specified container remotely
 func (p *pods) execCommand(podName, containerName string, stdinReader io.Reader, cmd []string) (string, error) {
-
 	req := p.GetRequst(podName, containerName, cmd, stdinReader != nil, true, false)
-	// req := p.k8sClient.CoreV1().RESTClient().Post().
-	// 	Resource("pods").
-	// 	Name(podName).
-	// 	Namespace(p.namespace).
-	// 	SubResource("exec").
-	// 	VersionedParams(&corev1.PodExecOptions{
-	// 		Container: containerName,
-	// 		Command:   cmd,
-	// 		Stdout:    true,
-	// 		Stderr:    true,
-	// 		Stdin:     stdinReader != nil,
-	// 	}, scheme.ParameterCodec)
-
 	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", req.URL())
 
 	if err != nil {
