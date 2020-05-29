@@ -1,0 +1,12 @@
+{
+	"name": "board-cluster",
+	"type": "grafana-kubernetes-datasource",
+	"url": "$kube_http_scheme://$kube_master_ip:$kube_master_port",
+	"withCredentials": false,
+	"access": "proxy",
+	"jsonData": {
+		"ds": "Prometheus",
+		"tlsAuthWithCACert": false,
+		"tlsAuth": false
+	}
+}

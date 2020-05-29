@@ -1,0 +1,19 @@
+{
+	"name": "Prometheus",
+	"type": "prometheus",
+	"typeLogoUrl": "",
+	"url": "$prometheus_url",
+	"access": "proxy",
+	"password": "",
+	"user": "",
+	"database": "",
+	"basicAuth": false,
+	"basicAuthUser": "",
+	"basicAuthPassword": "",
+	"withCredentials": false,
+	"isDefault": true,
+	"jsonData": {},
+	"secureJsonFields": {},
+	"version": 1,
+	"readOnly": false
+}

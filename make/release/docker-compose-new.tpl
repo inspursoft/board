@@ -152,7 +152,6 @@ services:
     image: board_grafana:__version__
     restart: always
     volumes:
-      - /data/board/grafana/lib:/var/lib/grafana
       - /data/board/grafana/log:/var/log/grafana
       - ../config/grafana:/etc/grafana/config
     networks:
@@ -164,22 +163,6 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "grafana"
-  graphite:
-    image: board_graphite:__version__
-    restart: always
-    networks:
-      - dvserver_net
-    ports:
-      - "2003:2003"
-    depends_on:
-      - log
-    volumes:
-      - /data/board/graphite/storage/whisper:/opt/graphite/storage/whisper
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "graphite"
   elasticsearch:
     image: board_elasticsearch:__version__
     restart: always
