@@ -135,7 +135,6 @@ func (p *pods) CopyFromPodExec(podName, containerName string, cmd []string, outS
 		Stderr:    true,
 		TTY:       false,
 	}
-	defer outStream.Close()
 	streamOptions := remotecommand.StreamOptions{
 		Stdin:  os.Stdin,
 		Stdout: outStream,
@@ -219,10 +218,10 @@ func (p *pods) exec(podExecOptions corev1.PodExecOptions, streamOptions remoteco
 func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []string) error {
 	reader, outStream := io.Pipe()
 
-	err := p.CopyFromPodExec(podName, containerName, cmd, outStream)
-	if err != nil {
-		return err
-	}
+	go func() {
+		defer outStream.Close()
+		p.CopyFromPodExec(podName, containerName, cmd, outStream)
+	}()
 
 	prefix := getPrefix(src)
 	prefix = path.Clean(prefix)
