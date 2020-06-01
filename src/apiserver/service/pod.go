@@ -112,7 +112,7 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	// run loop to fetch data from ws client
 	go ptyHandler.Run()
 	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
-	err = k8sclient.AppV1().Pod(namespace).Exec(pod, container, cmd, ptyHandler)
+	err = k8sclient.AppV1().Pod(namespace).ShellExec(pod, container, cmd, ptyHandler)
 	ptyHandler.Write([]byte(err.Error()))
 	return err
 }
