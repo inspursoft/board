@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,6 +22,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -123,7 +125,7 @@ func (p *pods) ShellExec(podName, containerName string, cmd []string, ptyHandler
 		TerminalSizeQueue: types.ToK8sTerminalSizeQueue(ptyHandler),
 		Tty:               true,
 	}
-	return p.exec(podExecOptions, streamOptions, podName, "POST", p.generatorPostExec)
+	return p.generatorExec(podExecOptions, streamOptions, podName, "POST")
 }
 
 func (p *pods) CopyFromPodExec(podName, containerName string, cmd []string, outStream *io.PipeWriter) error {
@@ -141,7 +143,7 @@ func (p *pods) CopyFromPodExec(podName, containerName string, cmd []string, outS
 		Stderr: os.Stderr,
 		Tty:    false,
 	}
-	return p.exec(podExecOptions, streamOptions, podName, "GET", p.generatorGetExec)
+	return p.generatorExec(podExecOptions, streamOptions, podName, "GET")
 }
 
 func (p *pods) CopyToPodExec(podName, containerName string, cmd []string, reader *io.PipeReader) error {
@@ -159,14 +161,24 @@ func (p *pods) CopyToPodExec(podName, containerName string, cmd []string, reader
 		Stdin:  reader,
 		Tty:    false,
 	}
-	return p.exec(podExecOptions, streamOptions, podName, "POST", p.generatorPostExec)
+	return p.generatorExec(podExecOptions, streamOptions, podName, "POST")
 }
 
-func (p *pods) generatorPostExec(podExecOptions corev1.PodExecOptions, streamOptions remotecommand.StreamOptions,
+func (p *pods) generatorExec(podExecOptions corev1.PodExecOptions, streamOptions remotecommand.StreamOptions,
 	podName, SPDYMethod string) error {
 
-	req := p.k8sClient.CoreV1().RESTClient().Post().
-		Resource("pods").
+	var req *rest.Request
+	client := p.k8sClient.CoreV1().RESTClient()
+
+	if strings.Compare(SPDYMethod, "GET") == 0 {
+		req = client.Get()
+	} else if strings.Compare(SPDYMethod, "POST") == 0 {
+		req = client.Post()
+	} else {
+		return errors.New("SPDYMethod should be 'GET' or 'POST'")
+	}
+
+	req = req.Resource("pods").
 		Name(podName).
 		Namespace(p.namespace).
 		SubResource("exec").
@@ -183,36 +195,6 @@ func (p *pods) generatorPostExec(podExecOptions corev1.PodExecOptions, streamOpt
 	}
 
 	return nil
-}
-
-func (p *pods) generatorGetExec(podExecOptions corev1.PodExecOptions, streamOptions remotecommand.StreamOptions,
-	podName, SPDYMethod string) error {
-
-	req := p.k8sClient.CoreV1().RESTClient().Get().
-		Resource("pods").
-		Name(podName).
-		Namespace(p.namespace).
-		SubResource("exec").
-		VersionedParams(&podExecOptions, scheme.ParameterCodec)
-
-	exec, err := remotecommand.NewSPDYExecutor(p.cfg, SPDYMethod, req.URL())
-	if err != nil {
-		return err
-	}
-
-	err = exec.Stream(streamOptions)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *pods) exec(podExecOptions corev1.PodExecOptions, streamOptions remotecommand.StreamOptions,
-	podName, SPDYMethod string,
-	generator func(corev1.PodExecOptions, remotecommand.StreamOptions, string, string) error) error {
-
-	return generator(podExecOptions, streamOptions, podName, SPDYMethod)
 }
 
 func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []string) error {
