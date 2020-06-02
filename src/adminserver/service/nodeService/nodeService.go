@@ -10,8 +10,8 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
-
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -31,7 +31,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	}
 	hostName := configuration.Apiserver.Hostname
 	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.RegistryIP
+	registryIp := configuration.Apiserver.KubeMasterIP
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
@@ -42,6 +42,20 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
 		return nil, err
+	}
+
+	var nodeLogCache = nodeModel.NodeLogCache{}
+	if err := dao.GlobalCache.Put(nodePostData.NodeIp, &nodeLogCache, 3600*time.Second); err != nil {
+		return nil, err
+	}
+
+	var secure *secureShell.SecureShell
+	var secureErr error
+	secure, secureErr = secureShell.NewSecureShell(&nodeLogCache.DetailBuffer,
+		hostName, nodePostData.HostUsername, nodePostData.HostPassword)
+	if secureErr != nil {
+		RemoveCacheData(nodePostData.NodeIp)
+		return nil, secureErr
 	}
 
 	var newLogId int64
@@ -64,20 +78,13 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		InstallFile:    yamlFile,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
-	if err := LaunchAnsibleContainer(&containerEnv); err != nil {
+	if err := LaunchAnsibleContainer(&containerEnv, secure); err != nil {
 		return nil, err
 	}
 	return &nodeLog, nil
 }
 
-func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
-	logCache := dao.GlobalCache.Get(env.NodeIp).(*nodeModel.NodeLogCache)
-	var secure *secureShell.SecureShell
-	var err error
-	secure, err = secureShell.NewSecureShell(&logCache.DetailBuffer, env.HostIp, env.HostUserName, env.HostPassword)
-	if err != nil {
-		return err
-	}
+func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 
 	envStr := fmt.Sprintf(""+
 		"--env MASTER_PASS=\"%s\" \\\n"+
@@ -109,9 +116,8 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv) error {
 		"-v %s:/ansible_k8s/pre-env \\\n "+
 		"%s \\\n k8s_install:1",
 		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
-	err = secure.ExecuteCommand(cmdStr)
 
-	if err != nil {
+	if err := secure.ExecuteCommand(cmdStr); err != nil {
 		return err
 	}
 
@@ -126,7 +132,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return err
 	}
 
-	logData.Success = putLogData.Success == 0
+	logData.Success = putLogData.ExitCode == 0
 	logData.Completed = true
 	if errUpdate := nodeDao.UpdateNodeLog(logData); errUpdate != nil {
 		return errUpdate
@@ -141,7 +147,7 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 		return errInsert
 	}
 
-	if putLogData.Success == 0 {
+	if putLogData.ExitCode == 0 {
 		if putLogData.InstallFile == nodeModel.AddNodeYamlFile {
 			if err := nodeDao.InsertNodeStatus(&nodeModel.NodeStatus{
 				Ip:           putLogData.Ip,
@@ -159,12 +165,9 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 }
 
 func InsertLog(nodeLog *nodeModel.NodeLog) (int64, error) {
-	var nodeLogCache = nodeModel.NodeLogCache{}
-	nodeLogCache.NodeLogPtr = nodeLog
-	if err := dao.GlobalCache.Put(nodeLog.Ip, &nodeLogCache, 3600*time.Second); err != nil {
-		return 0, err
-	}
+	nodeLogCache := dao.GlobalCache.Get(nodeLog.Ip).(*nodeModel.NodeLogCache)
 
+	nodeLogCache.NodeLogPtr = nodeLog
 	if nodeLog.LogType == nodeModel.ActionTypeAddNode {
 		nodeLogCache.DetailBuffer.WriteString(fmt.Sprintf("---Begin add node:%s----\n", nodeLog.Ip))
 	} else {
@@ -218,7 +221,7 @@ func InsertLogDetail(ip, logFileName string, creationTime int64) error {
 func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 	var apiServerNodeList []nodeModel.ApiServerNodeListResult
 	if err := getNodeListFromApiServer(&apiServerNodeList); err != nil {
-		logs.Info(err)
+		return err
 	}
 
 	var nodeStatusList []nodeModel.NodeStatus
@@ -236,31 +239,15 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				logTime = adminItem.CreationTime
 			}
 		}
-		*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-			Ip:           item.NodeIP,
-			CreationTime: item.CreateTime,
-			Status:       item.Status,
-			NodeName:     item.NodeName,
-			IsMaster:     isMaster,
-			LogTime:      logTime,
-			Origin:       origin})
-	}
-
-	for _, item := range nodeStatusList {
-		var existInApiServer = false
-		for _, apiItem := range apiServerNodeList {
-			if item.Ip == apiItem.NodeIP {
-				existInApiServer = true
-			}
-		}
-		if existInApiServer == false {
+		if CheckExistsInCache(item.NodeIP) == false {
 			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-				Ip:           item.Ip,
-				CreationTime: item.CreationTime,
-				LogTime:      item.CreationTime,
-				IsMaster:     false,
-				Status:       3,
-				Origin:       0})
+				Ip:           item.NodeIP,
+				CreationTime: item.CreateTime,
+				Status:       item.Status,
+				NodeName:     item.NodeName,
+				IsMaster:     isMaster,
+				LogTime:      logTime,
+				Origin:       origin})
 		}
 	}
 
@@ -379,8 +366,46 @@ func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatu
 	return getResponseJsonFromApiServer(url, nodeControlStatus);
 }
 
+func DeleteNode(nodeIp string) error {
+	urlPath := fmt.Sprintf("api/v1/nodes/%s?node_ip=%s", nodeIp, nodeIp)
+	return deleteActionFromApiServer(urlPath)
+}
+
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
 	return getResponseJsonFromApiServer("api/v1/nodes", nodeList);
+}
+
+func deleteActionFromApiServer(urlPath string) error {
+	allConfig, errCfg := service.GetAllCfg("", false)
+	if errCfg != nil {
+		return fmt.Errorf("failed to get the configuration")
+	}
+	host := allConfig.Apiserver.Hostname
+	port := allConfig.Apiserver.APIServerPort
+	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
+
+	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+		err := utils.RequestHandle(http.MethodDelete, url, func(req *http.Request) error {
+			req.Header = http.Header{
+				"Content-Type": []string{"application/json"},
+				"token":        []string{currentToken},
+			}
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == 200 {
+				return nil
+			}
+			if resp.StatusCode == 401 {
+				return common.ErrInvalidToken
+			}
+			data, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
+				resp.StatusCode, string(data))
+		})
+		return err
+	} else {
+		return common.ErrInvalidToken
+	}
 }
 
 func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
@@ -403,13 +428,16 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 			if resp.StatusCode == 200 {
 				return utils.UnmarshalToJSON(resp.Body, res)
 			}
+			if resp.StatusCode == 401 {
+				return common.ErrInvalidToken
+			}
 			data, _ := ioutil.ReadAll(resp.Body)
 			return fmt.Errorf("failed to request apiserver.status:%d;message:%s",
 				resp.StatusCode, string(data))
 		})
 		return err
 	} else {
-		return fmt.Errorf("read the token value from globalCache was failed")
+		return common.ErrInvalidToken
 	}
 }
 

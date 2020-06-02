@@ -138,8 +138,10 @@ else
                 echo "Sorry ,timeout!"
         fi
 fi
-	
+
 echo ""
+
+sed -i "s/^hostname.*$/hostname = reg.mydomain.com/" board.cfg
 
 echo $"----Board uninstaller running complete.----
 For more information, please visit http://10.110.18.40:10080/inspursoft/board"

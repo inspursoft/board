@@ -127,7 +127,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Refresh: '刷新日志',
     Node_Detail_Title_Add: '添加节点',
     Node_Detail_Title_Remove: '正在移除节点',
-    Node_Detail_Title_Log: '添加节点日志',
+    Node_Detail_Title_Log: '节点详情',
     Node_Detail_Node_Ip: '节点IP',
     Node_Detail_Node_Password: '节点密码',
     Node_Detail_Remove_Success: '移除节点成功。',
@@ -141,7 +141,10 @@ export const LANG_ZH_CN = {
     Node_Detail_Host_Username_Hint: '请输入主机的用户名',
     Node_Detail_Host_Password_Hint: '请输入主机的密码',
     Node_Detail_Node_Ip_Hint: '请输入节点IP',
-    Node_Detail_Node_Password_Hint: '请输入节点密码'
+    Node_Detail_Node_Password_Hint: '请输入节点密码',
+    Node_Detail_Error_Invalid_Password: '无效密码',
+    Node_Detail_Error_Bad_Input: '输入信息错误',
+    Node_Detail_Error_Failed_Request: '获取数据错误'
   },
   CONFIGURATIONS: {
     API_SERVER: {
@@ -159,7 +162,7 @@ export const LANG_ZH_CN = {
       KUBE_HTTP_SCHEME: {
         NAME: 'K8s网络请求方案',
         PLACEHOLDER: 'K8s网络请求方案',
-        TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https'
+        TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https。请依据所要连接的K8s的实际网络请求方案做选择，否则会造成连接失败。'
       },
       KUBE_MASTER_IP: {
         NAME: 'K8s主节点IP',
@@ -234,9 +237,9 @@ export const LANG_ZH_CN = {
       },
       JENKINS_NODE_PASSWORD: {
         NAME: '节点密码',
-        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
-        TIPS: 'Jemkins账户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
-        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
+        PLACEHOLDER: '节点主机密码',
+        TIPS: 'Jemkins节点主机的账户的密码，请在生产前使用此密码',
+        PATTERN_ERROR: '',
       },
       JENKINS_NODE_VOLUME: {
         NAME: '节点数据卷路径',
@@ -299,8 +302,8 @@ export const LANG_ZH_CN = {
       TITLE: '电子邮件',
       EMAIL_IDENTITY: {
         NAME: '身份',
-        PLACEHOLDER: '身份名',
-        TIPS: '默认为空身份（NULL)',
+        PLACEHOLDER: '身份标识',
+        TIPS: '当不填写该值时使用用户名作为其身份标识，默认不填写',
       },
       EMAIL_SERVER: {
         NAME: '服务IP地址',
@@ -400,7 +403,7 @@ export const LANG_ZH_CN = {
       AUTH_MODE: {
         NAME: '用户验证模式',
         PLACEHOLDER: '',
-        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP；如果要根据InData集成平台验证用户的凭据，请将其设置为Indata',
+        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP',
       },
       VERIFICATION_URL: {
         NAME: '验证地址',
@@ -480,6 +483,7 @@ export const LANG_ZH_CN = {
     FORBIDDEN: '禁止访问。',
     FORGOT_PASSWORD_HELPER: '如果您配置了邮箱，请在Board中修改密码。如果您没有配置邮箱，请联系管理员进行协助。',
     TOKEN_ERROR: '用户状态信息错误！请重新登录！',
+    TOKEN_ERROR_TO_REFRESH: '用户状态信息错误！请点击“确定”刷新页面。',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: '上传',
@@ -556,6 +560,7 @@ export const LANG_ZH_CN = {
       GET_CFG_FAILED: '获取配置失败，请检查服务是否正常运行。',
       GET_TMP_FAILED: '获取临时配置失败，使用当前配置。',
       START_BOARD_FAILED: '启动Board失败，请检查配置是否正确或者服务是否正常运行。',
+      ALREADY_UNINSTALL: '清除Board的所有相关数据失败！因为/data/board目录为空',
       UNINSTALL_BOARD_FAILED: '卸载Board失败，请检查服务是否正常运行。',
       POST_CFG_FAILED: '保存配置失败，请检查服务是否正常运行。',
       ALREADY_START: '检查发现Board已经启动！无法继续操作。',

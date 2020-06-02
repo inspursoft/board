@@ -127,7 +127,7 @@ export const LANG_EN_US = {
     Node_Detail_Refresh: 'Refresh log',
     Node_Detail_Title_Add: 'Add node',
     Node_Detail_Title_Remove: 'Removing node',
-    Node_Detail_Title_Log: 'Add node log',
+    Node_Detail_Title_Log: 'Log detail',
     Node_Detail_Node_Ip: 'Node ip',
     Node_Detail_Node_Password: 'Node password',
     Node_Detail_Remove_Success: 'Remove node successfully.',
@@ -141,7 +141,10 @@ export const LANG_EN_US = {
     Node_Detail_Host_Username_Hint: 'Please input the username of the host.',
     Node_Detail_Host_Password_Hint: 'Please input the password of the host.',
     Node_Detail_Node_Ip_Hint: 'Please input the node ip.',
-    Node_Detail_Node_Password_Hint: 'Please input the password of the node.'
+    Node_Detail_Node_Password_Hint: 'Please input the password of the node.',
+    Node_Detail_Error_Invalid_Password: 'Invalid password',
+    Node_Detail_Error_Bad_Input: 'Wrong input',
+    Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
   },
   CONFIGURATIONS: {
     API_SERVER: {
@@ -159,7 +162,7 @@ export const LANG_EN_US = {
       KUBE_HTTP_SCHEME: {
         NAME: 'Kube http scheme',
         PLACEHOLDER: 'Kube http scheme',
-        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https'
+        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https. Please choose according to the actual network request scheme of the K8s to be connected, otherwise the connection will fail.'
       },
       KUBE_MASTER_IP: {
         NAME: 'Kube master IP',
@@ -234,9 +237,9 @@ export const LANG_EN_US = {
       },
       JENKINS_NODE_PASSWORD: {
         NAME: 'Jenkins node password',
-        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
-        TIPS: 'The password of the Jemkins account, please use this password before production. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PLACEHOLDER: 'password of node mechine',
+        TIPS: 'The password of jenkins node mechine, please use this password before production.',
+        PATTERN_ERROR: '',
       },
       JENKINS_NODE_VOLUME: {
         NAME: 'Jenkins node volume',
@@ -300,7 +303,7 @@ export const LANG_EN_US = {
       EMAIL_IDENTITY: {
         NAME: 'Identity',
         PLACEHOLDER: 'Identity',
-        TIPS: 'The default is empty identity(NULL)'
+        TIPS: 'When the blank is not filled in, the username is used as its identity, and it is not filled in by default.'
       },
       EMAIL_SERVER: {
         NAME: 'Server IP',
@@ -400,7 +403,7 @@ export const LANG_EN_US = {
       AUTH_MODE: {
         NAME: 'Auth mode',
         PLACEHOLDER: 'Auth mode',
-        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials against an LDAP server. Set it to \'Indata\' if you want to verify a user\'s credentials against InData integration platform.'
+        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials with a LDAP server.'
       },
       VERIFICATION_URL: {
         NAME: 'Verification url',
@@ -480,6 +483,7 @@ export const LANG_EN_US = {
     FORBIDDEN: 'Forbidden access!',
     FORGOT_PASSWORD_HELPER: 'If you have configured an email, please change the password in the Board. If you have not configured an email, please contact the administrator for assistance.',
     TOKEN_ERROR: 'User status error! Please login again!',
+    TOKEN_ERROR_TO_REFRESH: 'User status error! Please click the "Confirm" button to reload this page!',
   },
   CONFIGURATIONPAGE: {
     UPLOAD: 'Upload',
@@ -556,6 +560,7 @@ export const LANG_EN_US = {
       GET_CFG_FAILED: 'Failed to get the configuration. Please check whether the service is running normally.',
       GET_TMP_FAILED: 'Failed to get temporary configuration, use current configuration.',
       START_BOARD_FAILED: 'Failed to start Board. Please check whether the configuration is correct or the service is running normally.',
+      ALREADY_UNINSTALL: 'Failed to clear all relevant data of Board! Because the /data/board directory is empty.',
       UNINSTALL_BOARD_FAILED: 'Failed to uninstall Board, please check whether the service is running normally',
       POST_CFG_FAILED: 'Failed to save the configuration. Please check whether the service is running normally.',
       ALREADY_START: 'Board have been successfully started. The next steps cannot be operated.',

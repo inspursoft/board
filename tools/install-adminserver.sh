@@ -82,6 +82,35 @@ echo "[Step $item]: checking installation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
+echo "[Step $item]: checking existing instance of Board ..."; let item+=1
+if [ -n "$(docker ps -aqf name=deploy_.*_1)" ]
+then
+        echo "Board exists. Please uninstall it before installing Adminserver."
+        echo "This Board was installed independently, so you should use $(pwd)/../uninstall.sh to uninstall it."
+        exit 1
+fi
+
+echo "checking /data/board ..."
+if [ 1 -lt $(ls /data/board/ -l | wc -l) ]
+then
+	if read -t 10 -p "/data/board/ is not Empty. Continuing the installation may cause errors at your own risk. Please input [continue] to continue: " flag
+	then
+		if [ $flag == "continue" ]
+		then
+				echo "You input [$flag] to continue, continue the installation after 5 seconds..."
+				sleep 5s
+		else
+				echo "You input [$flag], installation exited."
+				exit 1
+		fi
+	else
+		echo ""
+		echo "Sorry ,timeout! Installation exited."
+		exit 1
+	fi
+fi
+echo ""
+
 if [ -f ../board*.tgz ]
 then
 	echo "[Step $item]: loading Board & Adminserver images ..."; let item+=1
@@ -90,11 +119,6 @@ fi
 echo ""
 
 echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
-if [ -n "$(docker-compose -f docker-compose-new.yml ps -q)"  ]
-then
-	echo "Board is up, please shut it down in adminserver UI. "
-	exit 1
-fi
 if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."

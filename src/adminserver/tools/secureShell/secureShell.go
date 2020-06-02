@@ -3,15 +3,16 @@ package secureShell
 import (
 	"bytes"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
-	"github.com/tmc/scp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/tmc/scp"
+	"golang.org/x/crypto/ssh"
 )
 
 const maxSSHRetries = 10
@@ -77,6 +78,16 @@ func (s *SecureShell) ExecuteCommand(cmd string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *SecureShell) Output(cmd string) (string, error) {
+	session, err := s.client.NewSession()
+	if err != nil {
+		return "", err
+	}
+	defer session.Close()
+	b, err := session.Output(cmd)
+	return string(b), err
 }
 
 func (s *SecureShell) SecureCopyData(fileName string, data []byte, destinationPath string) error {

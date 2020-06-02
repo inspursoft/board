@@ -141,7 +141,7 @@ export class InstallationComponent implements OnInit {
                     },
                     (err: HttpErrorResponse) => {
                       // COMMON
-                      this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
+                      this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
                     }
                   );
                   break;
@@ -226,7 +226,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
     );
   }
@@ -249,7 +249,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
       },
     );
   }
@@ -275,7 +275,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
+        this.commonError(err, {503: 'INITIALIZATION.ALERTS.ALREADY_UNINSTALL'}, 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
       },
     );
   }
@@ -300,13 +300,13 @@ export class InstallationComponent implements OnInit {
           },
           (err: HttpErrorResponse) => {
             // COMMON
-            this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
+            this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
           },
         );
       },
       (err: HttpErrorResponse) => {
         // COMMON
-        this.commonError(err, new Map(), 'INITIALIZATION.ALERTS.POST_CFG_FAILED');
+        this.commonError(err, {}, 'INITIALIZATION.ALERTS.POST_CFG_FAILED');
       },
     );
   }
@@ -358,7 +358,7 @@ export class InstallationComponent implements OnInit {
     return result;
   }
 
-  commonError(err: HttpErrorResponse, errorList: Map<number, string>, finnalError: string) {
+  commonError(err: HttpErrorResponse, errorList: object, finnalError: string) {
     console.error(err.message);
     this.refresh = true;
     this.submitBtnState = ClrLoadingState.DEFAULT;
@@ -366,12 +366,12 @@ export class InstallationComponent implements OnInit {
       this.tokenError();
       return;
     }
-    errorList.forEach((msg, e) => {
-      if (err.status === e) {
-        this.messageService.showOnlyOkDialog(msg, 'ACCOUNT.ERROR');
+    for (const key in errorList) {
+      if (err.status === Number(key)) {
+        this.messageService.showOnlyOkDialog(String(errorList[key]), 'ACCOUNT.ERROR');
         return;
       }
-    });
+    }
     this.messageService.showOnlyOkDialog(finnalError, 'ACCOUNT.ERROR');
   }
 
@@ -387,7 +387,7 @@ export class InstallationComponent implements OnInit {
   }
 
   tokenError() {
-    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR', 'ACCOUNT.ERROR').subscribe(
+    this.messageService.showOnlyOkDialogObservable('ACCOUNT.TOKEN_ERROR_TO_REFRESH', 'ACCOUNT.ERROR').subscribe(
       (msg: Message) => {
         if (msg.returnStatus === ReturnStatus.rsConfirm) {
           location.reload();

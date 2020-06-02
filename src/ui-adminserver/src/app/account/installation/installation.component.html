@@ -185,7 +185,7 @@
                                      [required]="true"
                                      [defaultValue]="config.others.authMode"
                                      [enumType]="'text'"
-                                     [enumItem]="{Database:'db_auth',LDAP:'ldap_auth',Indata:'indata_auth'}"
+                                     [enumItem]="{Database:'db_auth',LDAP:'ldap_auth'}"
                                      [enumInline]="true"
                                      [helper]="'CONFIGURATIONS.OTHERS.AUTH_MODE.TIPS' | translate"
                                      [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
@@ -237,30 +237,6 @@
                                      [patternMsg]="'CONFIGURATIONS.OTHERS.BOARD_ADMIN_PASSWORD.PATTERN_ERROR' | translate"
                                      [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
                                      (commitEvent)="config.others.boardAdminPassword = $event">
-              </app-my-input-template>
-
-              <app-my-input-template *ngIf="config.others.authMode === 'indata_auth'"
-                                     [disabled]="config.others.authMode !== 'indata_auth'"
-                                     [label]="'CONFIGURATIONS.OTHERS.VERIFICATION_URL.NAME' | translate"
-                                     [type]="'text'"
-                                     [required]="true"
-                                     [defaultValue]="config.others.verificationUrl"
-                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.PLACEHOLDER' | translate"
-                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
-                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                                     (commitEvent)="config.others.verificationUrl = $event">
-              </app-my-input-template>
-
-              <app-my-input-template *ngIf="config.others.authMode === 'indata_auth'"
-                                     [disabled]="config.others.authMode !== 'indata_auth' && !isEditable"
-                                     [label]="'CONFIGURATIONS.OTHERS.REDIRECTION_URL.NAME' | translate"
-                                     [type]="'text'"
-                                     [required]="true"
-                                     [defaultValue]="config.others.redirectionUrl"
-                                     [placeholder]="'CONFIGURATIONS.OTHERS.TOKEN_CACHE_EXPIRE.PLACEHOLDER' | translate"
-                                     [helper]="'CONFIGURATIONS.OTHERS.ARCH_TYPE.TIPS' | translate"
-                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                                     (commitEvent)="config.others.redirectionUrl = $event">
               </app-my-input-template>
 
               <app-my-input-template *ngIf="!simpleMode"
@@ -674,18 +650,10 @@
 
               <app-my-input-template [disabled]="simpleMode"
                                      [label]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.NAME' | translate"
-                                     [type]="'enum'"
-                                     [required]="true"
-                                     [defaultValue]="config.email.emailIdentity?config.email.emailIdentity:'null'"
-                                     [enumType]="'text'"
-                                     [enumItem]="{NULL:'null'}"
-                                     [enumInline]="true"
-                                     [enableCustomItem]="true"
-                                     [customItemPlaceholder]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.PLACEHOLDER' | translate"
-                                     [customItemWidth]="'8.3rem'"
+                                     [type]="'text'"
+                                     [defaultValue]="config.email.emailIdentity"
+                                     [placeholder]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.PLACEHOLDER' | translate"
                                      [helper]="'CONFIGURATIONS.EMAIL.EMAIL_IDENTITY.TIPS' | translate"
-                                     [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                                     [inputUpdateOn]="'change'"
                                      (commitEvent)="config.email.emailIdentity = $event">
               </app-my-input-template>
 
