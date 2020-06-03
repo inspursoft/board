@@ -290,7 +290,7 @@ if kube_http_scheme == "http":
 elif kube_http_scheme == "https":
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
-	for name in ["apiserver", "collector", "grafana"]:
+	for name in ["apiserver", "collector", "grafana", "proxy"]:
 		openssl_path=os.path.join(config_dir, name, "openssl.conf")
 		key_path=os.path.join("/data/board/cert", name+'-key.pem')
 		cert_path=os.path.join("/data/board/cert", name+'.pem')
