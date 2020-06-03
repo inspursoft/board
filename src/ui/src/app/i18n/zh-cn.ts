@@ -713,6 +713,12 @@ export const LANG_ZH_CN = {
     Closing: '正在断开',
     Connecting: '正在连接',
     Unknown: '未知',
+    UploadFileLabel: '上传的容器内路径',
+    UploadFile: '请选择上传的文件',
+    UploadFilePath: '请输入上传的文件路径',
+    downloadFileLabel: '下载文件的容器路径',
+    downloadFilePath: '请输入下载文件在容器中的路径',
+    downloadFileFailed: '下载文件失败'
   },
   "STORAGE":{
     "PV_CREATE":"创建PV",

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, Subject, zip } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Project } from '../project/project';
@@ -385,5 +385,28 @@ export class K8sService {
       res.forEach(config => result.push(Reflect.get(config, 'name')));
       return result;
     }));
+  }
+
+  downloadFile(projectId: number, podName, containerName, srcPath: string): Observable<any> {
+    let httpParams = new HttpParams();
+    httpParams = httpParams.set('container', containerName);
+    httpParams = httpParams.set('src', srcPath);
+    const req = new HttpRequest('GET', `/api/v1/pods/${projectId}/${podName}/download`, {
+      reportProgress: true,
+      responseType: 'blob',
+      params: httpParams
+    });
+    return this.http.request<any>(req);
+  }
+
+  uploadFile(projectId: number, podName, containerName, destPath: string, formData: FormData): Observable<any> {
+    let httpParams = new HttpParams();
+    httpParams = httpParams.set('container', containerName);
+    httpParams = httpParams.set('dest', destPath);
+    const req = new HttpRequest('POST', `/api/v1/pods/${projectId}/${podName}/upload`, formData, {
+      reportProgress: true,
+      params: httpParams
+    });
+    return this.http.request<any>(req);
   }
 }

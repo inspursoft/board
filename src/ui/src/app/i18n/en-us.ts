@@ -713,6 +713,12 @@ export const LANG_EN_US = {
     Closing: 'CLOSING',
     Connecting: 'CONNECTING',
     Unknown: 'UNKNOWN',
+    UploadFileLabel: 'Directory of upload file',
+    UploadFile: 'Please select file to upload',
+    UploadFilePath: 'Please input the directory of upload file',
+    downloadFileLabel: 'File name for downloading',
+    downloadFilePath: 'Please input file name in the container for download',
+    downloadFileFailed: 'Fail to download file'
   },
   "STORAGE":{
     "PV_CREATE":"New PV",

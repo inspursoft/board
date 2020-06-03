@@ -1,5 +1,8 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isActionInWIP">
-  <h3 class="modal-title">{{ "SERVICE.SERVICE_CONTROL" | translate }}</h3>
+  <div class="modal-title">
+    <span>{{ "SERVICE.SERVICE_CONTROL" | translate }}</span>
+    <cs-progress [progressData]="uploadProgressValue"></cs-progress>
+  </div>
   <div class="modal-body">
     <clr-tabs>
       <clr-tab>
@@ -61,6 +64,8 @@
         </button>
         <clr-tab-content *clrIfActive>
           <app-console [service]="service"
+                       [(isActionInWIP)]="isActionInWIP"
+                       (updateProgressEvent)="defaultHandleProgress($event)"
                        (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
           </app-console>
         </clr-tab-content>
