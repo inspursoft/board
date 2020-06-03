@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -21,6 +22,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -107,34 +109,87 @@ func (p *pods) GetLogs(name string, opts *model.PodLogOptions) (io.ReadCloser, e
 	return request.Stream()
 }
 
-func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error {
-	req := p.k8sClient.CoreV1().RESTClient().Post().
-		Resource("pods").
-		Name(podName).
-		Namespace(p.namespace).
-		SubResource("exec")
-
-	req.VersionedParams(&corev1.PodExecOptions{
+func (p *pods) ShellExec(podName, containerName string, cmd []string, ptyHandler model.PtyHandler) error {
+	podExecOptions := corev1.PodExecOptions{
 		Container: containerName,
 		Command:   cmd,
 		Stdin:     true,
 		Stdout:    true,
 		Stderr:    true,
 		TTY:       true,
-	}, scheme.ParameterCodec)
-
-	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", req.URL())
-	if err != nil {
-		return err
 	}
-
-	err = exec.Stream(remotecommand.StreamOptions{
+	streamOptions := remotecommand.StreamOptions{
 		Stdin:             ptyHandler,
 		Stdout:            ptyHandler,
 		Stderr:            ptyHandler,
 		TerminalSizeQueue: types.ToK8sTerminalSizeQueue(ptyHandler),
 		Tty:               true,
-	})
+	}
+	return p.generatorExec(podExecOptions, streamOptions, podName, "POST")
+}
+
+func (p *pods) CopyFromPodExec(podName, containerName string, cmd []string, outStream *io.PipeWriter) error {
+	podExecOptions := corev1.PodExecOptions{
+		Container: containerName,
+		Command:   cmd,
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
+	}
+	streamOptions := remotecommand.StreamOptions{
+		Stdin:  os.Stdin,
+		Stdout: outStream,
+		Stderr: os.Stderr,
+		Tty:    false,
+	}
+	return p.generatorExec(podExecOptions, streamOptions, podName, "GET")
+}
+
+func (p *pods) CopyToPodExec(podName, containerName string, cmd []string, reader *io.PipeReader) error {
+	podExecOptions := corev1.PodExecOptions{
+		Container: containerName,
+		Command:   cmd,
+		Stdin:     reader != nil,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
+	}
+	streamOptions := remotecommand.StreamOptions{
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+		Stdin:  reader,
+		Tty:    false,
+	}
+	return p.generatorExec(podExecOptions, streamOptions, podName, "POST")
+}
+
+func (p *pods) generatorExec(podExecOptions corev1.PodExecOptions, streamOptions remotecommand.StreamOptions,
+	podName, SPDYMethod string) error {
+
+	var req *rest.Request
+	client := p.k8sClient.CoreV1().RESTClient()
+
+	if strings.Compare(SPDYMethod, "GET") == 0 {
+		req = client.Get()
+	} else if strings.Compare(SPDYMethod, "POST") == 0 {
+		req = client.Post()
+	} else {
+		return errors.New("SPDYMethod should be 'GET' or 'POST'")
+	}
+
+	req = req.Resource("pods").
+		Name(podName).
+		Namespace(p.namespace).
+		SubResource("exec").
+		VersionedParams(&podExecOptions, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(p.cfg, SPDYMethod, req.URL())
+	if err != nil {
+		return err
+	}
+
+	err = exec.Stream(streamOptions)
 	if err != nil {
 		return err
 	}
@@ -144,34 +199,12 @@ func (p *pods) Exec(podName, containerName string, cmd []string, ptyHandler mode
 
 func (p *pods) CopyFromPod(podName, containerName, src, dest string, cmd []string) error {
 	reader, outStream := io.Pipe()
-	req := p.k8sClient.CoreV1().RESTClient().Get().
-		Resource("pods").
-		Name(podName).
-		Namespace(p.namespace).
-		SubResource("exec").
-		VersionedParams(&corev1.PodExecOptions{
-			Container: containerName,
-			Command:   cmd,
-			Stdin:     true,
-			Stdout:    true,
-			Stderr:    true,
-			TTY:       false,
-		}, scheme.ParameterCodec)
-
-	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "GET", req.URL())
-	if err != nil {
-		return err
-	}
 
 	go func() {
 		defer outStream.Close()
-		err = exec.Stream(remotecommand.StreamOptions{
-			Stdin:  os.Stdin,
-			Stdout: outStream,
-			Stderr: os.Stderr,
-			Tty:    false,
-		})
+		p.CopyFromPodExec(podName, containerName, cmd, outStream)
 	}()
+
 	prefix := getPrefix(src)
 	prefix = path.Clean(prefix)
 	// remove extraneous path shortcuts - these could occur if a path contained extra "../"
@@ -188,9 +221,9 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 	}
 
 	err := checkDestinationIsDir(p, podName, containerName, dest)
-	if err != nil {
-		logs.Error("Creating destination directory failed: %v", err)
-		return err
+	if err == nil {
+		logs.Info("Destination is directory.")
+		dest = dest + "/" + path.Base(src)
 	}
 
 	go func() {
@@ -198,12 +231,12 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 		err = makeTar(src, dest, writer)
 	}()
 
-	cmd := []string{"tar", "-xmf", "-"}
+	cmd := []string{"tar", "xf", "-"}
 	destDir := path.Dir(dest)
 	if len(destDir) > 0 {
 		cmd = append(cmd, "-C", destDir)
 	}
-	_, err = p.execCommand(podName, containerName, reader, cmd)
+	err = p.CopyToPodExec(podName, containerName, cmd, reader)
 
 	logs.Info("Copying the content of '%s' directory to '%s/%s/%s:%s' finished", src, p.namespace, podName, containerName, destDir)
 	return err
@@ -211,8 +244,7 @@ func (p *pods) CopyToPod(podName, containerName, src, dest string) error {
 
 // execCommand executes the given command inside the specified container remotely
 func (p *pods) execCommand(podName, containerName string, stdinReader io.Reader, cmd []string) (string, error) {
-
-	execReq := p.k8sClient.CoreV1().RESTClient().Post().
+	req := p.k8sClient.CoreV1().RESTClient().Get().
 		Resource("pods").
 		Name(podName).
 		Namespace(p.namespace).
@@ -220,12 +252,13 @@ func (p *pods) execCommand(podName, containerName string, stdinReader io.Reader,
 		VersionedParams(&corev1.PodExecOptions{
 			Container: containerName,
 			Command:   cmd,
+			Stdin:     stdinReader != nil,
 			Stdout:    true,
 			Stderr:    true,
-			Stdin:     stdinReader != nil,
+			TTY:       false,
 		}, scheme.ParameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", execReq.URL())
+	exec, err := remotecommand.NewSPDYExecutor(p.cfg, "POST", req.URL())
 
 	if err != nil {
 		logs.Error("Creating remote command executor failed: %v", err)
@@ -359,9 +392,9 @@ func (p *pods) untarAll(reader io.Reader, destDir, prefix string) error {
 // checkDestinationIsDir creates the directory dirPath if not exists
 // on the target pod container
 func checkDestinationIsDir(p *pods, podName, containerName string, dirPath string) error {
-	logs.Info("Creating '%s/%s/%s:%s' if not exists.", p.namespace, podName, containerName, dirPath)
+	logs.Info("Testing whether '%s/%s/%s:%s' is a directory.", p.namespace, podName, containerName, dirPath)
 
-	cmd := []string{"mkdir", "-p", dirPath}
+	cmd := []string{"test", "-d", dirPath}
 	_, err := p.execCommand(podName, containerName, nil, cmd)
 
 	return err
