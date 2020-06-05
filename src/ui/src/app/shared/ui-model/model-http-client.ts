@@ -46,7 +46,10 @@ export class ModelHttpClient extends HttpClient {
       headers: options && options.header ? options.header : null
     }).pipe(map((res: Array<object>) => {
       const result = Array<T>();
-      res.forEach(item => result.push(new itemType(item)));
+      res.forEach(item => {
+        const newItem = new itemType(item);
+        result.push(newItem);
+      });
       return result;
     }));
   }

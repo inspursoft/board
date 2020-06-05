@@ -12,16 +12,16 @@
   <clr-dg-column>{{ 'JOB.JOB_LIST_COMMENT' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_STATUS' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_OPERATION' | translate }}</clr-dg-column>
-  <clr-dg-row *ngFor="let job of paginationJobs.job_status_list">
-    <clr-dg-cell>{{job.job_name}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_project_name}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_creation_time | date:'short'}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_update_time | date:'short'}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_owner_name}}</clr-dg-cell>
-    <clr-dg-cell>{{job.job_comment}}</clr-dg-cell>
+  <clr-dg-row *ngFor="let job of paginationJobs">
+    <clr-dg-cell>{{job.jobName}}</clr-dg-cell>
+    <clr-dg-cell>{{job.jobProjectName}}</clr-dg-cell>
+    <clr-dg-cell>{{job.jobCreationTime | date:'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.jobUpdateTime | date:'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{job.jobOwnerName}}</clr-dg-cell>
+    <clr-dg-cell>{{job.jobComment}}</clr-dg-cell>
     <clr-dg-cell>
-      <span [ngClass]="getStatusClass(job.job_status)">
-        {{getJobStatus(job.job_status) | translate}}
+      <span [ngClass]="getStatusClass(job.jobStatus)">
+        {{getJobStatus(job.jobStatus) | translate}}
       </span>
     </clr-dg-cell>
     <clr-dg-cell>
@@ -38,13 +38,15 @@
   </clr-dg-row>
   <clr-dg-footer>
     {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
-    {{"DATAGRID.TOTAL" | translate}}{{paginationJobs.pagination.total_count}}{{"DATAGRID.ITEMS" | translate}}
+    {{"DATAGRID.TOTAL" | translate}}{{paginationJobs.pagination.TotalCount}}{{"DATAGRID.ITEMS" | translate}}
     <clr-dg-pagination #pagination
-                       [clrDgTotalItems]="paginationJobs.pagination.total_count"
-                       [(clrDgPage)]="paginationJobs.pagination.page_index"
-                       [clrDgPageSize]="paginationJobs.pagination.page_size">
+                       [clrDgTotalItems]="paginationJobs.pagination.TotalCount"
+                       [(clrDgPage)]="pageIndex"
+                       [clrDgPageSize]="pageSize">
     </clr-dg-pagination>
   </clr-dg-footer>
 </clr-datagrid>
-<job-create *ngIf="createNewJob" (afterDeployment)="afterDeployment($event)"></job-create>
+<app-job-create *ngIf="createNewJob" (afterDeployment)="afterDeployment($event)"></app-job-create>
+<app-job-create-guide [paginationJobs]="paginationJobs">
+</app-job-create-guide>
 

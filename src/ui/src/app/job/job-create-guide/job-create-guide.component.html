@@ -1,0 +1,44 @@
+<span class="job-title">{{"选择新建Job的方式" | translate}}:</span>
+<div class="create-job-method">
+  <input title=""
+         type="radio"
+         id="fromNew"
+         [disabled]="false">
+  <label for="fromNew">{{"新建"|translate}}</label>
+</div>
+<div class="create-job-method">
+  <input title=""
+         type="radio"
+         id="fromExistJobs"
+         [disabled]="false">
+  <label for="fromExistJobs">
+    {{"从已有的Job新建"|translate}}
+  </label>
+</div>
+
+<div class="card-container-job">
+  <div class="card selected" *ngFor="let job of paginationJobs">
+    <div class="card-header">
+      {{job.jobName}}
+    </div>
+    <div class="card-block">
+      <div class="card-text" style="display: flex; flex-direction: column">
+        <span><span class="card-title-job">Project name:</span>{{job.jobProjectName}}</span>
+        <span><span class="card-title-job">Creation time:</span>{{job.jobCreationTime | date: 'short' }}</span>
+        <span><span class="card-title-job">Owner name:</span>{{job.jobOwnerName}}</span>
+        <span><span class="card-title-job">Comment:</span>{{job.jobComment}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="build-btn-container">
+  <button class="btn btn-default cancel-build">
+    {{"BUTTON.CANCEL"|translate}}
+  </button>
+  <button class="btn btn-primary"
+          [disabled]="false">
+    {{"BUTTON.CREATE"|translate}}
+  </button>
+</div>

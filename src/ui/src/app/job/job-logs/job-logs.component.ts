@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Job, JobPod } from "../job.type";
-import { JobService } from "../job.service";
-import { MessageService } from "../../shared.service/message.service";
-import { CsModalChildMessage } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { Job, JobPod } from '../job.type';
+import { JobService } from '../job.service';
+import { MessageService } from '../../shared.service/message.service';
+import { CsModalChildMessage } from '../../shared/cs-modal-base/cs-modal-child-base';
 
 @Component({
   selector: 'app-job-logs',
@@ -25,8 +25,6 @@ export class JobLogsComponent extends CsModalChildMessage implements OnInit {
     this.jobPods = Array<JobPod>();
     this.jobLogs = Array<{ datetime: string, content: string }>();
     this.sinceDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const num = Number(now.getHours());
-    console.log();
     this.sinceTime = `${this.getFormatNumber(now.getHours())}:${this.getFormatNumber(now.getMinutes())}`;
   }
 

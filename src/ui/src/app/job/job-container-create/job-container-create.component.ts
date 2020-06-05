@@ -1,10 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { JobContainer, JobImage } from "../job.type";
-import { CsModalChildBase } from "../../shared/cs-modal-base/cs-modal-child-base";
-import { JobService } from "../job.service";
-import { Image, ImageDetail } from "../../image/image";
-import { MessageService } from "../../shared.service/message.service";
-import { Subject } from "rxjs";
+import { Subject } from 'rxjs';
+import { JobContainer, JobImage, JobImageDetailInfo, JobImageInfo } from '../job.type';
+import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
+import { JobService } from '../job.service';
+import { MessageService } from '../../shared.service/message.service';
 
 @Component({
   selector: 'app-job-container-create',
@@ -13,8 +12,8 @@ import { Subject } from "rxjs";
 })
 export class JobContainerCreateComponent extends CsModalChildBase implements OnInit {
   @Input() containerList: Array<JobContainer>;
-  imageList: Array<Image>;
-  imageDetailList: Array<ImageDetail>;
+  imageList: Array<JobImageInfo>;
+  imageDetailList: Array<JobImageDetailInfo>;
   isLoading = false;
   selectedImageName: string;
   selectedImageTag: string;
@@ -23,55 +22,55 @@ export class JobContainerCreateComponent extends CsModalChildBase implements OnI
   constructor(private jobService: JobService,
               private messageService: MessageService) {
     super();
-    this.imageList = Array<Image>();
-    this.imageDetailList = Array<ImageDetail>();
+    this.imageList = Array<JobImageInfo>();
+    this.imageDetailList = Array<JobImageDetailInfo>();
     this.createSuccess = new Subject();
   }
 
   ngOnInit() {
-    this.selectedImageName = "";
-    this.selectedImageTag = "";
+    this.selectedImageName = '';
+    this.selectedImageTag = '';
     this.isLoading = true;
-    this.jobService.getImageList().subscribe((res: Array<Image>) => {
+    this.jobService.getImageList().subscribe((res: Array<JobImageInfo>) => {
       if (res && res.length > 0) {
         this.imageList = res;
         this.getImageDetail(this.imageList[0]);
       }
-    }, () => this.isLoading = false, () => this.isLoading = false)
+    }, () => this.isLoading = false, () => this.isLoading = false);
   }
 
-  getImageDetail(image: Image) {
+  getImageDetail(image: JobImageInfo) {
     this.isLoading = true;
-    this.selectedImageName = image.image_name;
-    this.selectedImageTag = "";
-    this.jobService.getImageDetailList(image.image_name)
-      .subscribe((res: Array<ImageDetail>) => {
+    this.selectedImageName = image.imageName;
+    this.selectedImageTag = '';
+    this.jobService.getImageDetailList(image.imageName).subscribe(
+      (res: Array<JobImageDetailInfo>) => {
         if (res && res.length > 0) {
           this.imageDetailList = res;
         }
-      }, () => this.isLoading = false, () => this.isLoading = false)
+      }, () => this.isLoading = false, () => this.isLoading = false);
   }
 
-  setImageTag(detail: ImageDetail) {
-    this.selectedImageTag = detail.image_tag;
+  setImageTag(detail: JobImageDetailInfo) {
+    this.selectedImageTag = detail.imageTag;
   }
 
   checkImageAndTag(): boolean {
     return this.containerList.find((jobContainer: JobContainer) =>
-      jobContainer.image.image_tag === this.selectedImageTag &&
-      jobContainer.image.image_name === this.selectedImageName) !== undefined;
+      jobContainer.image.imageTag === this.selectedImageTag &&
+      jobContainer.image.imageName === this.selectedImageName) !== undefined;
   }
 
   createNewContainer() {
-    if (this.selectedImageName === "" || this.selectedImageTag === "") {
-      this.messageService.showAlert("JOB.JOB_CREATE_SELECT_IMAGE_TIP", {alertType: "warning", view: this.alertView})
+    if (this.selectedImageName === '' || this.selectedImageTag === '') {
+      this.messageService.showAlert('JOB.JOB_CREATE_SELECT_IMAGE_TIP', {alertType: 'warning', view: this.alertView});
     } else if (this.checkImageAndTag()) {
-      this.messageService.showAlert("JOB.JOB_CREATE_SELECT_IMAGE_EXISTS", {alertType: "warning", view: this.alertView})
+      this.messageService.showAlert('JOB.JOB_CREATE_SELECT_IMAGE_EXISTS', {alertType: 'warning', view: this.alertView});
     } else {
       const container = new JobContainer();
       const jobImage = new JobImage();
-      jobImage.image_name = this.selectedImageName;
-      jobImage.image_tag = this.selectedImageTag;
+      jobImage.imageName = this.selectedImageName;
+      jobImage.imageTag = this.selectedImageTag;
       container.image = jobImage;
       this.createSuccess.next(container);
       this.modalOpened = false;

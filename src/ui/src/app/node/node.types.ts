@@ -10,7 +10,7 @@ export class NodeStatus extends ResponseBase {
   @HttpBind('node_ip') nodeIp: string;
   @HttpBind('create_time') createTime: number;
   @HttpBind('status') status: NodeStatusType;
-  @HttpBindObject('labels') labels: { [p: string]: string };
+  @HttpBind('labels') labels: { [p: string]: string };
 
   get isMaster(): boolean {
     return Reflect.has(this.labels, this.masterKey);

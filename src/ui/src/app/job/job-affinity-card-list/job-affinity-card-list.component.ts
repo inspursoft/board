@@ -1,8 +1,8 @@
-import { Component, EventEmitter, Input, Output, QueryList, ViewChildren } from "@angular/core";
-import { JobAffinityCardData, JobAffinityCardListView } from "../job.type";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { JobAffinityCardData, JobAffinityCardListView } from '../job.type';
 
 @Component({
-  selector: 'job-affinity-card-list',
+  selector: 'app-job-affinity-card-list',
   styleUrls: ['./job-affinity-card-list.component.css'],
   templateUrl: './job-affinity-card-list.component.html'
 })
@@ -15,14 +15,14 @@ export class JobAffinityCardListComponent {
   @Input() listBorder = false;
   @Input() disabled = false;
   @Input() viewModel: JobAffinityCardListView = JobAffinityCardListView.aclvColumn;
-  @Output() onDrop: EventEmitter<string>;
-  @Output() onRemove: EventEmitter<JobAffinityCardData>;
+  @Output() dropEvent: EventEmitter<string>;
+  @Output() removeEvent: EventEmitter<JobAffinityCardData>;
   isDragActive = false;
   filterString = '';
 
   constructor() {
-    this.onDrop = new EventEmitter<string>();
-    this.onRemove = new EventEmitter<JobAffinityCardData>();
+    this.dropEvent = new EventEmitter<string>();
+    this.removeEvent = new EventEmitter<JobAffinityCardData>();
   }
 
   get filteredCardDataList(): Array<JobAffinityCardData> {
@@ -47,14 +47,14 @@ export class JobAffinityCardListComponent {
     if (this.acceptDrag && !this.disabled) {
       this.isDragActive = false;
       const dataKey = event.dataTransfer.getData('text');
-      this.onDrop.emit(dataKey);
+      this.dropEvent.emit(dataKey);
     }
     event.preventDefault();
     event.stopPropagation();
   }
 
   removeAffinityCard(data: JobAffinityCardData) {
-    this.onRemove.emit(data);
+    this.removeEvent.emit(data);
   }
 
   filterExecute($event: KeyboardEvent) {

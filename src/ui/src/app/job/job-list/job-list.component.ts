@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, OnInit, ViewContainerRef } from "@angular/core";
-import { Job, PaginationJob } from "../job.type";
-import { JobService } from "../job.service";
-import { MessageService } from "../../shared.service/message.service";
-import { Message, RETURN_STATUS } from "../../shared/shared.types";
-import { JobDetailComponent } from "../job-detail/job-detail.component";
-import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { JobLogsComponent } from "../job-logs/job-logs.component";
+import { Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { Job, PaginationJob } from '../job.type';
+import { JobService } from '../job.service';
+import { MessageService } from '../../shared.service/message.service';
+import { Message, RETURN_STATUS } from '../../shared/shared.types';
+import { JobDetailComponent } from '../job-detail/job-detail.component';
+import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
+import { JobLogsComponent } from '../job-logs/job-logs.component';
 
 @Component({
   templateUrl: './job-list.component.html',
@@ -14,15 +14,16 @@ import { JobLogsComponent } from "../job-logs/job-logs.component";
 export class JobListComponent extends CsModalParentBase {
   loadingWIP = false;
   createNewJob = false;
+  pageIndex = 1;
+  pageSize = 15;
   paginationJobs: PaginationJob;
 
   constructor(private resolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
               private jobService: JobService,
-              private messageService: MessageService,
-              private changeRef: ChangeDetectorRef) {
+              private messageService: MessageService) {
     super(resolver, view);
-    this.paginationJobs = new PaginationJob();
+    this.paginationJobs = new PaginationJob({});
   }
 
   /*preparing = iota
@@ -78,7 +79,7 @@ export class JobListComponent extends CsModalParentBase {
   retrieve() {
     setTimeout(() => {
       this.loadingWIP = true;
-      this.jobService.getJobList(this.paginationJobs.pagination.page_index, this.paginationJobs.pagination.page_size).subscribe(
+      this.jobService.getJobList(this.pageIndex, this.pageSize).subscribe(
         (res: PaginationJob) => {
           this.paginationJobs = res;
           this.loadingWIP = false;
@@ -92,13 +93,14 @@ export class JobListComponent extends CsModalParentBase {
 
   deleteJob(job: Job) {
     this.messageService.showDeleteDialog('JOB.JOB_LIST_DELETE_CONFIRM').subscribe((msg: Message) => {
-      if (msg.returnStatus == RETURN_STATUS.rsConfirm) {
+      if (msg.returnStatus === RETURN_STATUS.rsConfirm) {
         this.jobService.deleteJob(job).subscribe(
           () => this.messageService.showAlert('JOB.JOB_LIST_DELETE_SUCCESSFULLY'),
-          () => this.messageService.showAlert('JOB.JOB_LIST_DELETE_FAILED', {alertType: "warning"}),
-          () => this.retrieve())
+          () => this.messageService.showAlert('JOB.JOB_LIST_DELETE_FAILED', {alertType: 'warning'}),
+          () => this.retrieve()
+        );
       }
-    })
+    });
   }
 
   showJobLogs(job: Job) {
@@ -106,7 +108,7 @@ export class JobListComponent extends CsModalParentBase {
     component.job = job;
   }
 
-  showJobDetail(job: Job){
+  showJobDetail(job: Job) {
     const component = this.createNewModal(JobDetailComponent);
     component.job = job;
   }

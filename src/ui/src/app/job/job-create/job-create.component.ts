@@ -1,22 +1,22 @@
-import { Component, ComponentFactoryResolver, EventEmitter, OnInit, Output, ViewChild, ViewContainerRef } from "@angular/core";
-import { JobContainer, JobDeployment } from "../job.type";
-import { JobService } from "../job.service";
-import { Project } from "../../project/project";
-import { SharedActionService } from "../../shared.service/shared-action.service";
-import { SharedService } from "../../shared.service/shared.service";
-import { CsModalParentBase } from "../../shared/cs-modal-base/cs-modal-parent-base";
-import { JobContainerCreateComponent } from "../job-container-create/job-container-create.component";
-import { JobContainerConfigComponent } from "../job-container-config/job-container-config.component";
-import { MessageService } from "../../shared.service/message.service";
-import { IDropdownTag, Message, RETURN_STATUS } from "../../shared/shared.types";
-import { Observable, of } from "rxjs";
-import { ValidationErrors } from "@angular/forms";
-import { catchError, map } from "rxjs/operators";
-import { HttpErrorResponse } from "@angular/common/http";
-import { JobAffinityComponent } from "../job-affinity/job-affinity.component";
+import { Component, ComponentFactoryResolver, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { ValidationErrors } from '@angular/forms';
+import { catchError, map } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
+import { JobContainer, JobDeployment } from '../job.type';
+import { JobService } from '../job.service';
+import { Project } from '../../project/project';
+import { SharedActionService } from '../../shared.service/shared-action.service';
+import { SharedService } from '../../shared.service/shared.service';
+import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
+import { JobContainerCreateComponent } from '../job-container-create/job-container-create.component';
+import { JobContainerConfigComponent } from '../job-container-config/job-container-config.component';
+import { MessageService } from '../../shared.service/message.service';
+import { IDropdownTag, Message, RETURN_STATUS } from '../../shared/shared.types';
+import { JobAffinityComponent } from '../job-affinity/job-affinity.component';
 
 @Component({
-  selector: 'job-create',
+  selector: 'app-job-create',
   styleUrls: ['./job-create.component.css'],
   templateUrl: './job-create.component.html'
 })
@@ -51,10 +51,10 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
       res.forEach((value: {name: string, status: number}) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
-            type: value.status == 1 ? 'success' : 'warning',
-            description: value.status == 1 ? 'JOB.JOB_CREATE_NODE_STATUS_SCHEDULABLE' : 'JOB.JOB_CREATE_NODE_STATUS_UNSCHEDULABLE'
+            type: value.status === 1 ? 'success' : 'warning',
+            description: value.status === 1 ? 'JOB.JOB_CREATE_NODE_STATUS_SCHEDULABLE' : 'JOB.JOB_CREATE_NODE_STATUS_UNSCHEDULABLE'
           }
-        })
+        });
       });
     });
   }
@@ -69,19 +69,19 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
 
   getItemTagClass(dropdownTag: IDropdownTag) {
     return {
-      'label-info': dropdownTag.type == 'success',
-      'label-warning': dropdownTag.type == 'warning',
-      'label-danger': dropdownTag.type == 'danger'
-    }
+      'label-info': dropdownTag.type === 'success',
+      'label-warning': dropdownTag.type === 'warning',
+      'label-danger': dropdownTag.type === 'danger'
+    };
   }
 
   checkJobName(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.jobService.checkJobNameExists(this.newJobDeployment.project_name, control.value)
+    return this.jobService.checkJobNameExists(this.newJobDeployment.projectName, control.value)
       .pipe(map(() => null), catchError((err: HttpErrorResponse) => {
-        if (err.status == 409) {
+        if (err.status === 409) {
           this.messageService.cleanNotification();
-          return of({jobNameExists: "JOB.JOB_CREATE_JOB_NAME_EXISTS"});
-        } else if (err.status == 404) {
+          return of({jobNameExists: 'JOB.JOB_CREATE_JOB_NAME_EXISTS'});
+        } else if (err.status === 404) {
           this.messageService.cleanNotification();
         }
         return of(null);
@@ -93,21 +93,21 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
       if (projectName) {
         this.jobService.getOneProject(projectName).subscribe((res: Project) => {
           if (res) {
-            this.newJobDeployment.project_name = res.project_name;
-            this.newJobDeployment.project_id = res.project_id;
+            this.newJobDeployment.projectName = res.project_name;
+            this.newJobDeployment.projectId = res.project_id;
             this.projectList.push(res);
           }
-        })
+        });
       }
     });
   }
 
-  canChangeSelectImage(project: Project): Observable<boolean> {
-    if (this.newJobDeployment.container_list.length > 0) {
+  canChangeSelectImage(): Observable<boolean> {
+    if (this.newJobDeployment.containerList.length > 0) {
       return this.messageService.showDeleteDialog('JOB.JOB_CREATE_CHANGE_PROJECT')
         .pipe(map((msg: Message) => {
-          if (msg.returnStatus == RETURN_STATUS.rsConfirm) {
-            this.newJobDeployment.container_list.splice(0, this.newJobDeployment.container_list.length);
+          if (msg.returnStatus === RETURN_STATUS.rsConfirm) {
+            this.newJobDeployment.containerList.splice(0, this.newJobDeployment.containerList.length);
             return true;
           } else {
             return false;
@@ -119,47 +119,48 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   changeSelectProject(project: Project) {
-    this.newJobDeployment.project_id = project.project_id;
-    this.newJobDeployment.project_name = project.project_name;
+    this.newJobDeployment.projectId = project.project_id;
+    this.newJobDeployment.projectName = project.project_name;
   }
 
   editContainer(container: JobContainer, isEditModel: boolean) {
     const component = this.createNewModal(JobContainerConfigComponent);
     component.container = container;
-    component.containerList = this.newJobDeployment.container_list;
-    component.projectId = this.newJobDeployment.project_id;
-    component.projectName = this.newJobDeployment.project_name;
+    component.containerList = this.newJobDeployment.containerList;
+    component.projectId = this.newJobDeployment.projectId;
+    component.projectName = this.newJobDeployment.projectName;
     component.isEditModel = isEditModel;
-    component.createSuccess.subscribe((container: JobContainer) => {
+    component.createSuccess.subscribe((jobContainer: JobContainer) => {
       if (!isEditModel) {
-        this.newJobDeployment.container_list.push(container);
+        this.newJobDeployment.containerList.push(jobContainer);
       }
-    })
+    });
   }
 
   deleteContainer(index: number) {
-    this.messageService.showDeleteDialog('JOB.JOB_CREATE_DELETE_CONTAINER_COMFIRM').subscribe((msg: Message) => {
-      if (msg.returnStatus == RETURN_STATUS.rsConfirm) {
-        this.newJobDeployment.container_list.splice(index, 1);
+    this.messageService.showDeleteDialog('JOB.JOB_CREATE_DELETE_CONTAINER_COMFIRM').subscribe(
+      (msg: Message) => {
+      if (msg.returnStatus === RETURN_STATUS.rsConfirm) {
+        this.newJobDeployment.containerList.splice(index, 1);
       }
-    })
+    });
   }
 
   addNewContainer() {
-    if (this.newJobDeployment.project_id > 0) {
+    if (this.newJobDeployment.projectId > 0) {
       const component = this.createNewModal(JobContainerCreateComponent);
-      component.containerList = this.newJobDeployment.container_list;
-      component.createSuccess.subscribe((container: JobContainer) => this.editContainer(container, false))
+      component.containerList = this.newJobDeployment.containerList;
+      component.createSuccess.subscribe((container: JobContainer) => this.editContainer(container, false));
     }
   }
 
   setAffinity() {
-    if (!this.isActionWip && this.newJobDeployment.project_id > 0) {
-      let factory = this.factoryResolver.resolveComponentFactory(JobAffinityComponent);
-      let componentRef = this.selfView.createComponent(factory);
-      componentRef.instance.jobName = this.newJobDeployment.job_name;
-      componentRef.instance.projectName = this.newJobDeployment.project_name;
-      componentRef.instance.affinityList = this.newJobDeployment.affinity_list;
+    if (!this.isActionWip && this.newJobDeployment.projectId > 0) {
+      const factory = this.factoryResolver.resolveComponentFactory(JobAffinityComponent);
+      const componentRef = this.selfView.createComponent(factory);
+      componentRef.instance.jobName = this.newJobDeployment.jobName;
+      componentRef.instance.projectName = this.newJobDeployment.projectName;
+      componentRef.instance.affinityList = this.newJobDeployment.affinityList;
       componentRef.instance.openModal().subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
     }
   }
@@ -169,8 +170,8 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   }
 
   verifyContainer(): boolean {
-    if (this.newJobDeployment.container_list.length === 0) {
-      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT', {alertType: "warning"});
+    if (this.newJobDeployment.containerList.length === 0) {
+      this.messageService.showAlert('JOB.JOB_CREATE_CONTAINER_COUNT', {alertType: 'warning'});
       return false;
     } else {
       return true;
@@ -186,11 +187,11 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
           this.isActionWip = false;
         },
         () => {
-          this.messageService.showAlert('JOB.JOB_CREATE_FAILED', {alertType: "warning"});
+          this.messageService.showAlert('JOB.JOB_CREATE_FAILED', {alertType: 'warning'});
           this.isActionWip = false;
         },
         () => this.afterDeployment.next(true)
-      )
+      );
     }
   }
 }
