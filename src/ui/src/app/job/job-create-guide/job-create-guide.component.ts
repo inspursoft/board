@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { PaginationJob } from '../job.type';
+import { CreateMethod, Job, PaginationJob } from '../job.type';
 
 @Component({
   selector: 'app-job-create-guide',
@@ -8,6 +8,8 @@ import { PaginationJob } from '../job.type';
 })
 export class JobCreateGuideComponent implements OnInit {
   @Input() paginationJobs: PaginationJob;
+  createMethod: CreateMethod = CreateMethod.byDefault;
+  selectJobId = 0;
 
   constructor() {
   }
@@ -15,4 +17,13 @@ export class JobCreateGuideComponent implements OnInit {
   ngOnInit() {
   }
 
+  setCreateMethod(method: CreateMethod) {
+    this.createMethod = method;
+  }
+
+  setSelectedJob(job: Job) {
+    if (this.createMethod === CreateMethod.byExistsJob) {
+      this.selectJobId = job.jobId;
+    }
+  }
 }

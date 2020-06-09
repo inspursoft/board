@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { JobAffinityCardData } from '../job.type';
 import { DragStatus } from '../../shared/shared.types';
 
@@ -7,7 +7,7 @@ import { DragStatus } from '../../shared/shared.types';
   styleUrls: ['./job-affinity-card.component.css'],
   templateUrl: './job-affinity-card.component.html'
 })
-export class JobAffinityCardComponent {
+export class JobAffinityCardComponent{
   @Input() data: JobAffinityCardData;
   @Input() disabled = false;
   @Input() width = 0;

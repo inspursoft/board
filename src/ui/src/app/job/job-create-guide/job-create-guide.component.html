@@ -3,21 +3,29 @@
   <input title=""
          type="radio"
          id="fromNew"
-         [disabled]="false">
+         name="buildMethod"
+         [disabled]="false"
+         (click)="setCreateMethod(0)">
   <label for="fromNew">{{"新建"|translate}}</label>
 </div>
 <div class="create-job-method">
   <input title=""
          type="radio"
+         name="buildMethod"
          id="fromExistJobs"
-         [disabled]="false">
+         [disabled]="false"
+         (click)="setCreateMethod(1)">
   <label for="fromExistJobs">
     {{"从已有的Job新建"|translate}}
   </label>
 </div>
 
 <div class="card-container-job">
-  <div class="card selected" *ngFor="let job of paginationJobs">
+  <div class="card"
+       *ngFor="let job of paginationJobs"
+       [class.selected]="selectJobId === job.jobId"
+       [class.disabled]="createMethod === 0"
+       (click)="setSelectedJob(job)">
     <div class="card-header">
       {{job.jobName}}
     </div>

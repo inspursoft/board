@@ -55,8 +55,8 @@ export class JobService {
   }
 
   getCollaborativeJobs(projectName: string): Observable<Array<Job>> {
-    return this.http.get<Array<Job>>(`/api/v1/jobs/selectjobs`, {
-      params: {
+    return this.modeHttp.getArray(`/api/v1/jobs/selectjobs`, Job, {
+      param: {
         project_name: projectName
       }
     });
@@ -121,6 +121,6 @@ export class JobService {
   }
 
   deploymentJob(jobDeployment: JobDeployment): Observable<any> {
-    return this.http.post(`/api/v1/jobs/deployment`, jobDeployment);
+    return this.http.post(`/api/v1/jobs/deployment`, jobDeployment.getPostBody());
   }
 }

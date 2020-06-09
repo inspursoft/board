@@ -40,11 +40,13 @@ export abstract class ResponseBase extends HttpBase {
       if (metadataValue.serverPropertyTypeName === 'array') {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
           const resArray = Reflect.get(this.res, metadataValue.serverPropertyName) as Array<object>;
-          resArray.forEach(resItem => {
-            const item = new (metadataValue.itemType as Type<ResponseBase>)(resItem);
-            const propertyArray = property as Array<ResponseBase>;
-            propertyArray.push(item);
-          });
+          if (resArray && resArray.length > 0) {
+            resArray.forEach(resItem => {
+              const item = new (metadataValue.itemType as Type<ResponseBase>)(resItem);
+              const propertyArray = property as Array<ResponseBase>;
+              propertyArray.push(item);
+            });
+          }
         }
       } else if (metadataValue.serverPropertyTypeName === 'object') {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
@@ -63,9 +65,8 @@ export abstract class ResponseBase extends HttpBase {
 
   constructor(public res: object) {
     super();
-    this.init();
     this.prepareInit();
-    return this;
+    this.init();
   }
 
   protected prepareInit() {

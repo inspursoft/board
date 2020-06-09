@@ -1,6 +1,10 @@
 import { DragStatus } from '../shared/shared.types';
 import { HttpBind, HttpBindArray, HttpBindObject, RequestBase, ResponseBase, ResponsePaginationBase } from '../shared/ui-model/model-types';
 
+export enum CreateMethod {
+  byDefault, byExistsJob
+}
+
 export class PaginationJob extends ResponsePaginationBase<Job> {
 
   ListKeyName(): string {
@@ -150,56 +154,3 @@ export class JobImageDetailInfo extends ResponseBase {
   @HttpBind('image_size_unit') imageSizeUnit: string;
 }
 
-
-export class JobStatus {
-  CreationTimestamp: string;
-  Namespace: string;
-  Name: string;
-  Spec: JobStatusSpec;
-}
-
-export class JobStatusSpec {
-  parallelism: number;
-  completions: number;
-  backoffLimit: number;
-  template: JobStatusTemplate;
-}
-
-export class JobStatusTemplate {
-  Spec: JobStatusTemplateSpec;
-}
-
-export class JobStatusTemplateSpec {
-  Containers: Array<JobStatusContainer>;
-  Volumes: Array<JobStatusVolume>;
-}
-
-export class JobStatusVolume {
-  Name: string;
-  HostPath: string;
-  NFS: { server: string, path: string };
-}
-
-export class JobStatusContainer {
-  Name: string;
-  Image: string;
-  Command: Array<string>;
-  WorkingDir: string;
-  Ports: Array<JobStatusPort>;
-  Env: Array<{ Name: string, Value: string }>;
-  resources: JobStatusResource;
-  VolumeMounts: Array<string>;
-}
-
-export class JobStatusResource {
-  limits: { cpu: string, memory: string };
-  requests: { cpu: string, memory: string };
-}
-
-export class JobStatusPort {
-  Name: string;
-  HostPort: number;
-  ContainerPort: number;
-  Protocol: string;
-  HostIP: string;
-}
