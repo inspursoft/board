@@ -203,6 +203,15 @@ func (l LegacyDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
+func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
+	user, err := GetUserByName(username)
+	if err != nil {
+		logs.Error("Failed to get user by name: %s, error: %+v", username, err)
+		return err
+	}
+	return gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+}
+
 func PrepareKVMHost() error {
 	sshPort, _ := strconv.Atoi(jenkinsNodeSSHPort())
 	sshHandler, err := NewSecureShell(jenkinsNodeIP(), sshPort, jenkinsNodeUsername(), jenkinsNodePassword())
