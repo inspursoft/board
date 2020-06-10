@@ -353,7 +353,7 @@ func (b *BaseController) ResolveUserPrivilege(projectName string) {
 			logs.Error("Failed to add project: %s with member %s:", projectName, b.CurrentUser.Username)
 			return
 		}
-		service.CurrentDevOps().ForkRepo(b.CurrentUser, projectName)
+		service.CurrentDevOps().ForkRepo(*b.CurrentUser, projectName)
 	}
 	return
 }

@@ -6,7 +6,6 @@ import (
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -83,27 +82,27 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
-
-	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
+	devops := service.CurrentDevOps()
+	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
-		logs.Error("Failed to create admin user on Gogit: %+v", err)
+		logs.Error("Failed to create admin user on current DevOps: %+v", err)
 	}
 
-	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
+	token, err := devops.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)
 	}
-	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	user := model.User{ID: adminUserID, RepoToken: token}
 	service.UpdateUser(user, "repo_token")
 
-	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	err = devops.ConfigSSHAccess(adminUsername, token)
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
 
-	err = service.CurrentDevOps().CreateRepoAndJob(adminUserID, defaultProject)
+	err = devops.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}

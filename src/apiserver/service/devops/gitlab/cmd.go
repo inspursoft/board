@@ -91,6 +91,15 @@ type ProjectCreation struct {
 	Visibility string `json:"visibility"`
 }
 
+type Message struct {
+	Fingerprint []string `json:"fingerprint"`
+	Key         []string `json:"key"`
+}
+
+type AddSSHKeyResponse struct {
+	AddSSHKeyMessage Message `json:message`
+}
+
 func (g *gitlabHandler) CreateUser(user model.User) (u UserCreation, err error) {
 	_, err = g.getUserStatus(UserCreation{Username: user.Username})
 	if err == utils.ErrNotFound {
@@ -138,6 +147,22 @@ func (g *gitlabHandler) getUserStatus(user UserCreation) (u userStatus, err erro
 				return utils.ErrNotFound
 			}
 			return utils.UnmarshalToJSON(resp.Body, &u)
+		})
+	return
+}
+
+func (g *gitlabHandler) AddSSHKey(title string, key string) (a AddSSHKeyResponse, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/user/keys", g.gitlabAPIBaseURL),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			formData := url.Values{}
+			formData.Add("title", title)
+			formData.Add("key", key)
+			formData.Add("expires_at", "")
+			req.URL.RawQuery = formData.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &a)
 		})
 	return
 }

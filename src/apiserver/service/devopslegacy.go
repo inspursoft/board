@@ -31,6 +31,27 @@ var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
 
 type LegacyDevOps struct{}
 
+func (l LegacyDevOps) SignUp(user model.User) error {
+	return gogs.SignUp(user)
+}
+
+func (l LegacyDevOps) CreateAccessToken(username string, password string) (string, error) {
+	accessToken, err := gogs.CreateAccessToken(username, password)
+	if err != nil {
+		return "", err
+	}
+	return accessToken.Sha1, nil
+}
+
+func (l LegacyDevOps) ConfigSSHAccess(username string, publicKey string) error {
+	user, err := GetUserByName(username)
+	if err != nil {
+		logs.Error("Failed to get user by name: %s, error: %+v", username, err)
+		return err
+	}
+	return gogs.NewGogsHandler(username, user.RepoToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
+}
+
 func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 
 	user, err := GetUserByID(userID)
@@ -101,8 +122,8 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	return nil
 }
 
-func (l LegacyDevOps) ForkRepo(forkedUser *model.User, baseRepoName string) error {
-	if forkedUser == nil {
+func (l LegacyDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error {
+	if forkedUser.ID == 0 {
 		return errors.New("forked user is nil")
 	}
 	username := forkedUser.Username

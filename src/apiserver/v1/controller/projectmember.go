@@ -58,7 +58,7 @@ func (pm *ProjectMemberController) AddOrUpdateProjectMemberAction() {
 		return
 	}
 	baseRepoName := pm.Project.Name
-	service.CurrentDevOps().ForkRepo(user, baseRepoName)
+	service.CurrentDevOps().ForkRepo(*user, baseRepoName)
 }
 
 func (pm *ProjectMemberController) DeleteProjectMemberAction() {
