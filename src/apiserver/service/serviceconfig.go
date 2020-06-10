@@ -615,6 +615,99 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 	return k8sContainerList
 }
 
+//Get view mode container from k8s container list
+func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []model.Volume) []model.Container {
+	if containerList == nil {
+		return nil
+	}
+	viewContainerList := make([]model.Container, 0)
+	for _, cont := range containerList {
+		container := model.Container{}
+		container.Name = cont.Name
+
+		if cont.WorkingDir != "" {
+			container.WorkingDir = cont.WorkingDir
+		}
+
+		// Just for fixed mode by wizard set
+		if cont.Command[0] != "" {
+			container.Command = cont.Args[1]
+		}
+
+		// Fix me, assume the index is the same
+		for i, v := range cont.VolumeMounts {
+			if v.Name != "" {
+				volumeMount := model.VolumeMountStruct{
+					VolumeName:    v.Name,
+					ContainerPath: v.MountPath,
+				}
+				if v.SubPath != "" {
+					volumeMount.ContainerFile = v.SubPath
+					volumeMount.TargetFile = v.SubPath
+					volumeMount.ContainerPathFlag = 1
+				}
+				// skip over the step to travel volumes, only support the fixed mode by wizard
+				if volumeList[i].VolumeSource.HostPath != nil {
+					volumeMount.VolumeType = "hostpath"
+					volumeMount.TargetPath = volumeList[i].VolumeSource.HostPath.Path
+				} else if volumeList[i].VolumeSource.NFS != nil {
+					volumeMount.VolumeType = "nfs"
+					volumeMount.TargetStorageService = volumeList[i].VolumeSource.NFS.Server
+					volumeMount.TargetPath = volumeList[i].VolumeSource.NFS.Path
+				} else if volumeList[i].VolumeSource.PersistentVolumeClaim != nil {
+					volumeMount.VolumeType = "pvc"
+					volumeMount.TargetPVC = volumeList[i].VolumeSource.PersistentVolumeClaim.ClaimName
+				} else if volumeList[i].VolumeSource.ConfigMap != nil {
+					volumeMount.VolumeType = "configmap"
+					volumeMount.TargetConfigMap = volumeList[i].VolumeSource.ConfigMap.Name
+				}
+
+				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+			}
+		}
+
+		if len(cont.Env) > 0 {
+			for _, enviroment := range cont.Env {
+				if enviroment.Name != "" {
+					var envStruct model.EnvStructCont
+					envStruct.EnvName = enviroment.Name
+					if enviroment.ValueFrom == nil {
+						envStruct.EnvValue = enviroment.Value
+					} else {
+						envStruct.EnvValue = ""
+						envStruct.EnvConfigMapKey = enviroment.ValueFrom.ConfigMapKeyRef.Key
+						envStruct.EnvConfigMapName = enviroment.ValueFrom.ConfigMapKeyRef.Name
+					}
+					container.Env = append(container.Env, envStruct)
+				}
+			}
+		}
+
+		for _, port := range cont.Ports {
+			container.ContainerPort = append(container.ContainerPort, int(port.ContainerPort))
+		}
+
+		splitStrs := strings.Split(cont.Image, ":")
+		container.Image.ImageName = strings.Split(splitStrs[0], "/")[1]
+		container.Image.ImageTag = splitStrs[1]
+
+		if _, ok := cont.Resources.Requests["cpu"]; ok {
+			container.CPURequest = string(cont.Resources.Requests["cpu"])
+		}
+		if _, ok := cont.Resources.Requests["memory"]; ok {
+			container.MemRequest = string(cont.Resources.Requests["memory"])
+		}
+		if _, ok := cont.Resources.Limits["cpu"]; ok {
+			container.CPULimit = string(cont.Resources.Limits["cpu"])
+		}
+		if _, ok := cont.Resources.Limits["memory"]; ok {
+			container.MemLimit = string(cont.Resources.Limits["memory"])
+		}
+		viewContainerList = append(viewContainerList, container)
+	}
+	return viewContainerList
+}
+
 func setDeploymentVolumes(containerList []model.Container) []model.Volume {
 	if containerList == nil {
 		return nil
