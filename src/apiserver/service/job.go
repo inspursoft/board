@@ -250,6 +250,28 @@ func setJobAffinity(affinityList []model.JobAffinity) model.K8sAffinity {
 	return k8sAffinity
 }
 
+// Get JobAffinity from k8s
+func GetJobAffinity(affinityK8s model.K8sAffinity) []model.JobAffinity {
+	var affinityList []model.JobAffinity
+
+	for _, affinity := range affinityK8s.PodAffinity {
+		var jobAffinity model.JobAffinity
+		jobAffinity.AntiFlag = 0
+		jobAffinity.JobNames = affinity.LabelSelector.MatchExpressions[0].Values
+		affinityList = append(affinityList, jobAffinity)
+
+	}
+	for _, affinity := range affinityK8s.PodAntiAffinity {
+		var jobAffinity model.JobAffinity
+		jobAffinity.AntiFlag = 1
+		jobAffinity.JobNames = affinity.LabelSelector.MatchExpressions[0].Values
+		affinityList = append(affinityList, jobAffinity)
+
+	}
+
+	return affinityList
+}
+
 func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
 	logs.Debug("Get Job pods %s/%s", job.ProjectName, job.Name)
 
