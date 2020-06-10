@@ -126,10 +126,10 @@ func syncUpWithK8s() {
 	}
 	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
-	err = service.SyncProjectsWithK8s()
-	if err != nil {
-		logs.Error("Failed to sync projects with K8s: %+v", err)
-	}
+	// err = service.SyncProjectsWithK8s()
+	// if err != nil {
+	// 	logs.Error("Failed to sync projects with K8s: %+v", err)
+	// }
 	logs.Info("Successful sync up with projects with K8s.")
 }
 
