@@ -95,7 +95,7 @@ func initProjectRepo() {
 	user := model.User{ID: adminUserID, RepoToken: token}
 	service.UpdateUser(user, "repo_token")
 
-	err = devops.ConfigSSHAccess(adminUsername, token)
+	err = service.ConfigSSHAccess(adminUsername, token)
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
