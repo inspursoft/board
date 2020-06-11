@@ -171,6 +171,9 @@ func main() {
 
 	utils.SetConfig("AUTH_MODE", defaultAuthMode)
 
+	utils.SetConfig("GITLAB_BASE_URL", "http://10.110.27.169")
+	utils.SetConfig("GITLAB_ADMIN_TOKEN", "si1Z1eUZUVui7XFarUyW")
+
 	dao.InitDB()
 
 	c.InitController()

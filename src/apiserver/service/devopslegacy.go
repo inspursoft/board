@@ -43,13 +43,8 @@ func (l LegacyDevOps) CreateAccessToken(username string, password string) (strin
 	return accessToken.Sha1, nil
 }
 
-func (l LegacyDevOps) ConfigSSHAccess(username string, publicKey string) error {
-	user, err := GetUserByName(username)
-	if err != nil {
-		logs.Error("Failed to get user by name: %s, error: %+v", username, err)
-		return err
-	}
-	return gogs.NewGogsHandler(username, user.RepoToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
+func (l LegacyDevOps) ConfigSSHAccess(username string, token string, publicKey string) error {
+	return gogs.NewGogsHandler(username, token).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
 }
 
 func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {

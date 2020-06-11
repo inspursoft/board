@@ -41,7 +41,7 @@ func ConfigSSHAccess(username string, accessToken string) error {
 		return err
 	}
 	publicKey := bytes.NewBuffer(data).String()
-	return CurrentDevOps().ConfigSSHAccess(username, publicKey)
+	return CurrentDevOps().ConfigSSHAccess(username, accessToken, publicKey)
 }
 
 func SignUp(user model.User) (bool, error) {
@@ -53,7 +53,7 @@ func SignUp(user model.User) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = CurrentDevOps().ConfigSSHAccess(user.Username, accessToken)
+	err = ConfigSSHAccess(user.Username, accessToken)
 	if err != nil {
 		return false, err
 	}

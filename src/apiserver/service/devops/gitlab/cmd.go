@@ -14,7 +14,6 @@ import (
 var gitlabBaseURL = utils.GetConfig("GITLAB_BASE_URL")
 var gitlabAPIPrefix = "/api/v4"
 var gitlabDefaultPassword = "123456a?"
-
 var maxRetryCount = 30
 
 type gitlabHandler struct {
@@ -84,6 +83,14 @@ type userStatus struct {
 	MessageHTML string `json:"message_html"`
 }
 
+type userInfo struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	IsAdmin  bool   `json:"is_admin"`
+}
+
 type ProjectCreation struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`
@@ -124,7 +131,16 @@ func (g *gitlabHandler) CreateUser(user model.User) (u UserCreation, err error) 
 }
 
 func (g *gitlabHandler) ImpersonationToken(user UserCreation) (token ImpersonationToken, err error) {
-	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/users/%d/impersonation_tokens", g.gitlabAPIBaseURL, user.ID),
+	userList, err := g.getUserInfo(user.Username)
+	if err != nil {
+		logs.Error("Failed to get user info via Gitlab API by username: %s, error: %+v", user.Username, err)
+		return
+	}
+	if len(userList) == 0 {
+		logs.Error("No user found by searching name: %s", user.Username)
+		return
+	}
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/users/%d/impersonation_tokens", g.gitlabAPIBaseURL, userList[0].ID),
 		func(req *http.Request) error {
 			req.Header = g.getAccessHeader()
 			formData := url.Values{}
@@ -147,6 +163,14 @@ func (g *gitlabHandler) getUserStatus(user UserCreation) (u userStatus, err erro
 				return utils.ErrNotFound
 			}
 			return utils.UnmarshalToJSON(resp.Body, &u)
+		})
+	return
+}
+
+func (g *gitlabHandler) getUserInfo(username string) (userList []userInfo, err error) {
+	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/users?search=%s", g.gitlabAPIBaseURL, username),
+		g.defaultHeader, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &userList)
 		})
 	return
 }
