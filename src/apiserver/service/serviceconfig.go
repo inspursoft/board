@@ -630,7 +630,7 @@ func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []mo
 		}
 
 		// Just for fixed mode by wizard set
-		if cont.Command[0] != "" {
+		if len(cont.Command) > 0 && cont.Command[0] != "" {
 			container.Command = cont.Args[1]
 		}
 
@@ -687,9 +687,11 @@ func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []mo
 			container.ContainerPort = append(container.ContainerPort, int(port.ContainerPort))
 		}
 
-		splitStrs := strings.Split(cont.Image, ":")
-		container.Image.ImageName = strings.Split(splitStrs[0], "/")[1]
-		container.Image.ImageTag = splitStrs[1]
+		// Get image
+		colon := strings.LastIndex(cont.Image, ":")
+		slash := strings.Index(cont.Image, "/")
+		container.Image.ImageTag = cont.Image[colon+1:]
+		container.Image.ImageName = cont.Image[slash+1 : colon]
 
 		if _, ok := cont.Resources.Requests["cpu"]; ok {
 			container.CPURequest = string(cont.Resources.Requests["cpu"])
