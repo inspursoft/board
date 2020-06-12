@@ -81,6 +81,9 @@ func (p *PodController) CopyToPodAction() {
 		return
 	}
 
+	if _, err := os.Stat("/upload/"); os.IsNotExist(err) {
+		os.MkdirAll("/upload/", 0755)
+	}
 	filename := fileHeader.Filename
 	src = filepath.Join("/upload/", filename)
 
