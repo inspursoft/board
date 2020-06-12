@@ -1,28 +1,28 @@
-import { Component, ComponentFactoryResolver, Input, OnInit, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, ComponentFactoryResolver, Input, OnInit, ViewContainerRef } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { ValidationErrors } from '@angular/forms';
 import { map } from 'rxjs/operators';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
-import { JobContainer, JobEnv, JobVolumeMounts } from '../job.type';
+import { JobContainer, JobEnv, JobNodeAvailableResources, JobVolumeMounts } from '../job.type';
 import { JobVolumeMountsComponent } from '../job-volume-mounts/job-volume-mounts.component';
 import { EnvType } from '../../shared/environment-value/environment-value.component';
-import { NodeAvailableResources } from '../../shared/shared.types';
 import { JobService } from '../job.service';
 import { MessageService } from '../../shared.service/message.service';
+import { of } from 'rxjs/internal/observable/of';
 
 @Component({
   selector: 'app-job-container-config',
   templateUrl: './job-container-config.component.html',
   styleUrls: ['./job-container-config.component.css']
 })
-export class JobContainerConfigComponent extends CsModalChildBase implements OnInit {
+export class JobContainerConfigComponent extends CsModalChildBase implements OnInit, AfterViewInit {
   @Input() container: JobContainer;
   @Input() containerList: Array<JobContainer>;
   @Input() projectName: string;
   @Input() projectId: number;
   @Input() isEditModel = false;
   patternContainerName: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/;
-  patternWorkdir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
+  patternWorkingDir: RegExp = /^~?[\w\d-\/.{}$\/:]+[\s]*$/;
   patternCpuRequest: RegExp = /^[0-9]*m$/;
   patternCpuLimit: RegExp = /^[0-9]*m$/;
   patternMemRequest: RegExp = /^[0-9]*Mi$/;
@@ -31,6 +31,7 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
   volumesDescriptions: Array<string>;
   showEnvironmentValue = false;
   createSuccess: Subject<JobContainer>;
+  isAfterViewInit = false;
 
   constructor(private factoryResolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
@@ -43,6 +44,10 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
 
   ngOnInit() {
     this.generateDescriptions();
+  }
+
+  ngAfterViewInit(): void {
+    this.isAfterViewInit = true;
   }
 
   createNewContainer() {
@@ -119,21 +124,21 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.jobService.getNodesAvailableSources()
-      .pipe(map((res: Array<NodeAvailableResources>) => {
-        const isInValid = res.every(value => Number.parseInt(control.value, 10) > Number.parseInt(value.cpu_available, 10) * 1000);
+    return this.isAfterViewInit ? this.jobService.getNodesAvailableSources()
+      .pipe(map((res: Array<JobNodeAvailableResources>) => {
+        const isInValid = res.every(value => Number.parseInt(control.value, 10) > Number.parseInt(value.cpuAvailable, 10) * 1000);
         if (isInValid) {
           return {beyondMaxLimit: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE'};
         } else {
           return null;
         }
-      }));
+      })) : of(null);
   }
 
   checkSetMemRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.jobService.getNodesAvailableSources()
-      .pipe(map((res: Array<NodeAvailableResources>) => {
-        const isInValid = res.every(value => Number.parseInt(control.value, 10) > Number.parseInt(value.mem_available, 10) / (1024 * 1024));
+      .pipe(map((res: Array<JobNodeAvailableResources>) => {
+        const isInValid = res.every(value => Number.parseInt(control.value, 10) > Number.parseInt(value.memAvailable, 10) / (1024 * 1024));
         if (isInValid) {
           return {beyondMaxLimit: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE'};
         } else {

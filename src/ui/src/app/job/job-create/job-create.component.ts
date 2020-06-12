@@ -1,4 +1,4 @@
-import { Component, ComponentFactoryResolver, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { ValidationErrors } from '@angular/forms';
 import { catchError, map } from 'rxjs/operators';
@@ -22,11 +22,14 @@ import { JobAffinityComponent } from '../job-affinity/job-affinity.component';
 })
 export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
+  @Input() newJobDeployment: JobDeployment;
   patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
   projectList: Array<Project>;
-  newJobDeployment: JobDeployment;
   isActionWip = false;
-  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
+  projectDefaultIndex = -1;
+  nodeSelectorDefaultIndex = -1;
+
+  nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
 
   constructor(private resolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
@@ -37,18 +40,21 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
     super(resolver, view);
     this.afterDeployment = new EventEmitter<boolean>();
     this.projectList = Array<Project>();
-    this.newJobDeployment = new JobDeployment();
-    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
+    this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
   }
 
   ngOnInit(): void {
     this.jobService.getProjectList().subscribe((res: Array<Project>) => {
       this.projectList = res;
+      if (this.newJobDeployment.projectId > 0) {
+        const project = this.projectList.find(value => value.project_id === this.newJobDeployment.projectId);
+        this.projectDefaultIndex = this.projectList.indexOf(project);
+      }
     });
 
     this.nodeSelectorList.push({name: 'JOB.JOB_CREATE_NODE_DEFAULT', value: '', tag: null});
-    this.jobService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
-      res.forEach((value: {name: string, status: number}) => {
+    this.jobService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
+      res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
             type: value.status === 1 ? 'success' : 'warning',
@@ -56,6 +62,10 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
           }
         });
       });
+      if (this.newJobDeployment.nodeSelector !== '') {
+        const nodeSelector = this.nodeSelectorList.find(value => value.name === this.newJobDeployment.nodeSelector);
+        this.nodeSelectorDefaultIndex = this.nodeSelectorList.indexOf(nodeSelector);
+      }
     });
   }
 
@@ -140,10 +150,10 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   deleteContainer(index: number) {
     this.messageService.showDeleteDialog('JOB.JOB_CREATE_DELETE_CONTAINER_COMFIRM').subscribe(
       (msg: Message) => {
-      if (msg.returnStatus === RETURN_STATUS.rsConfirm) {
-        this.newJobDeployment.containerList.splice(index, 1);
-      }
-    });
+        if (msg.returnStatus === RETURN_STATUS.rsConfirm) {
+          this.newJobDeployment.containerList.splice(index, 1);
+        }
+      });
   }
 
   addNewContainer() {
@@ -186,10 +196,7 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
           this.messageService.showAlert('JOB.JOB_CREATE_SUCCESSFULLY');
           this.isActionWip = false;
         },
-        () => {
-          this.messageService.showAlert('JOB.JOB_CREATE_FAILED', {alertType: 'warning'});
-          this.isActionWip = false;
-        },
+        () => this.isActionWip = false,
         () => this.afterDeployment.next(true)
       );
     }

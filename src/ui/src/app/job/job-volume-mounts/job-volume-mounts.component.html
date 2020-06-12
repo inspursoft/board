@@ -40,7 +40,7 @@
         <lib-input-ex [inputPattern]="patternPath"
                       [inputDefaultValue]="volumeData.containerFile"
                       [inputPlaceholder]="'file.txt'"
-                      [inputIsRequired]="true"
+                      [inputIsRequired]="volumeData.containerPathFlag == 1"
                       (commitEvent)="volumeData.containerFile = $event">
         </lib-input-ex>
       </div>

@@ -243,6 +243,15 @@ export const LANG_EN_US = {
     "JOB_DETAIL_TOTAL_LOGS":"Total logs",
     "JOB_DETAIL_MAX_LOGS":"Max logs",
   },
+  JobGuide: {
+    Title: 'Please select a method for create job',
+    New: 'New',
+    FromExists: 'From exists job',
+    ProjectName: 'Project name',
+    CreationTime: 'Creation time',
+    OwnerName: 'Owner name',
+    Comment: 'Comment',
+  },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
     "PROJECT_NAME": "Project Name",

@@ -1,22 +1,22 @@
-<span class="job-title">{{"选择新建Job的方式" | translate}}:</span>
+<span class="job-title">{{"JobGuide.Title" | translate}}:</span>
 <div class="create-job-method">
   <input title=""
          type="radio"
          id="fromNew"
          name="buildMethod"
-         [disabled]="false"
+         checked
          (click)="setCreateMethod(0)">
-  <label for="fromNew">{{"新建"|translate}}</label>
+  <label for="fromNew">{{"JobGuide.New"|translate}}</label>
 </div>
 <div class="create-job-method">
   <input title=""
          type="radio"
          name="buildMethod"
          id="fromExistJobs"
-         [disabled]="false"
+         [disabled]="paginationJobs.list.length === 0"
          (click)="setCreateMethod(1)">
   <label for="fromExistJobs">
-    {{"从已有的Job新建"|translate}}
+    {{"JobGuide.FromExists"|translate}}
   </label>
 </div>
 
@@ -31,22 +31,35 @@
     </div>
     <div class="card-block">
       <div class="card-text" style="display: flex; flex-direction: column">
-        <span><span class="card-title-job">Project name:</span>{{job.jobProjectName}}</span>
-        <span><span class="card-title-job">Creation time:</span>{{job.jobCreationTime | date: 'short' }}</span>
-        <span><span class="card-title-job">Owner name:</span>{{job.jobOwnerName}}</span>
-        <span><span class="card-title-job">Comment:</span>{{job.jobComment}}</span>
+        <span>
+          <span class="card-title-job">{{"JobGuide.ProjectName"|translate}}:</span>
+          {{job.jobProjectName}}
+        </span>
+        <span>
+          <span class="card-title-job">{{"JobGuide.CreationTime"|translate}}:</span>
+          {{job.jobCreationTime | date: 'short' }}
+        </span>
+        <span>
+          <span class="card-title-job">{{"JobGuide.OwnerName"|translate}}:</span>
+          {{job.jobOwnerName}}
+        </span>
+        <span>
+          <span class="card-title-job">{{"JobGuide.Comment"|translate}}:</span>
+          {{job.jobComment}}
+        </span>
       </div>
     </div>
   </div>
 </div>
 
-
 <div class="build-btn-container">
-  <button class="btn btn-default cancel-build">
+  <button class="btn btn-default cancel-build" (click)="cancel()">
     {{"BUTTON.CANCEL"|translate}}
   </button>
-  <button class="btn btn-primary"
-          [disabled]="false">
+  <button class="btn btn-primary" (click)="confirm()">
     {{"BUTTON.CREATE"|translate}}
   </button>
+  <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
 </div>
+
+

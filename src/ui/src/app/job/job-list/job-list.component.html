@@ -1,9 +1,9 @@
-<div *ngIf="!createNewJob" class="clr-row clr-justify-content-end">
+<div *ngIf="showList" class="clr-row clr-justify-content-end">
   <button class="btn btn-primary" (click)="createJob()">
     {{ 'JOB.JOB_LIST_CREATE_JOB' | translate }}
   </button>
 </div>
-<clr-datagrid *ngIf="!createNewJob" [clrDgLoading]="loadingWIP" (clrDgRefresh)="retrieve()">
+<clr-datagrid *ngIf="showList" [clrDgLoading]="loadingWIP" (clrDgRefresh)="retrieve()">
   <clr-dg-column>{{ 'JOB.JOB_LIST_NAME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_PROJECT_NAME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'JOB.JOB_LIST_CREATION_TIME' | translate }}</clr-dg-column>
@@ -46,7 +46,13 @@
     </clr-dg-pagination>
   </clr-dg-footer>
 </clr-datagrid>
-<app-job-create *ngIf="createNewJob" (afterDeployment)="afterDeployment($event)"></app-job-create>
-<app-job-create-guide [paginationJobs]="paginationJobs">
+<app-job-create-guide *ngIf="createNewJobGuide"
+                      [paginationJobs]="paginationJobs"
+                      (confirmEvent)="afterMethodSelect($event)"
+                      (cancelEvent)="afterMethodCancel()">
 </app-job-create-guide>
+<app-job-create *ngIf="createNewJob"
+                [newJobDeployment]="jobDeployment"
+                (afterDeployment)="afterDeployment($event)">
+</app-job-create>
 

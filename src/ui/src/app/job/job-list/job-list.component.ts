@@ -1,5 +1,5 @@
 import { Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
-import { Job, PaginationJob } from '../job.type';
+import { CreateMethod, Job, JobDeployment, PaginationJob } from '../job.type';
 import { JobService } from '../job.service';
 import { MessageService } from '../../shared.service/message.service';
 import { Message, RETURN_STATUS } from '../../shared/shared.types';
@@ -13,10 +13,12 @@ import { JobLogsComponent } from '../job-logs/job-logs.component';
 })
 export class JobListComponent extends CsModalParentBase {
   loadingWIP = false;
+  createNewJobGuide = false;
   createNewJob = false;
   pageIndex = 1;
   pageSize = 15;
   paginationJobs: PaginationJob;
+  jobDeployment: JobDeployment;
 
   constructor(private resolver: ComponentFactoryResolver,
               private view: ViewContainerRef,
@@ -24,6 +26,10 @@ export class JobListComponent extends CsModalParentBase {
               private messageService: MessageService) {
     super(resolver, view);
     this.paginationJobs = new PaginationJob({});
+  }
+
+  get showList(): boolean {
+    return !this.createNewJobGuide && !this.createNewJob;
   }
 
   /*preparing = iota
@@ -113,8 +119,32 @@ export class JobListComponent extends CsModalParentBase {
     component.job = job;
   }
 
+  afterMethodSelect(selected: { method: CreateMethod, jobId: number }) {
+    if (selected.method === CreateMethod.byExistsJob) {
+      this.jobService.getJobConfig(selected.jobId).subscribe(
+        (res: JobDeployment) => {
+          this.jobDeployment = res;
+          this.jobDeployment.jobName = '';
+          console.log(this.jobDeployment);
+          this.createNewJobGuide = false;
+          this.createNewJob = true;
+        }, () => {
+          this.createNewJobGuide = false;
+          this.createNewJob = false;
+        });
+    } else {
+      this.jobDeployment = new JobDeployment();
+      this.createNewJobGuide = false;
+      this.createNewJob = true;
+    }
+  }
+
+  afterMethodCancel() {
+    this.createNewJobGuide = false;
+  }
+
   createJob() {
-    this.createNewJob = true;
+    this.createNewJobGuide = true;
   }
 
   afterDeployment(isSuccess: boolean) {

@@ -29,10 +29,40 @@ export function HttpBindArray(serverPropertyName: string, itemType: Type<HttpBas
 }
 
 export abstract class HttpBase {
-}
 
-export abstract class ResponseBase extends HttpBase {
-  protected init() {
+  constructor(public res?: object) {
+    this.prepareInit();
+  }
+
+  protected prepareInit() {
+
+  }
+
+  getPostBody(): { [key: string]: string } {
+    const postBody = {};
+    const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
+    metadataKeys.forEach((propertyKey: string) => {
+      const property = Reflect.get(this, propertyKey);
+      const metadataValue: IBindType = Reflect.getMetadata(propertyKey, this);
+      if (metadataValue.serverPropertyTypeName === 'array') {
+        const reqArray = property as Array<HttpBase>;
+        const reqPropertyValue = new Array<{ [key: string]: string }>();
+        reqArray.forEach(reqItem => reqPropertyValue.push(reqItem.getPostBody()));
+        Reflect.set(postBody, metadataValue.serverPropertyName, reqPropertyValue);
+      } else if (metadataValue.serverPropertyTypeName === 'object') {
+        const reqObject = property as HttpBase;
+        Reflect.set(postBody, metadataValue.serverPropertyName, reqObject);
+      } else {
+        Reflect.set(postBody, metadataValue.serverPropertyName, property);
+      }
+    });
+    return postBody;
+  }
+
+  initFromRes() {
+    if (!this.res) {
+      return;
+    }
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
     metadataKeys.forEach((propertyKey: string) => {
       const property = Reflect.get(this, propertyKey);
@@ -40,10 +70,11 @@ export abstract class ResponseBase extends HttpBase {
       if (metadataValue.serverPropertyTypeName === 'array') {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
           const resArray = Reflect.get(this.res, metadataValue.serverPropertyName) as Array<object>;
+          const propertyArray = property as Array<HttpBase>;
           if (resArray && resArray.length > 0) {
             resArray.forEach(resItem => {
-              const item = new (metadataValue.itemType as Type<ResponseBase>)(resItem);
-              const propertyArray = property as Array<ResponseBase>;
+              const item = new (metadataValue.itemType as Type<HttpBase>)(resItem);
+              item.initFromRes();
               propertyArray.push(item);
             });
           }
@@ -51,8 +82,9 @@ export abstract class ResponseBase extends HttpBase {
       } else if (metadataValue.serverPropertyTypeName === 'object') {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
           const resValue = Reflect.get(this.res, metadataValue.serverPropertyName);
-          const v = new (metadataValue.itemType as Type<ResponseBase>)(resValue);
-          Reflect.set(this, propertyKey, v);
+          const item = new (metadataValue.itemType as Type<HttpBase>)(resValue);
+          item.initFromRes();
+          Reflect.set(this, propertyKey, item);
         }
       } else {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
@@ -62,26 +94,16 @@ export abstract class ResponseBase extends HttpBase {
       }
     });
   }
-
-  constructor(public res: object) {
-    super();
-    this.prepareInit();
-    this.init();
-  }
-
-  protected prepareInit() {
-
-  }
 }
 
-export class Pagination extends ResponseBase {
+export class Pagination extends HttpBase {
   @HttpBind('page_index') PageIndex: number;
   @HttpBind('page_size') PageSize: number;
   @HttpBind('total_count') TotalCount: number;
   @HttpBind('page_count') PageCount: number;
 }
 
-export abstract class ResponseArrayBase<T extends ResponseBase> {
+export abstract class ResponseArrayBase<T extends HttpBase> {
   protected data: Array<T>;
 
   abstract CreateOneItem(res: object): T;
@@ -112,7 +134,7 @@ export abstract class ResponseArrayBase<T extends ResponseBase> {
   }
 }
 
-export abstract class ResponsePaginationBase<T extends ResponseBase> {
+export abstract class ResponsePaginationBase<T extends HttpBase> {
   list: Array<T>;
   pagination: Pagination;
 
@@ -125,7 +147,12 @@ export abstract class ResponsePaginationBase<T extends ResponseBase> {
     this.pagination = new Pagination(this.getObject('pagination'));
     const resList = this.getObject(this.ListKeyName());
     if (Array.isArray(resList)) {
-      (resList as Array<object>).forEach(item => this.list.push(this.CreateOneItem(item)));
+      (resList as Array<object>).forEach(response => {
+          const item = this.CreateOneItem(response);
+          item.initFromRes();
+          this.list.push(item);
+        }
+      );
     }
   }
 
@@ -149,29 +176,6 @@ export abstract class ResponsePaginationBase<T extends ResponseBase> {
     } else {
       return {};
     }
-  }
-}
-
-export class RequestBase extends HttpBase {
-  getPostBody(): { [key: string]: string } {
-    const postBody = {};
-    const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
-    metadataKeys.forEach((propertyKey: string) => {
-      const property = Reflect.get(this, propertyKey);
-      const metadataValue: IBindType = Reflect.getMetadata(propertyKey, this);
-      if (metadataValue.serverPropertyTypeName === 'array') {
-        const reqArray = property as Array<RequestBase>;
-        const reqPropertyValue = new Array<{ [key: string]: string }>();
-        reqArray.forEach(reqItem => reqPropertyValue.push(reqItem.getPostBody()));
-        Reflect.set(postBody, metadataValue.serverPropertyName, reqPropertyValue);
-      } else if (metadataValue.serverPropertyTypeName === 'object') {
-        const reqObject = property as RequestBase;
-        Reflect.set(postBody, metadataValue.serverPropertyName, reqObject);
-      } else {
-        Reflect.set(postBody, metadataValue.serverPropertyName, property);
-      }
-    });
-    return postBody;
   }
 }
 

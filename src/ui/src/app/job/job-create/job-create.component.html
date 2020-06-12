@@ -4,6 +4,7 @@
                  [dropdownItems]="projectList"
                  [dropdownIsRequired]="true"
                  [dropdownKey]="'project_name'"
+                 [dropdownDefaultActiveIndex]="projectDefaultIndex"
                  [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
                  (dropdownEspecialClick)="clickSelectProject()"
                  (dropdownChangeItem)="changeSelectProject($event)">
@@ -52,6 +53,7 @@
                  [dropdownLabel]="'JOB.JOB_CREATE_NODE_SELECTOR' |translate"
                  [dropdownTip]="'JOB.JOB_CREATE_NODE_DEFAULT' | translate"
                  [dropdownKey]="'name'"
+                 [dropdownDefaultActiveIndex]="nodeSelectorDefaultIndex"
                  [dropdownMinWidth]="300"
                  (dropdownChangeItem)="newJobDeployment.nodeSelector = $event['value']">
   <ng-template libItemTemp let-name="name" let-tag="tag">

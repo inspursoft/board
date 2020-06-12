@@ -9,13 +9,21 @@ div.create-job-method {
   margin-bottom: 20px;
 }
 
+div.create-job-method label:hover {
+  cursor: pointer;
+}
+
 div.card-container-job {
   display: flex;
+  max-height: 300px;
+  overflow-y: auto;
+  flex-wrap: wrap;
 }
 
 div.card {
   width: 280px;
   min-height: 180px;
+  min-width: 250px;
   margin: 5px;
 }
 
@@ -28,7 +36,7 @@ div.card.selected {
 }
 
 div.card.disabled {
-  background-color: silver;
+  background-color: white;
 }
 
 div.card.disabled:hover {

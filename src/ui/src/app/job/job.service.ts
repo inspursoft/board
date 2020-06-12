@@ -1,10 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, zip } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Project } from '../project/project';
-import { Job, JobDeployment, JobImageDetailInfo, JobImageInfo, JobPod, LogsSearchConfig, PaginationJob } from './job.type';
-import { INode, INodeGroup, NodeAvailableResources, PersistentVolumeClaim } from '../shared/shared.types';
+import {
+  Job,
+  JobDeployment,
+  JobImageDetailInfo,
+  JobImageInfo, JobNode,
+  JobNodeAvailableResources, JobNodeGroup,
+  JobPod,
+  LogsSearchConfig,
+  PaginationJob
+} from './job.type';
+import { PersistentVolumeClaim } from '../shared/shared.types';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
 @Injectable()
@@ -42,16 +51,19 @@ export class JobService {
 
   getJobList(pageIndex: number, pageSize: number): Observable<PaginationJob> {
     return this.modeHttp.getPagination(`/api/v1/jobs`, PaginationJob, {
-      job_name: '',
-      page_index: pageIndex.toString(),
-      page_size: pageSize.toString(),
-      order_field: '',
-      order_asc: '0'
-    });
+        param: {
+          job_name: '',
+          page_index: pageIndex.toString(),
+          page_size: pageSize.toString(),
+          order_field: '',
+          order_asc: '0'
+        }
+      }
+    );
   }
 
   getJobStatus(jobId: number): Observable<any> {
-    return this.http.get(`/api/v1/jobs/${jobId}/status`).pipe(tap(res => console.log(res)));
+    return this.http.get(`/api/v1/jobs/${jobId}/status`);
   }
 
   getCollaborativeJobs(projectName: string): Observable<Array<Job>> {
@@ -80,10 +92,8 @@ export class JobService {
     return this.modeHttp.getArray(`/api/v1/images/${imageName}`, JobImageDetailInfo);
   }
 
-  getNodesAvailableSources(): Observable<Array<NodeAvailableResources>> {
-    return this.http.get(`/api/v1/nodes/availableresources`, {
-      observe: 'response'
-    }).pipe(map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body));
+  getNodesAvailableSources(): Observable<Array<JobNodeAvailableResources>> {
+    return this.modeHttp.getArray(`/api/v1/nodes/availableresources`, JobNodeAvailableResources);
   }
 
   getPvcNameList(): Observable<Array<PersistentVolumeClaim>> {
@@ -101,18 +111,22 @@ export class JobService {
   }
 
   getNodeSelectors(): Observable<Array<{ name: string, status: number }>> {
-    const obsNodeList = this.http
-      .get(`/api/v1/nodes`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<Array<INode>>) => {
+    const obsNodeList = this.modeHttp
+      .getArray(`/api/v1/nodes`, JobNode)
+      .pipe(map((res: Array<JobNode>) => {
         const result = Array<{ name: string, status: number }>();
-        res.body.forEach((iNode: INode) => result.push({name: String(iNode.node_name).trim(), status: iNode.status}));
+        res.forEach((jobNode: JobNode) => result.push(
+          {name: String(jobNode.nodeName).trim(), status: jobNode.status})
+        );
         return result;
       }));
-    const obsNodeGroupList = this.http
-      .get(`/api/v1/nodegroup`, {observe: 'response', params: {is_valid_node_group: '1'}})
-      .pipe(map((res: HttpResponse<Array<INodeGroup>>) => {
+    const obsNodeGroupList = this.modeHttp
+      .getArray(`/api/v1/nodegroup`, JobNodeGroup, {param: {is_valid_node_group: '1'}})
+      .pipe(map((res: Array<JobNodeGroup>) => {
         const result = Array<{ name: string, status: number }>();
-        res.body.forEach((iNodeGroup: INodeGroup) => result.push({name: String(iNodeGroup.nodegroup_name).trim(), status: 1}));
+        res.forEach((jobNodeGroup: JobNodeGroup) => result.push(
+          {name: String(jobNodeGroup.nodeGroupName).trim(), status: 1})
+        );
         return result;
       }));
     return zip(obsNodeList, obsNodeGroupList).pipe(
@@ -122,5 +136,9 @@ export class JobService {
 
   deploymentJob(jobDeployment: JobDeployment): Observable<any> {
     return this.http.post(`/api/v1/jobs/deployment`, jobDeployment.getPostBody());
+  }
+
+  getJobConfig(jobId: number): Observable<JobDeployment> {
+    return this.modeHttp.getJson(`/api/v1/jobs/${jobId}/config`, JobDeployment);
   }
 }

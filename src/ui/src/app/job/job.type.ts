@@ -1,5 +1,5 @@
 import { DragStatus } from '../shared/shared.types';
-import { HttpBind, HttpBindArray, HttpBindObject, RequestBase, ResponseBase, ResponsePaginationBase } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, HttpBindArray, HttpBindObject, ResponsePaginationBase } from '../shared/ui-model/model-types';
 
 export enum CreateMethod {
   byDefault, byExistsJob
@@ -16,9 +16,9 @@ export class PaginationJob extends ResponsePaginationBase<Job> {
   }
 }
 
-export class Job extends ResponseBase {
+export class Job extends HttpBase {
   @HttpBind('job_id') jobId: number;
-  @HttpBind('job_name') jobName: string;
+  @HttpBind('job_name') jobName = '';
   @HttpBind('job_project_id') jobProjectId: number;
   @HttpBind('job_project_name') jobProjectName: string;
   @HttpBind('job_comment') jobComment: string;
@@ -32,7 +32,7 @@ export class Job extends ResponseBase {
   @HttpBind('job_yaml') jobYaml: string;
 }
 
-export class JobVolumeMounts extends RequestBase {
+export class JobVolumeMounts extends HttpBase {
   @HttpBind('volume_type') volumeType = '';
   @HttpBind('volume_name') volumeName = '';
   @HttpBind('container_path') containerPath = '';
@@ -44,22 +44,22 @@ export class JobVolumeMounts extends RequestBase {
   @HttpBind('target_pvc') targetPvc = '';
 }
 
-export class JobImage extends RequestBase {
+export class JobImage extends HttpBase {
   @HttpBind('image_name') imageName = '';
   @HttpBind('image_tag') imageTag = '';
   @HttpBind('project_name') projectName = '';
 }
 
-export class JobEnv extends RequestBase {
+export class JobEnv extends HttpBase {
   @HttpBind('dockerfile_envname') dockerfileEnvName = '';
   @HttpBind('dockerfile_envvalue') dockerfileEnvValue = '';
   @HttpBind('configmap_key') configMapKey = '';
   @HttpBind('configmap_name') configMapName = '';
 }
 
-export class JobContainer extends RequestBase {
+export class JobContainer extends HttpBase {
   @HttpBind('name') name = '';
-  @HttpBind('working_Dir') workingDir = '';
+  @HttpBind('working_dir') workingDir = '';
   @HttpBind('command') command = '';
   @HttpBind('container_port') containerPort: Array<number>;
   @HttpBind('cpu_request') cpuRequest = '';
@@ -70,24 +70,25 @@ export class JobContainer extends RequestBase {
   @HttpBindArray('volume_mounts', JobVolumeMounts) volumeMounts: Array<JobVolumeMounts>;
   @HttpBindArray('env', JobEnv) env: Array<JobEnv>;
 
-  constructor() {
-    super();
+  protected prepareInit() {
+    super.prepareInit();
     this.containerPort = Array<number>();
     this.volumeMounts = Array<JobVolumeMounts>();
     this.env = Array<JobEnv>();
   }
 }
 
-export class JobAffinity {
+export class JobAffinity extends HttpBase {
   @HttpBind('anti_flag') antiFlag = 0;
   @HttpBind('job_names') jobNames: Array<string>;
 
-  constructor() {
+  protected prepareInit() {
+    super.prepareInit();
     this.jobNames = Array<string>();
   }
 }
 
-export class JobDeployment extends RequestBase {
+export class JobDeployment extends HttpBase {
   @HttpBind('project_id') projectId = 0;
   @HttpBind('project_name') projectName = '';
   @HttpBind('job_id') jobId = 0;
@@ -100,8 +101,8 @@ export class JobDeployment extends RequestBase {
   @HttpBind('active_Deadline_Seconds') activeDeadlineSeconds: number;
   @HttpBind('backoff_Limit') backOffLimit = 6;
 
-  constructor() {
-    super();
+  protected prepareInit() {
+    super.prepareInit();
     this.containerList = Array<JobContainer>();
     this.affinityList = Array<JobAffinity>();
   }
@@ -121,7 +122,7 @@ export enum JobAffinityCardListView {
   aclvColumn = 'column', aclvRow = 'row'
 }
 
-export class JobPod extends ResponseBase {
+export class JobPod extends HttpBase {
   @HttpBind('name') name: string;
   @HttpBind('project_name') projectName: string;
 }
@@ -137,7 +138,7 @@ export class LogsSearchConfig {
   limitBytes?: number;
 }
 
-export class JobImageInfo extends ResponseBase {
+export class JobImageInfo extends HttpBase {
   @HttpBind('image_name') imageName: string;
   @HttpBind('image_comment') imageComment: string;
   @HttpBind('image_deleted') imageDeleted: number;
@@ -145,7 +146,7 @@ export class JobImageInfo extends ResponseBase {
   @HttpBind('image_creation_time') imageCreationTime: string;
 }
 
-export class JobImageDetailInfo extends ResponseBase {
+export class JobImageDetailInfo extends HttpBase {
   @HttpBind('image_name') imageName: string;
   @HttpBind('image_tag') imageTag: string;
   @HttpBind('image_detail') imageDetail: string;
@@ -154,3 +155,23 @@ export class JobImageDetailInfo extends ResponseBase {
   @HttpBind('image_size_unit') imageSizeUnit: string;
 }
 
+export class JobNodeAvailableResources extends HttpBase {
+  @HttpBind('node_id') nodeId = 0;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('cpu_available') cpuAvailable = '';
+  @HttpBind('mem_available') memAvailable = '';
+  @HttpBind('storage_available') storageAvailable = '';
+}
+
+export class JobNode extends HttpBase {
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
+  @HttpBind('status') status = -1;
+}
+
+export class JobNodeGroup extends HttpBase {
+  @HttpBind('nodegroup_id') nodeGroupId = -1;
+  @HttpBind('nodegroup_project') nodeGroupProject = '';
+  @HttpBind('nodegroup_name') nodeGroupName = '';
+  @HttpBind('nodegroup_comment') nodeGroupComment = '';
+}

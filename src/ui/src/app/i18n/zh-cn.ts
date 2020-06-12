@@ -243,6 +243,15 @@ export const LANG_ZH_CN = {
     "JOB_DETAIL_TOTAL_LOGS":"日志数量",
     "JOB_DETAIL_MAX_LOGS":"最多",
   },
+  JobGuide: {
+    Title: '选择新建Job的方式',
+    New: '新建',
+    FromExists: '从已有的Job新建',
+    ProjectName: '项目名称',
+    CreationTime: '创建时间',
+    OwnerName: '创建者',
+    Comment: '备注',
+  },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
     "PROJECT_NAME": "项目名称",
