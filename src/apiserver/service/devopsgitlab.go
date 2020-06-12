@@ -26,7 +26,7 @@ func (g GitlabDevOps) SignUp(user model.User) error {
 }
 
 func (g GitlabDevOps) CreateAccessToken(username string, password string) (string, error) {
-	userCreation := gitlab.UserCreation{Name: username, Username: username}
+	userCreation := gitlab.UserInfo{Name: username, Username: username}
 	token, err := gitlab.NewGitlabHandler(gitlabAdminToken()).ImpersonationToken(userCreation)
 	if err != nil {
 		logs.Error("Failed to create access token via Gitlab API, error %+v", err)
@@ -54,32 +54,23 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	if user == nil {
 		return fmt.Errorf("user with ID: %d is nil", userID)
 	}
-
 	username := user.Username
-	email := user.Email
 	accessToken := user.RepoToken
-
 	logs.Info("Create repo and job with username: %s, project name: %s.", username, projectName)
-
 	repoName, err := ResolveRepoName(projectName, username)
 	if err != nil {
 		return err
 	}
 	logs.Info("Initialize serve repo with name: %s ...", repoName)
 
-	repoURL := fmt.Sprintf("%s/%s/%s.git", GogitsSSHURL(), username, repoName)
-	repoPath := ResolveRepoPath(repoName, username)
-
-	_, err = InitRepo(repoURL, username, email, repoPath)
-	if err != nil {
-		logs.Error("Failed to initialize default user's repo: %+v", err)
-		return err
-	}
 	gitlabHandler := gitlab.NewGitlabHandler(accessToken)
 	if gitlabHandler == nil {
 		return fmt.Errorf("failed to create Gitlab handler")
 	}
-	projectCreation, err := gitlabHandler.CreateRepo(*user, model.Project{Name: projectName})
+	userInfo := model.User{Username: user.Username, Email: user.Email, RepoToken: user.RepoToken}
+
+	projectInfo := model.Project{Name: projectName}
+	projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
 	if err != nil {
 		logs.Error("Failed to create repo via Gitlab API, error %+v", err)
 		return err
@@ -90,19 +81,18 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	// 	logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	// }
 
-	CreateFile("readme.md", "Repo created by Board.", repoPath)
-
-	repoHandler, err := OpenRepo(repoPath, username, email)
+	fileInfo := gitlab.FileInfo{
+		Name:    "README.md",
+		Path:    "README.md",
+		Content: "README file created by Board.",
+	}
+	projectInfo.ID = int64(projectCreation.ID)
+	fileCreation, err := gitlabHandler.CreateFile(userInfo, projectInfo, "master", fileInfo)
 	if err != nil {
-		logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)
 		return err
 	}
-
-	repoHandler.SimplePush("Add some struts.", "readme.md")
-	if err != nil {
-		logs.Error("Failed to push readme.md file to the repo: %+v", err)
-		return err
-	}
+	logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
 
 	jenkinsHandler := jenkins.NewJenkinsHandler()
 	err = jenkinsHandler.CreateJobWithParameter(repoName)
@@ -124,12 +114,5 @@ func (g GitlabDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 }
 
 func (g GitlabDevOps) DeleteRepo(username string, repoName string) error {
-	// user, err := GetUserByName(username)
-	// if err != nil {
-	// 	logs.Error("Failed to get user by name: %s, with error: %+v", username, err)
-	// 	return err
-	// }
-
-	// gitlab.NewGitlabHandler(user.RepoToken).DeleteProject()
 	return nil
 }

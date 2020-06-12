@@ -6,6 +6,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/logs"
@@ -50,7 +51,7 @@ func NewGitlabHandler(accessToken string) *gitlabHandler {
 
 func (g *gitlabHandler) getAccessHeader() http.Header {
 	return http.Header{
-		"content-type":  []string{"application/form-data", "application/json"},
+		"content-type":  []string{"application/json"},
 		"Authorization": []string{"Bearer " + g.accessToken},
 	}
 }
@@ -58,12 +59,6 @@ func (g *gitlabHandler) getAccessHeader() http.Header {
 func (g *gitlabHandler) defaultHeader(req *http.Request) error {
 	req.Header = g.getAccessHeader()
 	return nil
-}
-
-type UserCreation struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Username string `json:"username"`
 }
 
 type ImpersonationToken struct {
@@ -77,13 +72,7 @@ type ImpersonationToken struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-type userStatus struct {
-	Emoji       string `json:"emoji"`
-	Message     string `json:"message"`
-	MessageHTML string `json:"message_html"`
-}
-
-type userInfo struct {
+type UserInfo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Username string `json:"username"`
@@ -92,10 +81,10 @@ type userInfo struct {
 }
 
 type ProjectCreation struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Path       string `json:"path"`
-	Visibility string `json:"visibility"`
+	ID                int    `json:"id"`
+	Name              string `json:"name"`
+	PathWithNamespace string `json:"path_with_namespace"`
+	Visibility        string `json:"visibility"`
 }
 
 type Message struct {
@@ -103,13 +92,36 @@ type Message struct {
 	Key         []string `json:"key"`
 }
 
+type FileInfo struct {
+	Name    string
+	Path    string
+	Content string
+}
+
+func (f FileInfo) EscapedPath() string {
+	return strings.ReplaceAll(url.PathEscape(f.Path), ".", "%2E")
+}
+
+type CommitRepoData struct {
+	Branch        string `json:"branch"`
+	AuthorEmail   string `json:"author_email"`
+	AuthorName    string `json:"author_name"`
+	Content       string `json:"content"`
+	CommitMessage string `json:"commit_message"`
+}
+
+type FileCreation struct {
+	FilePath string `json:"file_path"`
+	Branch   string `json:"branch"`
+}
+
 type AddSSHKeyResponse struct {
 	AddSSHKeyMessage Message `json:message`
 }
 
-func (g *gitlabHandler) CreateUser(user model.User) (u UserCreation, err error) {
-	_, err = g.getUserStatus(UserCreation{Username: user.Username})
-	if err == utils.ErrNotFound {
+func (g *gitlabHandler) CreateUser(user model.User) (u UserInfo, err error) {
+	userList, err := g.getUserInfo(user.Username)
+	if len(userList) == 0 {
 		err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/users", g.gitlabAPIBaseURL),
 			func(req *http.Request) error {
 				req.Header = g.getAccessHeader()
@@ -127,10 +139,15 @@ func (g *gitlabHandler) CreateUser(user model.User) (u UserCreation, err error) 
 		return
 	}
 	logs.Debug("User: %s already exists bypassing to create.", user.Username)
+	if len(userList) == 1 {
+		logs.Debug("Found user from Gitlab: %+v", u)
+		u = userList[0]
+		return
+	}
 	return
 }
 
-func (g *gitlabHandler) ImpersonationToken(user UserCreation) (token ImpersonationToken, err error) {
+func (g *gitlabHandler) ImpersonationToken(user UserInfo) (token ImpersonationToken, err error) {
 	userList, err := g.getUserInfo(user.Username)
 	if err != nil {
 		logs.Error("Failed to get user info via Gitlab API by username: %s, error: %+v", user.Username, err)
@@ -156,18 +173,18 @@ func (g *gitlabHandler) ImpersonationToken(user UserCreation) (token Impersonati
 	return
 }
 
-func (g *gitlabHandler) getUserStatus(user UserCreation) (u userStatus, err error) {
+func (g *gitlabHandler) getUserStatus(user UserInfo) (err error) {
 	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/users/%s/status", g.gitlabAPIBaseURL, user.Username),
 		g.defaultHeader, nil, func(req *http.Request, resp *http.Response) error {
 			if resp.StatusCode == http.StatusNotFound {
 				return utils.ErrNotFound
 			}
-			return utils.UnmarshalToJSON(resp.Body, &u)
+			return nil
 		})
 	return
 }
 
-func (g *gitlabHandler) getUserInfo(username string) (userList []userInfo, err error) {
+func (g *gitlabHandler) getUserInfo(username string) (userList []UserInfo, err error) {
 	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/users?search=%s", g.gitlabAPIBaseURL, username),
 		g.defaultHeader, nil, func(req *http.Request, resp *http.Response) error {
 			return utils.UnmarshalToJSON(resp.Body, &userList)
@@ -191,17 +208,44 @@ func (g *gitlabHandler) AddSSHKey(title string, key string) (a AddSSHKeyResponse
 	return
 }
 
+func (g *gitlabHandler) GetRepoInfo(project model.Project) (p []ProjectCreation, err error) {
+	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/projects?search=%s", g.gitlabAPIBaseURL, project.Name),
+		g.defaultHeader, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == http.StatusNotFound {
+				return utils.ErrNotFound
+			}
+			return utils.UnmarshalToJSON(resp.Body, &p)
+		})
+	return
+}
+
 func (g *gitlabHandler) CreateRepo(user model.User, project model.Project) (p ProjectCreation, err error) {
 	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects", g.gitlabAPIBaseURL),
 		func(req *http.Request) error {
 			req.Header = g.getAccessHeader()
 			formData := url.Values{}
-			formData.Add("path", user.Username)
-			formData.Add("name", project.Name)
+			formData.Add("path", fmt.Sprintf("%s", project.Name))
 			req.URL.RawQuery = formData.Encode()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
 			return utils.UnmarshalToJSON(resp.Body, &p)
+		})
+	return
+}
+
+func (g *gitlabHandler) CreateFile(user model.User, project model.Project, branch string, fileInfo FileInfo) (f FileCreation, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/repository/files/%s", g.gitlabAPIBaseURL, project.ID, fileInfo.EscapedPath()),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			return nil
+		}, CommitRepoData{
+			Branch:        branch,
+			AuthorEmail:   user.Email,
+			AuthorName:    user.Username,
+			Content:       fileInfo.Content,
+			CommitMessage: fmt.Sprintf("Add file: %s", fileInfo.Name),
+		}, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &f)
 		})
 	return
 }
