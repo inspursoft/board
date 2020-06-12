@@ -16,7 +16,7 @@ function util_done()
 
 function init()
 {
-    if [ ! -f /var/lib/grafana/initok ]; then
+    if [ ! -f /grafana/initok ]; then
         #replace environment variables
         if [ ! -d /etc/grafana/config/ ]; then
             echo "directory /etc/grafana/config/ does not exist. make sure you have executed the 'make prepare' command"
@@ -40,7 +40,7 @@ function init()
 
         # set the kubernetes plugin
         echo "setting the kubernetes plugin"
-        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/grafana-kubernetes-app/settings
+        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/devopsprodigy-kubegraf-app/settings
         echo "set the kubernetes plugin successfully"
 
         # add the prometheus datasource
@@ -63,7 +63,7 @@ function init()
 
         # generate the install tag file 
         echo "init successfully"
-        echo "init successfully" > /var/lib/grafana/initok
+        echo "init successfully" > /grafana/initok
     fi
 }
 
