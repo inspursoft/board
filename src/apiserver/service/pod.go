@@ -112,6 +112,7 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	// run loop to fetch data from ws client
 	go ptyHandler.Run()
 	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
+	// check Container Privileged
 	modelPod, err := k8sclient.AppV1().Pod(namespace).Get(pod)
 	if err != nil {
 		return err
@@ -147,6 +148,14 @@ func CopyToPod(namespace, podName, container, src, dest string) error {
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
 	})
+	// check Container Privileged
+	modelPod, err := k8sclient.AppV1().Pod(namespace).Get(podName)
+	if err != nil {
+		return err
+	}
+	if *modelPod.Spec.Containers[0].SecurityContext.Privileged {
+		return errors.New("the container privileged is true, cannot be connected")
+	}
 	logs.Info("Copying the content of '%s' to '%s/%s/%s:%s'", src, namespace, podName, container, dest)
 	return k8sclient.AppV1().Pod(namespace).CopyToPod(podName, container, src, dest)
 }

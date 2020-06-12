@@ -802,8 +802,8 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 	}
 }
 
-func FromK8sSecurityContext(context *v1.SecurityContext) model.SecurityContext {
-	return model.SecurityContext{
+func FromK8sSecurityContext(context *v1.SecurityContext) *model.SecurityContext {
+	return &model.SecurityContext{
 		Privileged:      context.Privileged,
 	}
 }

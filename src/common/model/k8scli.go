@@ -1507,6 +1507,7 @@ type ServiceContainer struct {
 	PodName       string
 	ServiceName   string
 	NodeIP        string
+	SecurityContext bool
 }
 
 // TerminalSize and TerminalSizeQueue was a part of k8s.io/kubernetes/pkg/util/term
