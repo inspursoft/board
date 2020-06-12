@@ -2,7 +2,7 @@ package nodeModel
 
 import "bytes"
 
-const BasePath = "/data/board/ansible_k8s/"
+const BasePath = "/data/adminserver/ansible_k8s/"
 const AddNodeYamlFile = "addnode"
 const RemoveNodeYamlFile = "uninstallnode"
 const NodeHostsFile = "addNode"

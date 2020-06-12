@@ -1,7 +1,8 @@
 import { HttpClient, HttpHandler, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ResponseArrayBase, ResponseBase, ResponsePaginationBase } from './model-types';
+import { HttpBase, ResponsePaginationBase } from './model-types';
+import { Type } from '@angular/core';
 
 export class ModelHttpClient extends HttpClient {
   defaultHeaders = new Headers({
@@ -12,52 +13,53 @@ export class ModelHttpClient extends HttpClient {
     super(handler);
   }
 
-  getJson<T extends ResponseBase>(url: string,
-                                  returnType: new(res: object) => T,
-                                  options?: {
-                                    param?: { [param: string]: string },
-                                    header?: HttpHeaders
-                                  }): Observable<T> {
+  getJson(url: string, returnType: Type<HttpBase>, options?: {
+    param?: { [param: string]: string },
+    header?: HttpHeaders
+  }): Observable<any> {
     return super.get(url, {
       observe: 'body',
       responseType: 'json',
       params: options && options.param ? options.param : null,
       headers: options && options.header ? options.header : null
-    }).pipe(map((res: object) => new returnType(res)));
+    }).pipe(map((res: object) => {
+      const returnItem = new returnType(res);
+      returnItem.initFromRes();
+      return returnItem;
+    }));
   }
 
-  getPagination<T extends ResponsePaginationBase<ResponseBase>>(url: string,
-                                                                paginationType: new(res: object) => T,
-                                                                param?: { [param: string]: string }): Observable<T> {
-    return super.get(url, {observe: 'body', responseType: 'json', params: param})
-      .pipe(map((res: object) => new paginationType(res)));
+  getPagination(url: string, paginationType: Type<ResponsePaginationBase<HttpBase>>, options?: {
+    param?: { [param: string]: string },
+    header?: HttpHeaders
+  }): Observable<any> {
+    return super.get(url, {
+        observe: 'body', responseType: 'json',
+        params: options && options.param ? options.param : null,
+        headers: options && options.header ? options.header : null
+      }
+    ).pipe(map((res: object) => new paginationType(res)));
   }
 
-  getArray<T extends ResponseBase>(url: string,
-                                   itemType: new(res: object) => T,
-                                   options?: {
-                                     param?: { [param: string]: string },
-                                     header?: HttpHeaders
-                                   }): Observable<Array<T>> {
+  getArray(url: string, itemType: Type<HttpBase>, options?: {
+    param?: { [param: string]: string },
+    header?: HttpHeaders
+  }): Observable<any> {
     return super.get(url, {
       observe: 'body',
       responseType: 'json',
       params: options && options.param ? options.param : null,
       headers: options && options.header ? options.header : null
     }).pipe(map((res: Array<object>) => {
-      const result = Array<T>();
-      res.forEach(item => result.push(new itemType(item)));
+      const result = Array<HttpBase>();
+      res.forEach(item => {
+        const newItem = new itemType(item);
+        newItem.initFromRes();
+        result.push(newItem);
+      });
       return result;
     }));
   }
-
-  getArrayJson<T extends ResponseArrayBase<ResponseBase>>(url: string,
-                                                          arrayType: new(res: object) => T,
-                                                          param?: { [param: string]: string }): Observable<T> {
-    return super.get(url, {observe: 'body', responseType: 'json', params: param})
-      .pipe(map((res: object) => new arrayType(res)));
-  }
-
 }
 
 export function CustomHttpFactory(handler: HttpHandler): ModelHttpClient {

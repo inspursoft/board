@@ -50,6 +50,8 @@ export class HttpClientInterceptor implements HttpInterceptor {
       authReq = authReq.clone({
         headers: authReq.headers
           .set('token', this.appTokenService.token)
+          .set('Content-Security-Policy', 'default-src \'self\'; font-src \'self\' data:; script-src \'self\' \'unsafe-inline\'' +
+            ' \'unsafe-eval\'; img-src \'self\' data: base64; style-src \'self\' \'unsafe-inline\';')
           .set('X-Xsrftoken', xsrfToken),
         params: authReq.params.set('Timestamp', Date.now().toString())
       });

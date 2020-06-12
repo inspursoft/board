@@ -1,111 +1,120 @@
-import { DragStatus, IPagination } from "../shared/shared.types";
+import { DragStatus } from '../shared/shared.types';
+import { HttpBase, HttpBind, HttpBindArray, HttpBindObject, ResponsePaginationBase } from '../shared/ui-model/model-types';
 
-export class PaginationJob {
-  pagination: IPagination;
-  job_status_list: Array<Job>;
+export enum CreateMethod {
+  byDefault, byExistsJob
+}
 
-  constructor() {
-    this.job_status_list = Array<Job>();
-    this.pagination = {page_count: 1, page_index: 1, page_size: 15, total_count: 0}
+export class PaginationJob extends ResponsePaginationBase<Job> {
+
+  ListKeyName(): string {
+    return 'job_status_list';
+  }
+
+  CreateOneItem(res: object): Job {
+    return new Job(res);
   }
 }
 
-export class Job {
-  job_id: number;
-  job_name: string;
-  job_project_id: number;
-  job_project_name: string;
-  job_comment: string;
-  job_creation_time: string;
-  job_update_time: string;
-  job_deleted: number;
-  job_owner_id: number;
-  job_owner_name: string;
-  job_source: number;
-  job_status: number;
-  job_yaml: string;
+export class Job extends HttpBase {
+  @HttpBind('job_id') jobId: number;
+  @HttpBind('job_name') jobName = '';
+  @HttpBind('job_project_id') jobProjectId: number;
+  @HttpBind('job_project_name') jobProjectName: string;
+  @HttpBind('job_comment') jobComment: string;
+  @HttpBind('job_creation_time') jobCreationTime: string;
+  @HttpBind('job_update_time') jobUpdateTime: string;
+  @HttpBind('job_deleted') jobDeleted: number;
+  @HttpBind('job_owner_id') jobOwnerId: number;
+  @HttpBind('job_owner_name') jobOwnerName: string;
+  @HttpBind('job_source') jobSource: number;
+  @HttpBind('job_status') jobStatus: number;
+  @HttpBind('job_yaml') jobYaml: string;
 }
 
-export class JobVolumeMounts {
-  volume_type: string;
-  volume_name: string;
-  container_path: string;
-  container_file: string;
-  container_path_flag: number;
-  target_storage_service: string;
-  target_path: string;
-  target_file: string;
-  target_pvc: string;
+export class JobVolumeMounts extends HttpBase {
+  @HttpBind('volume_type') volumeType = '';
+  @HttpBind('volume_name') volumeName = '';
+  @HttpBind('container_path') containerPath = '';
+  @HttpBind('container_file') containerFile = '';
+  @HttpBind('container_path_flag') containerPathFlag = 0;
+  @HttpBind('target_storage_service') targetStorageService = '';
+  @HttpBind('target_path') targetPath = '';
+  @HttpBind('target_file') targetFile = '';
+  @HttpBind('target_pvc') targetPvc = '';
 }
 
-export class JobImage {
-  image_name: string;
-  image_tag: string;
-  project_name: string;
+export class JobImage extends HttpBase {
+  @HttpBind('image_name') imageName = '';
+  @HttpBind('image_tag') imageTag = '';
+  @HttpBind('project_name') projectName = '';
 }
 
-export class JobEnv {
-  dockerfile_envname: string;
-  dockerfile_envvalue: string;
-  configmap_key: string;
-  configmap_name: string;
+export class JobEnv extends HttpBase {
+  @HttpBind('dockerfile_envname') dockerfileEnvName = '';
+  @HttpBind('dockerfile_envvalue') dockerfileEnvValue = '';
+  @HttpBind('configmap_key') configMapKey = '';
+  @HttpBind('configmap_name') configMapName = '';
 }
 
-export class JobContainer {
-  name: string;
-  working_Dir: string;
-  command: string;
-  container_port: Array<number>;
-  cpu_request: string;
-  mem_request: string;
-  cpu_limit: string;
-  mem_limit: string;
-  volume_mounts: Array<JobVolumeMounts>;
-  image: JobImage;
-  env: Array<JobEnv>;
+export class JobContainer extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBind('working_dir') workingDir = '';
+  @HttpBind('command') command = '';
+  @HttpBind('container_port') containerPort: Array<number>;
+  @HttpBind('cpu_request') cpuRequest = '';
+  @HttpBind('mem_request') memRequest = '';
+  @HttpBind('cpu_limit') cpuLimit = '';
+  @HttpBind('mem_limit') memLimit = '';
+  @HttpBindObject('image', JobImage) image: JobImage;
+  @HttpBindArray('volume_mounts', JobVolumeMounts) volumeMounts: Array<JobVolumeMounts>;
+  @HttpBindArray('env', JobEnv) env: Array<JobEnv>;
 
-  constructor() {
-    this.container_port = Array<number>();
-    this.volume_mounts = Array<JobVolumeMounts>();
+  protected prepareInit() {
+    super.prepareInit();
+    this.containerPort = Array<number>();
+    this.volumeMounts = Array<JobVolumeMounts>();
     this.env = Array<JobEnv>();
   }
 }
 
-export class JobAffinity {
-  anti_flag: number;
-  job_names: Array<string>;
+export class JobAffinity extends HttpBase {
+  @HttpBind('anti_flag') antiFlag = 0;
+  @HttpBind('job_names') jobNames: Array<string>;
 
-  constructor() {
-    this.job_names = Array<string>();
+  protected prepareInit() {
+    super.prepareInit();
+    this.jobNames = Array<string>();
   }
 }
 
-export class JobDeployment {
-  project_id = 0;
-  project_name: string;
-  job_id: number;
-  job_name: string;
-  node_selector: string;
-  container_list: Array<JobContainer>;
-  affinity_list: Array<JobAffinity>;
-  parallelism = 1;
-  completions = 1;
-  active_Deadline_Seconds: number;
-  backoff_Limit = 6;
+export class JobDeployment extends HttpBase {
+  @HttpBind('project_id') projectId = 0;
+  @HttpBind('project_name') projectName = '';
+  @HttpBind('job_id') jobId = 0;
+  @HttpBind('job_name') jobName = '';
+  @HttpBind('node_selector') nodeSelector = '';
+  @HttpBindArray('container_list', JobContainer) containerList: Array<JobContainer>;
+  @HttpBindArray('affinity_list', JobAffinity) affinityList: Array<JobAffinity>;
+  @HttpBind('parallelism') parallelism = 1;
+  @HttpBind('completions') completions = 1;
+  @HttpBind('active_Deadline_Seconds') activeDeadlineSeconds: number;
+  @HttpBind('backoff_Limit') backOffLimit = 6;
 
-  constructor() {
-    this.container_list = Array<JobContainer>();
-    this.affinity_list = Array<JobAffinity>();
+  protected prepareInit() {
+    super.prepareInit();
+    this.containerList = Array<JobContainer>();
+    this.affinityList = Array<JobAffinity>();
   }
 }
 
 
 export class JobAffinityCardData {
   jobName = '';
-  status? = DragStatus.dsReady;
+  status ? = DragStatus.dsReady;
 
   get key(): string {
-    return `${this.jobName}`
+    return `${this.jobName}`;
   }
 }
 
@@ -113,10 +122,9 @@ export enum JobAffinityCardListView {
   aclvColumn = 'column', aclvRow = 'row'
 }
 
-export class JobPod{
-  name: string;
-  project_name: string;
-  spec: Array<JobContainer>;
+export class JobPod extends HttpBase {
+  @HttpBind('name') name: string;
+  @HttpBind('project_name') projectName: string;
 }
 
 export class LogsSearchConfig {
@@ -128,4 +136,42 @@ export class LogsSearchConfig {
   timestamps?: boolean;
   tailLines?: number;
   limitBytes?: number;
+}
+
+export class JobImageInfo extends HttpBase {
+  @HttpBind('image_name') imageName: string;
+  @HttpBind('image_comment') imageComment: string;
+  @HttpBind('image_deleted') imageDeleted: number;
+  @HttpBind('image_update_time') imageUpdateTime: string;
+  @HttpBind('image_creation_time') imageCreationTime: string;
+}
+
+export class JobImageDetailInfo extends HttpBase {
+  @HttpBind('image_name') imageName: string;
+  @HttpBind('image_tag') imageTag: string;
+  @HttpBind('image_detail') imageDetail: string;
+  @HttpBind('image_creation_time') imageCreationTime: string;
+  @HttpBind('image_size_number') imageSizeNumber: number;
+  @HttpBind('image_size_unit') imageSizeUnit: string;
+}
+
+export class JobNodeAvailableResources extends HttpBase {
+  @HttpBind('node_id') nodeId = 0;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('cpu_available') cpuAvailable = '';
+  @HttpBind('mem_available') memAvailable = '';
+  @HttpBind('storage_available') storageAvailable = '';
+}
+
+export class JobNode extends HttpBase {
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
+  @HttpBind('status') status = -1;
+}
+
+export class JobNodeGroup extends HttpBase {
+  @HttpBind('nodegroup_id') nodeGroupId = -1;
+  @HttpBind('nodegroup_project') nodeGroupProject = '';
+  @HttpBind('nodegroup_name') nodeGroupName = '';
+  @HttpBind('nodegroup_comment') nodeGroupComment = '';
 }
