@@ -353,6 +353,9 @@ func InitRouter() {
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),
+			beego.NSRouter("/prometheus",
+				&PrometheusController{},
+				"post:GetData"),
 		),
 	)
 
