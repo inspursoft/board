@@ -112,6 +112,15 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	// run loop to fetch data from ws client
 	go ptyHandler.Run()
 	logs.Info("invoke kubernetes %s/%s pod exec in container %s.", namespace, pod, container)
+	modelPod, err := k8sclient.AppV1().Pod(namespace).Get(pod)
+	if err != nil {
+		return err
+	}
+	if *modelPod.Spec.Containers[0].SecurityContext.Privileged {
+		err = errors.New("the container privileged is true, cannot be connected")
+		ptyHandler.Write([]byte(err.Error()))
+		return err
+	}
 	err = k8sclient.AppV1().Pod(namespace).ShellExec(pod, container, cmd, ptyHandler)
 	ptyHandler.Write([]byte(err.Error()))
 	return err

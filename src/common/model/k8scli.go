@@ -353,6 +353,11 @@ type K8sContainer struct {
 	Resources ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,8,opt,name=resources"`
 	// Pod volumes to mount into the container's filesystem.
 	VolumeMounts []VolumeMount
+	// Security options the pod should run with.
+	// More info: https://kubernetes.io/docs/concepts/policy/security-context/
+	// More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+	// +optional
+	SecurityContext *SecurityContext `json:"securityContext,omitempty" protobuf:"bytes,15,opt,name=securityContext"`
 }
 
 // Protocol defines network protocols supported for things like container ports.
@@ -1539,3 +1544,14 @@ const (
 	// NamespacePublic is the namespace where we place public info (ConfigMaps)
 	NamespacePublic string = "kube-public"
 )
+
+// SecurityContext holds security configuration that will be applied to a container.
+// Some fields are present in both SecurityContext and PodSecurityContext.  When both
+// are set, the values in SecurityContext take precedence.
+type SecurityContext struct {
+	// Run container in privileged mode.
+	// Processes in privileged containers are essentially equivalent to root on the host.
+	// Defaults to false.
+	// +optional
+	Privileged *bool `json:"privileged,omitempty" protobuf:"varint,2,opt,name=privileged"`
+}
