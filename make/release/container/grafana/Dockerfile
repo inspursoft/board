@@ -1,6 +1,7 @@
 FROM grafana/grafana:6.7.2
 
-RUN grafana-cli plugins install grafana-kubernetes-app
+RUN grafana-cli plugins install devopsprodigy-kubegraf-app && grafana-cli plugins install grafana-piechart-panel
+
 ENV GF_AUTH_ANONYMOUS_ENABLED=true \
     GF_AUTH_ANONYMOUS_ORG_ROLE=Admin \
     GF_ANALYTICS_REPORTING_ENABLED=false \
@@ -12,4 +13,3 @@ ADD make/dev/container/grafana/init.sh /init.sh
 RUN apk add --no-cache curl && chmod a+x /init.sh
 
 RUN sed -i '/^exec/i \/init.sh' /run.sh
-USER grafana

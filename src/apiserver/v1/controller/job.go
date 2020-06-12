@@ -183,6 +183,46 @@ func (p *JobController) GetJobStatusAction() {
 	p.RenderJSON(jobStatus)
 }
 
+func (p *JobController) GetJobConfigAction() {
+	var config model.JobConfig
+	var err error
+	j, err := p.resolveJobInfo()
+	if err != nil {
+		return
+	}
+	//Judge authority
+	p.ResolveUserPrivilegeByID(j.ProjectID)
+	jobStatus, err := service.GetK8sJobByK8sassist(j.ProjectName, j.Name)
+	if err != nil {
+		p.ParseError(err, c.ParseGetK8sError)
+		return
+	}
+
+	config.ID = j.ID
+	config.Name = j.Name
+	config.ProjectID = j.ProjectID
+	config.ProjectName = j.ProjectName
+	if _, ok := jobStatus.Spec.Template.Spec.NodeSelector["kubernetes.io/hostname"]; ok {
+		config.NodeSelector = jobStatus.Spec.Template.Spec.NodeSelector["kubernetes.io/hostname"]
+	} else {
+		for key, value := range jobStatus.Spec.Template.Spec.NodeSelector {
+			if value == "true" {
+				config.NodeSelector = key
+				break
+			}
+		}
+	}
+	config.Parallelism = jobStatus.Spec.Parallelism
+	config.Completions = jobStatus.Spec.Completions
+	config.ActiveDeadlineSeconds = jobStatus.Spec.ActiveDeadlineSeconds
+	config.BackoffLimit = jobStatus.Spec.BackoffLimit
+	config.ContainerList = service.GetDeploymentContainers(jobStatus.Spec.Template.Spec.Containers,
+		jobStatus.Spec.Template.Spec.Volumes)
+	config.AffinityList = service.GetJobAffinity(jobStatus.Spec.Template.Spec.Affinity)
+
+	p.RenderJSON(config)
+}
+
 func (p *JobController) JobExists() {
 	projectName := p.GetString("project_name")
 	p.ResolveProjectMember(projectName)

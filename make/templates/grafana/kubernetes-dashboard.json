@@ -32,7 +32,7 @@
 			"includeVars": true,
 			"keepTime": false,
 			"tags": [
-				"kubernetes-app"
+				"DevOpsProdigy"
 			],
 			"title": "Dashboards",
 			"type": "dashboards"
@@ -59,7 +59,7 @@
 					"rgba(237, 129, 40, 0.89)",
 					"#d44a3a"
 				],
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"format": "percentunit",
 				"gauge": {
 					"maxValue": 100,
@@ -132,7 +132,7 @@
 					"rgba(237, 129, 40, 0.89)",
 					"#d44a3a"
 				],
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"format": "percentunit",
 				"gauge": {
 					"maxValue": 100,
@@ -205,7 +205,7 @@
 					"rgba(237, 129, 40, 0.89)",
 					"#d44a3a"
 				],
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"format": "percentunit",
 				"gauge": {
 					"maxValue": 100,
@@ -278,7 +278,7 @@
 					"rgba(237, 129, 40, 0.89)",
 					"#d44a3a"
 				],
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"format": "percentunit",
 				"gauge": {
 					"maxValue": 100,
@@ -326,7 +326,7 @@
 				},
 				"tableColumn": "",
 				"targets": [{
-					"expr": "(sum (node_filesystem_size{nodename=~\"$node\"}) - sum (node_filesystem_free{nodename=~\"$node\"})) / sum (node_filesystem_size{nodename=~\"$node\"})",
+					"expr": "1 - (sum(node_filesystem_avail_bytes{nodename=~\"$node\",mountpoint=\"/\",fstype!=\"rootfs\"} ) / sum(node_filesystem_size_bytes{nodename=~\"$node\",mountpoint=\"/\",fstype!=\"rootfs\"}))",
 					"format": "time_series",
 					"intervalFactor": 1,
 					"refId": "A"
@@ -347,7 +347,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"fill": 1,
 				"gridPos": {
 					"h": 5,
@@ -439,7 +439,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"fill": 1,
 				"gridPos": {
 					"h": 5,
@@ -532,7 +532,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"fill": 1,
 				"gridPos": {
 					"h": 5,
@@ -624,7 +624,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"fill": 1,
 				"gridPos": {
 					"h": 5,
@@ -655,14 +655,14 @@
 				"stack": false,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum(node_filesystem_size{nodename=~\"$node\"}) - sum(node_filesystem_free{nodename=~\"$node\"})",
+						"expr": "sum(node_filesystem_size_bytes{nodename=~\"$node\",device!~'rootfs'}) - sum(node_filesystem_free_bytes{nodename=~\"$node\",device!~'rootfs'})",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "usage",
 						"refId": "A"
 					},
 					{
-						"expr": "sum(node_filesystem_size{nodename=~\"$node\"})",
+						"expr": "sum(node_filesystem_size_bytes{nodename=~\"$node\",device!~'rootfs'})",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "limit",
@@ -726,7 +726,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"description": "",
 				"editable": true,
 				"error": false,
@@ -811,7 +811,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 1,
@@ -912,7 +912,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 5,
@@ -948,7 +948,7 @@
 				"stack": true,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum((avg(irate(node_cpu{nodename=~\"$node\", mode=\"system\"}[5m])) * 100))",
+						"expr": "sum((avg(irate(node_cpu_seconds_total{nodename=~\"$node\", mode=\"system\"}[5m])) * 100))",
 						"format": "time_series",
 						"instant": false,
 						"interval": "",
@@ -957,21 +957,21 @@
 						"refId": "A"
 					},
 					{
-						"expr": "sum((avg(irate(node_cpu{nodename=~\"$node\", mode=\"user\"}[5m])) * 100))",
+						"expr": "sum((avg(irate(node_cpu_seconds_total{nodename=~\"$node\", mode=\"user\"}[5m])) * 100))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "user",
 						"refId": "B"
 					},
 					{
-						"expr": "sum((avg(irate(node_cpu{nodename=~\"$node\", mode=\"iowait\"}[5m])) * 100))",
+						"expr": "sum((avg(irate(node_cpu_seconds_total{nodename=~\"$node\", mode=\"iowait\"}[5m])) * 100))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "iowait",
 						"refId": "C"
 					},
 					{
-						"expr": "sum((avg(irate(node_cpu{nodename=~\"$node\", mode=\"steal\"}[5m])) * 100))",
+						"expr": "sum((avg(irate(node_cpu_seconds_total{nodename=~\"$node\", mode=\"steal\"}[5m])) * 100))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "steal",
@@ -1018,7 +1018,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 1,
@@ -1057,7 +1057,7 @@
 				"stack": false,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum(node_memory_MemAvailable{nodename=~\"$node\"})",
+						"expr": "sum(node_memory_MemAvailable_bytes{nodename=~\"$node\"})",
 						"format": "time_series",
 						"interval": "",
 						"intervalFactor": 1,
@@ -1065,14 +1065,14 @@
 						"refId": "A"
 					},
 					{
-						"expr": "sum(node_memory_MemFree{nodename=~\"$node\"})",
+						"expr": "sum(node_memory_MemFree_bytes{nodename=~\"$node\"})",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "free",
 						"refId": "B"
 					},
 					{
-						"expr": "sum(node_memory_Active{nodename=~\"$node\"})",
+						"expr": "sum(node_memory_Active_bytes{nodename=~\"$node\"})",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "active",
@@ -1131,7 +1131,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 1,
@@ -1166,19 +1166,18 @@
 				"stack": false,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum(node_filesystem_free{nodename=~\"$node\"}) by (nodename)",
+						"expr": "node_filesystem_free_bytes{nodename=~\"$node\"}",
 						"format": "time_series",
 						"intervalFactor": 1,
-						"legendFormat": "{{ nodename }} free",
-						"refId": "B"
+						"legendFormat": "Filesystem free. {{device}}",
+						"refId": "A"
 					},
 					{
-						"expr": "(sum(node_filesystem_size{nodename=~\"$node\"}) by (nodename) - sum(node_filesystem_free) by (nodename))",
+						"expr": "node_filesystem_size_bytes{nodename=~\"$node\"}",
 						"format": "time_series",
-						"instant": false,
 						"intervalFactor": 1,
-						"legendFormat": "{{ nodename }} usage",
-						"refId": "A"
+						"legendFormat": "Filesystem size. {{device}}",
+						"refId": "B"
 					}
 				],
 				"thresholds": [],
@@ -1223,7 +1222,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 1,
@@ -1257,14 +1256,14 @@
 				"stack": false,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum(rate(node_disk_bytes_read{nodename=~\"$node\"}[5m]))",
+						"expr": "sum(rate(node_disk_read_bytes_total{nodename=~\"$node\"}[5m]))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "Read",
 						"refId": "A"
 					},
 					{
-						"expr": "sum(rate(node_disk_bytes_written{nodename=~\"$node\"}[5m]))",
+						"expr": "sum(rate(node_disk_written_bytes_total{nodename=~\"$node\"}[5m]))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "Write",
@@ -1311,7 +1310,7 @@
 				"bars": false,
 				"dashLength": 10,
 				"dashes": false,
-				"datasource": "$datasource",
+				"datasource": "$PromDs",
 				"editable": true,
 				"error": false,
 				"fill": 1,
@@ -1345,14 +1344,14 @@
 				"stack": false,
 				"steppedLine": false,
 				"targets": [{
-						"expr": "sum(rate(node_disk_reads_completed{nodename=~\"$node\"}[5m]))",
+						"expr": "sum(rate(node_disk_reads_completed_total{nodename=~\"$node\"}[5m]))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "Reads",
 						"refId": "A"
 					},
 					{
-						"expr": "sum(rate(node_disk_writes_completed{nodename=~\"$node\"}[5m]))",
+						"expr": "sum(rate(node_disk_writes_completed_total{nodename=~\"$node\"}[5m]))",
 						"format": "time_series",
 						"intervalFactor": 1,
 						"legendFormat": "Writes",
@@ -1399,7 +1398,7 @@
 		"style": "dark",
 		"tags": [
 			"kubernetes",
-			"kubernetes-app"
+			"DevOpsProdigy"
 		],
 		"templating": {
 			"list": [{
@@ -1407,23 +1406,52 @@
 					"label": null,
 					"name": "cluster",
 					"options": [],
-					"query": "grafana-kubernetes-datasource",
+					"query": "devopsprodidy-kubegraf-datasource",
 					"refresh": 1,
 					"regex": "",
 					"type": "datasource"
 				},
 				{
-					"allValue": null,
 					"datasource": "$cluster",
 					"hide": 2,
-					"includeAll": false,
 					"label": "",
-					"multi": false,
-					"name": "ds",
+					"name": "prom_ds",
 					"options": [],
-					"query": "datasource",
+					"query": "prom",
 					"refresh": 1,
 					"regex": "",
+					"type": "query"
+				},
+				{
+					"hide": 2,
+					"label": "",
+					"name": "PromDs",
+					"options": [],
+					"query": "prometheus",
+					"refresh": 1,
+					"regex": "/^$prom_ds$/",
+					"type": "datasource"
+				},
+				{
+					"allValue": null,
+					"current": {
+						"tags": [],
+						"text": "All",
+						"value": "$__all"
+					},
+					"datasource": "$cluster",
+					"definition": "",
+					"hide": 0,
+					"includeAll": true,
+					"index": -1,
+					"label": null,
+					"multi": false,
+					"name": "node",
+					"options": [],
+					"query": "node",
+					"refresh": 1,
+					"regex": "",
+					"skipUrlSync": false,
 					"sort": 0,
 					"tagValuesQuery": "",
 					"tags": [],
@@ -1432,52 +1460,17 @@
 					"useTags": false
 				},
 				{
-					"hide": 2,
-					"label": "",
-					"name": "datasource",
-					"options": [],
-					"query": "prometheus",
-					"refresh": 1,
-					"regex": "/$ds/",
-					"type": "datasource"
-				},
-				{
-					"allValue": null,
 					"datasource": "$cluster",
-					"hide": 0,
-					"includeAll": true,
-					"label": null,
-					"multi": true,
-					"name": "node",
-					"options": [],
-					"query": "node",
-					"refresh": 1,
-					"regex": "",
-					"sort": 0,
-					"tagValuesQuery": null,
-					"tags": [],
-					"tagsQuery": null,
 					"type": "query",
-					"useTags": false
-				},
-				{
-					"allValue": null,
-					"datasource": "$cluster",
-					"hide": 0,
-					"includeAll": true,
-					"label": "project",
-					"multi": true,
 					"name": "namespace",
-					"options": [],
 					"query": "namespace",
+					"hide": 0,
+					"includeAll": true,
+					"index": -1,
+					"label": null,
+					"options": [],
 					"refresh": 1,
-					"regex": "",
-					"sort": 0,
-					"tagValuesQuery": null,
-					"tags": [],
-					"tagsQuery": null,
-					"type": "query",
-					"useTags": false
+					"regex": ""
 				}
 			]
 		},

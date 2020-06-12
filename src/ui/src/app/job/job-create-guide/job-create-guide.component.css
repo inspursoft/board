@@ -1,0 +1,50 @@
+span.job-title {
+  font-size: 16px;
+  margin-top: 20px;
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+div.create-job-method {
+  margin-bottom: 20px;
+}
+
+div.create-job-method label:hover {
+  cursor: pointer;
+}
+
+div.card-container-job {
+  display: flex;
+  max-height: 300px;
+  overflow-y: auto;
+  flex-wrap: wrap;
+}
+
+div.card {
+  width: 280px;
+  min-height: 180px;
+  min-width: 250px;
+  margin: 5px;
+}
+
+div.card:hover {
+  cursor: pointer;
+}
+
+div.card.selected {
+  background-color: lightblue;
+}
+
+div.card.disabled {
+  background-color: white;
+}
+
+div.card.disabled:hover {
+  cursor: not-allowed;
+}
+
+span.card-title-job {
+  min-width: 110px;
+  font-size: 16px;
+  display: inline-block;
+}

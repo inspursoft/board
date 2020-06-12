@@ -136,9 +136,12 @@ services:
     volumes:
       - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
 #     - ../../src/ui/dist:/usr/share/nginx/html:z
+      - /data/board/cert/proxy.pem:/etc/ssl/certs/proxy.pem:z
+      - /data/board/cert/proxy-key.pem:/etc/ssl/certs/proxy-key.pem:z  
     ports: 
       - 80:80
       - 8080:8080
+      - 443:443
     links:
       - apiserver
     depends_on:
@@ -152,6 +155,7 @@ services:
     image: board_grafana:__version__
     restart: always
     volumes:
+      - /data/board/grafana/config:/grafana
       - /data/board/grafana/log:/var/log/grafana
       - ../config/grafana:/etc/grafana/config
     networks:
