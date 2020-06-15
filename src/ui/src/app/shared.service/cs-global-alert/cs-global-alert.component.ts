@@ -51,7 +51,7 @@ export class CsGlobalAlertComponent implements OnInit {
           });
           reader.readAsText(err);
         } else {
-          this.curErrorDetailMsg = (this.curMessage.errorObject as HttpErrorResponse).error.message;
+          this.curErrorDetailMsg = err ? err.message : (this.curMessage.errorObject as HttpErrorResponse).message;
         }
       } else {
         this.curErrorDetailMsg = err;
