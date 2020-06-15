@@ -1143,7 +1143,11 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 			serviceContainer.PodName = podList.Items[i].Name
 			serviceContainer.ServiceName = serviceName
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
-			serviceContainer.SecurityContext = *podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged
+			var privileged bool
+			if podList.Items[i].Spec.InitContainers[j].SecurityContext != nil && podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged != nil {
+				privileged = *podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged
+			}
+			serviceContainer.SecurityContext = privileged
 			sContainers = append(sContainers, serviceContainer)
 		}
 		for j := range podList.Items[i].Spec.Containers {
@@ -1151,7 +1155,11 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 			serviceContainer.PodName = podList.Items[i].Name
 			serviceContainer.ServiceName = serviceName
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
-			serviceContainer.SecurityContext = *podList.Items[i].Spec.Containers[j].SecurityContext.Privileged
+			var privileged bool
+			if podList.Items[i].Spec.Containers[j].SecurityContext != nil && podList.Items[i].Spec.Containers[j].SecurityContext.Privileged != nil {
+				privileged = *podList.Items[i].Spec.Containers[j].SecurityContext.Privileged
+			}
+			serviceContainer.SecurityContext = privileged
 			sContainers = append(sContainers, serviceContainer)
 		}
 	}
