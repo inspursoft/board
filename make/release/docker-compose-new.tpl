@@ -152,7 +152,7 @@ services:
     image: board_grafana:__version__
     restart: always
     volumes:
-      - /data/board/grafana/config:/grafana
+      - /data/board/grafana/data:/var/lib/grafana
       - /data/board/grafana/log:/var/log/grafana
       - ../config/grafana:/etc/grafana/config
     networks:
