@@ -271,7 +271,7 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ../templates/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 networks:
   dvserver_net:
     external:
