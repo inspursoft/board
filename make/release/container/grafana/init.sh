@@ -16,7 +16,7 @@ function util_done()
 
 function init()
 {
-    if [ ! -f /grafana/initok ]; then
+    if [ ! -f /var/lib/grafana/initok ]; then
         #replace environment variables
         if [ ! -d /etc/grafana/config/ ]; then
             echo "directory /etc/grafana/config/ does not exist. make sure you have executed the 'make prepare' command"
@@ -63,7 +63,7 @@ function init()
 
         # generate the install tag file 
         echo "init successfully"
-        echo "init successfully" > /grafana/initok
+        echo "init successfully" > /var/lib/grafana/initok
     fi
 }
 
