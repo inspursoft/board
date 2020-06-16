@@ -1503,11 +1503,12 @@ type JobCondition struct {
 }
 
 type ServiceContainer struct {
-	ContainerName string
-	PodName       string
-	ServiceName   string
-	NodeIP        string
-	SecurityContext bool
+	ContainerName	string
+	PodName		string
+	ServiceName	string
+	NodeIP		string
+	SecurityContext	bool
+	InitContainer	bool
 }
 
 // TerminalSize and TerminalSizeQueue was a part of k8s.io/kubernetes/pkg/util/term
