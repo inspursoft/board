@@ -222,14 +222,14 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
   prometheus:
-    image: prom/prometheus:v2.18.1
+    image: board_prometheus:__version__
     restart: always
     networks:
-      - dvserver_net
+      - board
     ports:
       - 9090:9090
     volumes:
-      - ../templates/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 networks:
   board:
     external: true
