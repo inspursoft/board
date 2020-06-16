@@ -264,7 +264,10 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
   prometheus:
-    image: prom/prometheus:v2.18.1
+    build:
+      context: ../../
+      dockerfile: make/dev/container/prometheus/Dockerfile
+    image: dev_prometheus:dev
     restart: always
     networks:
       - board
