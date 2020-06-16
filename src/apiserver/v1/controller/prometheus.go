@@ -25,7 +25,11 @@ func (p *PrometheusController) GetData() {
 	var request service.RequestPayload
 	var err error
 
-	timestamp := p.GetInt64("timestamp")
+	timestamp, err := p.GetInt64("timestamp")
+	if err != nil {
+		logs.Error("Failed to get int64 timestamp: %+v", err)
+		p.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
 	err = utils.UnmarshalToJSON(p.Ctx.Request.Body, &request)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)

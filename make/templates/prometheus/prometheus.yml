@@ -13,4 +13,4 @@ scrape_configs:
 
     static_configs:
       - targets:
-        - '10.111.25.216:30181'
+        - '$prometheus_url'
