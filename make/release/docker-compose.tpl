@@ -219,6 +219,15 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
+  prometheus:
+    image: board_prometheus:__version__
+    restart: always
+    networks:
+      - board
+    ports:
+      - 9090:9090
+    volumes:
+      - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 networks:
   board:
     external: false
