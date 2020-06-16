@@ -46,3 +46,4 @@ KVM_TOOLKITS_PATH=$kvm_toolkits_path
 AUDIT_DEBUG=$audit_debug
 DNS_SUFFIX=$dns_suffix
 TILLER_PORT=$tiller_port
+K8SPROXY_ENABLED=$k8sproxy_enabled

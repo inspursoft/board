@@ -177,11 +177,7 @@ func main() {
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
-	err := v2routers.InitK8sRouter()
-	if err != nil {
-		logs.Error("Failed to init kubernetes api routes: %+v", err)
-		panic(err)
-	}
+
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
@@ -215,6 +211,7 @@ func main() {
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
+	service.SetSystemInfo("K8SPROXY_ENABLED", false)
 
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
 		err = service.PrepareKVMHost()

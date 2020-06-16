@@ -219,6 +219,33 @@ paths:
             $ref: '#/definitions/SystemInfo'
         500:
           description: Unexpected internal error. 
+    put:
+      summary: Set system info.
+      description: |
+        This endpoint is used to set system info.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: systeminfo
+          in: body
+          description: Only k8s proxy can be modified.
+          required: true
+          schema:
+            $ref: '#/definitions/SystemInfo' 
+      tags:
+        - Products
+      responses:
+        200:
+          description: Setting system info successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Internal errors. 
   /v1/kubernetesinfo:
     get:
       summary: Get kubernetes info.
@@ -6367,6 +6394,8 @@ definitions:
         type: string
       processor_type:
         type: string
+      k8sproxy_enabled:
+        type: boolean
   KubernetesInfo:
     type: object
     properties:

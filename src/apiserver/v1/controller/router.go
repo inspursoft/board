@@ -33,7 +33,7 @@ func InitRouter() {
 				"get:CurrentUserAction"),
 			beego.NSRouter("/systeminfo",
 				&AuthController{},
-				"get:GetSystemInfo"),
+				"get:GetSystemInfo;put:SetSystemInfo"),
 			beego.NSRouter("system/resources",
 				&AuthController{},
 				"get:GetSystemResources"),
@@ -359,4 +359,5 @@ func InitRouter() {
 	beego.AddNamespace(ns)
 	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+	beego.Router("/kubernetes/?:all(.*)", &K8SProxyController{}, "*:ProxyAction")
 }

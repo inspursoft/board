@@ -6,10 +6,10 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"net/http"
-	"strings"
-
 	"github.com/astaxie/beego/logs"
+	"net/http"
+	"os"
+	"strings"
 )
 
 type AuthController struct {
@@ -19,6 +19,9 @@ type AuthController struct {
 func (u *AuthController) Prepare() {
 	u.EnableXSRF = false
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
+	if strings.HasPrefix(u.Ctx.Input.URI(), "/api/v1/systeminfo") && u.Ctx.Input.Method() == http.MethodPut {
+		u.ResolveSignedInUser()
+	}
 	u.RecordOperationAudit()
 }
 
@@ -152,6 +155,23 @@ func (u *AuthController) GetSystemInfo() {
 		return
 	}
 	u.RenderJSON(systemInfo)
+}
+
+func (u *AuthController) SetSystemInfo() {
+	var info model.SystemInfo
+	var err error
+	err = u.ResolveBody(&info)
+	if err != nil {
+		u.InternalError(err)
+		return
+	}
+	enableStr := fmt.Sprintf("%+v", info.K8SProxyEnabled)
+	os.Setenv("K8SPROXY_ENABLED", enableStr)
+	utils.SetConfig("K8SPROXY_ENABLED", enableStr)
+	err = service.SetSystemInfo("K8SPROXY_ENABLED", true)
+	if err != nil {
+		u.InternalError(err)
+	}
 }
 
 func (u *AuthController) GetSystemResources() {

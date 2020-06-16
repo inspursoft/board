@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os/exec"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -47,6 +48,12 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.DNSSuffix = config.Value
 		case "KUBERNETES_VERSION":
 			systemInfo.KubernetesVersion = config.Value
+		case "K8SPROXY_ENABLED":
+			enabled, err := strconv.ParseBool(config.Value)
+			if err != nil {
+				systemInfo.K8SProxyEnabled = false
+			}
+			systemInfo.K8SProxyEnabled = enabled
 		}
 	}
 

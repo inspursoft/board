@@ -12,6 +12,7 @@ type SystemInfo struct {
 	DNSSuffix         string `json:"dns_suffix"`
 	KubernetesVersion string `json:"kubernetes_version"`
 	ProcessorType     string `json:"processor_type"`
+	K8SProxyEnabled   bool   `json:"k8sproxy_enabled"`
 }
 
 // Info contains versioning information.

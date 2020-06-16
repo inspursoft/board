@@ -179,6 +179,7 @@ func InitializeDefaultConfig() {
 	AddEnv("DNS_SUFFIX")
 
 	AddEnv("TILLER_PORT")
+	AddEnv("K8SPROXY_ENABLED")
 
 	ShowAllConfigs()
 }
