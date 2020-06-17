@@ -803,8 +803,12 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 }
 
 func FromK8sSecurityContext(context *v1.SecurityContext) *model.SecurityContext {
+	var privileged *bool
+	if context != nil && context.Privileged != nil {
+		privileged = context.Privileged
+	}
 	return &model.SecurityContext{
-		Privileged:      context.Privileged,
+		Privileged:      privileged,
 	}
 }
 

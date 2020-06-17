@@ -117,7 +117,9 @@ func PodShell(namespace, pod, container string, w http.ResponseWriter, r *http.R
 	if err != nil {
 		return err
 	}
-	if *modelPod.Spec.Containers[0].SecurityContext.Privileged {
+	if modelPod.Spec.Containers[0].SecurityContext != nil &&
+		modelPod.Spec.Containers[0].SecurityContext.Privileged != nil &&
+		*modelPod.Spec.Containers[0].SecurityContext.Privileged {
 		err = errors.New("the container privileged is true, cannot be connected")
 		ptyHandler.Write([]byte(err.Error()))
 		return err
@@ -153,7 +155,9 @@ func CopyToPod(namespace, podName, container, src, dest string) error {
 	if err != nil {
 		return err
 	}
-	if *modelPod.Spec.Containers[0].SecurityContext.Privileged {
+	if modelPod.Spec.Containers[0].SecurityContext != nil &&
+		modelPod.Spec.Containers[0].SecurityContext.Privileged != nil &&
+		*modelPod.Spec.Containers[0].SecurityContext.Privileged {
 		return errors.New("the container privileged is true, cannot be connected")
 	}
 	logs.Info("Copying the content of '%s' to '%s/%s/%s:%s'", src, namespace, podName, container, dest)
