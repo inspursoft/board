@@ -727,7 +727,10 @@ export const LANG_ZH_CN = {
     UploadFilePath: '请输入上传的文件路径',
     downloadFileLabel: '下载文件的容器路径',
     downloadFilePath: '请输入下载文件在容器中的路径',
-    downloadFileFailed: '下载文件失败'
+    downloadFileFailed: '下载文件失败',
+    WebsocketConnectionError: 'Websocket连接失败',
+    ContainerListEmpty: '可链接的容器列表为空',
+    UploadFileSuccess: '上传文件成功'
   },
   "STORAGE":{
     "PV_CREATE":"创建PV",

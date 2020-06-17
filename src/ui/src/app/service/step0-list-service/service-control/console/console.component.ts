@@ -69,10 +69,15 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.k8sService.getServiceDetail(this.service.service_id).subscribe(
       (res: ServiceDetailInfo) => {
         this.serviceDetailInfo = res;
-        this.changeRef.detectChanges();
+        const containers = this.serviceDetailInfo.service_Containers;
+        if (containers.length > 0) {
+          this.serviceDetailInfo.service_Containers = containers.filter(value =>
+            value.SecurityContext === false && value.InitContainer === false);
+        }
         if (this.serviceDetailInfo.service_Containers.length > 0) {
           this.buildSocketConnect(this.serviceDetailInfo.service_Containers[0], 0);
         }
+        this.changeRef.detectChanges();
       }
     );
     this.resizeListener = this.resizeListener.bind(this);
@@ -80,12 +85,22 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.ws.close();
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.close();
+    }
     window.removeEventListener('resize', this.resizeListener);
   }
 
   ngAfterViewInit(): void {
     window.addEventListener('resize', this.resizeListener);
+  }
+
+  get hasContainerToConnect(): boolean {
+    return this.serviceDetailInfo.service_Containers.length > 0;
+  }
+
+  get noneContainerToConnect(): boolean {
+    return this.serviceDetailInfo.service_Containers.length === 0;
   }
 
   get wsUrl(): string {
@@ -199,6 +214,12 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.ws.onerror = (ev: Event): any => {
       this.curActiveIndex = -1;
       this.curReadyState = 3;
+      this.createTerm();
+      this.initTerm();
+      this.mountTerm();
+      this.translateService.get('ServiceControlConsole.WebsocketConnectionError').subscribe(
+        res => this.messageService.showGlobalMessage(res, {alertType: 'danger', view: this.messageContainer})
+      );
     };
   }
 
@@ -252,7 +273,9 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
           if (res.type === HttpEventType.UploadProgress || res.type === HttpEventType.DownloadProgress) {
             this.updateProgressEvent.emit(res);
           } else if (res.type === HttpEventType.Response) {
-            this.messageService.showAlert('上传文件成功', {view: this.messageContainer});
+            this.translateService.get('ServiceControlConsole.UploadFileSuccess').subscribe(
+              msg => this.messageService.showAlert(msg, {view: this.messageContainer})
+            );
             this.isActionInWIPChange.emit(false);
           }
         },
@@ -277,7 +300,6 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.messageService.cleanNotification();
     this.k8sService.downloadFile(this.service.service_project_id, this.curPodName, this.curContainerName, this.curDownLoadPath).subscribe(
       (res: HttpEvent<any>) => {
-        console.log(res);
         if (res.type === HttpEventType.DownloadProgress) {
           this.updateProgressEvent.emit(res);
         } else if (res instanceof HttpResponse) {

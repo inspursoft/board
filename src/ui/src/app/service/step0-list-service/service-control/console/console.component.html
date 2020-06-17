@@ -1,5 +1,8 @@
 <div #messageContainer></div>
-<div class="clr-row console-container">
+<div *ngIf="noneContainerToConnect"><b>
+  {{'ServiceControlConsole.ContainerListEmpty' | translate}}.
+</b></div>
+<div *ngIf="hasContainerToConnect" class="clr-row console-container">
   <div class="clr-row top-container">
     <div class="clr-row clr-align-content-center upload-download-container">
       <a href="javascript: void(0)"

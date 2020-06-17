@@ -727,7 +727,10 @@ export const LANG_EN_US = {
     UploadFilePath: 'Please input the directory of upload file',
     downloadFileLabel: 'File name for downloading',
     downloadFilePath: 'Please input file name in the container for download',
-    downloadFileFailed: 'Fail to download file'
+    downloadFileFailed: 'Fail to download file',
+    WebsocketConnectionError: 'Websocket connection to server failed',
+    ContainerListEmpty: 'The list of connectable container is empty',
+    UploadFileSuccess: 'Upload successfully.'
   },
   "STORAGE":{
     "PV_CREATE":"New PV",
