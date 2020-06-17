@@ -8,9 +8,15 @@ import (
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT", "gitlab")
 var devOpsRegistries map[string]DevOps
 
+type CommitItem struct {
+	PathWithName string
+	Content      string
+}
+
 type DevOps interface {
 	SignUp(user model.User) error
 	CreateAccessToken(username string, password string) (string, error)
+	CommitAndPush(repoName string, isRemoved bool, username string, email string, items ...CommitItem) error
 	ConfigSSHAccess(username string, token string, publicKey string) error
 	CreateRepoAndJob(userID int64, projectName string) error
 	ForkRepo(forkedUser model.User, baseRepoName string) error

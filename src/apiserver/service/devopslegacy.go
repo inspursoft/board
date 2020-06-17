@@ -43,6 +43,23 @@ func (l LegacyDevOps) CreateAccessToken(username string, password string) (strin
 	return accessToken.Sha1, nil
 }
 
+func (l LegacyDevOps) CommitAndPush(repoName string, isRemoved bool, username string, email string, items ...CommitItem) error {
+	repoPath := ResolveRepoPath(repoName, username)
+	repoHandler, err := OpenRepo(repoPath, username, email)
+	if err != nil {
+		logs.Error("Failed to open repo: %+v", err)
+		return err
+	}
+	if isRemoved {
+		repoHandler.ToRemove()
+	}
+	itemNames := []string{}
+	for _, commitItem := range items {
+		itemNames = append(itemNames, commitItem.PathWithName)
+	}
+	return repoHandler.SimplePush(itemNames...)
+}
+
 func (l LegacyDevOps) ConfigSSHAccess(username string, token string, publicKey string) error {
 	return gogs.NewGogsHandler(username, token).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
 }

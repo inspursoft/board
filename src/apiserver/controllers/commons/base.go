@@ -298,7 +298,8 @@ func (b *BaseController) ResolveRepoPath(projectName string) {
 		return
 	}
 	b.RepoPath = service.ResolveRepoPath(repoName, username)
-	logs.Debug("Set repo path at file upload: %s", b.RepoPath)
+	b.RepoName = repoName
+	logs.Debug("Set repo path at file upload: %s and repo name: %s", b.RepoPath, b.RepoName)
 }
 
 func (b *BaseController) ResolveRepoServicePath(projectName, serviceName string) {
@@ -365,20 +366,17 @@ func (b *BaseController) ResolveUserPrivilegeByID(projectID int64) (project *mod
 }
 
 func (b *BaseController) ManipulateRepo(items ...string) error {
-	if b.RepoPath == "" {
-		return fmt.Errorf("repo path cannot be empty")
-	}
 	username := b.CurrentUser.Username
 	email := b.CurrentUser.Email
-	repoHandler, err := service.OpenRepo(b.RepoPath, username, email)
-	if err != nil {
-		logs.Error("Failed to open repo: %+v", err)
-		return err
+	b.ResolveRepoPath(b.Project.Name)
+	commitItems := []service.CommitItem{}
+	for _, item := range items {
+		commitItems = append(commitItems, service.CommitItem{
+			PathWithName: item,
+			Content:      utils.GetContentFromFile(filepath.Join(b.RepoPath, item)),
+		})
 	}
-	if b.IsRemoved {
-		repoHandler.ToRemove()
-	}
-	return repoHandler.SimplePush(items...)
+	return service.CurrentDevOps().CommitAndPush(b.RepoName, b.IsRemoved, username, email, commitItems...)
 }
 
 func (b *BaseController) PushItemsToRepo(items ...string) {
