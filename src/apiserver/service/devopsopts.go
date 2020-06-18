@@ -5,7 +5,7 @@ import (
 	"git/inspursoft/board/src/common/utils"
 )
 
-var devOpsOpt = utils.GetConfig("DEVOPS_OPT", "gitlab")
+var devOpsOpt = utils.GetConfig("DEVOPS_OPT", "legacy")
 var devOpsRegistries map[string]DevOps
 
 type CommitItem struct {
