@@ -230,6 +230,14 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 	}
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
 
+	projectInfo := model.Project{ID: int64(forkedCreation.ID)}
+	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+	if err != nil {
+		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
+	}
+	logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
+
 	jenkinsHandler := jenkins.NewJenkinsHandler()
 	err = jenkinsHandler.CreateJobWithParameter(forkedRepoName)
 	if err != nil {
