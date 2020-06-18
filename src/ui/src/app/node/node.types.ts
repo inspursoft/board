@@ -49,8 +49,8 @@ export class NodeControlStatus extends HttpBase {
   @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
   @HttpBindArray('service_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
 
-  initFromRes() {
-    super.initFromRes();
+  prepareInit() {
+    super.prepareInit();
     this.serviceInstances = Array<ServiceInstance>();
   }
 }
