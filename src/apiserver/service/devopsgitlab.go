@@ -128,17 +128,21 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		return err
 	}
 	logs.Debug("Successful created Gitlab project: %+v", projectCreation)
-	// err = gogsHandler.CreateHook(username, repoName)
-	// if err != nil {
-	// 	logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
-	// }
+	projectInfo.ID = int64(projectCreation.ID)
+
+	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+	if err != nil {
+		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
+	}
+	logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
 
 	fileInfo := gitlab.FileInfo{
 		Name:    "README.md",
 		Path:    "README.md",
 		Content: "README file created by Board.",
 	}
-	projectInfo.ID = int64(projectCreation.ID)
+
 	fileCreation, err := gitlabHandler.ManipulateFile("create", userInfo, projectInfo, "master", fileInfo)
 	if err != nil {
 		logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)

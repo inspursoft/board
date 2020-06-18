@@ -92,6 +92,14 @@ type ProjectCreation struct {
 	Owner             UserInfo      `json:"owner"`
 }
 
+type HookCreation struct {
+	ID         int       `json:"id"`
+	URL        string    `json:"url"`
+	ProjectID  int       `json:"project_id"`
+	PushEvents bool      `json:"push_events"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 type MRCreation struct {
 	ID              int      `json:"id"`
 	IID             int      `json:"iid"`
@@ -279,6 +287,21 @@ func (g *gitlabHandler) AddSSHKey(title string, key string) (a AddSSHKeyResponse
 	return
 }
 
+func (g *gitlabHandler) CreateHook(project model.Project, hookURL string) (h HookCreation, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/hooks", g.gitlabAPIBaseURL, project.ID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			formData := url.Values{}
+			formData.Add("url", hookURL)
+			formData.Add("push_events", "true")
+			req.URL.RawQuery = formData.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &h)
+		})
+	return
+}
+
 func (g *gitlabHandler) GetRepoInfo(project model.Project) (p []ProjectCreation, err error) {
 	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/projects?search=%s", g.gitlabAPIBaseURL, project.Name),
 		g.defaultHeader, nil, func(req *http.Request, resp *http.Response) error {
@@ -296,6 +319,7 @@ func (g *gitlabHandler) CreateRepo(user model.User, project model.Project) (p Pr
 			req.Header = g.getAccessHeader()
 			formData := url.Values{}
 			formData.Add("path", fmt.Sprintf("%s", project.Name))
+			formData.Add("visibility", "public")
 			req.URL.RawQuery = formData.Encode()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
