@@ -25,6 +25,7 @@ const (
 	Running
 	Unschedulable
 	Unknown
+	AutonomousOffline
 )
 
 const (
@@ -41,6 +42,7 @@ type NodeListResult struct {
 	Status     NodeStatus        `json:"status"`
 	CreateTime int64             `json:"create_time"`
 	Labels     map[string]string `json:"labels"`
+	NodeType   string            `json:"node_type"`
 }
 
 type NodeInfo struct {

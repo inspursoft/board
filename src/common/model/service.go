@@ -12,6 +12,7 @@ const (
 	ServiceTypeClusterIP
 	ServiceTypeStatefulSet
 	ServiceTypeJob
+	ServiceEdgeComputing
 )
 
 type ServiceStatus struct {
