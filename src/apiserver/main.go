@@ -46,6 +46,7 @@ var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 var apiServerPort = utils.GetConfig("API_SERVER_PORT", defaultAPIServerPort)
 var swaggerDoc = utils.GetConfig("SWAGGER_DOC", defaultSwaggerDoc)
+var devopsOpt = utils.GetConfig("DEVOPS_OPT")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -81,6 +82,9 @@ func initProjectRepo() {
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
+	}
+	if devopsOpt() == "gitlab" {
+		service.InitializeGitlabRootUser(model.User{ID: adminUserID})
 	}
 	devops := service.CurrentDevOps()
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
@@ -170,9 +174,6 @@ func main() {
 	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
 	utils.SetConfig("AUTH_MODE", defaultAuthMode)
-
-	utils.SetConfig("GITLAB_BASE_URL", "http://10.110.27.169")
-	utils.SetConfig("GITLAB_ADMIN_TOKEN", "si1Z1eUZUVui7XFarUyW")
 
 	dao.InitDB()
 
