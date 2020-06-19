@@ -116,7 +116,7 @@ gitlab_host_port = rcp.get("configuration", "gitlab_host_port")
 gitlab_ssh_port = rcp.get("configuration", "gitlab_ssh_port")
 gitlab_host_username = rcp.get("configuration", "gitlab_host_username")
 gitlab_host_password = rcp.get("configuration", "gitlab_host_password")
-gitlab_host_ssh_port = rcp.get("configuration", "gitlab_ssh_host_port")
+gitlab_host_ssh_port = rcp.get("configuration", "gitlab_host_ssh_port")
 gitlab_container_name = rcp.get("configuration", "gitlab_container_name")
 
 prometheus_url = rcp.get("configuration", "prometheus_url")
