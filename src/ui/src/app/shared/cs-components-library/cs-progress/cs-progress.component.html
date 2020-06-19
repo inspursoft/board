@@ -1,8 +1,8 @@
-<div class="progress-container">
+<div *ngIf="isShowSelf" class="progress-container">
   <div style="height: 60%;" class="progress success">
     <progress max="100" style="height: 100%;" [value]="progressValue" data-displayval="0%"></progress>
   </div>
-  <div style="display: flex; height: 40%;margin-top: 5px">
+  <div style="display: flex; height: 40%;">
     <span class="console-text">{{progressValue}}%</span>
     <span class="console-text">{{speed | size}}/s</span>
     <span class="console-text">{{progressData?.loaded | size}}/{{progressData?.total | size}}</span>

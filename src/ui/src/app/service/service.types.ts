@@ -8,6 +8,8 @@ export class ServiceContainer {
   NodeIP: string;
   PodName: string;
   ServiceName: string;
+  SecurityContext: boolean;
+  InitContainer: boolean;
 }
 
 export class ServiceDetailInfo {

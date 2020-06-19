@@ -14,7 +14,7 @@
 </clr-alert>
 <clr-modal [(clrModalOpen)]="detailModalOpen" [clrModalSize]="'md'">
   <h3 class="modal-title">{{ 'GLOBAL_ALERT.ERROR_DETAIL' | translate }}</h3>
-  <div class="modal-body"><p>{{errorDetailMsg}}{{curMessage.endMessage}}</p></div>
+  <div class="modal-body"><p>{{curErrorDetailMsg}}{{curMessage.endMessage}}</p></div>
   <div class="modal-footer">
     <button class="btn" (click)="detailModalOpen = false">{{"BUTTON.OK" | translate}}</button>
   </div>

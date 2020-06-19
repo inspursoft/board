@@ -1,29 +1,69 @@
-<div class="clr-row clr-flex-nowrap console-container">
-  <div class="clr-row left-info-container">
-    <div class="clr-row container-info-container">
-      <span>{{'ServiceControlConsole.Status' | translate}}:</span>
-      <span [ngStyle]="statusStyle">{{status | translate}}</span>
+<div #messageContainer></div>
+<div *ngIf="noneContainerToConnect"><b>
+  {{'ServiceControlConsole.ContainerListEmpty' | translate}}.
+</b></div>
+<div *ngIf="hasContainerToConnect" class="clr-row console-container">
+  <div class="clr-row top-container">
+    <div class="clr-row clr-align-content-center upload-download-container">
+      <a href="javascript: void(0)"
+         (click)="downloadFile()"
+         [class.disabled]="curReadyState !== 1 || isActionInWIP">
+        <clr-icon shape="download-cloud"></clr-icon>
+      </a>
+      <lib-input-ex [inputDisabled]="curReadyState !== 1 || isActionInWIP"
+                    [inputLabel]="'ServiceControlConsole.downloadFileLabel' | translate"
+                    [inputLabelWidth]="220"
+                    (commitEvent)="curDownLoadPath = $event">
+      </lib-input-ex>
     </div>
-    <div *ngFor="let serviceContainer of serviceDetailInfo.service_Containers; let i = index"
-         class="clr-row clr-flex-column container-info-container"
-         [class.active]="curActiveIndex === i">
-      <div class="clr-row">
-        <span><b>{{'ServiceControlConsole.PodName' | translate}}:</b></span>
-        <span>{{serviceContainer.PodName}}</span>
-      </div>
-      <div class="clr-row">
-        <span><b>{{'ServiceControlConsole.ContainerName' | translate}}:</b></span>
-        <span>{{serviceContainer.ContainerName}}</span>
-      </div>
-      <div class="clr-row clr-justify-content-end">
-        <a href="javascript: void(0)"
-           (click)="buildSocketConnect(serviceContainer, i)">
-          <clr-icon shape="connect" class="connect"></clr-icon>
-        </a>
-      </div>
+
+    <div class="clr-row clr-align-content-center upload-download-container">
+      <a href="javascript: void(0)"
+         (click)="uploadFile()"
+         [class.disabled]="curReadyState !== 1 || isActionInWIP">
+        <clr-icon shape="upload-cloud"></clr-icon>
+      </a>
+      <lib-input-ex [inputDisabled]="curReadyState !== 1 || isActionInWIP"
+                    [inputLabel]="'ServiceControlConsole.UploadFileLabel' | translate"
+                    [inputLabelWidth]="220"
+                    (commitEvent)="curUploadPath = $event">
+      </lib-input-ex>
+      <input type="file"
+             class="upload-file-input"
+             [disabled]="curReadyState !== 1 || isActionInWIP"
+             (change)="changeUploadFile($event)"
+             accept="*.*">
     </div>
   </div>
-  <div class="terminal-container">
-    <div #terminalContainer></div>
+  <div class="clr-row clr-flex-nowrap bottom-container">
+    <div class="clr-row left-info-container">
+      <div class="clr-row container-info-container">
+        <span>{{'ServiceControlConsole.Status' | translate}}:</span>
+        <span [ngStyle]="statusStyle">{{status | translate}}</span>
+      </div>
+      <div *ngFor="let serviceContainer of serviceDetailInfo.service_Containers; let i = index"
+           class="clr-row clr-flex-column container-info-container"
+           [class.active]="curActiveIndex === i">
+        <div class="clr-row">
+          <span><b>{{'ServiceControlConsole.PodName' | translate}}:</b></span>
+          <span>{{serviceContainer.PodName}}</span>
+        </div>
+        <div class="clr-row">
+          <span><b>{{'ServiceControlConsole.ContainerName' | translate}}:</b></span>
+          <span>{{serviceContainer.ContainerName}}</span>
+        </div>
+        <div class="clr-row clr-justify-content-end">
+          <a href="javascript: void(0)"
+             [class.disabled]="isActionInWIP"
+             (click)="buildSocketConnect(serviceContainer, i)">
+            <clr-icon shape="connect" class="connect"></clr-icon>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="terminal-container">
+      <div #terminalContainer></div>
+    </div>
   </div>
 </div>
+

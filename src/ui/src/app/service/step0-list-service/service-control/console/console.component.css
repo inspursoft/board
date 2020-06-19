@@ -3,8 +3,29 @@ div.console-container {
   overflow-y: auto;
 }
 
+div.bottom-container {
+  flex-basis: 100%;
+  margin-bottom: 20px;
+}
+
+div.top-container {
+  flex-direction: column
+}
+
+div.upload-download-container {
+  margin-top: 5px;
+  flex-wrap: nowrap;
+}
+
+a.disabled {
+  color: silver;
+}
+
+a.disabled:hover {
+  cursor: not-allowed;
+}
+
 div.left-info-container {
-  width: 260px;
   flex-direction: column;
   padding: 5px;
   margin: 5px;
@@ -29,10 +50,10 @@ div.terminal-container {
   overflow-y: auto;
 }
 
-clr-icon.connect{
+clr-icon.connect {
   color: darkgreen;
 }
 
-clr-icon.connect :hover{
+clr-icon.connect :hover {
   cursor: pointer;
 }
