@@ -17,10 +17,9 @@ import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { SearchAddon } from 'xterm-addon-search';
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent, HttpResponse } from '@angular/common/http';
-import { Service } from '../../../service';
 import { AppInitService } from '../../../../shared.service/app-init.service';
 import { K8sService } from '../../../service.k8s';
-import { ServiceContainer, ServiceDetailInfo } from '../../../service.types';
+import { Service, ServiceContainer, ServiceDetailInfo } from '../../../service.types';
 import { MessageService } from '../../../../shared.service/message.service';
 import { GlobalAlertType } from '../../../../shared/shared.types';
 
@@ -66,16 +65,16 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.k8sService.getServiceDetail(this.service.service_id).subscribe(
+    this.k8sService.getServiceDetail(this.service.serviceId).subscribe(
       (res: ServiceDetailInfo) => {
         this.serviceDetailInfo = res;
-        const containers = this.serviceDetailInfo.service_Containers;
+        const containers = this.serviceDetailInfo.serviceContainers;
         if (containers.length > 0) {
-          this.serviceDetailInfo.service_Containers = containers.filter(value =>
-            value.SecurityContext === false && value.InitContainer === false);
+          this.serviceDetailInfo.serviceContainers = containers.filter(value =>
+            value.securityContext === false && value.initContainer === false);
         }
-        if (this.serviceDetailInfo.service_Containers.length > 0) {
-          this.buildSocketConnect(this.serviceDetailInfo.service_Containers[0], 0);
+        if (this.serviceDetailInfo.serviceContainers.length > 0) {
+          this.buildSocketConnect(this.serviceDetailInfo.serviceContainers[0], 0);
         }
         this.changeRef.detectChanges();
       }
@@ -96,16 +95,16 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get hasContainerToConnect(): boolean {
-    return this.serviceDetailInfo.service_Containers.length > 0;
+    return this.serviceDetailInfo.serviceContainers.length > 0;
   }
 
   get noneContainerToConnect(): boolean {
-    return this.serviceDetailInfo.service_Containers.length === 0;
+    return this.serviceDetailInfo.serviceContainers.length === 0;
   }
 
   get wsUrl(): string {
-    const host = `wss://${this.appInitService.systemInfo.board_host}`;
-    const path = `/api/v1/pods/${this.service.service_project_id}/${this.curPodName}/shell`;
+    const host = `ws://${this.appInitService.systemInfo.board_host}`;
+    const path = `/api/v1/pods/${this.service.serviceProjectId}/${this.curPodName}/shell`;
     const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;
   }
@@ -153,8 +152,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.curActiveIndex = index;
-    this.curPodName = serviceContainer.PodName;
-    this.curContainerName = serviceContainer.ContainerName;
+    this.curPodName = serviceContainer.podName;
+    this.curContainerName = serviceContainer.containerName;
     this.ws = new WebSocket(this.wsUrl);
     this.mountWebSocket();
   }
@@ -268,7 +267,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.messageService.cleanNotification();
     const formData = new FormData();
     formData.append('upload_file', this.curUploadFile, this.curUploadFile.name);
-    this.k8sService.uploadFile(this.service.service_project_id, this.curPodName, this.curContainerName, this.curUploadPath, formData)
+    this.k8sService.uploadFile(this.service.serviceProjectId, this.curPodName, this.curContainerName, this.curUploadPath, formData)
       .subscribe((res: HttpEvent<any>) => {
           if (res.type === HttpEventType.UploadProgress || res.type === HttpEventType.DownloadProgress) {
             this.updateProgressEvent.emit(res);
@@ -298,7 +297,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.isActionInWIPChange.emit(true);
     this.messageService.cleanNotification();
-    this.k8sService.downloadFile(this.service.service_project_id, this.curPodName, this.curContainerName, this.curDownLoadPath).subscribe(
+    this.k8sService.downloadFile(this.service.serviceProjectId, this.curPodName, this.curContainerName, this.curDownLoadPath).subscribe(
       (res: HttpEvent<any>) => {
         if (res.type === HttpEventType.DownloadProgress) {
           this.updateProgressEvent.emit(res);

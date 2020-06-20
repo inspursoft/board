@@ -5,45 +5,45 @@ import {
   EnvStruct,
   PHASE_CONFIG_CONTAINERS,
   PHASE_CONFIG_INIT_CONTAINERS,
-  UiServiceFactory,
-  UIServiceStep2
+  ServiceStep2Data,
+  ServiceStep2DataInit
 } from '../service-step.component';
-import { BuildImageDockerfileData, Image, ImageDetail } from '../../image/image';
-import { ServiceStepBase } from '../service-step';
 import { concat, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RouteImages } from '../../shared/shared.const';
 import { AppTokenService } from '../../shared.service/app-token.service';
-import { ConfigParamsComponent } from "./config-params/config-params.component";
+import { ConfigParamsComponent } from './config-params/config-params.component';
+import { ServiceStepComponentBase } from '../service-step';
+import { ServiceDockerfileData, ServiceImage, ServiceImageDetail } from '../service.types';
 
 @Component({
   templateUrl: './config-container.component.html',
   styleUrls: ['./config-container.component.css']
 })
-export class ConfigContainerComponent extends ServiceStepBase implements OnInit {
-  imageSourceList: Array<Image>;
-  imageDetailSourceList: Map<string, Array<ImageDetail>>;
+export class ConfigContainerComponent extends ServiceStepComponentBase implements OnInit {
+  imageSourceList: Array<ServiceImage>;
+  imageDetailSourceList: Map<string, Array<ServiceImageDetail>>;
   imageTagNotReadyList: Map<Container, boolean>;
   fixedContainerPort: Map<Container, Array<number>>;
   fixedContainerEnv: Map<string, Array<EnvStruct>>;
-  serviceStep2Data: UIServiceStep2;
-  serviceStep2DataInit: UIServiceStep2;
+  serviceStep2Data: ServiceStep2Data;
+  serviceStep2DataInit: ServiceStep2DataInit;
   curContainerType: ContainerType = ContainerType.runContainer;
 
   constructor(protected injector: Injector,
               private tokenService: AppTokenService) {
     super(injector);
-    this.imageSourceList = Array<Image>();
-    this.imageDetailSourceList = new Map<string, Array<ImageDetail>>();
+    this.imageSourceList = Array<ServiceImage>();
+    this.imageDetailSourceList = new Map<string, Array<ServiceImageDetail>>();
     this.imageTagNotReadyList = new Map<Container, boolean>();
     this.fixedContainerPort = new Map<Container, Array<number>>();
     this.fixedContainerEnv = new Map<string, Array<EnvStruct>>();
-    this.serviceStep2Data = UiServiceFactory.getInstance(PHASE_CONFIG_CONTAINERS) as UIServiceStep2;
-    this.serviceStep2DataInit = UiServiceFactory.getInstance(PHASE_CONFIG_INIT_CONTAINERS) as UIServiceStep2;
+    this.serviceStep2Data = new ServiceStep2Data();
+    this.serviceStep2DataInit = new ServiceStep2DataInit();
   }
 
   ngOnInit() {
-    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS).subscribe((res: UIServiceStep2) => {
+    this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS, ServiceStep2Data).subscribe((res: ServiceStep2Data) => {
       this.serviceStep2Data = res;
       this.serviceStep2Data.containerList.forEach((container: Container) => {
         this.getImageDetailList(container).subscribe();
@@ -53,7 +53,7 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
         this.addEmptyWorkItem();
       }
     });
-    this.k8sService.getServiceConfig(PHASE_CONFIG_INIT_CONTAINERS).subscribe((res: UIServiceStep2) => {
+    this.k8sService.getServiceConfig(PHASE_CONFIG_INIT_CONTAINERS, ServiceStep2DataInit).subscribe((res: ServiceStep2DataInit) => {
       this.serviceStep2DataInit = res;
       this.serviceStep2DataInit.containerList.forEach((container: Container) => {
         this.getImageDetailList(container).subscribe();
@@ -65,10 +65,10 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   get isCanNextStep(): boolean {
     const runContainerValid = this.serviceStep2Data.containerList
-      .filter(value => value.image.image_name !== '')
+      .filter(value => value.image.imageName !== '')
       .length === this.serviceStep2Data.containerList.length;
     const initContainerValid = this.serviceStep2DataInit.containerList
-      .filter(value => value.image.image_name !== '')
+      .filter(value => value.image.imageName !== '')
       .length === this.serviceStep2DataInit.containerList.length;
     return runContainerValid && initContainerValid;
   }
@@ -77,54 +77,54 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
     return this.canChangeSelectImage.bind(this);
   }
 
-  get curStep2Data(): UIServiceStep2 {
+  get curStep2Data(): ServiceStep2Data {
     return this.curContainerType === ContainerType.runContainer ? this.serviceStep2Data : this.serviceStep2DataInit;
   }
 
-  getActiveImage(index: number): Image {
-    const imageName = this.curStep2Data.containerList[index].image.image_name;
-    return this.imageSourceList.find(value => value.image_name === imageName);
+  getActiveImage(index: number): ServiceImage {
+    const imageName = this.curStep2Data.containerList[index].image.imageName;
+    return this.imageSourceList.find(value => value.imageName === imageName);
   }
 
   changeContainerType(containerType: ContainerType) {
     this.curContainerType = containerType;
   }
 
-  changeSelectImage(index: number, image: Image) {
+  changeSelectImage(index: number, image: ServiceImage) {
     const container = this.curStep2Data.containerList[index];
-    container.name = image.image_name.substr(image.image_name.indexOf('/') + 1);
-    container.image.project_name = this.curStep2Data.projectName;
-    container.image.image_name = image.image_name;
-    if (this.imageDetailSourceList.has(image.image_name)) {
-      const detailList: Array<ImageDetail> = this.imageDetailSourceList.get(image.image_name);
-      container.image.image_tag = detailList[0].image_tag;
+    container.name = image.imageName.substr(image.imageName.indexOf('/') + 1);
+    container.image.projectName = this.curStep2Data.projectName;
+    container.image.imageName = image.imageName;
+    if (this.imageDetailSourceList.has(image.imageName)) {
+      const detailList: Array<ServiceImageDetail> = this.imageDetailSourceList.get(image.imageName);
+      container.image.imageTag = detailList[0].imageTag;
       this.setDefaultContainerInfo(container);
       this.setContainerFixedInfo(container);
     } else {
-      this.getImageDetailList(container).subscribe((res: ImageDetail[]) => {
-        container.image.image_tag = res[0].image_tag;
+      this.getImageDetailList(container).subscribe((res: Array<ServiceImageDetail>) => {
+        container.image.imageTag = res[0].imageTag;
         this.setDefaultContainerInfo(container);
         this.setContainerFixedInfo(container);
       });
     }
   }
 
-  changeSelectImageDetail(imageName: string, imageDetail: ImageDetail) {
-    const container = this.curStep2Data.containerList.find(value => value.image.image_name === imageName);
-    container.image.image_tag = imageDetail.image_tag;
+  changeSelectImageDetail(imageName: string, imageDetail: ServiceImageDetail) {
+    const container = this.curStep2Data.containerList.find(value => value.image.imageName === imageName);
+    container.image.imageTag = imageDetail.imageTag;
     this.setDefaultContainerInfo(container);
     this.setContainerFixedInfo(container);
   }
 
-  getImageDetailList(container: Container): Observable<Array<ImageDetail>> {
-    const imageName = container.image.image_name;
+  getImageDetailList(container: Container): Observable<Array<ServiceImageDetail>> {
+    const imageName = container.image.imageName;
     this.imageTagNotReadyList.set(container, false);
     return this.k8sService.getImageDetailList(imageName).pipe(
-      map((res: Array<ImageDetail>) => {
+      map((res: Array<ServiceImageDetail>) => {
         if (res && res.length > 0) {
           for (const item of res) {
-            item.image_size_number = Number.parseFloat((item.image_size_number / (1024 * 1024)).toFixed(2));
-            item.image_size_unit = 'MB';
+            item.imageSizeNumber = Number.parseFloat((item.imageSizeNumber / (1024 * 1024)).toFixed(2));
+            item.imageSizeUnit = 'MB';
           }
           this.imageDetailSourceList.set(imageName, res);
         } else {
@@ -137,21 +137,21 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   setContainerFixedInfo(container: Container): void {
     const imageIndex = container.image;
-    this.k8sService.getContainerDefaultInfo(imageIndex.image_name, imageIndex.image_tag, imageIndex.project_name).subscribe(
-      (res: BuildImageDockerfileData) => {
-        if (res.image_env) {
+    this.k8sService.getContainerDefaultInfo(imageIndex.imageName, imageIndex.imageTag, imageIndex.projectName).subscribe(
+      (res: ServiceDockerfileData) => {
+        if (res.imageEnv.length > 0) {
           const fixedEnvs: Array<EnvStruct> = Array<EnvStruct>();
-          res.image_env.forEach(value => {
+          res.imageEnv.forEach(value => {
             const env = new EnvStruct();
-            env.dockerfile_envname = value.dockerfile_envname;
-            env.dockerfile_envvalue = value.dockerfile_envvalue;
+            env.dockerFileEnvName = value.envName;
+            env.dockerFileEnvValue = value.envValue;
             fixedEnvs.push(env);
           });
-          this.fixedContainerEnv.set(imageIndex.image_name, fixedEnvs);
+          this.fixedContainerEnv.set(imageIndex.imageName, fixedEnvs);
         }
-        if (res.image_expose) {
+        if (res.imageExpose.length > 0) {
           const fixedPorts: Array<number> = Array();
-          res.image_expose.forEach(value => {
+          res.imageExpose.forEach(value => {
             const port: number = Number(value).valueOf();
             fixedPorts.push(port);
           });
@@ -164,23 +164,23 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   setDefaultContainerInfo(container: Container): void {
     const imageIndex = container.image;
-    this.k8sService.getContainerDefaultInfo(imageIndex.image_name, imageIndex.image_tag, imageIndex.project_name).subscribe(
-      (res: BuildImageDockerfileData) => {
-        if (res.image_cmd) {
-          container.command = res.image_cmd;
+    this.k8sService.getContainerDefaultInfo(imageIndex.imageName, imageIndex.imageTag, imageIndex.projectName).subscribe(
+      (res: ServiceDockerfileData) => {
+        if (res.imageCmd !== '') {
+          container.command = res.imageCmd;
         }
-        if (res.image_env) {
-          res.image_env.forEach(value => {
+        if (res.imageEnv.length > 0) {
+          res.imageEnv.forEach(value => {
             const env = new EnvStruct();
-            env.dockerfile_envname = value.dockerfile_envname;
-            env.dockerfile_envvalue = value.dockerfile_envvalue;
+            env.dockerFileEnvName = value.envName;
+            env.dockerFileEnvValue = value.envValue;
             container.env.push(env);
           });
         }
-        if (res.image_expose) {
-          res.image_expose.forEach(value => {
+        if (res.imageExpose.length > 0) {
+          res.imageExpose.forEach(value => {
             const port: number = Number(value).valueOf();
-            container.container_port.push(port);
+            container.containerPort.push(port);
           });
         }
       }, () => this.messageService.cleanNotification());
@@ -188,23 +188,23 @@ export class ConfigContainerComponent extends ServiceStepBase implements OnInit 
 
   forward(): void {
     if (this.verifyInputArrayExValid()) {
-      const obsRunContainer = this.k8sService.setServiceConfig(this.serviceStep2Data.uiToServer());
-      const obsInitContainer = this.k8sService.setServiceConfig(this.serviceStep2DataInit.uiToServer());
+      const obsRunContainer = this.k8sService.setServiceStepConfig(this.serviceStep2Data);
+      const obsInitContainer = this.k8sService.setServiceStepConfig(this.serviceStep2DataInit);
       concat(obsRunContainer, obsInitContainer).subscribe(
         () => this.k8sService.stepSource.next({index: 3, isBack: false})
       );
     }
   }
 
-  canChangeSelectImage(image: Image): Observable<boolean> {
-    if (this.curStep2Data.containerList.find(value => value.image.image_name === image.image_name)) {
+  canChangeSelectImage(image: ServiceImage): Observable<boolean> {
+    if (this.curStep2Data.containerList.find(value => value.image.imageName === image.imageName)) {
       this.messageService.showAlert('IMAGE.CREATE_IMAGE_EXIST', {alertType: 'warning'});
       return of(false);
     }
     return of(true);
   }
 
-  createNewCustomImage(index: number) {
+  createNewCustomImage() {
     this.router.navigate([`/${RouteImages}`], {
         fragment: 'createImage',
         queryParams: {token: this.tokenService.token}

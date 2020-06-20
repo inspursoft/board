@@ -16,7 +16,6 @@
                     (commitEvent)="curDownLoadPath = $event">
       </lib-input-ex>
     </div>
-
     <div class="clr-row clr-align-content-center upload-download-container">
       <a href="javascript: void(0)"
          (click)="uploadFile()"
@@ -41,16 +40,16 @@
         <span>{{'ServiceControlConsole.Status' | translate}}:</span>
         <span [ngStyle]="statusStyle">{{status | translate}}</span>
       </div>
-      <div *ngFor="let serviceContainer of serviceDetailInfo.service_Containers; let i = index"
+      <div *ngFor="let serviceContainer of serviceDetailInfo.serviceContainers; let i = index"
            class="clr-row clr-flex-column container-info-container"
            [class.active]="curActiveIndex === i">
         <div class="clr-row">
           <span><b>{{'ServiceControlConsole.PodName' | translate}}:</b></span>
-          <span>{{serviceContainer.PodName}}</span>
+          <span>{{serviceContainer.podName}}</span>
         </div>
         <div class="clr-row">
           <span><b>{{'ServiceControlConsole.ContainerName' | translate}}:</b></span>
-          <span>{{serviceContainer.ContainerName}}</span>
+          <span>{{serviceContainer.containerName}}</span>
         </div>
         <div class="clr-row clr-justify-content-end">
           <a href="javascript: void(0)"

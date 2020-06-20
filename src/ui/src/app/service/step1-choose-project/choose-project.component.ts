@@ -1,54 +1,48 @@
 import { Component, Injector, OnInit } from '@angular/core';
-import { PHASE_SELECT_PROJECT, ServiceStepPhase, UIServiceStep1 } from '../service-step.component';
-import { Project } from "../../project/project";
-import { ServiceStepBase } from "../service-step";
-import { SharedActionService } from "../../shared.service/shared-action.service";
-import { SharedService } from "../../shared.service/shared.service";
+import { PHASE_SELECT_PROJECT, ServiceStep1Data, ServiceStepPhase } from '../service-step.component';
+import { ServiceStepComponentBase } from '../service-step';
+import { SharedActionService } from '../../shared.service/shared-action.service';
+import { SharedService } from '../../shared.service/shared.service';
+import { ServiceProject } from '../service.types';
 
 @Component({
-  styleUrls: ["./choose-project.component.css"],
+  styleUrls: ['./choose-project.component.css'],
   templateUrl: './choose-project.component.html'
 })
-export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
-  projectsList: Array<Project>;
-  curActiveProject: Project;
+export class ChooseProjectComponent extends ServiceStepComponentBase implements OnInit {
+  projectsList: Array<ServiceProject>;
+  curActiveProject: ServiceProject;
+  stepData: ServiceStep1Data;
 
   constructor(protected injector: Injector,
               private sharedService: SharedService,
               private sharedActionService: SharedActionService) {
     super(injector);
-    this.projectsList = Array<Project>();
+    this.projectsList = Array<ServiceProject>();
+    this.stepData = new ServiceStep1Data();
   }
 
   ngOnInit() {
     if (this.isBack) {
-      this.k8sService.getServiceConfig(this.stepPhase).subscribe((res: UIServiceStep1) => {
-        this.uiBaseData = res;
-        this.k8sService.getProjects().subscribe((res: Array<Project>) => {
-          this.projectsList = res;
-          this.curActiveProject = this.projectsList.find(value => value.project_id === this.uiData.projectId);
-        })
-      })
+      this.k8sService.getServiceConfig(this.stepPhase, ServiceStep1Data).subscribe((res: ServiceStep1Data) => {
+        this.stepData = res;
+        this.k8sService.getProjects().subscribe((projects: Array<ServiceProject>) => {
+          this.projectsList = projects;
+          this.curActiveProject = this.projectsList.find(value => value.projectId === this.stepData.projectId);
+        });
+      });
     } else {
       this.k8sService.deleteServiceConfig().subscribe(res => res);
-      this.k8sService.getProjects().subscribe((res: Array<Project>) => this.projectsList = res);
+      this.k8sService.getProjects().subscribe((res: Array<ServiceProject>) => this.projectsList = res);
     }
-  }
-
-  ngAfterViewInit(): void {
-
   }
 
   get stepPhase(): ServiceStepPhase {
     return PHASE_SELECT_PROJECT;
   }
 
-  get uiData(): UIServiceStep1 {
-    return this.uiBaseData as UIServiceStep1;
-  }
-
   forward() {
-    this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+    this.k8sService.setServiceStepConfig(this.stepData).subscribe(
       () => this.k8sService.stepSource.next({index: 2, isBack: false})
     );
   }
@@ -56,17 +50,17 @@ export class ChooseProjectComponent extends ServiceStepBase implements OnInit {
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.selfView).subscribe((projectName: string) => {
       if (projectName) {
-        this.sharedService.getOneProject(projectName).subscribe((res: Array<Project>) => {
-          this.uiData.projectId = res[0].project_id;
-          this.uiData.projectName = res[0].project_name;
+        this.k8sService.getOneProject(projectName).subscribe((res: Array<ServiceProject>) => {
+          this.stepData.projectId = res[0].projectId;
+          this.stepData.projectName = res[0].projectName;
           this.projectsList.push(res[0]);
-        })
+        });
       }
     });
   }
 
-  changeSelectProject(project: Project) {
-    this.uiData.projectId = project.project_id;
-    this.uiData.projectName = project.project_name;
+  changeSelectProject(project: ServiceProject) {
+    this.stepData.projectId = project.projectId;
+    this.stepData.projectName = project.projectName;
   }
 }

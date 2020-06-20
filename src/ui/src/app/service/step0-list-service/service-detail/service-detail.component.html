@@ -1,5 +1,5 @@
 <clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'lg'">
-  <h3 class="modal-title">{{ curService?.service_name }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
+  <h3 class="modal-title">{{ curService?.serviceName }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
   <div class="modal-body" >
     <div *ngFor="let u of urlList; let i = index">
       <span><b>{{urlList.length > 1 ? 'Service' + (i+1) : 'Service'}}:</b></span>
@@ -10,7 +10,7 @@
       <clr-tab>
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail | json"></cs-highlight>
+          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>

@@ -1,33 +1,27 @@
 /**
  * Created by liyanq on 9/17/17.
  */
-import { Component, Injector, OnInit } from "@angular/core"
-import { ServiceStepBase } from "../service-step";
-import {
-  PHASE_ENTIRE_SERVICE,
-  PHASE_EXTERNAL_SERVICE,
-  ServiceStepPhase,
-  UIServiceStep3,
-  UIServiceStepBase
-} from "../service-step.component";
-import { HttpErrorResponse } from "@angular/common/http";
-import { GlobalAlertType, Message, RETURN_STATUS } from "../../shared/shared.types";
-import { ServiceType } from "../service";
-import { Observable } from "rxjs";
+import { Component, Injector, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { PHASE_ENTIRE_SERVICE, PHASE_EXTERNAL_SERVICE, ServiceStep3Data, ServiceStepPhase } from '../service-step.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { GlobalAlertType, Message, RETURN_STATUS } from '../../shared/shared.types';
+import { ServiceStepComponentBase } from '../service-step';
+import { ServiceType } from '../service.types';
 
 @Component({
-  templateUrl: "./deploy.component.html",
-  styleUrls: ["./deploy.component.css"]
+  templateUrl: './deploy.component.html',
+  styleUrls: ['./deploy.component.css']
 })
-export class DeployComponent extends ServiceStepBase implements OnInit {
-  boardHost: string;
-  isDeployed: boolean = false;
-  isDeploySuccess: boolean = false;
-  isInDeployWIP: boolean = false;
-  isDeleteInWIP: boolean = false;
-  serviceID: number = 0;
-  deployConsole: Object;
-  serviceType: ServiceType;
+export class DeployComponent extends ServiceStepComponentBase implements OnInit {
+  boardHost = '';
+  isDeployed = false;
+  isDeploySuccess = false;
+  isInDeployWIP = false;
+  isDeleteInWIP = false;
+  serviceID = 0;
+  deployConsole: object;
+  serviceType: ServiceType = ServiceType.ServiceTypeUnknown;
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -35,30 +29,27 @@ export class DeployComponent extends ServiceStepBase implements OnInit {
   }
 
   ngOnInit(): void {
-    this.k8sService.getServiceConfig(PHASE_EXTERNAL_SERVICE)
-      .subscribe((step3: UIServiceStep3) => this.serviceType = step3.serviceType)
+    this.k8sService.getServiceConfig(PHASE_EXTERNAL_SERVICE, ServiceStep3Data).subscribe(
+      (serviceStep3Data: ServiceStep3Data) => this.serviceType = serviceStep3Data.serviceType
+    );
   }
 
   get stepPhase(): ServiceStepPhase {
     return PHASE_ENTIRE_SERVICE;
   }
 
-  get uiData(): UIServiceStepBase {
-    return this.uiBaseData;
-  }
-
   serviceDeploy() {
     if (!this.isDeployed) {
       this.isDeployed = true;
       this.isInDeployWIP = true;
-      let obsDeploy: Observable<Object>;
+      let obsDeploy: Observable<object>;
       if (this.serviceType === ServiceType.ServiceTypeStatefulSet) {
-        obsDeploy = this.k8sService.serviceStatefulDeployment()
+        obsDeploy = this.k8sService.serviceStatefulDeployment();
       } else {
         obsDeploy = this.k8sService.serviceDeployment();
       }
       obsDeploy.subscribe(res => {
-        this.serviceID = res['service_id'];
+        this.serviceID = Reflect.get(res, 'service_id');
         this.deployConsole = res;
         this.messageService.showAlert('SERVICE.STEP_5_DEPLOY_SUCCESS');
         this.isDeploySuccess = true;
@@ -75,15 +66,16 @@ export class DeployComponent extends ServiceStepBase implements OnInit {
   }
 
   deleteDeploy(): void {
-    this.messageService.showDeleteDialog('SERVICE.STEP_5_DELETE_MSG', 'SERVICE.STEP_5_DELETE_TITLE').subscribe((message: Message) => {
-      if (message.returnStatus == RETURN_STATUS.rsConfirm) {
-        this.isDeleteInWIP = true;
-        this.k8sService.deleteDeployment(this.serviceID).subscribe(
-          () => this.k8sService.stepSource.next({index: 0, isBack: false}),
-          () => this.k8sService.stepSource.next({index: 0, isBack: false})
-        );
-      }
-    })
+    this.messageService.showDeleteDialog('SERVICE.STEP_5_DELETE_MSG', 'SERVICE.STEP_5_DELETE_TITLE').subscribe(
+      (message: Message) => {
+        if (message.returnStatus === RETURN_STATUS.rsConfirm) {
+          this.isDeleteInWIP = true;
+          this.k8sService.deleteDeployment(this.serviceID).subscribe(
+            () => this.k8sService.stepSource.next({index: 0, isBack: false}),
+            () => this.k8sService.stepSource.next({index: 0, isBack: false})
+          );
+        }
+      });
   }
 
   deployComplete(): void {
