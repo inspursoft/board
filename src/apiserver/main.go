@@ -83,9 +83,7 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
-	utils.SetConfig("DEVOPS_OPT", "%s", "DEVOPS_OPT")
 	service.SetSystemInfo("DEVOPS_OPT", false)
-
 	devops := service.CurrentDevOps()
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
@@ -218,6 +216,7 @@ func main() {
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
+	service.SetSystemInfo("DEVOPS_OPT", false)
 
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
 		err = service.PrepareKVMHost()
