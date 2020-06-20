@@ -12,9 +12,9 @@
         <div class="card-block">
           <ul class="list">
             <li *ngFor="let image of imageList"
-                [class.selected]="selectedImageName === image.image_name"
+                [class.selected]="selectedImageName === image.imageName"
                 (click)="getImageDetail(image)">
-              {{image.image_name}}
+              {{image.imageName}}
             </li>
           </ul>
           <span *ngIf="imageList.length == 0">No data available</span>
@@ -27,9 +27,9 @@
         <div class="card-block">
           <ul class="list">
             <li *ngFor="let detail of imageDetailList"
-                [class.selected]="selectedImageTag === detail.image_tag"
+                [class.selected]="selectedImageTag === detail.imageTag"
                 (click)="setImageTag(detail)">
-              {{detail.image_tag}}
+              {{detail.imageTag}}
             </li>
           </ul>
         </div>

@@ -1,9 +1,9 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SERVICE_STATUS } from '../../../../shared/shared.const';
-import { Service } from '../../../service';
 import { K8sService } from '../../../service.k8s';
 import { IScaleInfo } from '../service-control.component';
+import { Service } from '../../../service.types';
 
 @Component({
   selector: 'app-status',
@@ -32,7 +32,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   refreshScaleInfo() {
-    this.k8sService.getServiceScaleInfo(this.service.service_id)
+    this.k8sService.getServiceScaleInfo(this.service.serviceId)
       .subscribe((scaleInfo: IScaleInfo) => {// needn't handle error~!
         this.scaleInfo = scaleInfo;
       });
@@ -60,7 +60,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   get reason(): string {
-    let result: string = this.service.service_comment;
+    let result: string = this.service.serviceComment;
     if (result.toLowerCase().startsWith('reason:')) {
       result = result.slice(7);
     }

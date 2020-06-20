@@ -2,14 +2,14 @@
   <h3 class="modal-title">{{ 'JOB.JOB_CREATE_SET_AFFINITY' | translate }}</h3>
   <div class="modal-body">
     <div class="advance-left-config">
-      <job-affinity-card-list
+      <app-job-affinity-card-list
           [sourceList]="sourceList"
           [title]="'JOB.JOB_CREATE_COLLABORATIVE'|translate"
           [viewModel]="'column'"
           [acceptDrag]="false"
           [description]="'JOB.JOB_CREATE_AFFINITY_DESCRIPTION' | translate"
           [disabled]="isActionWip">
-      </job-affinity-card-list>
+      </app-job-affinity-card-list>
     </div>
     <div class="advance-right-config">
       <a href="javascript:void(0)" (click)="addNewAffinity()">
@@ -40,16 +40,16 @@
             <clr-icon shape="trash"></clr-icon>
           </a>
         </div>
-        <job-affinity-card-list
+        <app-job-affinity-card-list
             [sourceList]="affinity.list"
             [acceptDrag]="true"
             [listMinHeight]="150"
             [viewModel]="'row'"
             [listBorder]="true"
             [disabled]="isActionWip"
-            (onDrop)="onDropEvent($event, affinity.list)"
-            (onRemove)="onRemoveEvent($event, affinity.list)">
-        </job-affinity-card-list>
+            (dropEvent)="onDropEvent($event, affinity.list)"
+            (removeEvent)="onRemoveEvent($event, affinity.list)">
+        </app-job-affinity-card-list>
       </div>
     </div>
   </div>

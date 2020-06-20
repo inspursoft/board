@@ -22,11 +22,11 @@
                        [dropdownMinWidth]="300"
                        [dropdownItems]="imageSourceList"
                        [dropdownTip]="'SERVICE.STEP_2_SELECT_IMAGE' | translate"
-                       [dropdownKey]="'image_name'"
+                       [dropdownKey]="'imageName'"
                        [dropdownActiveItem]="getActiveImage(iBuf)"
                        [dropdownItemSelectEnableFn]="canChangeSelectImageFun"
                        (dropdownChangeItem)="changeSelectImage(iBuf, $event)"
-                       (dropdownEspecialClick)="createNewCustomImage(iBuf)">
+                       (dropdownEspecialClick)="createNewCustomImage()">
         <ng-template libEspecialTemp>
           <span style="color: blue">{{"SERVICE.STEP_2_CREATE_IMAGE" | translate}}</span>
         </ng-template>
@@ -37,15 +37,15 @@
         {{"SERVICE.STEP_2_GET_IMAGE_TAG"|translate}}
       </button>
       <lib-dropdown-ex class="base-margin-left"
-                       *ngIf="imageDetailSourceList.get(container.image.image_name)"
+                       *ngIf="imageDetailSourceList.get(container.image.imageName)"
                        [dropdownMinWidth]="150"
-                       [dropdownTip]="container.image.image_tag"
-                       [dropdownItems]="imageDetailSourceList.get(container.image.image_name)"
-                       [dropdownKey]="'image_tag'"
-                       (dropdownChangeItem)="changeSelectImageDetail(container.image.image_name,$event)">
+                       [dropdownTip]="container.image.imageTag"
+                       [dropdownItems]="imageDetailSourceList.get(container.image.imageName)"
+                       [dropdownKey]="'imageTag'"
+                       (dropdownChangeItem)="changeSelectImageDetail(container.image.imageName,$event)">
       </lib-dropdown-ex>
       <a href="javascript:void(0)">
-        <clr-icon *ngIf="imageDetailSourceList.get(container.image.image_name)"
+        <clr-icon *ngIf="imageDetailSourceList.get(container.image.imageName)"
                   shape="wrench"
                   class="action"
                   (click)="showConfigParams(container)">

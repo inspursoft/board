@@ -243,6 +243,15 @@ export const LANG_EN_US = {
     "JOB_DETAIL_TOTAL_LOGS":"Total logs",
     "JOB_DETAIL_MAX_LOGS":"Max logs",
   },
+  JobGuide: {
+    Title: 'Please select a method for create job',
+    New: 'New',
+    FromExists: 'From exists job',
+    ProjectName: 'Project name',
+    CreationTime: 'Creation time',
+    OwnerName: 'Owner name',
+    Comment: 'Comment',
+  },
   "PROJECT": {
     "CREATE_PROJECT": "Create Project",
     "PROJECT_NAME": "Project Name",
@@ -713,6 +722,15 @@ export const LANG_EN_US = {
     Closing: 'CLOSING',
     Connecting: 'CONNECTING',
     Unknown: 'UNKNOWN',
+    UploadFileLabel: 'Directory of upload file',
+    UploadFile: 'Please select file to upload',
+    UploadFilePath: 'Please input the directory of upload file',
+    downloadFileLabel: 'File name for downloading',
+    downloadFilePath: 'Please input file name in the container for download',
+    downloadFileFailed: 'Fail to download file',
+    WebsocketConnectionError: 'Websocket connection to server failed',
+    ContainerListEmpty: 'The list of connectable container is empty',
+    UploadFileSuccess: 'Upload successfully.'
   },
   "STORAGE":{
     "PV_CREATE":"New PV",

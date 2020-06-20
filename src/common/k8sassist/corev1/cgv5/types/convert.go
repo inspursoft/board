@@ -758,6 +758,7 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 		Env:          envs,
 		Resources:    resources,
 		VolumeMounts: mounts,
+		SecurityContext: FromK8sSecurityContext(container.SecurityContext),
 	}
 }
 
@@ -798,6 +799,16 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 		SubPath:   mount.SubPath,
+	}
+}
+
+func FromK8sSecurityContext(context *v1.SecurityContext) *model.SecurityContext {
+	var privileged *bool
+	if context != nil && context.Privileged != nil {
+		privileged = context.Privileged
+	}
+	return &model.SecurityContext{
+		Privileged:      privileged,
 	}
 }
 

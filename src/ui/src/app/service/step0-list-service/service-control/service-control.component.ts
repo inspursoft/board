@@ -1,9 +1,8 @@
 /**
  * Created by liyanq on 04/12/2017.
  */
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { Service } from '../../service';
 import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared.service/message.service';
 import { UpdateComponent } from './update/update.component';
@@ -12,6 +11,9 @@ import { ScaleComponent } from './scale/scale.component';
 import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { LoadBalanceComponent } from './loadBalance/loadBalance.component';
 import { ConsoleComponent } from './console/console.component';
+import { GlobalAlertType } from '../../../shared/shared.types';
+import { HttpProgressEvent } from '@angular/common/http';
+import { Service } from '../../service.types';
 
 export interface IScaleInfo {
   desired_instance: number;
@@ -25,7 +27,7 @@ enum ActionMethod {scale, update, locate, loadBalance, console}
   styleUrls: ['./service-control.component.css'],
   templateUrl: './service-control.component.html'
 })
-export class ServiceControlComponent extends CsModalChildBase implements OnInit {
+export class ServiceControlComponent extends CsModalChildBase implements OnInit, AfterViewInit {
   @ViewChild(UpdateComponent) updateComponent: UpdateComponent;
   @ViewChild(ScaleComponent) scaleComponent: ScaleComponent;
   @ViewChild(LocateComponent) locateComponent: LocateComponent;
@@ -35,6 +37,7 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
   actionMethod: ActionMethod = ActionMethod.scale;
   actionEnable = false;
   isActionInWIP = false;
+  uploadProgressValue: HttpProgressEvent;
 
   constructor(private k8sService: K8sService,
               private translateService: TranslateService,
@@ -45,13 +48,26 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
   ngOnInit() {
   }
 
+  ngAfterViewInit(): void {
+    const header = document.getElementsByClassName('modal-header');
+    if (header.length > 0) {
+      (header.item(0) as HTMLElement).style.padding = `0px`;
+    }
+  }
+
   defaultDispatchErr(err) {
     this.modalOpened = false;
+    this.messageService.showGlobalMessage(err.message, {
+        alertType: 'danger',
+        globalAlertType: GlobalAlertType.gatShowDetail,
+        errorObject: err
+      }
+    );
   }
 
   defaultHandleMessage(msg: string) {
     this.modalOpened = false;
-    this.translateService.get(msg, [this.service.service_name])
+    this.translateService.get(msg, [this.service.serviceName])
       .subscribe((res: string) => this.messageService.showAlert(res));
   }
 
@@ -61,6 +77,10 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit 
 
   defaultHandleActionEnabled(enabled: boolean) {
     this.actionEnable = enabled;
+  }
+
+  defaultHandleProgress(progress: HttpProgressEvent) {
+    this.uploadProgressValue = progress;
   }
 
   actionExecute() {

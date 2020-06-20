@@ -243,6 +243,15 @@ export const LANG_ZH_CN = {
     "JOB_DETAIL_TOTAL_LOGS":"日志数量",
     "JOB_DETAIL_MAX_LOGS":"最多",
   },
+  JobGuide: {
+    Title: '选择新建Job的方式',
+    New: '新建',
+    FromExists: '从已有的Job新建',
+    ProjectName: '项目名称',
+    CreationTime: '创建时间',
+    OwnerName: '创建者',
+    Comment: '备注',
+  },
   "PROJECT": {
     "CREATE_PROJECT": "创建项目",
     "PROJECT_NAME": "项目名称",
@@ -713,6 +722,15 @@ export const LANG_ZH_CN = {
     Closing: '正在断开',
     Connecting: '正在连接',
     Unknown: '未知',
+    UploadFileLabel: '上传的容器内路径',
+    UploadFile: '请选择上传的文件',
+    UploadFilePath: '请输入上传的文件路径',
+    downloadFileLabel: '下载文件的容器路径',
+    downloadFilePath: '请输入下载文件在容器中的路径',
+    downloadFileFailed: '下载文件失败',
+    WebsocketConnectionError: 'Websocket连接失败',
+    ContainerListEmpty: '可链接的容器列表为空',
+    UploadFileSuccess: '上传文件成功'
   },
   "STORAGE":{
     "PV_CREATE":"创建PV",

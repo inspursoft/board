@@ -8,10 +8,10 @@
        (drop)="drop($event)" [class.list-border]="listBorder" [class.drag-active]="isDragActive"
        [style.min-height.px]="listMinHeight">
     <div *ngFor="let data of filteredCardDataList" class="card-col-container">
-      <job-affinity-card [data]="data"
-                         [disabled]="disabled"
-                         (onRemoveFromList)="removeAffinityCard($event)">
-      </job-affinity-card>
+      <app-job-affinity-card [data]="data"
+                             [disabled]="disabled"
+                             (onRemoveFromList)="removeAffinityCard($event)">
+      </app-job-affinity-card>
     </div>
   </div>
 </div>
@@ -21,10 +21,10 @@
        (drop)="drop($event)" [class.list-border]="listBorder" [class.drag-active]="isDragActive"
        [style.min-height.px]="listMinHeight">
     <div *ngFor="let data of sourceList">
-      <job-affinity-card [data]="data"
-                         [disabled]="disabled"
-                         (onRemoveFromList)="removeAffinityCard($event)">
-      </job-affinity-card>
+      <app-job-affinity-card [data]="data"
+                             [disabled]="disabled"
+                             (removeFromListEvent)="removeAffinityCard($event)">
+      </app-job-affinity-card>
     </div>
   </div>
 </div>

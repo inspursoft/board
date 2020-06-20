@@ -40,7 +40,7 @@ function init()
 
         # set the kubernetes plugin
         echo "setting the kubernetes plugin"
-        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/grafana-kubernetes-app/settings
+        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/devopsprodigy-kubegraf-app/settings
         echo "set the kubernetes plugin successfully"
 
         # add the prometheus datasource

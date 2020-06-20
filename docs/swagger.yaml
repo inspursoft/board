@@ -2891,7 +2891,138 @@ paths:
         403:
           description: Invalid node name.
         500:
-          description: Unexpected internal errors.                  
+          description: Unexpected internal errors.    
+  /v1/edgenodes:
+    get:
+      summary: Return edgenodes in Board added by admin.
+      description: |
+        This endpoint returns all edgenodes in Board.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: node_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched edgenodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.
+    post:
+      summary: Add a new edgenode.
+      description: |
+        This endpoint is for admin to add a new edgenode.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node
+          in: body
+          description: New added edgenode.
+          required: true
+          schema:
+            $ref: '#/definitions/EdgeNodeInfo'
+      tags:
+        - Products
+      responses:
+        201:
+          description: EdgeNode added successfully.
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in as admin.
+        409:
+          description: Node name already exists.
+        500:
+          description: Internal errors.                   
+  /v1/edgenodes/{node_name}:
+    get:
+      summary: Return the edge node status.
+      description: |
+        This endpoint returns the edge node status.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to specify an edge node.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the system available resources of nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EdgeNodeInfo'              
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.     
+    delete:
+      summary: Remove the edge node.
+      description: |
+        This endpoint to remove the edge node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: edge node name to be removed.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Remove this node from cluster successfully             
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.                       
   /v1/nodegroup:
     get:
       summary: Return all node groups in Board.
@@ -7140,3 +7271,18 @@ definitions:
       status:
         type: integer
         description: The sys status from adminserver.    
+  EdgeNodeInfo:     
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this edgenode. 
+      edge_ip:
+        type: string
+        description: The IP address of this edgenode.    
+      cpu_type:
+        type: string
+        description: The CPU type of this edgenode, arm64, arm32, x86.               
+      master:  
+        type: string
+        description: The name of this edgenode.         

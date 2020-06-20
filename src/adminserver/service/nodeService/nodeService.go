@@ -35,7 +35,10 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
-		os.MkdirAll(hostFilePath, os.ModePerm)
+		dirErr := os.MkdirAll(hostFilePath, os.ModePerm)
+		if dirErr != nil {
+			return nil, dirErr
+		}
 	}
 
 	hostFileName := fmt.Sprintf("%s/%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
@@ -79,6 +82,13 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
 	if err := LaunchAnsibleContainer(&containerEnv, secure); err != nil {
+		logFileName := fmt.Sprintf("%d.log", nodeLog.CreationTime)
+		updateLogInfo := &nodeModel.UpdateNodeLog{LogId: int(newLogId),
+			Ip:          nodePostData.NodeIp,
+			InstallFile: yamlFile,
+			LogFile:     logFileName,
+			ExitCode:    1}
+		UpdateLog(updateLogInfo)
 		return nil, err
 	}
 	return &nodeLog, nil
@@ -140,7 +150,10 @@ func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
 
 	logFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
-		os.MkdirAll(logFilePath, os.ModePerm)
+		dirErr := os.MkdirAll(logFilePath, os.ModePerm)
+		if dirErr != nil {
+			return dirErr
+		}
 	}
 	logFileName := fmt.Sprintf("%s/%s", logFilePath, putLogData.LogFile)
 	if errInsert := InsertLogDetail(logData.Ip, logFileName, logData.CreationTime); errInsert != nil {

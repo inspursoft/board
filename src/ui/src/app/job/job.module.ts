@@ -13,6 +13,7 @@ import { JobAffinityCardComponent } from "./job-affinity-card/job-affinity-card.
 import { JobAffinityCardListComponent } from "./job-affinity-card-list/job-affinity-card-list.component";
 import { JobDetailComponent } from './job-detail/job-detail.component';
 import { JobLogsComponent } from './job-logs/job-logs.component';
+import { JobCreateGuideComponent } from './job-create-guide/job-create-guide.component';
 
 @NgModule({
   imports: [
@@ -41,7 +42,8 @@ import { JobLogsComponent } from './job-logs/job-logs.component';
     JobAffinityCardComponent,
     JobAffinityCardListComponent,
     JobDetailComponent,
-    JobLogsComponent
+    JobLogsComponent,
+    JobCreateGuideComponent
   ]
 })
 export class JobModule {

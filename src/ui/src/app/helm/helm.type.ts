@@ -1,5 +1,5 @@
 import { IPagination } from '../shared/shared.types';
-import { HttpBind, ResponseArrayBase, ResponseBase } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, ResponseArrayBase } from '../shared/ui-model/model-types';
 
 export enum QuestionType {
   qtUnknown, qtBoolean, qtString, qtInteger
@@ -52,7 +52,7 @@ export class Questions extends ResponseArrayBase<Question> {
   }
 }
 
-export class Question extends ResponseBase {
+export class Question extends HttpBase {
   @HttpBind('default') default: string;
   @HttpBind('label') label: string;
   @HttpBind('show_subquestion_if') showSubQuestion: string;

@@ -1,23 +1,23 @@
-import { HttpBind, HttpBindArray, HttpBindObject, ResponseBase } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, HttpBindArray } from '../shared/ui-model/model-types';
 
 export enum NodeStatusType {
   Schedulable = 1, Unschedulable, Unknown
 }
 
-export class NodeStatus extends ResponseBase {
+export class NodeStatus extends HttpBase {
   readonly masterKey = 'node-role.kubernetes.io/master';
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
   @HttpBind('create_time') createTime: number;
   @HttpBind('status') status: NodeStatusType;
-  @HttpBindObject('labels') labels: { [p: string]: string };
+  @HttpBind('labels') labels: { [p: string]: string };
 
   get isMaster(): boolean {
     return Reflect.has(this.labels, this.masterKey);
   }
 }
 
-export class NodeGroupStatus extends ResponseBase {
+export class NodeGroupStatus extends HttpBase {
   projectName = '';
   @HttpBind('nodegroup_id') id: number;
   @HttpBind('nodegroup_name') name: string;
@@ -34,15 +34,14 @@ export class NodeGroupStatus extends ResponseBase {
       nodegroup_comment: this.comment
     };
   }
-
 }
 
-export class ServiceInstance extends ResponseBase {
+export class ServiceInstance extends HttpBase {
   @HttpBind('project_name') projectName: string;
   @HttpBind('service_instance_name') serviceInstanceName: string;
 }
 
-export class NodeControlStatus extends ResponseBase {
+export class NodeControlStatus extends HttpBase {
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
   @HttpBind('node_phase') nodePhase: string;
@@ -50,13 +49,13 @@ export class NodeControlStatus extends ResponseBase {
   @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
   @HttpBindArray('service_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
 
-  protected prepareInit() {
+  prepareInit() {
     super.prepareInit();
     this.serviceInstances = Array<ServiceInstance>();
   }
 }
 
-export class NodeDetail extends ResponseBase {
+export class NodeDetail extends HttpBase {
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
   @HttpBind('create_time') createTime: number;
