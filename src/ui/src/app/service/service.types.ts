@@ -26,6 +26,8 @@ export class ServiceContainer extends HttpBase {
   @HttpBind('NodeIP') nodeIp = '';
   @HttpBind('PodName') podName = '';
   @HttpBind('ServiceName') serviceName = '';
+  @HttpBind('SecurityContext') securityContext = false;
+  @HttpBind('InitContainer') initContainer = false;
 }
 
 export class ServiceDetailInfo extends HttpBase {
