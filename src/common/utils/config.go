@@ -51,11 +51,6 @@ func GetBoolValue(name string) bool {
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
-	strEnv := os.Getenv(name)
-	if len(strEnv) > 0 {
-		logs.Debug("Got from ENV with key: %s, value: %s.", name, strEnv)
-		return strEnv
-	}
 	if defaultValue != nil && len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
