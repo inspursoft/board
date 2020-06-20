@@ -216,7 +216,6 @@ func main() {
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
-	service.SetSystemInfo("DEVOPS_OPT", false)
 
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
 		err = service.PrepareKVMHost()
