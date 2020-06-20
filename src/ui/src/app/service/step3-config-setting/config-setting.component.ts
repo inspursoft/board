@@ -1,89 +1,90 @@
 import { ChangeDetectorRef, Component, Injector, OnInit } from '@angular/core';
-import { ValidationErrors } from "@angular/forms/forms";
-import { HttpErrorResponse } from "@angular/common/http";
+import { ValidationErrors } from '@angular/forms/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import {
   Container,
   ExternalService,
   PHASE_CONFIG_CONTAINERS,
-  PHASE_EXTERNAL_SERVICE,
+  PHASE_EXTERNAL_SERVICE, ServiceStep2Data, ServiceStep3Data,
   ServiceStepPhase,
-  UIServiceStep2,
-  UIServiceStep3,
-  UIServiceStepBase
 } from '../service-step.component';
-import { ServiceStepBase } from "../service-step";
-import { IDropdownTag } from "../../shared/shared.types";
-import { SetAffinityComponent } from "./set-affinity/set-affinity.component";
-import { forkJoin, Observable, of } from "rxjs";
-import { catchError, map } from "rxjs/operators";
-import { ServiceType } from "../service";
+import { IDropdownTag } from '../../shared/shared.types';
+import { SetAffinityComponent } from './set-affinity/set-affinity.component';
+import { ServiceStepComponentBase } from '../service-step';
+import { ServiceType } from '../service.types';
 
 @Component({
-  styleUrls: ["./config-setting.component.css"],
+  styleUrls: ['./config-setting.component.css'],
   templateUrl: './config-setting.component.html'
 })
-export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
+export class ConfigSettingComponent extends ServiceStepComponentBase implements OnInit {
   patternServiceName: RegExp = /^[a-z]([-a-z0-9]*[a-z0-9])+$/;
   patternIP: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   showAdvanced = false;
   showNodeSelector = false;
   isActionWip = false;
   isGetNodePortWip = false;
-  nodeSelectorList: Array<{name: string, value: string, tag: IDropdownTag}>;
-  uiPreData: UIServiceStep2;
+  nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
+  serviceStep2Data: ServiceStep2Data;
+  serviceStep3Data: ServiceStep3Data;
   existingNodePorts: Array<number>;
-  serviceTypes: Array<{description: string, type: ServiceType}>;
+  serviceTypes: Array<{ description: string, type: ServiceType }>;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
     super(injector);
     this.changeDetectorRef.detach();
-    this.nodeSelectorList = Array<{name: string, value: string, tag: IDropdownTag}>();
+    this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
     this.existingNodePorts = Array<number>();
-    this.uiPreData = new UIServiceStep2();
-    this.serviceTypes = new Array<{description: string, type: ServiceType}>();
+    this.serviceStep2Data = new ServiceStep2Data();
+    this.serviceStep3Data = new ServiceStep3Data();
+    this.serviceTypes = new Array<{ description: string, type: ServiceType }>();
   }
 
   ngOnInit() {
-    let obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase);
-    let obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS);
-    this.serviceTypes.push({description: 'SERVICE.STEP_3_SERVICE_TYPE_NORMAL', type: ServiceType.ServiceTypeNormalNodePort});
-    this.serviceTypes.push({description: 'SERVICE.STEP_3_SERVICE_TYPE_STATEFUL', type: ServiceType.ServiceTypeStatefulSet});
+    const obsStepConfig = this.k8sService.getServiceConfig(this.stepPhase, ServiceStep3Data);
+    const obsPreStepConfig = this.k8sService.getServiceConfig(PHASE_CONFIG_CONTAINERS, ServiceStep2Data);
+    this.serviceTypes.push({
+      description: 'SERVICE.STEP_3_SERVICE_TYPE_NORMAL',
+      type: ServiceType.ServiceTypeNormalNodePort
+    });
+    this.serviceTypes.push({
+      description: 'SERVICE.STEP_3_SERVICE_TYPE_STATEFUL',
+      type: ServiceType.ServiceTypeStatefulSet
+    });
     this.isGetNodePortWip = true;
-    forkJoin(obsStepConfig, obsPreStepConfig).subscribe((res: [UIServiceStepBase, UIServiceStepBase]) => {
-      this.uiBaseData = res[0];
-      this.uiPreData = res[1] as UIServiceStep2;
-      if (this.uiData.externalServiceList.length === 0) {
-        let container = this.uiPreData.containerList[0];
+    forkJoin(obsPreStepConfig, obsStepConfig).subscribe((res: [ServiceStep2Data, ServiceStep3Data]) => {
+      this.serviceStep2Data = res[0];
+      this.serviceStep3Data = res[1];
+      if (this.serviceStep3Data.externalServiceList.length === 0) {
+        const container = this.serviceStep2Data.containerList[0];
         this.addNewExternalService();
         this.setExternalInfo(container, 0);
       }
-      this.k8sService.getNodePorts(this.uiData.projectName).subscribe(
-        (res: Array<number>) => this.existingNodePorts = res,
+      this.k8sService.getNodePorts(this.serviceStep3Data.projectName).subscribe(
+        (ports: Array<number>) => this.existingNodePorts = ports,
         () => this.isGetNodePortWip = false,
         () => this.isGetNodePortWip = false
       );
       this.changeDetectorRef.reattach();
     });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
-    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) => {
-      res.forEach((value: {name: string, status: number}) => {
+    this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
+      res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
           name: value.name, value: value.name, tag: {
-            type: value.status == 1 ? 'success' : 'warning',
-            description: value.status == 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
+            type: value.status === 1 ? 'success' : 'warning',
+            description: value.status === 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
           }
-        })
+        });
       });
     });
   }
 
   get stepPhase(): ServiceStepPhase {
-    return PHASE_EXTERNAL_SERVICE
-  }
-
-  get uiData(): UIServiceStep3 {
-    return this.uiBaseData as UIServiceStep3;
+    return PHASE_EXTERNAL_SERVICE;
   }
 
   get checkServiceNameFun() {
@@ -91,71 +92,76 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   get nodeSelectorDropdownText() {
-    return this.uiData.nodeSelector === '' ? 'SERVICE.STEP_3_NODE_DEFAULT' : this.uiData.nodeSelector;
+    return this.serviceStep3Data.nodeSelector === '' ? 'SERVICE.STEP_3_NODE_DEFAULT' : this.serviceStep3Data.nodeSelector;
   }
 
   get curNodeSelector() {
-    return this.nodeSelectorList.find(value => value.name === this.uiData.nodeSelector);
+    return this.nodeSelectorList.find(value => value.name === this.serviceStep3Data.nodeSelector);
   }
 
   get isStatefulService() {
-    return this.uiData.serviceType == ServiceType.ServiceTypeStatefulSet;
+    return this.serviceStep3Data.serviceType === ServiceType.ServiceTypeStatefulSet;
   }
 
   getItemTagClass(dropdownTag: IDropdownTag) {
     return {
-      'label-info': dropdownTag.type == 'success',
-      'label-warning': dropdownTag.type == 'warning',
-      'label-danger': dropdownTag.type == 'danger'
-    }
+      'label-info': dropdownTag.type === 'success',
+      'label-warning': dropdownTag.type === 'warning',
+      'label-danger': dropdownTag.type === 'danger'
+    };
   }
 
   getContainerPorts(containerName: string): Array<number> {
-    return this.uiPreData.getPortList(containerName);
+    return this.serviceStep2Data.getPortList(containerName);
   }
 
   setExternalInfo(container: Container, index: number) {
-    this.uiData.externalServiceList[index].container_name = container.name;
-    this.uiData.externalServiceList[index].node_config.target_port = container.container_port.length > 0 ? container.container_port[0] : 0;
+    this.serviceStep3Data.externalServiceList[index].containerName = container.name;
+    this.serviceStep3Data.externalServiceList[index].nodeConfig.targetPort =
+      container.containerPort.length > 0 ? container.containerPort[0] : 0;
   }
 
   setNodePort(index: number, port: number) {
-    this.uiData.externalServiceList[index].node_config.node_port = Number(port).valueOf();
+    this.serviceStep3Data.externalServiceList[index].nodeConfig.nodePort = Number(port).valueOf();
   }
 
-  setServiceType(value: {description: string, type: ServiceType}) {
-    this.uiData.serviceType = value.type;
+  setServiceType(value: { description: string, type: ServiceType }) {
+    this.serviceStep3Data.serviceType = value.type;
     if (value.type === ServiceType.ServiceTypeStatefulSet) {
-      this.uiData.externalServiceList.forEach((external:ExternalService) => external.node_config.node_port = 0);
+      this.serviceStep3Data.externalServiceList.forEach(
+        (external: ExternalService) => external.nodeConfig.nodePort = 0
+      );
     } else {
-      this.uiData.clusterIp = '';
+      this.serviceStep3Data.clusterIp = '';
     }
   }
 
   inputExternalPortEnable(containerName: string): boolean {
-    return this.uiPreData.getPortList(containerName).length == 0;
+    return this.serviceStep2Data.getPortList(containerName).length === 0;
   }
 
   selectExternalPortEnable(containerName: string): boolean {
-    return this.uiPreData.getPortList(containerName).length > 0;
+    return this.serviceStep2Data.getPortList(containerName).length > 0;
   }
 
   addNewExternalService() {
-    if (this.uiPreData.containerList.length > 0 && !this.isActionWip) {
-      let externalService = new ExternalService();
-      this.uiData.externalServiceList.push(externalService);
+    if (this.serviceStep2Data.containerList.length > 0 && !this.isActionWip) {
+      const externalService = new ExternalService();
+      this.serviceStep3Data.externalServiceList.push(externalService);
     }
   }
 
   removeExternalService(index: number) {
-    this.uiData.externalServiceList.splice(index, 1);
+    this.serviceStep3Data.externalServiceList.splice(index, 1);
   }
 
   setAffinity() {
     if (!this.isActionWip) {
-      let factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
-      let componentRef = this.selfView.createComponent(factory);
-      componentRef.instance.openSetModal(this.uiData).subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
+      const factory = this.factoryResolver.resolveComponentFactory(SetAffinityComponent);
+      const componentRef = this.selfView.createComponent(factory);
+      componentRef.instance.openSetModal(this.serviceStep3Data).subscribe(
+        () => this.selfView.remove(this.selfView.indexOf(componentRef.hostView))
+      );
     }
   }
 
@@ -166,28 +172,28 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    return this.k8sService.checkServiceExist(this.uiData.projectName, control.value)
-      .pipe(
-        map(() => null),
+    return this.k8sService.checkServiceExist(this.serviceStep3Data.projectName, control.value)
+      .pipe(map(() => null),
         catchError((err: HttpErrorResponse) => {
-          if (err.status == 409) {
+          if (err.status === 409) {
             this.messageService.cleanNotification();
-            return of({serviceExist: "SERVICE.STEP_3_SERVICE_NAME_EXIST"});
-          } else if (err.status == 404) {
+            return of({serviceExist: 'SERVICE.STEP_3_SERVICE_NAME_EXIST'});
+          } else if (err.status === 404) {
             this.messageService.cleanNotification();
           }
           return of(null);
-        }));
+        })
+      );
   }
 
   haveRepeatNodePort(): boolean {
     let haveRepeat = false;
-    this.uiData.externalServiceList.forEach((value, index) => {
-      if (this.uiData.externalServiceList.find((value1, index1) =>
-        value1.container_name === value.container_name
-        && value1.node_config.target_port === value.node_config.target_port
+    this.serviceStep3Data.externalServiceList.forEach((value, index) => {
+      if (this.serviceStep3Data.externalServiceList.find((value1, index1) =>
+        value1.containerName === value.containerName
+        && value1.nodeConfig.targetPort === value.nodeConfig.targetPort
         && index1 !== index)) {
-        haveRepeat = true
+        haveRepeat = true;
       }
     });
     return haveRepeat;
@@ -195,15 +201,15 @@ export class ConfigSettingComponent extends ServiceStepBase implements OnInit {
 
   forward(): void {
     if (this.verifyInputExValid() && this.verifyDropdownExValid() && this.verifyInputNumberDropdownValid()) {
-      if (this.uiData.externalServiceList.length == 0) {
-        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: "warning"});
+      if (this.serviceStep3Data.externalServiceList.length === 0) {
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: 'warning'});
       } else if (this.haveRepeatNodePort()) {
-        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: "warning"});
-      } else if (this.uiData.affinityList.find(value => value.services.length == 0)) {
-        this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: "warning"});
+        this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: 'warning'});
+      } else if (this.serviceStep3Data.affinityList.find(value => value.services.length === 0)) {
+        this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: 'warning'});
       } else {
         this.isActionWip = true;
-        this.k8sService.setServiceConfig(this.uiData.uiToServer()).subscribe(
+        this.k8sService.setServiceStepConfig(this.serviceStep3Data).subscribe(
           () => this.k8sService.stepSource.next({index: 5, isBack: false}),
           () => this.isActionWip = false
         );

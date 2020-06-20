@@ -12,10 +12,9 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 import { SearchAddon } from 'xterm-addon-search';
-import { Service } from '../../../service';
 import { AppInitService } from '../../../../shared.service/app-init.service';
 import { K8sService } from '../../../service.k8s';
-import { ServiceContainer, ServiceDetailInfo } from '../../../service.types';
+import { Service, ServiceContainer, ServiceDetailInfo } from '../../../service.types';
 
 @Component({
   selector: 'app-console',
@@ -47,12 +46,12 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.k8sService.getServiceDetail(this.service.service_id).subscribe(
+    this.k8sService.getServiceDetail(this.service.serviceId).subscribe(
       (res: ServiceDetailInfo) => {
         this.serviceDetailInfo = res;
         this.changeRef.detectChanges();
-        if (this.serviceDetailInfo.service_Containers.length > 0) {
-          this.buildSocketConnect(this.serviceDetailInfo.service_Containers[0], 0);
+        if (this.serviceDetailInfo.serviceContainers.length > 0) {
+          this.buildSocketConnect(this.serviceDetailInfo.serviceContainers[0], 0);
         }
       }
     );
@@ -71,7 +70,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get wsUrl(): string {
     const host = `wss://${this.appInitService.systemInfo.board_host}`;
-    const path = `/api/v1/pods/${this.service.service_project_id}/${this.curPodName}/shell`;
+    const path = `/api/v1/pods/${this.service.serviceProjectId}/${this.curPodName}/shell`;
     const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;
   }
@@ -116,8 +115,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
   buildSocketConnect(serviceContainer: ServiceContainer, index: number) {
     this.curActiveIndex = index;
-    this.curPodName = serviceContainer.PodName;
-    this.curContainerName = serviceContainer.ContainerName;
+    this.curPodName = serviceContainer.podName;
+    this.curContainerName = serviceContainer.containerName;
     this.ws = new WebSocket(this.wsUrl);
     this.mountWebSocket();
   }

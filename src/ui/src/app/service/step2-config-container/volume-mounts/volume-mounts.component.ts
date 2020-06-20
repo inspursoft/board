@@ -9,12 +9,12 @@ import {
   OnInit,
   ViewContainerRef
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Volume, VolumeType } from '../../service-step.component';
 import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { K8sService } from '../../service.k8s';
 import { PersistentVolumeClaim } from '../../../shared/shared.types';
 import { MessageService } from '../../../shared.service/message.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { CreatePvcComponent } from '../../../shared/create-pvc/create-pvc.component';
 
 @Component({

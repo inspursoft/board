@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, Output, QueryList, ViewChildren } from "@angular/core";
-import { DragStatus } from "../../../shared/shared.types";
-import { AffinityCardData, AffinityCardListView } from "../../service-step.component";
-import { AffinityCardComponent } from "../affinity-card/affinity-card.component";
+import { Component, EventEmitter, Input, Output, QueryList, ViewChildren } from '@angular/core';
+import { DragStatus } from '../../../shared/shared.types';
+import { AffinityCardData, AffinityCardListView } from '../../service-step.component';
+import { AffinityCardComponent } from '../affinity-card/affinity-card.component';
 
 @Component({
-  selector: 'affinity-card-list',
+  selector: 'app-affinity-card-list',
   styleUrls: ['./affinity-card-list.component.css'],
   templateUrl: './affinity-card-list.component.html'
 })
@@ -20,14 +20,12 @@ export class AffinityCardListComponent {
   @Input() cardWidth = 0;
   @Input() viewModel: AffinityCardListView = AffinityCardListView.aclvColumn;
   @Output() selectedChange: EventEmitter<AffinityCardData>;
-  @Output() onDrop: EventEmitter<AffinityCardData>;
   @ViewChildren(AffinityCardComponent) cardComponentList: QueryList<AffinityCardComponent>;
   isDragActive = false;
   filterString = '';
 
   constructor() {
     this.affinityCardDataList = Array<AffinityCardData>();
-    this.onDrop = new EventEmitter<AffinityCardData>();
     this.selectedChange = new EventEmitter<AffinityCardData>();
   }
 
@@ -50,14 +48,13 @@ export class AffinityCardListComponent {
   drop(event: DragEvent) {
     if (this.acceptDrag && !this.disabled) {
       this.isDragActive = false;
-      let dataKey = event.dataTransfer.getData('text');
-      let card = this.sourceList.affinityCardDataList.find(value => value.key === dataKey);
+      const dataKey = event.dataTransfer.getData('text');
+      const card = this.sourceList.affinityCardDataList.find(value => value.key === dataKey);
       if (card) {
-        let index = this.sourceList.affinityCardDataList.indexOf(card);
+        const index = this.sourceList.affinityCardDataList.indexOf(card);
         card.status = DragStatus.dsEnd;
         this.affinityCardDataList.push(card);
         this.sourceList.affinityCardDataList.splice(index, 1);
-        this.onDrop.emit(card);
       }
     }
     event.preventDefault();
@@ -65,9 +62,9 @@ export class AffinityCardListComponent {
   }
 
   removeAffinityCard(data: AffinityCardData) {
-    let card = this.affinityCardDataList.find(value => value.key === data.key);
+    const card = this.affinityCardDataList.find(value => value.key === data.key);
     if (card) {
-      let index = this.affinityCardDataList.indexOf(card);
+      const index = this.affinityCardDataList.indexOf(card);
       card.status = DragStatus.dsReady;
       this.sourceList.affinityCardDataList.push(card);
       this.affinityCardDataList.splice(index, 1);
@@ -75,6 +72,6 @@ export class AffinityCardListComponent {
   }
 
   filterExecute($event: KeyboardEvent) {
-    this.filterString = ($event.target as HTMLInputElement).value
+    this.filterString = ($event.target as HTMLInputElement).value;
   }
 }

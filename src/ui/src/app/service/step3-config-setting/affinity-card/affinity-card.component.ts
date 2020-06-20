@@ -1,10 +1,10 @@
-import { Component, EventEmitter, Input, Output } from "@angular/core";
-import { DragStatus } from "../../../shared/shared.types";
-import { AffinityCardData } from "../../service-step.component";
-import { SERVICE_STATUS } from "../../../shared/shared.const";
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { DragStatus } from '../../../shared/shared.types';
+import { AffinityCardData } from '../../service-step.component';
+import { SERVICE_STATUS } from '../../../shared/shared.const';
 
 @Component({
-  selector: 'affinity-card',
+  selector: 'app-affinity-card',
   styleUrls: ['./affinity-card.component.css'],
   templateUrl: './affinity-card.component.html'
 })
@@ -12,17 +12,17 @@ export class AffinityCardComponent {
   @Input() data: AffinityCardData;
   @Input() disabled = false;
   @Input() width = 0;
-  @Output() onRemoveFromList: EventEmitter<AffinityCardData>;
-  @Output() onUnselected: EventEmitter<AffinityCardData>;
+  @Output() removeFromListEvent: EventEmitter<AffinityCardData>;
+  @Output() unselectedEvent: EventEmitter<AffinityCardData>;
 
   constructor() {
-    this.onRemoveFromList = new EventEmitter<AffinityCardData>();
-    this.onUnselected = new EventEmitter<AffinityCardData>();
+    this.removeFromListEvent = new EventEmitter<AffinityCardData>();
+    this.unselectedEvent = new EventEmitter<AffinityCardData>();
   }
 
   dragStartEvent(event: DragEvent) {
     this.data.status = DragStatus.dsStart;
-    event.dataTransfer.setData("text", this.data.key);
+    event.dataTransfer.setData('text', this.data.key);
   }
 
   dragEvent() {
@@ -30,7 +30,7 @@ export class AffinityCardComponent {
   }
 
   get containerStyle() {
-    let getColor: () => string = () => {
+    const getColor: () => string = () => {
       switch (this.data.serviceStatus) {
         case SERVICE_STATUS.PREPARING:
           return 'darkorange';
@@ -46,9 +46,9 @@ export class AffinityCardComponent {
     };
     return {
       'border-left': `5px ${getColor()} solid`,
-      'width': this.width == 0 ? `100%` : `${this.width}px`,
-      'cursor': this.data.status == DragStatus.dsEnd || this.disabled ? 'not-allowed' : 'pointer'
-    }
+      width: this.width === 0 ? `100%` : `${this.width}px`,
+      cursor: this.data.status === DragStatus.dsEnd || this.disabled ? 'not-allowed' : 'pointer'
+    };
   }
 
   get serviceStatus(): string {
@@ -67,6 +67,6 @@ export class AffinityCardComponent {
   }
 
   removeFromList() {
-    this.onRemoveFromList.emit(this.data);
+    this.removeFromListEvent.emit(this.data);
   }
 }
