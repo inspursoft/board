@@ -6,7 +6,6 @@ import (
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"strconv"
 	"strings"
 	"time"
 
@@ -14,37 +13,8 @@ import (
 )
 
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
-var gitlabHostIP = utils.GetConfig("GITLAB_HOST_IP")
-var gitlabHostPort = utils.GetConfig("GITLAB_HOST_PORT", "22")
-var gitlabHostUsername = utils.GetConfig("GITLAB_HOST_USERNAME")
-var gitlabHostPassword = utils.GetConfig("GITLAB_HOST_PASSWORD")
-var gitlabContainerName = utils.GetConfig("GITLAB_CONTAINER_NAME", "gitlab")
 
 type GitlabDevOps struct{}
-
-func InitializeGitlabRootUser(admin model.User) error {
-	sshPort, _ := strconv.Atoi(gitlabHostPort())
-	sshHandler, err := utils.NewSecureShell(gitlabHostIP(), sshPort, gitlabHostUsername(), gitlabHostPassword())
-	if err != nil {
-		return fmt.Errorf("failed to obtain secure shell handler: %+v", err)
-	}
-	gitlabRootToken := utils.GenerateRandomString()
-	cmd := fmt.Sprintf(`docker exec -it %s gitlab-rails runner "token = User.find_by_username('root').personal_access_tokens.create(scopes: [:read_user, :api, :read_repository], name: 'Root automation token'); token.set_token(%s); token.save!`, gitlabContainerName(), gitlabRootToken)
-	err = sshHandler.ExecuteCommand(cmd)
-	if err != nil {
-		return fmt.Errorf("failed to execute command to update root user token: %+v", err)
-	}
-	admin.RepoToken = gitlabRootToken
-	isSuccess, err := UpdateUser(admin, "repo_token")
-	if err != nil {
-		return fmt.Errorf("error occurred while updating admin user repo token: %+v", err)
-	}
-	if isSuccess {
-		utils.SetConfig("GITLAB_ADMIN_TOKEN", gitlabRootToken)
-		logs.Debug("Successful updated repo token for admin user.")
-	}
-	return nil
-}
 
 func (g GitlabDevOps) SignUp(user model.User) error {
 	userCreation, err := gitlab.NewGitlabHandler(gitlabAdminToken()).CreateUser(user)

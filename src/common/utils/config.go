@@ -182,10 +182,8 @@ func InitializeDefaultConfig() {
 
 	AddEnv("GITLAB_HOST_IP")
 	AddEnv("GITLAB_HOST_PORT")
-	AddEnv("GITLAB_HOST_USERNAME")
-	AddEnv("GITLAB_HOST_PASSWORD")
-	AddEnv("GITLAB_HOST_SSH_PORT")
-	AddEnv("GITLAB_CONTAINER_NAME")
+	AddEnv("GITLAB_SSH_PORT")
+	AddEnv("GITLAB_ADMIN_TOKEN")
 
 	SetConfig("GITLAB_BASE_URL", "http://%s:%s", "GITLAB_HOST_IP", "GITLAB_HOST_PORT")
 	SetConfig("DEVOPS_OPT", "gitlab")

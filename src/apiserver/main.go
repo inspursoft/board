@@ -83,9 +83,6 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
-	if devopsOpt() == "gitlab" {
-		service.InitializeGitlabRootUser(model.User{ID: adminUserID})
-	}
 	devops := service.CurrentDevOps()
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
