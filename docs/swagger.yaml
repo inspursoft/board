@@ -2965,7 +2965,64 @@ paths:
         409:
           description: Node name already exists.
         500:
-          description: Internal errors.                         
+          description: Internal errors.                   
+  /v1/edgenodes/{node_name}:
+    get:
+      summary: Return the edge node status.
+      description: |
+        This endpoint returns the edge node status.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: node name to specify an edge node.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return the system available resources of nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EdgeNodeInfo'              
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.     
+    delete:
+      summary: Remove the edge node.
+      description: |
+        This endpoint to remove the edge node.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_name
+          in: path
+          description: edge node name to be removed.
+          required: true
+          type: string          
+      tags:
+        - Products
+      responses:
+        200:
+          description: Remove this node from cluster successfully             
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.                       
   /v1/nodegroup:
     get:
       summary: Return all node groups in Board.
@@ -7220,6 +7277,12 @@ definitions:
       name:
         type: string
         description: The name of this edgenode. 
+      edge_ip:
+        type: string
+        description: The IP address of this edgenode.    
+      cpu_type:
+        type: string
+        description: The CPU type of this edgenode, arm64, arm32, x86.               
       master:  
         type: string
         description: The name of this edgenode.         
