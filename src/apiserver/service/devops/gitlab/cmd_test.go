@@ -47,7 +47,7 @@ var fileInfo = gitlab.FileInfo{
 	Content: "# myrepo",
 }
 
-var adminAccessToken = "si1Z1eUZUVui7XFarUyW"
+var adminAccessToken = "bHRRGveFRwqPz7Y7gseC"
 var sshPubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDaa046MKqllR1bE0pfPYwcVYHmBx291OzeWj5VHS6FCsVeLnky99pJigp3uwDz68uTDOx1I+zUU3XE39o4591isCCbM9ba5l2hKvGnHUoTRdG6Pkc9gy+OdKIJMGFca58Bt1hhPCa5FT8cQadsSnr7rGmg1O5tfG6a9mjzKFjn3nNNlYi5U6BsJxD3ReV5mVkFea5wH2yMzrHCSxTQiyLM8owB9Dem7Mrqz799sfB9MjC6ryVGwJd8oZOxGCB7hNz/Eenb+EUjdevxLFAVZgakTk4vDm/ubVfQjrdxGg4MaAbD4+kYNezEfh9c5W2uC0QlZHQhItEoMqytmWmjeZF7 root@10.110.25.227"
 
 func TestMain(m *testing.M) {
