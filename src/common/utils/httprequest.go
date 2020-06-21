@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -34,6 +35,12 @@ func DefaultResponseHandler(req *http.Request, resp *http.Response) error {
 	requestURL := req.URL.String()
 	logs.Info("Requested: %s with response status code: %d", requestURL, resp.StatusCode)
 	if resp.StatusCode >= http.StatusBadRequest {
+		output, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			logs.Error("Failed to read response body: %+v", err)
+			return err
+		}
+		logs.Debug("Error from response: %+s", string(output))
 		switch resp.StatusCode {
 		case http.StatusBadRequest:
 			return ErrBadRequest

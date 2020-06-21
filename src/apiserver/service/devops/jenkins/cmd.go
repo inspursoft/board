@@ -19,6 +19,7 @@ var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
 var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var executionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
+var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 
 type jenkinsHandler struct {
 	configURL   string
@@ -52,8 +53,8 @@ func NewJenkinsHandler() *jenkinsHandler {
 }
 
 func (j *jenkinsHandler) CreateJobWithParameter(jobName string) error {
-	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s",
-		JenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), JenkinsBaseURL(), j.registryURL, executionMode()))
+	return utils.SimpleGetRequestHandle(fmt.Sprintf("%s/job/%s/buildWithParameters?F00=%s&F01=%s&F02=%s&F03=%s&F04=%s&F05=%s",
+		JenkinsBaseURL(), seedJobName, jobName, jenkinsNodeIP(), JenkinsBaseURL(), j.registryURL, executionMode(), devOpsOpt()))
 }
 
 func (j *jenkinsHandler) DeleteJob(jobName string) error {
