@@ -82,6 +82,13 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		LogId:          newLogId,
 		LogTimestamp:   nodeLog.CreationTime}
 	if err := LaunchAnsibleContainer(&containerEnv, secure); err != nil {
+		logFileName := fmt.Sprintf("%d.log", nodeLog.CreationTime)
+		updateLogInfo := &nodeModel.UpdateNodeLog{LogId: int(newLogId),
+			Ip:          nodePostData.NodeIp,
+			InstallFile: yamlFile,
+			LogFile:     logFileName,
+			ExitCode:    1}
+		UpdateLog(updateLogInfo)
 		return nil, err
 	}
 	return &nodeLog, nil

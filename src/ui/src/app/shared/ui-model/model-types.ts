@@ -5,6 +5,8 @@ export interface IBindType {
   serverPropertyTypeName: string;
   serverPropertyName: string;
   itemType?: Type<HttpBase> | null;
+  booleanTrueValue?: any;
+  booleanFalseValue?: any;
 }
 
 export function HttpBind(serverPropertyName: string) {
@@ -28,6 +30,18 @@ export function HttpBindArray(serverPropertyName: string, itemType: Type<HttpBas
   };
 }
 
+export function HttpBindBoolean(serverPropertyName: string, trueValue: any, falseValue: any) {
+  return (target: HttpBase, propertyName: string) => {
+    const resValue: IBindType = {
+      serverPropertyTypeName: 'boolean',
+      serverPropertyName,
+      booleanTrueValue: trueValue,
+      booleanFalseValue: falseValue
+    };
+    Reflect.defineMetadata(propertyName, resValue, target);
+  };
+}
+
 export abstract class HttpBase {
 
   constructor(public res?: object) {
@@ -38,7 +52,16 @@ export abstract class HttpBase {
 
   }
 
-  getPostBody(): { [key: string]: string } {
+  protected afterInit() {
+
+  }
+
+  protected preparePost() {
+
+  }
+
+  getPostBody(): { [key: string]: any } {
+    this.preparePost();
     const postBody = {};
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
     metadataKeys.forEach((propertyKey: string) => {
@@ -51,7 +74,10 @@ export abstract class HttpBase {
         Reflect.set(postBody, metadataValue.serverPropertyName, reqPropertyValue);
       } else if (metadataValue.serverPropertyTypeName === 'object') {
         const reqObject = property as HttpBase;
-        Reflect.set(postBody, metadataValue.serverPropertyName, reqObject);
+        Reflect.set(postBody, metadataValue.serverPropertyName, reqObject.getPostBody());
+      } else if (metadataValue.serverPropertyTypeName === 'boolean') {
+        const booleanValue = property ? metadataValue.booleanTrueValue : metadataValue.booleanFalseValue;
+        Reflect.set(postBody, metadataValue.serverPropertyName, booleanValue);
       } else {
         Reflect.set(postBody, metadataValue.serverPropertyName, property);
       }
@@ -86,6 +112,11 @@ export abstract class HttpBase {
           item.initFromRes();
           Reflect.set(this, propertyKey, item);
         }
+      } else if (metadataValue.serverPropertyTypeName === 'boolean') {
+        if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
+          const resValue = Reflect.get(this.res, metadataValue.serverPropertyName);
+          Reflect.set(this, propertyKey, resValue === metadataValue.booleanTrueValue);
+        }
       } else {
         if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
           const resValue = Reflect.get(this.res, metadataValue.serverPropertyName);
@@ -93,14 +124,15 @@ export abstract class HttpBase {
         }
       }
     });
+    this.afterInit();
   }
 }
 
 export class Pagination extends HttpBase {
-  @HttpBind('page_index') PageIndex: number;
-  @HttpBind('page_size') PageSize: number;
-  @HttpBind('total_count') TotalCount: number;
-  @HttpBind('page_count') PageCount: number;
+  @HttpBind('page_index') PageIndex = 1;
+  @HttpBind('page_size') PageSize = 1;
+  @HttpBind('total_count') TotalCount = 0;
+  @HttpBind('page_count') PageCount = 0;
 }
 
 export abstract class ResponseArrayBase<T extends HttpBase> {
@@ -145,6 +177,7 @@ export abstract class ResponsePaginationBase<T extends HttpBase> {
   constructor(public res: object) {
     this.list = Array<T>();
     this.pagination = new Pagination(this.getObject('pagination'));
+    this.pagination.initFromRes();
     const resList = this.getObject(this.ListKeyName());
     if (Array.isArray(resList)) {
       (resList as Array<object>).forEach(response => {

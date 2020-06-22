@@ -143,7 +143,7 @@ func CreateAccessToken(username, password string) (*AccessToken, error) {
 	logs.Info("Requesting Gogits API of create access token ...")
 	err := utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/api/v1/users/%s/tokens", gogitsBaseURL(), username), func(req *http.Request) error {
 		req.Header = http.Header{
-			"content-type":  []string{"application/json"},
+			"content-type":  []string{"application/json", "application/form-data"},
 			"Authorization": []string{"Basic " + utils.BasicAuthEncode(username, password)},
 		}
 		return nil

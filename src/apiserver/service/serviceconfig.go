@@ -1148,6 +1148,7 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 				privileged = *podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged
 			}
 			serviceContainer.SecurityContext = privileged
+			serviceContainer.InitContainer = true
 			sContainers = append(sContainers, serviceContainer)
 		}
 		for j := range podList.Items[i].Spec.Containers {
@@ -1160,6 +1161,7 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 				privileged = *podList.Items[i].Spec.Containers[j].SecurityContext.Privileged
 			}
 			serviceContainer.SecurityContext = privileged
+			serviceContainer.InitContainer = false
 			sContainers = append(sContainers, serviceContainer)
 		}
 	}

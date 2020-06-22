@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Service } from '../../../service';
 import { K8sService } from '../../../service.k8s';
+import { Service } from '../../../service.types';
 
 @Component({
   selector: 'app-load-balance',
@@ -23,7 +23,7 @@ export class LoadBalanceComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.k8sService.getSessionAffinityFlag(this.service.service_name, this.service.service_project_name).subscribe(
+    this.k8sService.getSessionAffinityFlag(this.service.serviceName, this.service.serviceProjectName).subscribe(
       flag => {
         this.sessionAffinityFlag = flag;
         this.oldSessionAffinityFlag = flag;
@@ -33,8 +33,8 @@ export class LoadBalanceComponent implements OnInit {
   }
 
   actionExecute() {
-    const serviceName = this.service.service_name;
-    const projectName = this.service.service_project_name;
+    const serviceName = this.service.serviceName;
+    const projectName = this.service.serviceProjectName;
     this.k8sService.setSessionAffinityFlag(serviceName, projectName, this.sessionAffinityFlag).subscribe(
       () => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_SESSION_AFFINITY_SUCCESSFUL'),
       (err) => this.errorEvent.emit(err)

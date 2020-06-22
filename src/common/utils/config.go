@@ -51,11 +51,6 @@ func GetBoolValue(name string) bool {
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
-	strEnv := os.Getenv(name)
-	if len(strEnv) > 0 {
-		logs.Debug("Got from ENV with key: %s, value: %s.", name, strEnv)
-		return strEnv
-	}
 	if defaultValue != nil && len(defaultValue) > 0 {
 		return defaultValue[0]
 	}
@@ -180,6 +175,15 @@ func InitializeDefaultConfig() {
 
 	AddEnv("TILLER_PORT")
 	AddEnv("K8SPROXY_ENABLED")
+
+	AddEnv("DEVOPS_OPT")
+
+	AddEnv("GITLAB_HOST_IP")
+	AddEnv("GITLAB_HOST_PORT")
+	AddEnv("GITLAB_SSH_PORT")
+	AddEnv("GITLAB_ADMIN_TOKEN")
+
+	SetConfig("GITLAB_BASE_URL", "http://%s:%s", "GITLAB_HOST_IP", "GITLAB_HOST_PORT")
 
 	ShowAllConfigs()
 }

@@ -106,7 +106,7 @@ func (pm *CommonController) Update() {
 		return
 	}
 	baseRepoName := pm.Project.Name
-	service.ForkRepo(user, baseRepoName)
+	service.CurrentDevOps().ForkRepo(*user, baseRepoName)
 }
 
 // @Title Delete project member by project and user ID

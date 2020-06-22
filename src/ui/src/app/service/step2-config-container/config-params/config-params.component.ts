@@ -6,12 +6,11 @@ import { map } from 'rxjs/operators';
 import { InputArrayExType } from 'board-components-library';
 import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-child-base';
 import { MessageService } from '../../../shared.service/message.service';
-import { Container, ContainerType, EnvStruct, UIServiceStep2, Volume } from '../../service-step.component';
+import { Container, ContainerType, EnvStruct, ServiceStep2Data, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
 import { EnvType } from '../../../shared/environment-value/environment-value.component';
 import { NodeAvailableResources } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
-
 
 @Component({
   selector: 'app-config-params',
@@ -29,7 +28,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   showEnvironmentValue = false;
   fixedContainerEnv: Map<string, Array<EnvStruct>>;
   fixedContainerPort: Map<Container, Array<number>>;
-  step2Data: UIServiceStep2;
+  step2Data: ServiceStep2Data;
   curContainerType: ContainerType = ContainerType.runContainer;
   isAfterViewInit = false;
 
@@ -81,7 +80,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   getVolumesDescription(index: number, container: Container): string {
-    const volume = container.volume_mounts;
+    const volume = container.volumeMounts;
     if (volume.length > index) {
       const storageServer = volume[index].targetStorageService === '' ? '' :
         volume[index].targetStorageService.concat(':');
@@ -95,16 +94,16 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   editVolumeMount() {
     const factory = this.resolver.resolveComponentFactory(VolumeMountsComponent);
     const componentRef = this.view.createComponent(factory);
-    componentRef.instance.volumeDataList = this.container.volume_mounts;
+    componentRef.instance.volumeDataList = this.container.volumeMounts;
     componentRef.instance.projectName = this.step2Data.projectName;
-    componentRef.instance.onConfirmEvent.subscribe((res: Array<Volume>) => this.container.volume_mounts = res);
+    componentRef.instance.onConfirmEvent.subscribe((res: Array<Volume>) => this.container.volumeMounts = res);
     componentRef.instance.openModal().subscribe(() => this.view.remove(this.view.indexOf(componentRef.hostView)));
   }
 
   getEnvsDescription(): string {
     let result = '';
     this.container.env.forEach((value: EnvStruct) => {
-      result += `${value.dockerfile_envname}=${value.dockerfile_envvalue};`;
+      result += `${value.dockerFileEnvName}=${value.dockerFileEnvValue};`;
     });
     return result;
   }
@@ -116,9 +115,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   getDefaultEnvsData() {
     const result = Array<EnvType>();
     this.container.env.forEach((value: EnvStruct) => {
-      const env = new EnvType(value.dockerfile_envname, value.dockerfile_envvalue);
-      env.envConfigMapKey = value.configmap_key;
-      env.envConfigMapName = value.configmap_name;
+      const env = new EnvType(value.dockerFileEnvName, value.dockerFileEnvValue);
+      env.envConfigMapKey = value.configMapKey;
+      env.envConfigMapName = value.configMapName;
       result.push(env);
     });
     return result;
@@ -126,9 +125,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   getDefaultEnvsFixedData(): Array<string> {
     const result = Array<string>();
-    if (this.fixedContainerEnv.has(this.container.image.image_name)) {
-      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container.image.image_name);
-      fixedEnvs.forEach(value => result.push(value.dockerfile_envname));
+    if (this.fixedContainerEnv.has(this.container.image.imageName)) {
+      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container.image.imageName);
+      fixedEnvs.forEach(value => result.push(value.dockerFileEnvName));
     }
     return result;
   }
@@ -137,19 +136,19 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     this.container.env.splice(0, this.container.env.length);
     envsData.forEach((value: EnvType) => {
       const env = new EnvStruct();
-      env.dockerfile_envname = value.envName;
-      env.dockerfile_envvalue = value.envValue;
-      env.configmap_name = value.envConfigMapName;
-      env.configmap_key = value.envConfigMapKey;
+      env.dockerFileEnvName = value.envName;
+      env.dockerFileEnvValue = value.envValue;
+      env.configMapName = value.envConfigMapName;
+      env.configMapKey = value.envConfigMapKey;
       this.container.env.push(env);
     });
   }
 
   setContainerPorts(event: Array<InputArrayExType>) {
-    this.container.container_port.splice(0, this.container.container_port.length);
+    this.container.containerPort.splice(0, this.container.containerPort.length);
     event.forEach(value => {
       if (typeof value === 'number') {
-        this.container.container_port.push(value);
+        this.container.containerPort.push(value);
       }
     });
   }
@@ -192,8 +191,8 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     let isValid = true;
     const portBuf = new Set<number>();
     portBuf.add(Number.parseInt(control.value, 0));
-    this.step2Data.containerList.forEach((container, index) => {
-      container.container_port.forEach(port => {
+    this.step2Data.containerList.forEach((container) => {
+      container.containerPort.forEach(port => {
         if (portBuf.has(port)) {
           isValid = false;
         } else {
@@ -206,37 +205,33 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   validContainerCpu(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.cpu_limit !== '') {
-      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.cpu_limit);
+    if (control.value !== '' && this.container.cpuLimit !== '') {
+      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.cpuLimit);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 
   validContainerMem(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.mem_limit !== '') {
-      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.mem_limit);
+    if (control.value !== '' && this.container.memLimit !== '') {
+      isValid = Number.parseFloat(control.value) <= Number.parseFloat(this.container.memLimit);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 
   validContainerCpuLimit(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.cpu_request !== '') {
-      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.cpu_request);
+    if (control.value !== '' && this.container.cpuRequest !== '') {
+      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.cpuRequest);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 
   validContainerMemLimit(control: AbstractControl): ValidationErrors | null {
     let isValid = true;
-    if (control.value !== '' && this.container.mem_request !== '') {
-      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.mem_request);
+    if (control.value !== '' && this.container.memRequest !== '') {
+      isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.memRequest);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
-  }
-
-  setParams() {
-    this.modalOpened = false;
   }
 }

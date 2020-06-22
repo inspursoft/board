@@ -6,7 +6,6 @@ import (
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -47,6 +46,7 @@ var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 
 var apiServerPort = utils.GetConfig("API_SERVER_PORT", defaultAPIServerPort)
 var swaggerDoc = utils.GetConfig("SWAGGER_DOC", defaultSwaggerDoc)
+var devopsOpt = utils.GetConfig("DEVOPS_OPT")
 
 func initBoardVersion() {
 	version, err := ioutil.ReadFile("VERSION")
@@ -83,27 +83,28 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
-
-	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
+	service.SetSystemInfo("DEVOPS_OPT", false)
+	devops := service.CurrentDevOps()
+	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
-		logs.Error("Failed to create admin user on Gogit: %+v", err)
+		logs.Error("Failed to create admin user on current DevOps: %+v", err)
 	}
 
-	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
+	token, err := devops.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)
 	}
-	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	user := model.User{ID: adminUserID, RepoToken: token}
 	service.UpdateUser(user, "repo_token")
 
-	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	err = service.ConfigSSHAccess(adminUsername, token)
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
 
-	err = service.CreateRepoAndJob(adminUserID, defaultProject)
+	err = devops.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}
@@ -211,6 +212,7 @@ func main() {
 	service.SetSystemInfo("BOARD_HOST_IP", true)
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
+	service.SetSystemInfo("DEVOPS_OPT", false)
 	service.SetSystemInfo("K8SPROXY_ENABLED", false)
 
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {

@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -146,7 +146,7 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 		logs.Error("Failed to resolve repo name with project name: %s, username: %s, error: %+v", project.Name, user.Username, err)
 		return false, err
 	}
-	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = CurrentDevOps().DeleteRepo(user.Username, repoName)
 	if err != nil {
 		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
 		if err == utils.ErrUnprocessableEntity {
@@ -298,7 +298,7 @@ func SyncProjectsWithK8s() error {
 				// Still can work
 				continue
 			}
-			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			err = CurrentDevOps().CreateRepoAndJob(adminUserID, reqProject.Name)
 			if err != nil {
 				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
 			}

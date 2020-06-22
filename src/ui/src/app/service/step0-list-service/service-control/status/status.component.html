@@ -3,11 +3,11 @@
   <div class="detail-container">
     <div class="detail-line">
           <span>{{ 'SERVICE.SERVICE_CONTROL_NAME' | translate }}:
-            <span class="status-value">{{service.service_name}}</span>
+            <span class="status-value">{{service.serviceName}}</span>
           </span>
       <span>{{ 'SERVICE.STATUS' | translate }}:
-            <span [ngClass]="getStatusClass(service.service_status)" class="status-value">
-              {{getServiceStatus(service.service_status) | translate}}</span>
+            <span [ngClass]="getStatusClass(service.serviceStatus)" class="status-value">
+              {{getServiceStatus(service.serviceStatus) | translate}}</span>
           </span>
     </div>
     <div class="detail-line">

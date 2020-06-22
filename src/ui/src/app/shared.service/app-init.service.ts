@@ -39,11 +39,11 @@ export class AppInitService {
               private tokenService: AppTokenService) {
     this.systemInfo = new SystemInfo();
     this.currentUser = new User();
-    this.cookieExpiry = new Date(Date.now() + 10 * 60 * 60 * 24 * 365 * 1000);
-    this.isFirstLogin = this.cookieService.get('isFirstLogin') === undefined;
+    this.cookieExpiry = new Date(Date.now() + 60 * 60 * 24 * 1000);
+    this.isFirstLogin = localStorage.getItem('isFirstLogin') === null;
     if (this.isFirstLogin) {
       this.guideStep = GUIDE_STEP.PROJECT_LIST;
-      this.cookieService.put('isFirstLogin', 'used', {expires: this.cookieExpiry});
+      localStorage.setItem('isFirstLogin', 'used');
     }
   }
 

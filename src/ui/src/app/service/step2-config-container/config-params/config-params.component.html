@@ -1,6 +1,6 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false"
            [clrModalPreventClose]="true">
-  <h3 class="modal-title">{{container.image.image_name}}:{{container.image.image_tag}}</h3>
+  <h3 class="modal-title">{{container.image.imageName}}:{{container.image.imageTag}}</h3>
   <div class="modal-body">
     <lib-input-ex [inputLabel]="'SERVICE.STEP_2_CONTAINER_NAME' | translate"
                   [inputIsRequired]="true"
@@ -15,9 +15,9 @@
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'SERVICE.STEP_2_WORKING_DIR' | translate"
                   [inputPattern]="patternWorkDir"
-                  [inputDefaultValue]="container.working_dir"
+                  [inputDefaultValue]="container.workingDir"
                   [inputPlaceholder]="'SERVICE.STEP_2_WORK_DIRECTOR'| translate"
-                  (commitEvent)="container.working_dir = $event">
+                  (commitEvent)="container.workingDir = $event">
     </lib-input-ex>
     <lib-input-ex [inputType]="2"
                   [inputLabel]="'SERVICE.STEP_2_VOLUME_MOUNTS' | translate"
@@ -25,8 +25,8 @@
                   [inputPlaceholder]="'SERVICE.STEP_2_STORAGE_VOLUME'| translate"
                   (editEvent)="editVolumeMount()">
     </lib-input-ex>
-    <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
-        <span *ngFor="let _ of container.volume_mounts; let i = index">
+    <div *ngIf="container.volumeMounts.length > 1" class="volume-info-container">
+        <span *ngFor="let _ of container.volumeMounts; let i = index">
           <span *ngIf="i > 0">{{getVolumesDescription(i, container)}}</span>
         </span>
     </div>
@@ -39,7 +39,7 @@
     <lib-input-array-ex [inputCategory]="'number'"
                         [inputArrayFixed]="fixedContainerPort.get(container)"
                         [inputMin]="1"
-                        [inputArrayDefault]="container.container_port"
+                        [inputArrayDefault]="container.containerPort"
                         [inputMax]="65535"
                         [inputPlaceholder]="'[1..65535]'"
                         [validatorFns]="[validContainerPortsFun]"
@@ -57,7 +57,7 @@
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_CPU_REQUEST' | translate"
                   [inputPattern]="patternCpuRequest"
-                  [inputDefaultValue]="container.cpu_request"
+                  [inputDefaultValue]="container.cpuRequest"
                   [inputPlaceholder]="'eg. 100m'"
                   [validatorAsyncFn]="checkSetCpuRequestFun"
                   [validatorFns]="[validContainerCpuFun]"
@@ -65,42 +65,42 @@
                   {key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate},
                   {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
                   ]"
-                  (commitEvent)="container.cpu_request = $event">
+                  (commitEvent)="container.cpuRequest = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_MEMORY_REQUEST' | translate"
                   [inputPattern]="patternMemRequest"
                   [validatorAsyncFn]="checkSetMemRequestFun"
                   [validatorFns]="[validContainerMemFun]"
-                  [inputDefaultValue]="container.mem_request"
+                  [inputDefaultValue]="container.memRequest"
                   [inputPlaceholder]="'eg. 100Mi'"
                   [validatorMessage]="[
                   {key:'beyondMaxLimit',message: 'SERVICE.STEP_2_BEYOND_MAX_VALUE' | translate},
                   {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
                   ]"
-                  (commitEvent)="container.mem_request = $event">
+                  (commitEvent)="container.memRequest = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_CPU_LIMIT' | translate"
-                  [inputDefaultValue]="container.cpu_limit"
+                  [inputDefaultValue]="container.cpuLimit"
                   [inputPlaceholder]="'eg. 1024m'"
                   [validatorFns]="[validContainerCpuLimitFun]"
                   [validatorMessage]="[
                   {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
                   ]"
                   [inputPattern]="patternCpuLimit"
-                  (commitEvent)="container.cpu_limit = $event">
+                  (commitEvent)="container.cpuLimit = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="curContainerType === 0"
                   [inputLabel]="'SERVICE.STEP_2_MEMORY_LIMIT' | translate"
-                  [inputDefaultValue]="container.mem_limit"
+                  [inputDefaultValue]="container.memLimit"
                   [validatorFns]="[validContainerMemLimitFun]"
                   [validatorMessage]="[
                   {key:'resourceRequestInvalid',message: 'SERVICE.STEP_2_CONTAINER_REQUEST_ERROR' | translate}
                   ]"
                   [inputPattern]="patternMemLimit"
                   [inputPlaceholder]="'eg. 1024Mi'"
-                  (commitEvent)="container.mem_limit = $event">
+                  (commitEvent)="container.memLimit = $event">
     </lib-input-ex>
   </div>
   <div class="modal-footer">
