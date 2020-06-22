@@ -5,6 +5,7 @@ import (
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"github.com/astaxie/beego/logs"
 	"net/http"
@@ -17,21 +18,47 @@ type K8SProxyController struct {
 func (u *K8SProxyController) Prepare() {
 	u.EnableXSRF = false
 	u.ResolveSignedInUser()
-	//	u.RecordOperationAudit()
+}
+
+func (u *K8SProxyController) GetK8SProxyConfig() {
+	config, err := service.GetK8SProxyConfig()
+	if err != nil {
+		logs.Debug("Failed to get k8s proxy config: %+v", err)
+		u.InternalError(err)
+		return
+	}
+	u.RenderJSON(config)
+}
+
+func (u *K8SProxyController) SetK8SProxyConfig() {
+	if !u.IsSysAdmin {
+		u.CustomAbortAudit(http.StatusForbidden, "User should be admin")
+		return
+	}
+	// only audit the modify operation
+	u.RecordOperationAudit()
+	var config model.K8SProxyConfig
+	var err error
+	err = u.ResolveBody(&config)
+	if err != nil {
+		u.InternalError(err)
+		return
+	}
+	err = service.SetK8SProxyConfig(config)
+	if err != nil {
+		logs.Debug("Failed to set k8s proxy: %+v", err)
+		u.InternalError(err)
+	}
 }
 
 func (u *K8SProxyController) ProxyAction() {
-	info, err := service.GetSystemInfo()
+	config, err := service.GetK8SProxyConfig()
 	if err != nil {
 		u.CustomAbortAudit(http.StatusServiceUnavailable, fmt.Sprintf("Proxy to kubernetes error: %+v.", err))
 		return
 	}
-	if !info.K8SProxyEnabled {
+	if !config.Enable {
 		u.CustomAbortAudit(http.StatusForbidden, "You should turn on the kubernetes proxy setting.")
-		return
-	}
-	if !u.IsSysAdmin {
-		u.CustomAbortAudit(http.StatusForbidden, "User should be admin")
 		return
 	}
 	handler, err := k8sProxyHandler()

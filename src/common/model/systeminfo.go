@@ -13,7 +13,6 @@ type SystemInfo struct {
 	KubernetesVersion string `json:"kubernetes_version"`
 	ProcessorType     string `json:"processor_type"`
 	DevOpsOpt         string `json:"devops_opt"`
-	K8SProxyEnabled   bool   `json:"k8sproxy_enabled"`
 }
 
 // Info contains versioning information.

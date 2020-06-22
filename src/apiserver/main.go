@@ -213,7 +213,6 @@ func main() {
 	service.SetSystemInfo("AUTH_MODE", false)
 	service.SetSystemInfo("REDIRECTION_URL", false)
 	service.SetSystemInfo("DEVOPS_OPT", false)
-	service.SetSystemInfo("K8SPROXY_ENABLED", false)
 
 	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
 		err = service.PrepareKVMHost()

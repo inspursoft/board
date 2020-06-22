@@ -132,7 +132,6 @@ kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
 kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
 tiller_port = rcp.get("configuration", "tiller_port")
-k8sproxy_enabled = rcp.get("configuration", "k8sproxy_enabled")
 
 ###email configuration
 email_identity = rcp.get("configuration", "email_identity")
@@ -284,8 +283,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         kvm_registry_size=kvm_registry_size,
         kvm_registry_port=kvm_registry_port,
         kvm_toolkits_path=kvm_toolkits_path,
-        tiller_port=tiller_port,
-        k8sproxy_enabled=k8sproxy_enabled)
+        tiller_port=tiller_port)
 
 if kube_http_scheme == "http":
 	for name in ["apiserver", "collector"]:

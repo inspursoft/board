@@ -5,3 +5,7 @@ type Config struct {
 	Value   string `json:"value" orm:"column(value)"`
 	Comment string `json:"comment" orm:"column(comment)"`
 }
+
+type K8SProxyConfig struct {
+	Enable bool `json:"enable"`
+}

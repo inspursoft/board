@@ -33,7 +33,7 @@ func InitRouter() {
 				"get:CurrentUserAction"),
 			beego.NSRouter("/systeminfo",
 				&AuthController{},
-				"get:GetSystemInfo;put:SetSystemInfo"),
+				"get:GetSystemInfo"),
 			beego.NSRouter("system/resources",
 				&AuthController{},
 				"get:GetSystemResources"),
@@ -353,6 +353,9 @@ func InitRouter() {
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),
+			beego.NSRouter("/k8sproxy",
+				&K8SProxyController{},
+				"get:GetK8SProxyConfig;put:SetK8SProxyConfig"),
 		),
 	)
 
