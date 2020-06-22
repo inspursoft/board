@@ -105,9 +105,9 @@ endif
 # TOPLEVEL_PKG := .
 INT_LIST := adminserver apiserver tokenserver collector/cmd
 ifndef ARCH
-	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum prometheus
 else
-	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
+	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits prometheus
 endif
 
 
