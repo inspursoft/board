@@ -6,9 +6,10 @@ import (
 	"git/inspursoft/board/src/apiserver/service"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strings"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type AuthController struct {
