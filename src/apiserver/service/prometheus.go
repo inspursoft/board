@@ -53,7 +53,7 @@ type RequestPayload struct {
 	TimeUnit  string `json:"time_unit"`
 }
 
-func GetDashBoardData(timestamp int64, request RequestPayload, nodename, servicename string) (DashboardInfo, error) {
+func GetDashBoardData(request RequestPayload, nodename, servicename string) (DashboardInfo, error) {
 	var para DashboardInfo
 	client, err := api.NewClient(api.Config{
 		Address: "http://prometheus:9090/",
@@ -95,11 +95,11 @@ func GetDashBoardData(timestamp int64, request RequestPayload, nodename, service
 	timeRange.Start = time.Unix(timeStampArray[0], 0)
 	timeRange.End = time.Unix(timeStampArray[request.TimeCount-1], 0)
 
-	if timestamp < timeStampArray[0] {
-		para.IsOverMinLimit = true
-	} else if timestamp > timeStampArray[request.TimeCount-1] {
-		para.IsOverMaxLimit = true
-	}
+	// if timestamp < timeStampArray[0] {
+	// 	para.IsOverMinLimit = true
+	// } else if timestamp > timeStampArray[request.TimeCount-1] {
+	// 	para.IsOverMaxLimit = true
+	// }
 
 	result, warnings, err := v1api.QueryRange(ctx, "kube_service_spec_selector{service!=\"kubernetes\"}", timeRange)
 	if err != nil {
