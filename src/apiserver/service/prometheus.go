@@ -53,7 +53,7 @@ type RequestPayload struct {
 	TimeUnit  string `json:"time_unit"`
 }
 
-func GetDashBoardData(timestamp int64, request RequestPayload) (DashboardInfo, error) {
+func GetDashBoardData(timestamp int64, request RequestPayload, nodename, servicename string) (DashboardInfo, error) {
 	var para DashboardInfo
 	client, err := api.NewClient(api.Config{
 		Address: "http://prometheus:9090/",
@@ -153,6 +153,13 @@ func GetDashBoardData(timestamp int64, request RequestPayload) (DashboardInfo, e
 			}
 		}
 	}
+
+	for i := 0; i < len(para.ServiceListData); i++ {
+		if para.ServiceListData[i].Name != servicename {
+			para.ServiceListData[i].ServiceLogsData = []ServiceLogs{}
+		}
+	}
+
 	//------------------------storage-total--------------------------------
 	StorageCapQuery := `kube_node_status_capacity{resource="ephemeral_storage"}`
 	StorageCapResult, _, err := v1api.QueryRange(ctx, StorageCapQuery, timeRange)
@@ -197,26 +204,35 @@ func GetDashBoardData(timestamp int64, request RequestPayload) (DashboardInfo, e
 	if err != nil {
 		return DashboardInfo{}, err
 	}
+
+	for i := 0; i < len(para.NodeListData); i++ {
+		if para.NodeListData[i].Name != nodename {
+			para.NodeListData[i].NodeLogsData = []NodeLogs{}
+		}
+	}
+
 	//average:
-	CPUUsageAvg := fmt.Sprintf("avg(%s)", CPUUsage)
-	err = para.GetAvgData(CPUUsageAvg, "CPU", v1api, ctx, timeRange, timeStampArray)
-	if err != nil {
-		return DashboardInfo{}, err
-	}
-	MemoUsageAvg := fmt.Sprintf("avg(%s)", MemoUsage)
-	err = para.GetAvgData(MemoUsageAvg, "memory", v1api, ctx, timeRange, timeStampArray)
-	if err != nil {
-		return DashboardInfo{}, err
-	}
-	StorageUsedAvg := fmt.Sprintf("avg(%s)", StorageUsedQuery)
-	err = para.GetAvgData(StorageUsedAvg, "storageUsed", v1api, ctx, timeRange, timeStampArray)
-	if err != nil {
-		return DashboardInfo{}, err
-	}
-	StorageCapAvg := fmt.Sprintf("avg(%s)", StorageCapQuery)
-	err = para.GetAvgData(StorageCapAvg, "storageCap", v1api, ctx, timeRange, timeStampArray)
-	if err != nil {
-		return DashboardInfo{}, err
+	if nodename == "average" {
+		CPUUsageAvg := fmt.Sprintf("avg(%s)", CPUUsage)
+		err = para.GetAvgData(CPUUsageAvg, "CPU", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		MemoUsageAvg := fmt.Sprintf("avg(%s)", MemoUsage)
+		err = para.GetAvgData(MemoUsageAvg, "memory", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		StorageUsedAvg := fmt.Sprintf("avg(%s)", StorageUsedQuery)
+		err = para.GetAvgData(StorageUsedAvg, "storageUsed", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		StorageCapAvg := fmt.Sprintf("avg(%s)", StorageCapQuery)
+		err = para.GetAvgData(StorageCapAvg, "storageCap", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
 	}
 
 	return para, nil
