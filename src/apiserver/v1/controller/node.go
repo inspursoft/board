@@ -262,3 +262,90 @@ func (n *NodeController) NodeDrainAction() {
 	}
 	logs.Debug("Drained node %s", nodeName)
 }
+
+// Get edge node list
+func (n *NodeController) EdgeNodeList() {
+	var edgelist []string
+	nodeList := service.GetNodeList()
+	for _, v := range nodeList {
+		if v.NodeType == service.NodeTypeEdge {
+			edgelist = append(edgelist, v.NodeName)
+		}
+	}
+	n.RenderJSON(edgelist)
+}
+
+// Create a new edge node
+func (n *NodeController) AddEdgeNodeAction() {
+	var reqNode model.NodeCli
+	var err error
+	err = n.ResolveBody(&reqNode)
+	if err != nil {
+		return
+	}
+
+	if !utils.ValidateWithLengthRange(reqNode.NodeName, 1, 63) {
+		n.CustomAbortAudit(http.StatusBadRequest, "NodeName must be not empty and no more than 63 characters ")
+		return
+	}
+
+	nodeExists, err := service.NodeExists(reqNode.NodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	if nodeExists {
+		n.CustomAbortAudit(http.StatusConflict, "Nodename already exists.")
+		return
+	}
+
+	//reqNode.NodeName = strings.TrimSpace(reqNode.NodeName)
+
+	//TODO create edge node, label yaml and run script
+	node, err := service.CreateEdgeNode(reqNode)
+	if err != nil {
+		logs.Debug("Failed to add edge node %s", reqNode.NodeName)
+		n.InternalError(err)
+		return
+	}
+	logs.Info("Added edge node %s", node.ObjectMeta.Name)
+}
+
+// Get the edge node
+func (n *NodeController) GetEdgeNodeAction() {
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Get the edge node %s", nodeName)
+
+	nodeDel, err := service.GetNodebyName(nodeName)
+	if err != nil {
+		logs.Debug("Failed to get node %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	n.RenderJSON(*nodeDel)
+}
+
+// Delete the edge node
+func (n *NodeController) RemoveEdgeNodeAction() {
+	if n.IsSysAdmin == false {
+		n.CustomAbortAudit(http.StatusForbidden, "Insufficient privileges to control node.")
+		return
+	}
+	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
+	logs.Debug("Get the edge node %s", nodeName)
+
+	//TODO remove an edge node
+	//TODO Check the edge status, autonomous offline
+	logs.Debug("To delete node %s", nodeName)
+	res, err := service.DeleteNode(nodeName)
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+
+	if res == false {
+		n.CustomAbortAudit(http.StatusNotFound, "Nodename Not Found.")
+		return
+	}
+	logs.Debug("Removed Edge %s", nodeName)
+}
