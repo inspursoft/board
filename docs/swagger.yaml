@@ -4917,6 +4917,46 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors. 
+  /v1/k8sproxy:
+    get:
+      summary: Get k8s proxy config info.
+      description: "Get k8s proxy config info of current configurations. \n"
+      tags:
+      - Products
+      responses:
+        200:
+          description: Get k8s proxy config info successfully.
+          schema:
+            $ref: '#/definitions/K8SProxyConfig'
+        500:
+          description: Unexpected internal error.
+    put:
+      summary: Set k8s proxy config info.
+      description: |
+        This endpoint is used to set k8s proxy config info.
+      parameters:
+      - name: token
+        in: header
+        type: string
+        required: true
+        description: Current available token.
+      - name: k8sproxyconfig
+        in: body
+        description: K8s proxy config to be modified.
+        required: true
+        schema:
+          $ref: '#/definitions/K8SProxyConfig'
+      tags:
+      - Products
+      responses:
+        200:
+          description: Setting k8s proxy config info successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Internal errors.
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -7286,3 +7326,9 @@ definitions:
       master:  
         type: string
         description: The name of this edgenode.         
+  K8SProxyConfig:
+    type: object
+    properties:
+      enable:
+        type: boolean
+        description: Whether enable the proxy or not.

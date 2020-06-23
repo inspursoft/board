@@ -178,11 +178,7 @@ func main() {
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
-	err := v2routers.InitK8sRouter()
-	if err != nil {
-		logs.Error("Failed to init kubernetes api routes: %+v", err)
-		panic(err)
-	}
+
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
