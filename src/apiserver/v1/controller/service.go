@@ -109,6 +109,7 @@ func (p *ServiceController) DeployServiceAction() {
 	newservice.OwnerName = p.CurrentUser.Username
 	newservice.Public = configService.Public
 	newservice.ProjectName = project.Name
+	newservice.Type = configService.ServiceType
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
@@ -138,9 +139,9 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.PushItemsToRepo(items...)
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: service.GetServiceType(deployInfo.Service.Type), ServiceYaml: string(deployInfo.ServiceFileInfo),
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
-	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.InternalError(err)
 		return
