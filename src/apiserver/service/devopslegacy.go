@@ -29,6 +29,9 @@ var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
 
+type gogsJenkinsPushPayload struct {
+}
+
 type LegacyDevOps struct{}
 
 func (l LegacyDevOps) SignUp(user model.User) error {
@@ -222,6 +225,10 @@ func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 		return err
 	}
 	return gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+}
+
+func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {
+	return nil
 }
 
 func PrepareKVMHost() error {

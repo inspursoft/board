@@ -233,6 +233,12 @@ func (p *ImageController) BuildImageAction() {
 	//Checking invalid parameters
 	p.ResolveRepoImagePath(reqImageConfig.ProjectName)
 	reqImageConfig.RepoPath = p.RepoImagePath
+
+	if reqImageConfig.NodeSelection == "" {
+		reqImageConfig.NodeSelection = "slave1"
+	}
+	utils.SetConfig("NODE_SELECTION", reqImageConfig.NodeSelection)
+
 	err = service.CheckDockerfileConfig(&reqImageConfig)
 	if err != nil {
 		p.ServeStatus(http.StatusBadRequest, err.Error())

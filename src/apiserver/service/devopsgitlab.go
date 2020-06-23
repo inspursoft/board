@@ -1,11 +1,13 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"net/http"
 	"strings"
 	"time"
 
@@ -13,6 +15,17 @@ import (
 )
 
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+
+type gitlabJenkinsPushProjectPayload struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	GitHTTPURL string `json:"git_http_url"`
+}
+
+type gitlabJenkinsPushPayload struct {
+	Project      gitlabJenkinsPushProjectPayload `json:"project"`
+	NodeSelector string                          `json:"node_selector"`
+}
 
 type GitlabDevOps struct{}
 
@@ -130,7 +143,7 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	logs.Debug("Successful created Gitlab project: %+v", projectCreation)
 	projectInfo.ID = int64(projectCreation.ID)
 
-	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
 	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
 	if err != nil {
 		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
@@ -231,7 +244,7 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
 
 	projectInfo := model.Project{ID: int64(forkedCreation.ID)}
-	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
 	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
 	if err != nil {
 		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
@@ -298,4 +311,19 @@ func (g GitlabDevOps) DeleteRepo(username string, repoName string) error {
 	}
 	logs.Debug("Successful deleted project by ID: %d", project.ID)
 	return nil
+}
+
+func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {
+	var cp gitlabJenkinsPushPayload
+	err := json.Unmarshal(rawPayload, &cp)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal JSON custom push payload: %+v", err)
+	}
+	logs.Debug("Resolve for push event hook payload: %+v", cp)
+	cp.NodeSelector = nodeSelection
+	header := http.Header{
+		"content-type":   []string{"application/json"},
+		"X-Gitlab-Event": []string{"Push Hook"},
+	}
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
