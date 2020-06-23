@@ -29,11 +29,13 @@ const (
 )
 
 const (
-	K8sLabel       = "kubernetes.io"
-	K8sNamespaces  = "kube-system cadvisor"
-	K8sMasterLabel = "node-role.kubernetes.io/master"
-	NodeTypeMaster = "master"
-	NodeTypeEdge   = "edge"
+	K8sLabel         = "kubernetes.io"
+	K8sNamespaces    = "kube-system cadvisor"
+	K8sMasterLabel   = "node-role.kubernetes.io/master"
+	K8sEdgeNodeLabel = "node-role.kubernetes.io/edge"
+	NodeTypeMaster   = "master"
+	NodeTypeEdge     = "edge"
+	NodeTypeNode     = "node"
 )
 
 type NodeListResult struct {
@@ -169,6 +171,7 @@ func GetNodeList() (res []NodeListResult) {
 	}
 
 	for _, v := range Node.Items {
+		nodetype := getNodeType(v)
 		res = append(res, NodeListResult{
 			NodeName:   getNodeAddress(v, "Hostname"),
 			NodeIP:     getNodeAddress(v, "InternalIP"),
@@ -183,10 +186,25 @@ func GetNodeList() (res []NodeListResult) {
 						return Running
 					}
 				}
+				if nodetype == NodeTypeEdge {
+					return AutonomousOffline
+				}
 				return Unknown
-			}()})
+			}(),
+			NodeType: nodetype})
 	}
 	return
+}
+
+//Get the node type based on labels
+func getNodeType(node model.Node) string {
+	if _, ok := node.ObjectMeta.Labels[K8sMasterLabel]; ok {
+		return NodeTypeMaster
+	}
+	if _, ok := node.ObjectMeta.Labels[K8sEdgeNodeLabel]; ok {
+		return NodeTypeEdge
+	}
+	return NodeTypeNode
 }
 
 func CreateNodeGroup(nodeGroup model.NodeGroup) (*model.NodeGroup, error) {
@@ -692,4 +710,11 @@ func DrainNodeServiceInstance(nodeName string) error {
 		}
 	}
 	return nil
+}
+
+// Create an edge node in kubernetes cluster
+func CreateEdgeNode(node model.NodeCli) (*model.Node, error) {
+	// TODO run ansible docker script to add an edge node
+	node.Labels[K8sEdgeNodeLabel] = ""
+	return CreateNode(node)
 }

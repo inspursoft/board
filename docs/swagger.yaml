@@ -7285,4 +7285,7 @@ definitions:
         description: The CPU type of this edgenode, arm64, arm32, x86.               
       master:  
         type: string
-        description: The name of this edgenode.         
+        description: The name of this edgenode.   
+      registry_mode:
+        type: string
+        description: The auto or mannual mode.        
