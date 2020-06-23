@@ -73,6 +73,10 @@ export class AppInitService {
     return this.systemInfo.mode === 'normal';
   }
 
+  get getWebsocketPrefix(): string {
+    return window.location.protocol === 'https:' ? 'wss' : 'ws';
+  }
+
   getCurrentUser(tokenParam?: string): Observable<User> {
     const token = this.tokenService.token || tokenParam;
     return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})

@@ -357,10 +357,14 @@ func InitRouter() {
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),
+			beego.NSRouter("/k8sproxy",
+				&K8SProxyController{},
+				"get:GetK8SProxyConfig;put:SetK8SProxyConfig"),
 		),
 	)
 
 	beego.AddNamespace(ns)
 	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+	beego.Router("/kubernetes/?:all(.*)", &K8SProxyController{}, "*:ProxyAction")
 }
