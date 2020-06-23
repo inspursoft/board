@@ -31,7 +31,7 @@ type JenkinsJobCallbackController struct {
 }
 
 func (j *JenkinsJobCallbackController) Prepare() {
-	j.EnableXSRF=false
+	j.EnableXSRF = false
 }
 
 func (j *JenkinsJobCallbackController) BuildNumberCallback() {
@@ -39,6 +39,16 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
 	logs.Info("Get build number from Jenkins job callback: %d", buildNumber)
 	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
+}
+
+func (j JenkinsJobCallbackController) CustomPushEventPayload() {
+	nodeSelection := utils.GetConfig("NODE_SELECTION", "slave1")
+	data, err := ioutil.ReadAll(j.Ctx.Request.Body)
+	if err != nil {
+		j.InternalError(err)
+	}
+	logs.Debug("%s", string(data))
+	service.CurrentDevOps().CustomHookPushPayload(data, nodeSelection())
 }
 
 type JenkinsJobController struct {

@@ -51,11 +51,11 @@ func GetBoolValue(name string) bool {
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
-	if defaultValue != nil && len(defaultValue) > 0 {
-		return defaultValue[0]
-	}
 	if s, ok := configStorage[name].(string); ok {
 		return s
+	}
+	if defaultValue != nil && len(defaultValue) > 0 {
+		return defaultValue[0]
 	}
 	panic(fmt.Sprintf("Failed to get value for key: %s", name))
 }

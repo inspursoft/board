@@ -1,12 +1,14 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"net/http"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -28,6 +30,17 @@ var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
+
+type gogsJenkinsPushRepositoryPayload struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	CloneURL string `json:"clone_url"`
+}
+
+type gogsJenkinsPushPayload struct {
+	Repository   gogsJenkinsPushRepositoryPayload `json:"repository"`
+	NodeSelector string                           `json:"node_selector"`
+}
 
 type LegacyDevOps struct{}
 
@@ -104,7 +117,9 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		logs.Error("Failed to create repo: %s, error %+v", repoName, err)
 		return err
 	}
-	err = gogsHandler.CreateHook(username, repoName)
+
+	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
+	err = gogsHandler.CreateHook(username, repoName, hookURL)
 	if err != nil {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 	}
@@ -162,7 +177,9 @@ func (l LegacyDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 	if err != nil {
 		return err
 	}
-	gogsHandler.CreateHook(username, repoName)
+
+	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
+	gogsHandler.CreateHook(username, repoName, hookURL)
 	if err != nil {
 		logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 		return err
@@ -222,6 +239,21 @@ func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 		return err
 	}
 	return gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+}
+
+func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {
+	var cp gogsJenkinsPushPayload
+	err := json.Unmarshal(rawPayload, &cp)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal JSON custom push payload: %+v", err)
+	}
+	cp.NodeSelector = nodeSelection
+	logs.Debug("Resolve for push event hook payload: %+v", cp)
+	header := http.Header{
+		"content-type":   []string{"json"},
+		"X-Gitlab-Event": []string{"Push Hook"},
+	}
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
 
 func PrepareKVMHost() error {
