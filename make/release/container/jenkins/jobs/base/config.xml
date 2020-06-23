@@ -98,7 +98,7 @@ node(node_name) {
 }
 &apos;&apos;&apos;
 def single_node_script = &apos;&apos;&apos;
-node(&apos;slave&apos;) {
+node(&quot;${node_selector}&quot;) {
   stage(&quot;Clone or pull repo ...&quot;) {
     git &quot;${repo_clone_url}&quot;
   }
@@ -127,12 +127,14 @@ pipelineJob(job_name) {
     env(&quot;jenkins_master_url&quot;, &quot;$jenkins_master_url&quot;)
     env(&quot;kvm_registry_url&quot;, &quot;$kvm_registry_url&quot;)
     env(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;)
+    env(&quot;node_selector&quot;, &quot;slave&quot;)
   }
   parameters {
     stringParam(&quot;jenkins_master_url&quot;, &quot;$jenkins_master_url&quot;, &quot;Set Jenkins master URL.&quot;)
     stringParam(&quot;kvm_registry_url&quot;, &quot;$kvm_registry_url&quot;, &quot;Set KVM registry URL.&quot;)
     stringParam(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;, &quot;Set Jenkins node IP.&quot;)
     stringParam(&quot;node_name&quot;, &quot;&quot;, &quot;Set node name.&quot;)
+    stringParam(&quot;node_selector&quot;, &quot;&quot;, &quot;Set specific node.&quot;)
   }
   triggers {
     genericTrigger {
@@ -147,6 +149,13 @@ pipelineJob(job_name) {
         genericVariable {
           key(&quot;repo_clone_url&quot;)
           value(repo_clone_url_opt)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;node_selector&quot;)
+          value(&quot;\$.node_selector&quot;)
           expressionType(&quot;JSONPath&quot;)
           regexpFilter(&quot;&quot;)
           defaultValue(&quot;&quot;)

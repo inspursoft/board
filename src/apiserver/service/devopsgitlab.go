@@ -319,8 +319,8 @@ func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal JSON custom push payload: %+v", err)
 	}
-	logs.Debug("Resolve for push event hook payload: %+v", cp)
 	cp.NodeSelector = nodeSelection
+	logs.Debug("Resolve for push event hook payload: %+v", cp)
 	header := http.Header{
 		"content-type":   []string{"application/json"},
 		"X-Gitlab-Event": []string{"Push Hook"},

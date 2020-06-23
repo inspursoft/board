@@ -42,18 +42,13 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 }
 
 func (j JenkinsJobCallbackController) CustomPushEventPayload() {
-	nodeSelection := utils.GetConfig("NODE_SELECTION")
-	currentNode := nodeSelection()
-	if currentNode == "" {
-		currentNode = "slave1"
-		logs.Warning("No Jenkins node selection found, will use default as: %s", currentNode)
-	}
+	nodeSelection := utils.GetConfig("NODE_SELECTION", "slave1")
 	data, err := ioutil.ReadAll(j.Ctx.Request.Body)
 	if err != nil {
 		j.InternalError(err)
 	}
 	logs.Debug("%s", string(data))
-	service.CurrentDevOps().CustomHookPushPayload(data, currentNode)
+	service.CurrentDevOps().CustomHookPushPayload(data, nodeSelection())
 }
 
 type JenkinsJobController struct {
