@@ -312,7 +312,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   buildImageResole() {
-    const wsHost = `ws://${this.boardHost}/api/v1/jenkins-job/console`;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.project_name}&token=${this.appInitService.token}`;
     this.processImageSubscription = this.webSocketService.connect(`${wsHost}?${wsParams}`)
       .subscribe((obs: MessageEvent) => {
