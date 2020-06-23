@@ -250,10 +250,9 @@ export class K8sService {
 
   getNodePorts(projectName: string): Observable<Array<number>> {
     return this.httpModel.get(`/api/v1/services/nodeports`, {
-        observe: 'response',
         params: {project_name: projectName}
       }
-    ).pipe(map((res: HttpResponse<Array<number>>) => res.body));
+    ).pipe(map((res: Array<number>) => res || new Array<number>()));
   }
 
   getNodeSelectors(): Observable<Array<{ name: string, status: number }>> {

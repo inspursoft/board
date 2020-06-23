@@ -118,7 +118,8 @@ export abstract class HttpBase {
           Reflect.set(this, propertyKey, resValue === metadataValue.booleanTrueValue);
         }
       } else {
-        if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
+        if (Reflect.has(this.res, metadataValue.serverPropertyName) &&
+          Reflect.get(this.res, metadataValue.serverPropertyName)) {
           const resValue = Reflect.get(this.res, metadataValue.serverPropertyName);
           Reflect.set(this, propertyKey, resValue);
         }
