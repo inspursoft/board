@@ -235,7 +235,7 @@ func (p *ImageController) BuildImageAction() {
 	reqImageConfig.RepoPath = p.RepoImagePath
 
 	if reqImageConfig.NodeSelection == "" {
-		reqImageConfig.NodeSelection = "slave1"
+		reqImageConfig.NodeSelection = "slave"
 	}
 	utils.SetConfig("NODE_SELECTION", reqImageConfig.NodeSelection)
 
