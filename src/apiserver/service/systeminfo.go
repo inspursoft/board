@@ -47,6 +47,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.DNSSuffix = config.Value
 		case "KUBERNETES_VERSION":
 			systemInfo.KubernetesVersion = config.Value
+		case "DEVOPS_OPT":
+			systemInfo.DevOpsOpt = config.Value
 		}
 	}
 

@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { Service } from '../../../service';
 import { K8sService } from '../../../service.k8s';
 import { IScaleInfo } from '../service-control.component';
-import { BUTTON_STYLE, Message, RETURN_STATUS, ServiceHPA } from '../../../../shared/shared.types';
+import { BUTTON_STYLE, Message, RETURN_STATUS } from '../../../../shared/shared.types';
 import { MessageService } from '../../../../shared.service/message.service';
 import { CsComponentBase } from '../../../../shared/cs-components-library/cs-component-base';
+import { Service, ServiceHPA } from '../../../service.types';
 
 enum ScaleMethod {smManually, smAuto}
 
@@ -44,12 +44,12 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
     for (let i = 1; i <= 10; i++) {
       this.dropDownListNum.push(i);
     }
-    this.k8sService.getServiceScaleInfo(this.service.service_id).subscribe((scaleInfo: IScaleInfo) => {
+    this.k8sService.getServiceScaleInfo(this.service.serviceId).subscribe((scaleInfo: IScaleInfo) => {
       this.scaleInfo = scaleInfo;
       this.scaleNum = this.scaleInfo.available_instance;
       this.actionEnabled();
     });
-    this.k8sService.getAutoScaleConfig(this.service.service_id).subscribe((res: Array<ServiceHPA>) => {
+    this.k8sService.getAutoScaleConfig(this.service.serviceId).subscribe((res: Array<ServiceHPA>) => {
       this.autoScaleConfig = res;
       if (this.autoScaleConfig.length > 0) {
         this.scaleModule = ScaleMethod.smAuto;
@@ -64,28 +64,29 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   }
 
   actionExecute() {
+    console.log("ddd");
     if (this.verifyInputExValid()) {
       if (this.scaleModule === ScaleMethod.smManually) {
         this.isActionInWIPChange.emit(true);
-        this.k8sService.setServiceScale(this.service.service_id, this.scaleNum).subscribe(
+        this.k8sService.setServiceScale(this.service.serviceId, this.scaleNum).subscribe(
           () => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
           (err) => this.errorEvent.emit(err)
         );
       } else {
         this.autoScaleConfig.forEach((config: ServiceHPA) => {
-          if (config.min_pod > config.max_pod) {
+          if (config.minPod > config.maxPod) {
             this.messageService.showAlert('SERVICE.SERVICE_CONTROL_HPA_WARNING', {view: this.alertView, alertType: 'warning'});
             this.isActionInWIPChange.emit(false);
           } else {
             this.isActionInWIPChange.emit(true);
             if (config.isEdit) {
               Reflect.deleteProperty(config, 'isEdit');
-              this.k8sService.modifyAutoScaleConfig(this.service.service_id, config)
+              this.k8sService.modifyAutoScaleConfig(this.service.serviceId, config)
                 .subscribe(() => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.errorEvent.emit(err));
             } else {
               Reflect.deleteProperty(config, 'isEdit');
-              this.k8sService.setAutoScaleConfig(this.service.service_id, config)
+              this.k8sService.setAutoScaleConfig(this.service.serviceId, config)
                 .subscribe(() => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_SCALE_SUCCESSFUL'),
                   err => this.errorEvent.emit(err));
             }
@@ -117,7 +118,7 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
         {view: this.alertView, buttonStyle: BUTTON_STYLE.DELETION, title: 'GLOBAL_ALERT.DELETE'}).subscribe((res: Message) => {
         if (res.returnStatus === RETURN_STATUS.rsConfirm) {
           this.isActionInWIPChange.emit(true);
-          this.k8sService.deleteAutoScaleConfig(this.service.service_id, hpa).subscribe(
+          this.k8sService.deleteAutoScaleConfig(this.service.serviceId, hpa).subscribe(
             () => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_HPA_DELETE_SUCCESS'),
             err => this.errorEvent.emit(err),
             () => this.actionEnabled());

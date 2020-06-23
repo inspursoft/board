@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Service } from '../../../service';
 import { K8sService } from '../../../service.k8s';
+import { Service } from '../../../service.types';
 
 @Component({
   selector: 'app-locate',
@@ -30,7 +30,7 @@ export class LocateComponent implements OnInit {
       (res: Array<{ name: string, status: number }>) =>
         res.forEach(value => this.nodeSelectorList.push(value.name))
     );
-    this.k8sService.getLocate(this.service.service_project_name, this.service.service_name).subscribe(
+    this.k8sService.getLocate(this.service.serviceProjectName, this.service.serviceName).subscribe(
       res => {
         if (res && res !== '') {
           this.dropdownDefaultText = res;
@@ -39,7 +39,7 @@ export class LocateComponent implements OnInit {
   }
 
   actionExecute() {
-    this.k8sService.setLocate(this.nodeSelector, this.service.service_project_name, this.service.service_name).subscribe(
+    this.k8sService.setLocate(this.nodeSelector, this.service.serviceProjectName, this.service.serviceName).subscribe(
       () => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL'),
       (err) => this.errorEvent.emit(err));
   }

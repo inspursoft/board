@@ -150,6 +150,10 @@ func InitRouter() {
 			beego.NSRouter("/node/:id([0-9]+)/group",
 				&NodeController{},
 				"get:GetGroupsOfNodeAction;post:AddNodeToGroupAction;delete:RemoveNodeFromGroupAction"),
+			beego.NSRouter("/edgenodes",
+				&NodeController{}, "get:EdgeNodeList;post:AddEdgeNodeAction"),
+			beego.NSRouter("/edgenodes/:nodename(.*)",
+				&NodeController{}, "get:GetEdgeNodeAction;delete:RemoveEdgeNodeAction"),
 			beego.NSRouter("/nodegroup",
 				&NodeGroupController{},
 				"get:GetNodeGroupsAction;post:AddNodeGroupAction;delete:DeleteNodeGroupAction"),
@@ -353,10 +357,14 @@ func InitRouter() {
 			beego.NSRouter("/forgot-password",
 				&EmailController{},
 				"post:ForgotPasswordEmail"),
+			beego.NSRouter("/k8sproxy",
+				&K8SProxyController{},
+				"get:GetK8SProxyConfig;put:SetK8SProxyConfig"),
 		),
 	)
 
 	beego.AddNamespace(ns)
 	beego.Router("/deploy/:owner_name/:project_name/:service_name", &ServiceShowController{})
 	beego.SetStaticPath("/swagger", "swagger")
+	beego.Router("/kubernetes/?:all(.*)", &K8SProxyController{}, "*:ProxyAction")
 }

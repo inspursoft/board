@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -47,7 +46,7 @@ func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to resolve repo name with project: %s, username: %s, error: %+v", project.Name, user.Username, err)
 	}
-	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = CurrentDevOps().DeleteRepo(user.Username, repoName)
 	if err != nil {
 		logs.Warning("failed to delete repo with name: %s, error: %+v", repoName, err)
 	}

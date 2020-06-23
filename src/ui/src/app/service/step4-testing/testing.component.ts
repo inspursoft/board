@@ -1,11 +1,13 @@
 import { Component, Injector } from '@angular/core';
-import { ServiceStepBase } from "../service-step";
+import { ServiceStepComponentBase } from '../service-step';
+
+
 @Component({
   templateUrl: './testing.component.html',
-  styleUrls: ["./testing.component.css"]
+  styleUrls: ['./testing.component.css']
 })
-export class TestingComponent extends ServiceStepBase {
-  inTesting: boolean = false;
+export class TestingComponent extends ServiceStepComponentBase {
+  inTesting = false;
 
   constructor(protected injector: Injector) {
     super(injector);
@@ -15,3 +17,4 @@ export class TestingComponent extends ServiceStepBase {
     this.k8sService.stepSource.next({index: 5, isBack: false});
   }
 }
+

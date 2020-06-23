@@ -78,7 +78,7 @@ func (p *ProjectController) CreateProjectAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, fmt.Sprintf("Namespace name: %s is illegal.", reqProject.Name))
 	}
 
-	err = service.CreateRepoAndJob(p.CurrentUser.ID, reqProject.Name)
+	err = service.CurrentDevOps().CreateRepoAndJob(p.CurrentUser.ID, reqProject.Name)
 	if err != nil {
 		logs.Error("Failed to create repo and job for project: %s", reqProject.Name)
 		p.InternalError(err)

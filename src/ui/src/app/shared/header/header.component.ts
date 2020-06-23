@@ -96,7 +96,7 @@ export class HeaderComponent implements OnInit {
 
   logOut() {
     this.sharedService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
-      this.cookieService.remove('token');
+      localStorage.removeItem('token');
       this.appInitService.token = '';
       this.appInitService.currentUser = new User();
       if (this.authMode === 'indata_auth') {

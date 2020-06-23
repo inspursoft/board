@@ -15,7 +15,7 @@ func Encrypt(content string, salt string) string {
 }
 
 func GenerateRandomString() string {
-	length := 32
+	length := 20
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
 	l := len(chars)
 	result := make([]byte, length)
