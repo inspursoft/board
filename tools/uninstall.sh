@@ -110,7 +110,7 @@ fi
 echo ""
 
 echo "[Step $item]: remove Board network..."; let item+=1
-	docker network rm board &> /dev/null
+	docker network rm board &> /dev/null || true
 echo ""
 
 echo "[Step $item]: remove Board images..."; let item+=1

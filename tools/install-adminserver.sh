@@ -98,7 +98,7 @@ fi
 echo ""
 
 echo "[Step $item]: creating Board network ..."; let item+=1
-docker network create board &> /dev/null
+docker network create board &> /dev/null || true
 
 echo "[Step $item]: starting Board-adminserver ..."
 docker-compose -f ./docker-compose-adminserver.yml up -d
