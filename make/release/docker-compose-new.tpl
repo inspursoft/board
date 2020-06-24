@@ -192,6 +192,8 @@ services:
   kibana:
     image: board_kibana:__version__
     restart: always
+    env_file:
+      - ../config/kibana/env
     networks:
       - dvserver_net
     depends_on:

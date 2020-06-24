@@ -1,23 +1,37 @@
 {
-  "type": "search",
-  "search": {
-    "title": "error-logs",
-    "description": "",
-    "hits": 0,
-    "columns": [
-      "kubernetes.host",
-      "kubernetes.namespace_name",
-      "kubernetes.labels.app",
-      "kubernetes.pod_name",
-      "log"
-    ],
-    "sort": [
-      "@timestamp",
-      "desc"
-    ],
-    "version": 1,
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": "{\"index\":\"board-index\",\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[{\"meta\":{\"index\":\"board-index\",\"type\":\"phrases\",\"key\":\"log\",\"value\":\"error, warn, ERROR, WARN, WARNING\",\"params\":[\"error\",\"warn\",\"ERROR\",\"WARN\",\"WARNING\"],\"negate\":false,\"disabled\":false,\"alias\":null},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"log\":\"error\"}},{\"match_phrase\":{\"log\":\"warn\"}},{\"match_phrase\":{\"log\":\"ERROR\"}},{\"match_phrase\":{\"log\":\"WARN\"}},{\"match_phrase\":{\"log\":\"WARNING\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}}]}"
-    }
-  }
+	"type": "search",
+	"search": {
+		"title": "error-logs",
+		"description": "",
+		"hits": 0,
+		"columns": [
+			"kubernetes.host",
+			"kubernetes.namespace_name",
+			"kubernetes.labels.app",
+			"kubernetes.pod_name",
+			"log"
+		],
+		"sort": [
+			"@timestamp",
+			"desc"
+		],
+		"version": 1,
+		"kibanaSavedObjectMeta": {
+			"searchSourceJSON": "{\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"\",\"language\":\"lucene\"},\"filter\":[{\"meta\":{\"type\":\"phrases\",\"key\":\"log\",\"value\":\"error, warn, ERROR, WARN, WARNING\",\"params\":[\"error\",\"warn\",\"ERROR\",\"WARN\",\"WARNING\"],\"negate\":false,\"disabled\":false,\"alias\":null,\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index\"},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"log\":\"error\"}},{\"match_phrase\":{\"log\":\"warn\"}},{\"match_phrase\":{\"log\":\"ERROR\"}},{\"match_phrase\":{\"log\":\"WARN\"}},{\"match_phrase\":{\"log\":\"WARNING\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}}],\"indexRefName\":\"kibanaSavedObjectMeta.searchSourceJSON.index\"}"
+		}
+	},
+	"references": [{
+			"name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+			"type": "index-pattern",
+			"id": "board-index"
+		},
+		{
+			"name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+			"type": "index-pattern",
+			"id": "board-index"
+		}
+	],
+	"migrationVersion": {
+		"search": "7.4.0"
+	}
 }

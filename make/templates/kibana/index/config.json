@@ -1,8 +1,10 @@
 {
-  "type": "config",
-  "config": {
-    "buildNum": 16627,
-    "defaultIndex": "board-index",
-    "state:storeInSessionStorage" : true
-  }
+    "config":{
+        "buildNum":30810,
+        "defaultIndex":"board-index"
+    },
+    "type":"config",
+    "references":[
+
+    ]
 }
