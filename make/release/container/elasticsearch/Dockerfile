@@ -14,8 +14,7 @@ ENV TAKE_FILE_OWNERSHIP=true \
     xpack.security.transport.ssl.verification_mode=certificate \
     xpack.security.transport.ssl.certificate_authorities=$CERT_DIR/ca/ca.crt \
     xpack.security.transport.ssl.certificate=$CERT_DIR/elasticsearch/elasticsearch.crt \
-    xpack.security.transport.ssl.key=$CERT_DIR/elasticsearch/elasticsearch.key \
-    ELASTIC_PASSWORD=root123
+    xpack.security.transport.ssl.key=$CERT_DIR/elasticsearch/elasticsearch.key
 
 #USER root
 COPY make/release/container/elasticsearch/docker-entrypoint.sh /entrypoint.sh

@@ -13,9 +13,7 @@ ENV SERVER_BASEPATH=/kibana \
     XPACK_SIEM_ENABLED=false \
     XPACK_MAPS_ENABLED=false \
     TELEMETRY_ENABLED=false \
-    i18n.locale=zh-CN \
-    ELASTICSEARCH_USERNAME=elastic\
-    ELASTICSEARCH_PASSWORD=root123
+    i18n.locale=zh-CN
 
 USER root
 COPY make/release/container/kibana/docker-entrypoint.sh /entrypoint.sh
