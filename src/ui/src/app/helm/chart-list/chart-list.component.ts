@@ -43,9 +43,10 @@ export class ChartListComponent extends CsModalParentBase {
       this.loadingWIP = true;
       this.helmService.getRepoDetail(this.repoInfo.id, this.curPageIndex, this.curPageSize).subscribe(
         (res: HelmRepoDetail) => {
+          console.log(res);
           this.versionList.splice(0, this.versionList.length);
           this.versionList = res.versionList;
-          this.recordTotalCount = res.pagination.total_count;
+          this.recordTotalCount = res.pagination.TotalCount;
         },
         () => this.loadingWIP = false,
         () => this.loadingWIP = false);

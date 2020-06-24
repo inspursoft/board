@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
@@ -8,16 +8,18 @@ import {
   IChartRelease,
   IHelmRepo,
   HelmRepoDetail,
-  IChartReleasePost
+  IChartReleasePost,
+  ChartRelease
 } from './helm.type';
 import { Project } from '../project/project';
+import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
 @Injectable()
 export class HelmService {
   viewDataList: Array<HelmViewData>;
   viewSubject: Subject<HelmViewData>;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: ModelHttpClient) {
     this.viewSubject = new Subject<HelmViewData>();
     this.viewDataList = Array<HelmViewData>();
   }
@@ -51,10 +53,9 @@ export class HelmService {
   }
 
   getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<HelmRepoDetail> {
-    return this.http.get<HelmRepoDetail>(`/api/v1/helm/repositories/${repoId}`, {
-      params: {page_index: pageIndex.toString(), page_size: pageSize.toString()},
-      observe: 'response'
-    }).pipe(map((res: HttpResponse<HelmRepoDetail>) => HelmRepoDetail.newFromServe(res.body)));
+    return this.http.getJson(`/api/v1/helm/repositories/${repoId}`, HelmRepoDetail, {
+      param: {page_index: pageIndex.toString(), page_size: pageSize.toString()}
+    });
   }
 
   uploadChart(repoId: number, formData: FormData): Observable<HttpEvent<object>> {
@@ -105,8 +106,7 @@ export class HelmService {
       .pipe(map((res: HttpResponse<IChartReleaseDetail>) => res.body));
   }
 
-  getChartRelease(repoId: number, chartName, chartVersion: string): Observable<object> {
-    return this.http.get(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<object>) => res.body));
+  getChartRelease(repoId: number, chartName, chartVersion: string): Observable<ChartRelease> {
+    return this.http.getJson(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, ChartRelease);
   }
 }

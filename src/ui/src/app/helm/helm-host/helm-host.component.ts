@@ -1,13 +1,13 @@
-import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewChild, ViewContainerRef } from "@angular/core";
-import { HelmService } from "../helm.service";
-import { HelmViewData, HelmViewType } from "../helm.type";
-import { ChartListComponent } from "../chart-list/chart-list.component";
-import { RepoListComponent } from "../repo-list/repo-list.component";
+import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { HelmService } from '../helm.service';
+import { HelmViewData, HelmViewType } from '../helm.type';
+import { ChartListComponent } from '../chart-list/chart-list.component';
+import { RepoListComponent } from '../repo-list/repo-list.component';
 
 @Component({
   templateUrl: './helm-host.component.html'
 })
-export class HelmHostComponent implements OnInit,OnDestroy {
+export class HelmHostComponent implements OnInit, OnDestroy {
   @ViewChild('host', {read: ViewContainerRef}) hostView: ViewContainerRef;
 
   constructor(private resolver: ComponentFactoryResolver,
@@ -25,7 +25,7 @@ export class HelmHostComponent implements OnInit,OnDestroy {
           return;
       }
     });
-    let repoView = new HelmViewData(HelmViewType.RepoList);
+    const repoView = new HelmViewData(HelmViewType.RepoList);
     repoView.description = `HELM.REPO_LIST_TITLE`;
     this.helmService.pushNewView(repoView);
   }
@@ -44,14 +44,14 @@ export class HelmHostComponent implements OnInit,OnDestroy {
 
   createRepoList() {
     this.hostView.clear();
-    let factory = this.resolver.resolveComponentFactory(RepoListComponent);
+    const factory = this.resolver.resolveComponentFactory(RepoListComponent);
     this.hostView.createComponent(factory);
   }
 
   createChartList(helmViewData: HelmViewData) {
     this.hostView.clear();
-    let factory = this.resolver.resolveComponentFactory(ChartListComponent);
-    let component = this.hostView.createComponent(factory);
+    const factory = this.resolver.resolveComponentFactory(ChartListComponent);
+    const component = this.hostView.createComponent(factory);
     component.instance.repoInfo = helmViewData.data;
   }
 }
