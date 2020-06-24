@@ -221,4 +221,4 @@ services:
         tag: "chartmuseum"
 networks:
   board:
-    external: false
+    external: true

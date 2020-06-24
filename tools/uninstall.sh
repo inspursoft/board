@@ -109,6 +109,10 @@ then
 fi
 echo ""
 
+echo "[Step $item]: remove Board network..."; let item+=1
+	docker network rm board &> /dev/null
+echo ""
+
 echo "[Step $item]: remove Board images..."; let item+=1
 	delete_images
 echo ""

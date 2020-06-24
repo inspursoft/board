@@ -1,7 +1,7 @@
 version: '2'
 services:
   adminserver:
-    image: board_adminserver:__version__
+    image: adminserver:__version__
     restart: always
     volumes:
       - ../:/go/cfgfile
@@ -17,7 +17,7 @@ services:
     ports:
       - 8081:8080
   proxy_adminserver:
-    image: board_proxy_adminserver:__version__
+    image: proxy_adminserver:__version__
     depends_on: 
       - adminserver
     restart: always
@@ -31,4 +31,4 @@ services:
       - board
 networks:
   board:
-    external: false
+    external: true

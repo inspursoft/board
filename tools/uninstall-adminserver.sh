@@ -6,9 +6,8 @@
 
 set -e
 
-usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
+usage=$'This shell script will uninstall Adminserver images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
 item=0
-defaultDataVolume="/data/board"
 adminserverDataVolume="/data/adminserver"
 silentFlag=flase
 
@@ -32,7 +31,6 @@ while [ $# -gt 0 ]; do
         shift || true
 done
 
-# The hostname in board.cfg has not been modified
 if  [ ! -f docker-compose-adminserver.yml ] 
 then
 	echo $usage
@@ -95,24 +93,18 @@ function check_dockercompose {
 }
 
 function delete_images {
-	docker-compose -f docker-compose-new.yml down --rmi all
 	docker-compose -f docker-compose-adminserver.yml down --rmi all
 }
 
 function remove_data {
-	rm -rf $defaultDataVolume $adminserverDataVolume ../config
+	rm -rf $adminserverDataVolume
 }
 
 echo "[Step $item]: checking uninstallation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
-echo "[Step $item]: checking existing instance of Board & Adminserver ..."; let item+=1
-if [ -n "$(docker-compose -f docker-compose-new.yml ps -q)"  ]
-then
-	echo "stopping existing Board instance ..."
-	docker-compose -f docker-compose-new.yml down
-fi
+echo "[Step $item]: checking existing instance of Adminserver ..."; let item+=1
 if [ -n "$(docker-compose -f docker-compose-adminserver.yml ps -q)"  ]
 then
 	echo "stopping existing Adminserver instance ..."
@@ -120,11 +112,15 @@ then
 fi
 echo ""
 
-echo "[Step $item]: remove Board images..."; let item+=1
+echo "[Step $item]: remove network..."; let item+=1
+	docker network rm board &> /dev/null
+echo ""
+
+echo "[Step $item]: remove Adminserver images..."; let item+=1
 	delete_images
 echo ""
 
-echo "[Step $item]: prepare removing Board data..."
+echo "[Step $item]: prepare removing Adminserver data..."
 
 if [ $silentFlag == "true" ]
 then 
@@ -132,7 +128,7 @@ then
         remove_data
         echo "Done."
 else
-        if read -t 10 -p "Really want to delete Board data? Please input [yes] to confirm: " flag
+        if read -t 10 -p "Really want to delete Adminserver data? Please input [yes] to confirm: " flag
         then
                 if [ $flag == "yes" ]
                 then
@@ -152,6 +148,6 @@ fi
 	
 echo ""
 
-echo $"----Board uninstaller running complete.----
+echo $"----Adminserver uninstaller running complete.----
 For more information, please visit http://10.110.18.40:10080/inspursoft/board"
 
