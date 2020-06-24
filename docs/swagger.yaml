@@ -2782,6 +2782,51 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
+  /v1/nodes:
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: node_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.          
   /v1/nodes/availableresources:
     get:
       summary: Return the system available resources of nodes.
