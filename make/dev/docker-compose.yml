@@ -233,6 +233,8 @@ services:
       dockerfile: make/dev/container/kibana/Dockerfile
     image: dev_kibana:dev
     restart: always
+    env_file:
+      - ../config/kibana/env
     networks:
       - board
     depends_on:

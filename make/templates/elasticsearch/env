@@ -1,1 +1,2 @@
 ES_JAVA_OPTS=$es_java_opts
+ELASTIC_PASSWORD=$elastic_password

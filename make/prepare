@@ -63,6 +63,9 @@ def create_cert(conf_path, key_path="/data/board/cert/board-key.pem", cert_path=
 		return rc
 	return subprocess.call(["openssl", "x509", "-req", "-in", csr_path, "-CA", ca_cert, "-CAkey", ca_key, "-CAcreateserial", "-out", cert_path, "-days", "10000", "-extensions", "v3_ext", "-extfile", conf_path], stdout=FNULL, stderr=subprocess.STDOUT)
 
+def create_basic_auth(elastic_password):
+	return subprocess.check_output("""echo -n "elastic:""" + elastic_password + """" | openssl base64""", shell=True, stderr=subprocess.STDOUT)
+
 def json_encode(file="/etc/board/cert/ca.pem"):
     with open(file, 'r') as f:
         return json.JSONEncoder().encode(f.read())
@@ -104,6 +107,7 @@ verification_url = rcp.get("configuration", "verification_url")
 redirection_url = rcp.get("configuration", "redirection_url")
 
 elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_memory_in_megabytes")
+elastic_password = rcp.get("configuration", "elastic_password")
 
 devops_opt = rcp.get("configuration", "devops_opt")
 
@@ -228,6 +232,9 @@ if not os.path.exists(elasticsearch_config_dir):
 elasticsearch_env = os.path.join(config_dir, "elasticsearch", "env")
 
 kibana_config_dir = os.path.join(config_dir, "kibana")
+if not os.path.exists(kibana_config_dir):
+    os.makedirs(kibana_config_dir)
+kibana_env = os.path.join(config_dir, "kibana", "env")
 
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "env"),
@@ -378,8 +385,10 @@ elif mode == "security":
 	render(os.path.join(templates_dir, "proxy", "nginx.http.blind.conf"),
 		proxy_conf)
 else:
+	basic_auth=create_basic_auth(elastic_password)
 	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
-		proxy_conf)
+		proxy_conf,
+		basic_auth=basic_auth.strip())
 
 render(os.path.join(templates_dir, "jenkins", "env"),
         jenkins_env,
@@ -411,11 +420,15 @@ shutil.copy(os.path.join(templates_dir, "grafana", "notifications.json"), grafan
 
 render(os.path.join(templates_dir, "elasticsearch", "env"),
         elasticsearch_env,
-        es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes))
+        es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes),
+        elastic_password=elastic_password)
 
 if os.path.exists(kibana_config_dir):
     shutil.rmtree(kibana_config_dir)
 shutil.copytree(os.path.join(templates_dir, "kibana"), kibana_config_dir)
+render(os.path.join(templates_dir, "kibana", "env"),
+        kibana_env,
+        elastic_password=elastic_password)
 
 board_data_path="/data/board"
 jenkins_nodes_dir = os.path.join(board_data_path, "jenkins_home/nodes")

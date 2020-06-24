@@ -1,23 +1,52 @@
 {
-    "type" : "dashboard",
-    "dashboard" : {
-      "title" : "PodErrors",
-      "hits" : 0,
-      "description" : "Only show pod error log informations",
-      "panelsJSON" : "[{\"panelIndex\":\"1\",\"gridData\":{\"x\":0,\"y\":0,\"w\":3,\"h\":3,\"i\":\"1\"},\"embeddableConfig\":{\"spy\":null},\"id\":\"errors-metric\",\"title\":\"Error Logs Count\",\"type\":\"visualization\",\"version\":\"6.2.4\"},{\"panelIndex\":\"2\",\"gridData\":{\"x\":0,\"y\":6,\"w\":12,\"h\":3,\"i\":\"2\"},\"id\":\"errors\",\"title\":\"Error Logs Detail\",\"type\":\"search\",\"version\":\"6.2.4\"},{\"panelIndex\":\"3\",\"gridData\":{\"x\":7,\"y\":0,\"w\":5,\"h\":3,\"i\":\"3\"},\"id\":\"errors-line\",\"title\":\"Error Logs Line\",\"type\":\"visualization\",\"version\":\"6.2.4\"},{\"panelIndex\":\"4\",\"gridData\":{\"x\":3,\"y\":0,\"w\":4,\"h\":3,\"i\":\"4\"},\"embeddableConfig\":{\"vis\":{\"legendOpen\":false}},\"id\":\"errors-pie\",\"title\":\"Error Logs Composition\",\"type\":\"visualization\",\"version\":\"6.2.4\"},{\"panelIndex\":\"5\",\"gridData\":{\"x\":0,\"y\":3,\"w\":12,\"h\":3,\"i\":\"5\"},\"version\":\"6.2.4\",\"type\":\"visualization\",\"id\":\"errors-line-bar\",\"title\":\"Error Logs Bar\"}]",
-      "optionsJSON" : "{\"darkTheme\":false,\"hidePanelTitles\":false,\"useMargins\":true}",
-      "version" : 1,
-      "timeRestore" : true,
-      "timeTo" : "now",
-      "timeFrom" : "now-1h",
-      "refreshInterval" : {
-        "display" : "30 seconds",
-        "pause" : false,
-        "section" : 1,
-        "value" : 30000
-      },
-      "kibanaSavedObjectMeta" : {
-        "searchSourceJSON" : "{\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[],\"highlightAll\":true,\"version\":true}"
-      }
-    }
-  }
+	"type": "dashboard",
+	"dashboard": {
+		"title": "PodErrors",
+		"hits": 0,
+		"description": "Only show pod error log informations",
+		"panelsJSON": "[{\"panelIndex\":\"1\",\"gridData\":{\"w\":12,\"h\":12,\"x\":0,\"y\":0,\"i\":\"1\"},\"embeddableConfig\":{\"spy\":null},\"title\":\"Error Logs Count\",\"version\":\"7.3.0\",\"panelRefName\":\"panel_0\"},{\"panelIndex\":\"2\",\"gridData\":{\"w\":48,\"h\":12,\"x\":0,\"y\":24,\"i\":\"2\"},\"title\":\"Error Logs Detail\",\"version\":\"7.3.0\",\"panelRefName\":\"panel_1\",\"embeddableConfig\":{}},{\"panelIndex\":\"3\",\"gridData\":{\"w\":20,\"h\":12,\"x\":28,\"y\":0,\"i\":\"3\"},\"title\":\"Error Logs Line\",\"version\":\"7.3.0\",\"panelRefName\":\"panel_2\",\"embeddableConfig\":{}},{\"panelIndex\":\"4\",\"gridData\":{\"w\":16,\"h\":12,\"x\":12,\"y\":0,\"i\":\"4\"},\"embeddableConfig\":{\"vis\":{\"legendOpen\":false}},\"title\":\"Error Logs Composition\",\"version\":\"7.3.0\",\"panelRefName\":\"panel_3\"},{\"panelIndex\":\"5\",\"gridData\":{\"w\":48,\"h\":12,\"x\":0,\"y\":12,\"i\":\"5\"},\"version\":\"7.3.0\",\"title\":\"Error Logs Bar\",\"panelRefName\":\"panel_4\",\"embeddableConfig\":{}}]",
+		"optionsJSON": "{\"darkTheme\":false,\"hidePanelTitles\":false,\"useMargins\":true}",
+		"version": 1,
+		"timeRestore": true,
+		"timeTo": "now",
+		"timeFrom": "now-1h",
+		"refreshInterval": {
+			"display": "30 seconds",
+			"pause": false,
+			"section": 1,
+			"value": 30000
+		},
+		"kibanaSavedObjectMeta": {
+			"searchSourceJSON": "{\"query\":{\"language\":\"lucene\",\"query\":\"\"},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+		}
+	},
+	"references": [{
+			"name": "panel_0",
+			"type": "visualization",
+			"id": "errors-metric"
+		},
+		{
+			"name": "panel_1",
+			"type": "search",
+			"id": "errors"
+		},
+		{
+			"name": "panel_2",
+			"type": "visualization",
+			"id": "errors-line"
+		},
+		{
+			"name": "panel_3",
+			"type": "visualization",
+			"id": "errors-pie"
+		},
+		{
+			"name": "panel_4",
+			"type": "visualization",
+			"id": "errors-line-bar"
+		}
+	],
+	"migrationVersion": {
+		"dashboard": "7.3.0"
+	}
+}
