@@ -78,12 +78,12 @@
         <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{curValue.get(0)?.curFirst}}</span>
         <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
       </div>
-      <time-range-scale class="range-scale"
-                        [disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
-                        [options]="scaleOptions"
-                        [curScale]="query.get(0) ? query.get(0).scale:{}"
-                        (scaleChange)="scaleChange(0,$event)">
-      </time-range-scale>
+      <app-time-range-scale class="range-scale"
+                            [disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
+                            [options]="ScaleOptions"
+                            [curScale]="query.get(0) ? query.get(0).scale:{}"
+                            (scaleChange)="scaleChange(0,$event)">
+      </app-time-range-scale>
     </div>
     <div class="card-block-bottom-container">
       <div *ngIf="noData.get(0)" class="no-data-mask"><span>{{ noDataErrMsg.get(0) | translate }}</span></div>
@@ -119,11 +119,11 @@
         <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{curValue.get(1)?.curSecond}}%</span>
       </div>
       <div class="select-time-container">
-        <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
-                          (scaleChange)="scaleChange(1,$event)"
-                          [disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
-                          [options]="scaleOptions">
-        </time-range-scale>
+        <app-time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
+                              (scaleChange)="scaleChange(1,$event)"
+                              [disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
+                              [options]="ScaleOptions">
+        </app-time-range-scale>
       </div>
     </div>
     <div class="card-block-bottom-container">
@@ -165,11 +165,11 @@
         </span>
       </div>
       <div class="select-time-container">
-        <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
-                          (scaleChange)="scaleChange(2,$event)"
-                          [disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
-                          [options]="scaleOptions">
-        </time-range-scale>
+        <app-time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
+                              (scaleChange)="scaleChange(2,$event)"
+                              [disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
+                              [options]="ScaleOptions">
+        </app-time-range-scale>
       </div>
     </div>
     <div class="card-block-bottom-container">
