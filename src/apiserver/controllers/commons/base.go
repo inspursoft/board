@@ -188,6 +188,8 @@ func (b *BaseController) GetCurrentUser() *model.User {
 					return nil
 				}
 				hasResignedToken = true
+				logs.Info("Deleting old token...")
+				MemoryCache.Delete(token)
 				token = newToken.TokenString
 				payload = lastPayload
 				logs.Info("Token has been re-signed due to timeout.")
@@ -212,11 +214,12 @@ func (b *BaseController) GetCurrentUser() *model.User {
 		}
 		if currentToken, ok := MemoryCache.Get(user.Username).(string); ok {
 			if !hasResignedToken && currentToken != "" && currentToken != token {
-				logs.Info("Another same name user has signed in other places.")
+				logs.Info("Another same name user has signed in other places, removing previous token ...")
+				MemoryCache.Delete(token)
 				return nil
 			}
-			MemoryCache.Put(user.Username, token, DefaultCacheDuration)
-			b.Ctx.ResponseWriter.Header().Set("token", token)
+			MemoryCache.Put(user.Username, currentToken, DefaultCacheDuration)
+			b.Ctx.ResponseWriter.Header().Set("token", currentToken)
 		}
 		user.Password = ""
 		return user
