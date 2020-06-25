@@ -47,3 +47,12 @@ type ServiceInstance struct {
 	ServiceInstanceName string   `json:"service_instance_name"`
 	OwnerReferenceKind  []string `json:"owner_reference_kind"`
 }
+
+type EdgeNodeCli struct {
+	NodeName     string `json:"name"`
+	NodeIP       string `json:"node_ip"`
+	CPUType      string `json:"cpu_type"`
+	Password     string `json:"node_password"`
+	Master       string `json:"master"`
+	RegistryMode string `json:"registry_mode"`
+}
