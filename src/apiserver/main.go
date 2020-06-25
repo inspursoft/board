@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
@@ -186,7 +185,7 @@ func main() {
 	}
 	go func() {
 		utils.SetConfig("GRACEFULLY_STARTED", "NOT_READY")
-		time.Sleep(time.Second * 30)
+
 		initBoardVersion()
 
 		systemInfo, err := service.GetSystemInfo()
