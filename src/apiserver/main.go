@@ -184,15 +184,16 @@ func main() {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
-	systemInfo, err := service.GetSystemInfo()
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
 	go func() {
-		utils.SetConfig("GRACEFULLY_STARTED", "no")
+		utils.SetConfig("GRACEFULLY_STARTED", "NOT_READY")
 		time.Sleep(time.Second * 30)
 		initBoardVersion()
+
+		systemInfo, err := service.GetSystemInfo()
+		if err != nil {
+			logs.Error("Failed to set system config: %+v", err)
+			panic(err)
+		}
 
 		if systemInfo.SetAdminPassword == "" {
 			updateAdminPassword()
@@ -224,7 +225,7 @@ func main() {
 				panic(err)
 			}
 		}
-		utils.SetConfig("GRACEFULLY_STARTED", "yes")
+		utils.SetConfig("GRACEFULLY_STARTED", "READY")
 	}()
 
 	beego.BConfig.WebConfig.EnableXSRF = true

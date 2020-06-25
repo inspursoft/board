@@ -17,6 +17,11 @@ type AuthController struct {
 }
 
 func (u *AuthController) Prepare() {
+	hasStarted := utils.GetConfig("GRACEFULLY_STARTED")
+	if hasStarted() == "NOT_READY" {
+		u.ServeStatus(http.StatusNotAcceptable, "Please wait while the Board is starting...")
+		return
+	}
 	u.EnableXSRF = false
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 	u.RecordOperationAudit()
