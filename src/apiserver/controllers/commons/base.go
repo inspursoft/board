@@ -59,6 +59,11 @@ type BaseController struct {
 }
 
 func (b *BaseController) Prepare() {
+	hasStarted := utils.GetConfig("GRACEFULLY_STARTED")
+	if hasStarted() == "no" {
+		b.ServeStatus(http.StatusNotAcceptable, "Please wait while the Board is starting...")
+		return
+	}
 	b.EnableXSRF = false
 	b.ResolveSignedInUser()
 	b.RecordOperationAudit()

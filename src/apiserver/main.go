@@ -189,6 +189,7 @@ func main() {
 		panic(err)
 	}
 	go func() {
+		utils.SetConfig("GRACEFULLY_STARTED", "no")
 		initBoardVersion()
 
 		if systemInfo.SetAdminPassword == "" {
@@ -221,6 +222,7 @@ func main() {
 				panic(err)
 			}
 		}
+		utils.SetConfig("GRACEFULLY_STARTED", "yes")
 	}()
 
 	beego.BConfig.WebConfig.EnableXSRF = true
