@@ -713,8 +713,19 @@ func DrainNodeServiceInstance(nodeName string) error {
 }
 
 // Create an edge node in kubernetes cluster
-func CreateEdgeNode(node model.NodeCli) (*model.Node, error) {
-	// TODO run ansible docker script to add an edge node
+func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
+	// This is to control the adding of edgenode manually
+
+	// TODO run ansible docker script to add an edge node by admin api
+	logs.Debug("To install edgenode by ansible: %v", edgenode)
+
+	// Add in k8s
+	var node model.NodeCli
+	node.NodeName = edgenode.NodeName
 	node.Labels[K8sEdgeNodeLabel] = ""
+	node.Labels["name"] = edgenode.NodeName
+	if edgenode.RegistryMode == "auto" {
+		node.Labels["edge"] = "true"
+	}
 	return CreateNode(node)
 }

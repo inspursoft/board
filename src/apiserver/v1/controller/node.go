@@ -277,7 +277,7 @@ func (n *NodeController) EdgeNodeList() {
 
 // Create a new edge node
 func (n *NodeController) AddEdgeNodeAction() {
-	var reqNode model.NodeCli
+	var reqNode model.EdgeNodeCli
 	var err error
 	err = n.ResolveBody(&reqNode)
 	if err != nil {
