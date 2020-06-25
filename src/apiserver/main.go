@@ -188,39 +188,40 @@ func main() {
 		logs.Error("Failed to set system config: %+v", err)
 		panic(err)
 	}
+	go func() {
+		initBoardVersion()
 
-	initBoardVersion()
-
-	if systemInfo.SetAdminPassword == "" {
-		updateAdminPassword()
-	}
-
-	if systemInfo.InitProjectRepo == "" {
-		initProjectRepo()
-	}
-
-	if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
-		initKubernetesInfo()
-	}
-
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		syncUpWithK8s()
-	}
-
-	service.SetSystemInfo("DNS_SUFFIX", true)
-	service.SetSystemInfo("MODE", true)
-	service.SetSystemInfo("BOARD_HOST_IP", true)
-	service.SetSystemInfo("AUTH_MODE", false)
-	service.SetSystemInfo("REDIRECTION_URL", false)
-	service.SetSystemInfo("DEVOPS_OPT", false)
-
-	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
-		err = service.PrepareKVMHost()
-		if err != nil {
-			logs.Error("Failed to prepare KVM host: %+v", err)
-			panic(err)
+		if systemInfo.SetAdminPassword == "" {
+			updateAdminPassword()
 		}
-	}
+
+		if systemInfo.InitProjectRepo == "" {
+			initProjectRepo()
+		}
+
+		if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
+			initKubernetesInfo()
+		}
+
+		if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
+			syncUpWithK8s()
+		}
+
+		service.SetSystemInfo("DNS_SUFFIX", true)
+		service.SetSystemInfo("MODE", true)
+		service.SetSystemInfo("BOARD_HOST_IP", true)
+		service.SetSystemInfo("AUTH_MODE", false)
+		service.SetSystemInfo("REDIRECTION_URL", false)
+		service.SetSystemInfo("DEVOPS_OPT", false)
+
+		if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
+			err = service.PrepareKVMHost()
+			if err != nil {
+				logs.Error("Failed to prepare KVM host: %+v", err)
+				panic(err)
+			}
+		}
+	}()
 
 	beego.BConfig.WebConfig.EnableXSRF = true
 	beego.BConfig.WebConfig.XSRFKey = "ILGOWezZZLeeDozS9Zg6xB2Ogyv1a2Ji"
