@@ -301,6 +301,13 @@ func (n *NodeController) AddEdgeNodeAction() {
 
 	//reqNode.NodeName = strings.TrimSpace(reqNode.NodeName)
 
+	//TODO Check the hostname config
+	//res, err := service.CheckEdgeHostname(reqNode)
+	//if res != true || err != nil {
+	//	n.CustomAbortAudit(http.StatusBadRequest, "edgename config error.")
+	//	return
+	//}
+
 	//TODO create edge node, label yaml and run script
 	node, err := service.CreateEdgeNode(reqNode)
 	if err != nil {
