@@ -16,6 +16,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	v2 "github.com/google/cadvisor/info/v2"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
+	//"golang.org/x/crypto/ssh"
 )
 
 type NodeStatus int
@@ -728,4 +729,39 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 		node.Labels["edge"] = "true"
 	}
 	return CreateNode(node)
+}
+
+// check the edge node hostname config
+func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
+	var sshUser = "root"
+	var sshPort = 22
+
+	sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	if err != nil {
+		logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	defer sshHandler.client.Close()
+
+	session, err := sshHandler.client.NewSession()
+	if err != nil {
+		logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	defer session.Close()
+
+	combo, err := session.CombinedOutput("hostname")
+	if err != nil {
+		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	logs.Debug("Edge hostname:", string(combo))
+
+	//TODO Check the hostname config in edge yaml
+
+	if edgenode.NodeName != string(combo) {
+		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, string(combo))
+		return false, nil
+	}
+	return true, nil
 }
