@@ -723,6 +723,7 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	// Add in k8s
 	var node model.NodeCli
 	node.NodeName = edgenode.NodeName
+	node.Labels = make(map[string]string)
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
 	if edgenode.RegistryMode == "auto" {
