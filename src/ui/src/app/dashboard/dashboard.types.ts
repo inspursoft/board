@@ -5,11 +5,11 @@ export const BASE_URL = '/api/v1';
 
 export enum LineType {ltService, ltNode, ltStorage}
 
-export interface IRealtimeData {
-  readonly curFirst: number;
-  readonly curFirstUnit: string;
-  readonly curSecond: number;
-  readonly curSecondUnit: string;
+export class RealtimeData {
+  curFirst = 0;
+  curFirstUnit = '';
+  curSecond = 0;
+  curSecondUnit = '';
 }
 
 export interface ScaleOption {
@@ -143,7 +143,7 @@ export class Prometheus extends HttpBase {
     this.storageLineData = new ResponseLineData();
   }
 
-  get serviceRealtimeData(): IRealtimeData {
+  get serviceRealtimeData(): RealtimeData {
     const isHaveData = this.serviceLineData.isHaveData;
     return {
       curFirst: isHaveData ? this.serviceLineData.firstLineData[0][1] : 0,
@@ -151,6 +151,36 @@ export class Prometheus extends HttpBase {
       curSecond: isHaveData ? this.serviceLineData.secondLineData[0][1] : 0,
       curSecondUnit: isHaveData ? this.serviceLineData.secondLineData[0][2] : ''
     };
+  }
+
+  get nodeRealtimeData(): RealtimeData {
+    const isHaveData = this.nodeLineData.isHaveData;
+    return {
+      curFirst: isHaveData ? this.nodeLineData.firstLineData[0][1] : 0,
+      curFirstUnit: isHaveData ? this.nodeLineData.firstLineData[0][2] : '',
+      curSecond: isHaveData ? this.nodeLineData.secondLineData[0][1] : 0,
+      curSecondUnit: isHaveData ? this.nodeLineData.secondLineData[0][2] : ''
+    };
+  }
+
+  get storageRealtimeData(): RealtimeData {
+    const isHaveData = this.storageLineData.isHaveData;
+    return {
+      curFirst: isHaveData ? this.storageLineData.firstLineData[0][1] : 0,
+      curFirstUnit: isHaveData ? this.storageLineData.firstLineData[0][2] : '',
+      curSecond: isHaveData ? this.storageLineData.secondLineData[0][1] : 0,
+      curSecondUnit: isHaveData ? this.storageLineData.secondLineData[0][2] : ''
+    };
+  }
+
+  getResponseLineData(lineType: LineType): ResponseLineData {
+    if (lineType === LineType.ltService) {
+      return this.serviceLineData;
+    } else if (lineType === LineType.ltNode) {
+      return this.nodeLineData;
+    } else {
+      return this.storageLineData;
+    }
   }
 
   analyzeData(serviceName, nodeName: string) {

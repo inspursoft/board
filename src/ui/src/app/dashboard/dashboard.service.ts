@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { BASE_URL, BodyData, Prometheus, QueryData } from './dashboard.types';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
@@ -22,6 +22,8 @@ export class DashboardService {
   getLineData(paramData: QueryData, bodyData: BodyData): Observable<Prometheus> {
     return this.modelHttp.postJson(`${BASE_URL}/prometheus`, Prometheus, bodyData.getPostBody(),
       {param: paramData.getPostBody()}
-    );
+    ).pipe(tap((prometheus: Prometheus) => {
+      prometheus.analyzeData(paramData.serviceName, paramData.nodeName);
+    }));
   }
 }
