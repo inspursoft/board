@@ -60,12 +60,12 @@ DOCKERIMASES=$(DOCKERCMD) images
 DOCKERSAVE=$(DOCKERCMD) save
 DOCKERCOMPOSECMD=$(shell which docker-compose)
 DOCKERTAG=$(DOCKERCMD) tag
+DOCKERNETWORK=$(DOCKERCMD) network
 
 DOCKERCOMPOSEFILEPATH=$(MAKEWORKPATH)
 DOCKERCOMPOSEFILENAME=docker-compose${if ${ARCH},.${ARCH}}.yml
 DOCKERCOMPOSEFILENAMEADM=docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 DOCKERCOMPOSEUIFILENAME=docker-compose.uibuilder${if ${ARCH},.${ARCH}}.yml
-DOCKERCOMPOSEFILENAMENEW=docker-compose-new${if ${ARCH},.${ARCH}}.yml
 
 # Go parameters
 GOCMD=go
@@ -190,6 +190,7 @@ prepare: version
 
 start:
 	@echo "loading Board images..."
+	$(DOCKERNETWORK) create board &> /dev/null
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
 
@@ -200,17 +201,19 @@ start_admin:
 	@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/adminserver/env
 	@sed -i "s|__CURDIR__|$(MAKEPATH)|g"  $(MAKEPATH)/adminserver/env
 	@if [ ! -f $(MAKEPATH)/adminserver/board.cfg ] ; then cp $(MAKEPATH)/board.cfg $(MAKEPATH)/adminserver/board.cfg ; fi
+	$(DOCKERNETWORK) create board &> /dev/null
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Adminserver now."
 
 down:
 	@echo "stoping Board instance..."
+	$(DOCKERNETWORK) rm board &> /dev/null
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
 
 down_admin:
 	@echo "stoping Adminserver instance..."
-	#$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMENEW) down -v
+	$(DOCKERNETWORK) rm board &> /dev/null
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 
@@ -221,10 +224,8 @@ prepare_swagger:
 
 prepare_composefile:
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
-	@cp $(MAKEWORKPATH)/docker-compose-new${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-new${if ${ARCH},.${ARCH}}.yml
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
-	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-new${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 
 package: prepare_composefile
@@ -240,7 +241,6 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
-	@cp $(MAKEWORKPATH)/docker-compose-new${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-new${if ${ARCH},.${ARCH}}.yml
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
 	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/adminserver/env
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE

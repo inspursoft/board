@@ -113,6 +113,9 @@ then
 fi
 echo ""
 
+echo "[Step $item]: creating Board network ..."; let item+=1
+docker network create board &> /dev/null || true
+
 echo "[Step $item]: starting Board ..."
 docker-compose up -d
 

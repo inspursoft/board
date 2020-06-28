@@ -145,4 +145,4 @@ services:
         tag: "proxy"
 networks:
   board:
-    external: false
+    external: true

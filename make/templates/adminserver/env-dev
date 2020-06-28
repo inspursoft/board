@@ -1,4 +1,4 @@
-BOARD_COMPOSE=__CURDIR__/dev/docker-compose-new.yml
+BOARD_COMPOSE=__CURDIR__/dev/docker-compose.yml
 PREPARE_FILE=__CURDIR__/prepare
 MAKE_PATH=__CURDIR__
 IMAGE_PREFIX=dev
