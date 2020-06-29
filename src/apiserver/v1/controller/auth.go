@@ -17,9 +17,9 @@ type AuthController struct {
 }
 
 func (u *AuthController) Prepare() {
-	hasStarted := utils.GetConfig("GRACEFULLY_STARTED")
-	if hasStarted() == "NOT_READY" {
-		u.ServeStatus(http.StatusNotAcceptable, "Please wait while the Board is starting...")
+	initStatus := utils.GetConfig("INIT_STATUS")
+	if initStatus() != "READY" {
+		u.ServeStatus(http.StatusNotAcceptable, initStatus())
 		return
 	}
 	u.EnableXSRF = false
