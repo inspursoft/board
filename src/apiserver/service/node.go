@@ -756,12 +756,13 @@ func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
 		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
 		return false, err
 	}
-	logs.Debug("Edge hostname:", string(combo))
+	sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	logs.Debug("Edge hostname:", sshhostname)
 
 	//TODO Check the hostname config in edge yaml
 
-	if edgenode.NodeName != string(combo) {
-		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, string(combo))
+	if edgenode.NodeName != sshhostname {
+		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, sshhostname)
 		return false, nil
 	}
 	return true, nil
