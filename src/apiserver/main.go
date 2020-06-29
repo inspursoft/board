@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"sync"
 	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
@@ -237,8 +238,10 @@ func main() {
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
-
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		utils.SetConfig("INIT_STATUS", "NOT_READY")
 		dao.InitDB()
 		service.SetSystemInfo("DNS_SUFFIX", true)
