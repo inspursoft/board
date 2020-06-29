@@ -257,7 +257,6 @@ func main() {
 			panic(err)
 		}
 		ctx := context.WithValue(context.Background(), systemInfo, info)
-
 		initBoardVersion(ctx)
 		utils.SetConfig("INIT_STATUS", "UPDATE_ADMIN_PASSWORD")
 		updateAdminPassword(ctx)
@@ -269,7 +268,9 @@ func main() {
 		initKubernetesInfo(ctx)
 		utils.SetConfig("INIT_STATUS", "SYNC_UP_K8S")
 		syncUpWithK8s(ctx)
+		utils.SetConfig("INIT_STATUS", "READY")
 	}()
+
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
