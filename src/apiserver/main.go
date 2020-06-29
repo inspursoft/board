@@ -267,12 +267,12 @@ func main() {
 		service.SetSystemInfo("REDIRECTION_URL", false)
 		service.SetSystemInfo("DEVOPS_OPT", false)
 
-		systemInfo, err := service.GetSystemInfo()
+		info, err := service.GetSystemInfo()
 		if err != nil {
 			logs.Error("Failed to set system config: %+v", err)
 			panic(err)
 		}
-		ctx = context.WithValue(ctx, systemInfo, systemInfo)
+		ctx = context.WithValue(ctx, systemInfo, info)
 		utils.SetConfig("INIT_STATUS", "INIT_BOARD_VERSION")
 		initBoardVersion(ctx, cancel)
 		utils.SetConfig("INIT_STATUS", "UPDATE_ADMIN_PASSWORD")
