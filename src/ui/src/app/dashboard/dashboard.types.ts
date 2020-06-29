@@ -104,7 +104,6 @@ export class BodyData extends HttpBase {
   @HttpBind('timestamp') queryTimestamp = 0;
   @HttpBind('time_unit') queryTimeUnit = '';
   @HttpBind('time_count') queryCount = 0;
-  valueOfSecond = 0;
 }
 
 export class QueryData extends HttpBase {
@@ -190,11 +189,13 @@ export class Prometheus extends HttpBase {
       serviceList.push(value.name);
       if (value.name === serviceName) {
         value.serviceLogsData.forEach((log: ServiceLog) => {
-          const date = new Date(log.timestamp * 1000);
-          const pod = (log.podNumber * 100) / 100;
-          const container = (log.containerNumber * 100) / 100;
-          this.serviceLineData.firstLineData.push([date, pod, '']);
-          this.serviceLineData.secondLineData.push([date, container, '']);
+          if (log.timestamp > 0) {
+            const date = new Date(log.timestamp * 1000);
+            const pod = Math.round(log.podNumber * 100) / 100;
+            const container = Math.round(log.containerNumber * 100) / 100;
+            this.serviceLineData.firstLineData.push([date, pod, '']);
+            this.serviceLineData.secondLineData.push([date, container, '']);
+          }
         });
       }
     });
@@ -207,19 +208,24 @@ export class Prometheus extends HttpBase {
       nodeList.push(value.name);
       if (value.name === nodeName) {
         value.nodeLogsData.forEach((log: NodeLog) => {
-          const date = new Date(log.timestamp * 1000);
-          this.nodeLineData.firstLineData.push([date, log.cpuUsage, '']);
-          this.nodeLineData.secondLineData.push([date, log.memoryUsage, '']);
-          const used = Prometheus.getUnitValue(log.storageUsed);
-          const total = Prometheus.getUnitValue(log.storageTotal);
-          this.storageLineData.firstLineData.push([date, used.value, used.unit]);
-          this.storageLineData.secondLineData.push([date, total.value, total.unit]);
+          if (log.timestamp > 0) {
+            const date = new Date(log.timestamp * 1000);
+            const cpuUsage = Math.round(log.cpuUsage * 100) / 100;
+            const memoryUsage = Math.round(log.memoryUsage * 100) / 100;
+            this.nodeLineData.firstLineData.push([date, cpuUsage, '']);
+            this.nodeLineData.secondLineData.push([date, memoryUsage, '']);
+            const used = Prometheus.getUnitValue(log.storageUsed);
+            const total = Prometheus.getUnitValue(log.storageTotal);
+            this.storageLineData.firstLineData.push([date, used.value, used.unit]);
+            this.storageLineData.secondLineData.push([date, total.value, total.unit]);
+          }
         });
       }
     });
     this.nodeLineData.list = nodeList;
     this.storageLineData.list = nodeList;
   }
+
 }
 
 

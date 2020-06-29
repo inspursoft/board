@@ -123,7 +123,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.initAsyncLines();
     this.intervalAutoRefresh = setInterval(() => {
       this.autoRefreshCurDada();
-    }, 2000);
+    }, 5000);
   }
 
   setLineZoomByTimeStamp(lineType: LineType, lineTimeStamp: number): void {
@@ -154,7 +154,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
   }
 
   detectChartData() {
-    const minTimeStrap = this.bodyData.queryTimestamp - MAX_COUNT_PER_PAGE * this.bodyData.valueOfSecond;
+    const minTimeStrap = this.bodyData.queryTimestamp - MAX_COUNT_PER_PAGE * this.curScaleOption.valueOfSecond;
     const maxTimeStrap = this.bodyData.queryTimestamp;
     this.thirdLineData.maxDate = new Date(maxTimeStrap * 1000);
     this.thirdLineData.minDate = new Date(minTimeStrap * 1000);
@@ -189,7 +189,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   initThirdLineDate() {
     const maxTimeStamp = this.bodyData.queryTimestamp;
-    const minTimeStamp = maxTimeStamp - this.bodyData.queryCount * this.bodyData.valueOfSecond;
+    const minTimeStamp = maxTimeStamp - this.bodyData.queryCount * this.curScaleOption.valueOfSecond;
     this.thirdLineData = new ThirdLine();
     this.thirdLineData.maxDate = new Date(maxTimeStamp * 1000);
     this.thirdLineData.minDate = new Date(minTimeStamp * 1000);
@@ -202,8 +202,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.queryData.serviceName = 'total';
       this.bodyData.queryCount = MAX_COUNT_PER_PAGE;
       this.bodyData.queryTimeUnit = this.curScaleOption.value;
-      this.bodyData.queryTimestamp = 1593308273;
-      this.bodyData.valueOfSecond = this.curScaleOption.valueOfSecond;
+      this.bodyData.queryTimestamp = this.serverTimeStamp;
       this.initThirdLineDate();
       this.lineTypeSet.forEach((lineType: LineType) => {
         this.curValue.set(lineType, {curFirst: 0, curFirstUnit: '', curSecond: 0, curSecondUnit: ''});
@@ -288,7 +287,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.service.getServerTimeStamp().subscribe((res: number) => {
         this.serverTimeStamp = res;
         const bodyData = new BodyData();
-        bodyData.queryTimestamp = 1593308273433;
+        bodyData.queryTimestamp = this.serverTimeStamp;
         bodyData.queryCount = 2;
         bodyData.queryTimeUnit = 'second';
         this.service.getLineData(this.queryData, bodyData).subscribe((prometheus1: Prometheus) => {
@@ -417,9 +416,10 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   scaleChange(lineType: LineType, data: ScaleOption) {
     if (!this.lineStateInfo.inRefreshWIP) {
+      this.curScaleOption = data;
       let baseLineTimeStamp = this.getBaseLineTimeStamp(lineType);
       let queryTimeStamp = 0;
-      const maxLineTimeStamp = baseLineTimeStamp + data.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
+      const maxLineTimeStamp = baseLineTimeStamp + this.curScaleOption.valueOfSecond * MAX_COUNT_PER_PAGE / 2;
       if (maxLineTimeStamp > this.serverTimeStamp) {
         queryTimeStamp = this.serverTimeStamp;
         baseLineTimeStamp -= maxLineTimeStamp - this.serverTimeStamp;
@@ -435,10 +435,12 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
       this.thirdLineData.maxDate = new Date(maxTimeStamp * 1000);
       this.getLineData().subscribe((res: Prometheus) => {
         this.prometheus = res;
-        this.lineTypeSet.forEach(lineType1 => this.resetBaseLinePos(lineType1));
+        this.lineTypeSet.forEach(lineType1 => {
+          this.setLineZoomByTimeStamp(lineType1, baseLineTimeStamp);
+          this.resetBaseLinePos(lineType1);
+        });
         this.detectChartData();
         this.clearEChart();
-        this.lineTypeSet.forEach(value => this.setLineZoomByTimeStamp(value, baseLineTimeStamp));
       });
     }
   }
