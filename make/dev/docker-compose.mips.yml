@@ -127,29 +127,6 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
-  collector:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/collector/Dockerfile.mips
-    image: dev_collector:dev
-    restart: always
-    volumes:
-      - /data/board/cert:/cert:rw
-      - /etc/board/cert:/etc/board/cert:rw
-      - ../config/collector/kubeconfig:/root/kubeconfig
-    env_file:
-      - ../config/collector/env
-    networks:
-      - board
-    links:
-      - db
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "collector" 
   proxy:
     build:
       context: ../../
@@ -184,7 +161,7 @@ services:
       - /data/board/grafana/log:/var/log/grafana
       - ../config/grafana:/etc/grafana/config
     networks:
-      - dvserver_net
+      - board
     ports:
       - 3000:3000
     depends_on:
@@ -203,7 +180,7 @@ services:
     env_file:
       - ../config/elasticsearch/env
     networks:
-      - dvserver_net
+      - board
     ports:
       - 9200:9200
     depends_on:
@@ -226,7 +203,7 @@ services:
     image: dev_kibana:dev
     restart: always
     networks:
-      - dvserver_net
+      - board
     depends_on:
       - log
     volumes:
@@ -243,7 +220,7 @@ services:
     image: dev_chartmuseum:dev
     restart: always
     networks:
-      - dvserver_net
+      - board
     ports:
       - 8089:8080
     depends_on:
@@ -262,11 +239,16 @@ services:
     image: dev_prometheus:dev
     restart: always
     networks:
-      - dvserver_net
+      - board
     ports:
       - 9090:9090
     volumes:
       - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "prometheus"
 networks:
   board:
-    external: false
+    external: true
