@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"sync"
-	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
@@ -55,7 +54,6 @@ var swaggerDoc = utils.GetConfig("SWAGGER_DOC", defaultSwaggerDoc)
 var devopsOpt = utils.GetConfig("DEVOPS_OPT")
 var jenkinsExecutionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
 var k8sForceInitSync = utils.GetConfig("FORCE_INIT_SYNC")
-var initTimeExpiry = time.Minute * 10
 
 func setConfigurations() {
 
