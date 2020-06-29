@@ -241,16 +241,6 @@ if not os.path.exists(prometheus_config_dir):
     os.makedirs(os.path.join(config_dir, "prometheus"))
 prometheus_conf = os.path.join(config_dir, "prometheus", "prometheus.yml")
 
-prometheus_config_dir = os.path.join(config_dir, "prometheus")
-if not os.path.exists(prometheus_config_dir):
-    os.makedirs(os.path.join(config_dir, "prometheus"))
-prometheus_conf = os.path.join(config_dir, "prometheus", "prometheus.yml")
-
-prometheus_config_dir = os.path.join(config_dir, "prometheus")
-if not os.path.exists(prometheus_config_dir):
-    os.makedirs(os.path.join(config_dir, "prometheus"))
-prometheus_conf = os.path.join(config_dir, "prometheus", "prometheus.yml")
-
 #Render Configure File
 render(os.path.join(templates_dir, "apiserver", "env"),
         apiserver_env,
@@ -437,16 +427,6 @@ render(os.path.join(templates_dir, "elasticsearch", "env"),
         elasticsearch_env,
         es_java_opts="-Xms%sm -Xmx%sm"%(elaseticsearch_memory_in_megabytes,elaseticsearch_memory_in_megabytes),
         elastic_password=elastic_password)
-
-prometheus_url = prometheus_url.replace('http://', '')
-render(os.path.join(templates_dir, "prometheus", "prometheus.yml"),
-        prometheus_conf,
-        prometheus_url=prometheus_url)
-
-prometheus_url = prometheus_url.replace('http://', '')
-render(os.path.join(templates_dir, "prometheus", "prometheus.yml"),
-        prometheus_conf,
-        prometheus_url=prometheus_url)
 
 prometheus_url = prometheus_url.replace('http://', '')
 render(os.path.join(templates_dir, "prometheus", "prometheus.yml"),
