@@ -16,7 +16,6 @@ type PrometheusController struct {
 // @Title GetData
 // @Description Get DashBoard Data
 // @Param	body	body 	service.RequestPayload	true	"request payload"
-// @Param	timestamp	query 	int64	true	"timestamp"
 // @Param	node	query 	string	true	"node"
 // @Param	service	query 	string	true	"service"
 // @Success 200 {object} service.DashboardInfo	success
@@ -27,11 +26,6 @@ func (p *PrometheusController) GetData() {
 	var request service.RequestPayload
 	var err error
 
-	timestamp, err := p.GetInt64("timestamp")
-	if err != nil {
-		logs.Error("Failed to get int64 timestamp: %+v", err)
-		p.CustomAbort(http.StatusInternalServerError, err.Error())
-	}
 	nodename := p.GetString("node")
 	servicename := p.GetString("service")
 	err = utils.UnmarshalToJSON(p.Ctx.Request.Body, &request)
@@ -53,7 +47,7 @@ func (p *PrometheusController) GetData() {
 		return
 	}
 
-	data, err := service.GetDashBoardData(timestamp, request, nodename, servicename)
+	data, err := service.GetDashBoardData(request, nodename, servicename)
 	if err != nil {
 		logs.Error(err)
 		p.CustomAbort(http.StatusInternalServerError, err.Error())
