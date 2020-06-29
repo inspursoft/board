@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"sync"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
@@ -17,28 +19,31 @@ import (
 	"github.com/astaxie/beego"
 )
 
+type systemInfoKey int
+
 const (
-	defaultDBServer             = "db"
-	defaultDBPort               = "3306"
-	defaultAPIServerPort        = "8088"
-	defaultTokenServer          = "tokenserver"
-	defaultTokenServerPort      = "4000"
-	defaultTokenCacheExpireTime = "1800"
-	defaultAdminServer          = "adminserver"
-	defaultAdminServerPort      = "8080"
-	defaultKubeConfigPath       = "/root/kubeconfig"
-	defaultSwaggerDoc           = "disabled"
-	defaultAuthMode             = "db_auth"
-	defaultMode                 = "normal"
-	adminUserID                 = 1
-	adminUsername               = "admin"
-	adminEmail                  = "admin@inspur.com"
-	defaultInitialPassword      = "123456a?"
-	BaseRepoPath                = "/repos"
-	sshKeyPath                  = "/keys"
-	defaultProject              = "library"
-	kvmToolsPath                = "/root/kvm"
-	kvmRegistryPath             = "/root/kvmregistry"
+	systemInfo                  systemInfoKey = iota
+	defaultDBServer                           = "db"
+	defaultDBPort                             = "3306"
+	defaultAPIServerPort                      = "8088"
+	defaultTokenServer                        = "tokenserver"
+	defaultTokenServerPort                    = "4000"
+	defaultTokenCacheExpireTime               = "1800"
+	defaultAdminServer                        = "adminserver"
+	defaultAdminServerPort                    = "8080"
+	defaultKubeConfigPath                     = "/root/kubeconfig"
+	defaultSwaggerDoc                         = "disabled"
+	defaultAuthMode                           = "db_auth"
+	defaultMode                               = "normal"
+	adminUserID                               = 1
+	adminUsername                             = "admin"
+	adminEmail                                = "admin@inspur.com"
+	defaultInitialPassword                    = "123456a?"
+	BaseRepoPath                              = "/repos"
+	sshKeyPath                                = "/keys"
+	defaultProject                            = "library"
+	kvmToolsPath                              = "/root/kvm"
+	kvmRegistryPath                           = "/root/kvmregistry"
 )
 
 var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
@@ -47,8 +52,40 @@ var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
 var apiServerPort = utils.GetConfig("API_SERVER_PORT", defaultAPIServerPort)
 var swaggerDoc = utils.GetConfig("SWAGGER_DOC", defaultSwaggerDoc)
 var devopsOpt = utils.GetConfig("DEVOPS_OPT")
+var jenkinsExecutionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
+var k8sForceInitSync = utils.GetConfig("FORCE_INIT_SYNC")
 
-func initBoardVersion() {
+func setConfigurations() {
+
+	utils.InitializeDefaultConfig()
+
+	utils.SetConfig("DB_IP", defaultDBServer)
+	utils.SetConfig("DB_PORT", defaultDBPort)
+
+	utils.SetConfig("TOKEN_SERVER_IP", defaultTokenServer)
+	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
+	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
+
+	utils.SetConfig("ADMINSERVER_IP", defaultAdminServer)
+	utils.SetConfig("ADMINSERVER_PORT", defaultAdminServerPort)
+	utils.SetConfig("ADMINSERVER_URL", "http://%s:%s/v1/admin", "ADMINSERVER_IP", "ADMINSERVER_PORT")
+
+	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
+	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
+
+	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
+	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
+
+	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
+
+	utils.SetConfig("AUTH_MODE", defaultAuthMode)
+}
+
+func initBoardVersion(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred from context: %+v", err)
+		return
+	}
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
@@ -57,7 +94,15 @@ func initBoardVersion() {
 	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
-func updateAdminPassword() {
+func updateAdminPassword(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred from context: %+v", err)
+		return
+	}
+	if ctx.Value(systemInfo).(*model.SystemInfo).SetAdminPassword == "updated" {
+		logs.Info("Skip updating admin user as it has been updated.")
+		return
+	}
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
@@ -78,7 +123,16 @@ func updateAdminPassword() {
 	}
 }
 
-func initProjectRepo() {
+func initProjectRepo(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred from context: %+v", err)
+		return
+	}
+	if ctx.Value(systemInfo).(*model.SystemInfo).InitProjectRepo == "created" {
+		logs.Info("Skip initializing project repo as it has been created.")
+		return
+	}
+
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
@@ -108,13 +162,55 @@ func initProjectRepo() {
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
 	}
-
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
-	service.SetSystemInfo("INIT_PROJECT_REPO", true)
+	service.SetSystemInfo("INIT_PROJECT_REPO", false)
 	logs.Info("Finished to create initial project and repo.")
 }
 
-func syncUpWithK8s() {
+func prepareKVMHost(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred at: %s from context: %+v", "prepare KVM host", err)
+		return
+	}
+	if jenkinsExecutionMode() == "single" {
+		logs.Info("Skip preparing KVM host as it set as single slave node.")
+		return
+	}
+	if err := service.PrepareKVMHost(); err != nil {
+		logs.Error("Failed to prepare KVM host, error: %+v", err)
+	}
+}
+
+func initKubernetesInfo(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred from context: %+v", err)
+		return
+	}
+	logs.Info("Initialize Kubernetes info")
+	info, err := service.GetKubernetesInfo()
+	if err != nil {
+		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
+		utils.SetConfig("KUBERNETES_VERSION", "NA")
+	} else {
+		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
+	}
+	service.SetSystemInfo("KUBERNETES_VERSION", true)
+	logs.Info("Finished to initialize Kubernetes info.")
+}
+
+func syncUpWithK8s(ctx context.Context) {
+	if err := ctx.Err(); err != nil {
+		logs.Error("Error occurred from context: %+v", err)
+		return
+	}
+	if ctx.Value(systemInfo).(*model.SystemInfo).SyncK8s == "created" {
+		logs.Info("Skip initializing project repo as it has been created.")
+		return
+	}
+	if k8sForceInitSync() == "false" {
+		logs.Info("Skip sync up with K8s forcely. ")
+		return
+	}
 	logs.Info("Initialize to sync up with K8s status ...")
 	defer func() {
 		utils.SetConfig("SYNC_K8S", "finished")
@@ -135,93 +231,48 @@ func syncUpWithK8s() {
 	logs.Info("Successful sync up with projects with K8s.")
 }
 
-func initKubernetesInfo() {
-	logs.Info("Initialize kubernetes info")
-	info, err := service.GetKubernetesInfo()
-	if err != nil {
-		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
-		utils.SetConfig("KUBERNETES_VERSION", "NA")
-	} else {
-		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
-	}
-	service.SetSystemInfo("KUBERNETES_VERSION", true)
-	logs.Info("Finished to initialize kubernetes info.")
-}
-
 func main() {
-
-	utils.InitializeDefaultConfig()
-
-	utils.SetConfig("DB_IP", defaultDBServer)
-	utils.SetConfig("DB_PORT", defaultDBPort)
-
-	utils.SetConfig("TOKEN_SERVER_IP", defaultTokenServer)
-	utils.SetConfig("TOKEN_SERVER_PORT", defaultTokenServerPort)
-	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
-
-	utils.SetConfig("ADMINSERVER_IP", defaultAdminServer)
-	utils.SetConfig("ADMINSERVER_PORT", defaultAdminServerPort)
-	utils.SetConfig("ADMINSERVER_URL", "http://%s:%s/v1/admin", "ADMINSERVER_IP", "ADMINSERVER_PORT")
-
-	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
-	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
-
-	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
-	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
-
-	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
-
-	utils.SetConfig("AUTH_MODE", defaultAuthMode)
-
-	dao.InitDB()
-
+	setConfigurations()
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		utils.SetConfig("INIT_STATUS", "NOT_READY")
+		dao.InitDB()
+		service.SetSystemInfo("DNS_SUFFIX", true)
+		service.SetSystemInfo("MODE", true)
+		service.SetSystemInfo("BOARD_HOST_IP", true)
+		service.SetSystemInfo("AUTH_MODE", false)
+		service.SetSystemInfo("REDIRECTION_URL", false)
+		service.SetSystemInfo("DEVOPS_OPT", false)
+
+		info, err := service.GetSystemInfo()
+		if err != nil {
+			logs.Error("Failed to set system config: %+v", err)
+			panic(err)
+		}
+		ctx := context.WithValue(context.Background(), systemInfo, info)
+		initBoardVersion(ctx)
+		utils.SetConfig("INIT_STATUS", "UPDATE_ADMIN_PASSWORD")
+		updateAdminPassword(ctx)
+		utils.SetConfig("INIT_STATUS", "INIT_PROJECT_REPO")
+		initProjectRepo(ctx)
+		utils.SetConfig("INIT_STATUS", "PREPARE_KVM_HOST")
+		prepareKVMHost(ctx)
+		utils.SetConfig("INIT_STATUS", "INIT_KUBERNETES_INFO")
+		initKubernetesInfo(ctx)
+		utils.SetConfig("INIT_STATUS", "SYNC_UP_K8S")
+		syncUpWithK8s(ctx)
+		utils.SetConfig("INIT_STATUS", "READY")
+	}()
 
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	}
-	systemInfo, err := service.GetSystemInfo()
-	if err != nil {
-		logs.Error("Failed to set system config: %+v", err)
-		panic(err)
-	}
-
-	initBoardVersion()
-
-	if systemInfo.SetAdminPassword == "" {
-		updateAdminPassword()
-	}
-
-	if systemInfo.InitProjectRepo == "" {
-		initProjectRepo()
-	}
-
-	if systemInfo.KubernetesVersion == "" || systemInfo.KubernetesVersion == "NA" {
-		initKubernetesInfo()
-	}
-
-	if systemInfo.SyncK8s == "" || utils.GetStringValue("FORCE_INIT_SYNC") == "true" {
-		syncUpWithK8s()
-	}
-
-	service.SetSystemInfo("DNS_SUFFIX", true)
-	service.SetSystemInfo("MODE", true)
-	service.SetSystemInfo("BOARD_HOST_IP", true)
-	service.SetSystemInfo("AUTH_MODE", false)
-	service.SetSystemInfo("REDIRECTION_URL", false)
-	service.SetSystemInfo("DEVOPS_OPT", false)
-
-	if utils.GetStringValue("JENKINS_EXECUTION_MODE") != "single" {
-		err = service.PrepareKVMHost()
-		if err != nil {
-			logs.Error("Failed to prepare KVM host: %+v", err)
-			panic(err)
-		}
-	}
-
 	beego.BConfig.WebConfig.EnableXSRF = true
 	beego.BConfig.WebConfig.XSRFKey = "ILGOWezZZLeeDozS9Zg6xB2Ogyv1a2Ji"
 	beego.BConfig.WebConfig.XSRFExpire = 1800
