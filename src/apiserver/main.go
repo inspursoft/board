@@ -238,46 +238,35 @@ func main() {
 	controller.InitRouter()
 	v2routers.InitRouterV2()
 
-	utils.SetConfig("INIT_STATUS", "NOT_READY")
+	go func() {
+		utils.SetConfig("INIT_STATUS", "NOT_READY")
+		dao.InitDB()
+		service.SetSystemInfo("DNS_SUFFIX", true)
+		service.SetSystemInfo("MODE", true)
+		service.SetSystemInfo("BOARD_HOST_IP", true)
+		service.SetSystemInfo("AUTH_MODE", false)
+		service.SetSystemInfo("REDIRECTION_URL", false)
+		service.SetSystemInfo("DEVOPS_OPT", false)
 
-	threadHandler := func() <-chan string {
-		stage := make(chan string, 6)
-		go func() {
-			defer close(stage)
-			dao.InitDB()
-			service.SetSystemInfo("DNS_SUFFIX", true)
-			service.SetSystemInfo("MODE", true)
-			service.SetSystemInfo("BOARD_HOST_IP", true)
-			service.SetSystemInfo("AUTH_MODE", false)
-			service.SetSystemInfo("REDIRECTION_URL", false)
-			service.SetSystemInfo("DEVOPS_OPT", false)
+		info, err := service.GetSystemInfo()
+		if err != nil {
+			logs.Error("Failed to set system config: %+v", err)
+			panic(err)
+		}
+		ctx := context.WithValue(context.Background(), systemInfo, info)
 
-			info, err := service.GetSystemInfo()
-			if err != nil {
-				logs.Error("Failed to set system config: %+v", err)
-				panic(err)
-			}
-			ctx := context.WithValue(context.Background(), systemInfo, info)
-			stage <- "INIT_BOARD_VERSION"
-			initBoardVersion(ctx)
-			stage <- "UPDATE_ADMIN_PASSWORD"
-			updateAdminPassword(ctx)
-			stage <- "INIT_PROJECT_REPO"
-			initProjectRepo(ctx)
-			stage <- "PREPARE_KVM_HOST"
-			prepareKVMHost(ctx)
-			stage <- "INIT_KUBERNETES_INFO"
-			initKubernetesInfo(ctx)
-			stage <- "SYNC_UP_K8S"
-			syncUpWithK8s(ctx)
-		}()
-		return stage
-	}
-	select {
-	case currentStage := <-threadHandler():
-		utils.SetConfig("INIT_STATUS", currentStage)
-	}
-
+		initBoardVersion(ctx)
+		utils.SetConfig("INIT_STATUS", "UPDATE_ADMIN_PASSWORD")
+		updateAdminPassword(ctx)
+		utils.SetConfig("INIT_STATUS", "INIT_PROJECT_REPO")
+		initProjectRepo(ctx)
+		utils.SetConfig("INIT_STATUS", "PREPARE_KVM_HOST")
+		prepareKVMHost(ctx)
+		utils.SetConfig("INIT_STATUS", "INIT_KUBERNETES_INFO")
+		initKubernetesInfo(ctx)
+		utils.SetConfig("INIT_STATUS", "SYNC_UP_K8S")
+		syncUpWithK8s(ctx)
+	}()
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
