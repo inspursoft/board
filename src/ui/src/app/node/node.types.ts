@@ -4,10 +4,11 @@ export enum NodeStatusType {
   Schedulable = 1, Unschedulable, Unknown
 }
 
-export class NodeStatus extends HttpBase {
+export class  NodeStatus extends HttpBase {
   readonly masterKey = 'node-role.kubernetes.io/master';
   @HttpBind('node_name') nodeName: string;
   @HttpBind('node_ip') nodeIp: string;
+  @HttpBind('node_type') nodeType = '';
   @HttpBind('create_time') createTime: number;
   @HttpBind('status') status: NodeStatusType;
   @HttpBind('labels') labels: { [p: string]: string };
@@ -64,4 +65,13 @@ export class NodeDetail extends HttpBase {
   @HttpBind('memory_usage') memoryUsage: number;
   @HttpBind('storage_total') storageTotal: string;
   @HttpBind('storage_use') storageUse: string;
+}
+
+export class EdgeNode extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBind('node_ip') nodeIp = '';
+  @HttpBind('node_password') nodePassword = '';
+  @HttpBind('cpu_type') cpuType = '';
+  @HttpBind('master') master = '';
+  @HttpBind('registry_mode') registryMode = '';
 }

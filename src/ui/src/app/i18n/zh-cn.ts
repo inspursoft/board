@@ -920,6 +920,24 @@ export const LANG_ZH_CN = {
     DeleteNodeTip: '只有排除完服务后，才能在AdminServer里删除节点.'
   },
 
+  NodeCreateNew: {
+    Title: '添加节点',
+    Name: '节点名称',
+    NamePatternMessage: '节点名称格式不正确',
+    NameExists: '节点名称已经存在',
+    Ip: '节点IP',
+    Password: '节点密码',
+    IpPatternMessage: '节点IP格式不正确',
+    IpExists: '节点IP已经存在',
+    CpuType: 'CPU类型',
+    Master: 'Master',
+    RegisterMode: '注册方式',
+    Commit: '提交',
+    AddSuccessfully: '添加节点成功',
+    Auto: '自动',
+    Manual: '手动'
+  },
+
   "GUIDE":{
     "TITLE":"使用向导",
     "NEXT_STEP":"下一步"

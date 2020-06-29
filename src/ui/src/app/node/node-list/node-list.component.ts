@@ -7,6 +7,7 @@ import { Message, RETURN_STATUS } from '../../shared/shared.types';
 import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
 import { NodeControlComponent } from '../node-control/node-control.component';
 import { NodeStatus, NodeStatusType } from '../node.types';
+import { NodeCreateNewComponent } from '../node-create-new/node-create-new.component';
 
 @Component({
   selector: 'app-node-list',
@@ -74,5 +75,10 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
         }
       });
     });
+  }
+
+  showCreateNew() {
+    const instance = this.createNewModal(NodeCreateNewComponent);
+    instance.nodeList = this.nodeList;
   }
 }
