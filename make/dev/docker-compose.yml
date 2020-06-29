@@ -277,6 +277,11 @@ services:
       - 9090:9090
     volumes:
       - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "prometheus"
 networks:
   board:
     external: true
