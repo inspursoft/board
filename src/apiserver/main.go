@@ -241,7 +241,7 @@ func main() {
 	utils.SetConfig("INIT_STATUS", "NOT_READY")
 
 	threadHandler := func() <-chan string {
-		stage := make(chan string)
+		stage := make(chan string, 6)
 		go func() {
 			defer close(stage)
 			dao.InitDB()
