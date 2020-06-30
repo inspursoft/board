@@ -34,10 +34,11 @@ func GetAllCfg(which string, show bool) (*models.Configuration, error) {
 	Cfgi := models.GetConfiguration(section)
 
 	if !show {
-		Cfgi.Other.BoardAdminPassword = ""
-		Cfgi.Other.DBPassword = ""
-		Cfgi.Jenkinsserver.NodePassword = ""
+		Cfgi.Db.BoardAdminPassword = ""
+		Cfgi.Db.Password = ""
+		Cfgi.Jenkins.NodePassword = ""
 		Cfgi.Email.Password = ""
+		Cfgi.Es.Password = ""
 	}
 
 	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
