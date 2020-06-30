@@ -132,7 +132,7 @@ func InitRouter() {
 			beego.NSRouter("/configmaps",
 				&ConfigMapController{},
 				"get:GetConfigMapListAction;post:AddConfigMapAction"),
-			beego.NSRouter("/configmaps/:configmapname([\\w]+)",
+			beego.NSRouter("/configmaps/:configmapname([\\w-]+)",
 				&ConfigMapController{},
 				"get:GetConfigMapAction;delete:RemoveConfigMapAction;put:UpdateConfigMapAction"),
 			beego.NSRouter("/node",
