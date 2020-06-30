@@ -408,6 +408,16 @@ func (g *gitlabHandler) CommitMultiFiles(user model.User, project model.Project,
 		})
 	return
 }
+func (g *gitlabHandler) ListMR(sourceProject model.Project) (mrList []MRCreation, err error) {
+	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/projects/%d/merge_requests", g.gitlabAPIBaseURL, sourceProject.ID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &mrList)
+		})
+	return
+}
 
 func (g *gitlabHandler) CreateMR(assignee model.User, sourceProject model.Project, targetProject model.Project, sourceBranch string, targetBranch string, title string, description string) (m MRCreation, err error) {
 	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/merge_requests", g.gitlabAPIBaseURL, sourceProject.ID),
@@ -421,6 +431,17 @@ func (g *gitlabHandler) CreateMR(assignee model.User, sourceProject model.Projec
 			formData.Add("assignee_id", fmt.Sprintf("%d", assignee.ID))
 			formData.Add("target_project_id", fmt.Sprintf("%d", targetProject.ID))
 			req.URL.RawQuery = formData.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &m)
+		})
+	return
+}
+
+func (g *gitlabHandler) AcceptMR(sourceProject model.Project, mergeRequestID int) (m MRCreation, err error) {
+	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/%d/merge", g.gitlabAPIBaseURL, sourceProject.ID, mergeRequestID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
 			return utils.UnmarshalToJSON(resp.Body, &m)

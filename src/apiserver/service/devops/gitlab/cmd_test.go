@@ -37,6 +37,8 @@ var addSSHKeyResponse gitlab.AddSSHKeyResponse
 var createdProject gitlab.ProjectCreation
 var createdForkProject gitlab.ProjectCreation
 
+var createdMR gitlab.MRCreation
+
 var branch = "master"
 var sourceBranch = branch
 var targetBranch = sourceBranch
@@ -142,13 +144,24 @@ func TestCreateMR(t *testing.T) {
 	assert.NotNilf(mrCreation, "Failed to create MR with detail: %+v", mrCreation)
 }
 
+func TestMergeMR(t *testing.T) {
+	gitlabHandler := gitlab.NewGitlabHandler(createdUserToken.Token)
+	mrList, err := gitlabHandler.ListMR(project)
+	assert := assert.New(t)
+	assert.Lenf(mrList, 1, "No MR found for repo: %s", project.Name)
+	assert.Nilf(err, "Error occurred while list MR via Gitlab API: %+v", err)
+	createdMR = mrList[0]
+	mrAcceptance, err := gitlabHandler.AcceptMR(project, createdMR.IID)
+	assert.Nilf(err, "Error occurred while merging MR via Gitlab API: %+v", err)
+	assert.NotNilf(mrAcceptance, "Failed to merge MR with detail: %+v", mrAcceptance)
+}
+
 func TestDeleteRepo(t *testing.T) {
 	assert := assert.New(t)
 	err := gitlab.NewGitlabHandler(createdForkUserToken.Token).DeleteProject(createdForkProject.ID)
 	assert.Nilf(err, "Error occurred while deleting fork project via Gitlab API: %+v", err)
 	err = gitlab.NewGitlabHandler(createdUserToken.Token).DeleteProject(createdProject.ID)
 	assert.Nilf(err, "Error occurred while deleting project via Gitlab API: %+v", err)
-
 }
 
 func TestUserDeletion(t *testing.T) {

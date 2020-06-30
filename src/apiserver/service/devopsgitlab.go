@@ -292,6 +292,27 @@ func (g GitlabDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
+func (g GitlabDevOps) MergePullRequest(repoName, repoToken string) error {
+	sourceProject, err := g.GetRepo(repoToken, repoName)
+	if err != nil {
+		return fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+	}
+	foundMRList, err := gitlab.NewGitlabHandler(repoToken).ListMR(sourceProject)
+	if err != nil {
+		return fmt.Errorf("failed to list merge request by name: %s, error: %+v", repoName, err)
+	}
+	if len(foundMRList) == 0 {
+		return fmt.Errorf("repo: %s has no merge request", repoName)
+	}
+	mrIID := foundMRList[0].IID
+	mrAcceptance, err := gitlab.NewGitlabHandler(repoToken).AcceptMR(sourceProject, mrIID)
+	if err != nil {
+		return fmt.Errorf("failed to accept MR by repo name: %s, error: %+v", repoName, err)
+	}
+	logs.Debug("Successful accepted MR with detail: %+v", mrAcceptance)
+	return nil
+}
+
 func (g GitlabDevOps) DeleteRepo(username string, repoName string) error {
 	user, err := GetUserByName(username)
 	if err != nil {

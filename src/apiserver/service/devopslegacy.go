@@ -232,6 +232,10 @@ func (l LegacyDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
+func (l LegacyDevOps) MergePullRequest(repoName, repoToken string) error {
+	return fmt.Errorf("unsupport merge pull request feature with the Gogits repo service")
+}
+
 func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 	user, err := GetUserByName(username)
 	if err != nil {

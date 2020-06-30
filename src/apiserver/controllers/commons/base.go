@@ -429,6 +429,22 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 	}
 }
 
+func (b *BaseController) MergePullRequest() {
+	currentProjectID := b.Project.OwnerID
+	projectOwner, err := service.GetUserByID(int64(currentProjectID))
+	if err != nil {
+		logs.Error("Failed to get user by ID: %d, error: %+v", b.Project.OwnerID, err)
+		b.InternalError(err)
+	}
+	currentProjectName := b.Project.Name
+	sourceProjectName, err := service.ResolveRepoName(currentProjectName, projectOwner.Username)
+	if err != nil {
+		logs.Error("Failed to resolve source project name with")
+		b.InternalError(err)
+	}
+	service.CurrentDevOps().MergePullRequest(sourceProjectName, projectOwner.RepoToken)
+}
+
 func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {
 	var err error
 	opt := &model.PodLogOptions{}

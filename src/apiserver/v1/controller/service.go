@@ -50,6 +50,8 @@ const (
 	failed
 )
 
+var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
+
 type ServiceController struct {
 	c.BaseController
 }
@@ -394,10 +396,12 @@ func (p *ServiceController) ToggleServiceAction() {
 		return
 	}
 
-	p.ResolveRepoServicePath(s.ProjectName, s.Name)
-	if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
-		p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
-		return
+	if devOpsOpt() == "legacy" {
+		p.ResolveRepoServicePath(s.ProjectName, s.Name)
+		if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
+			p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
+			return
+		}
 	}
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
@@ -423,7 +427,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
-
+		p.MergePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
