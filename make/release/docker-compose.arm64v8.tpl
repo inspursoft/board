@@ -5,6 +5,7 @@ services:
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - board
     ports:
@@ -14,6 +15,7 @@ services:
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/db/env
     networks:
@@ -31,6 +33,7 @@ services:
     volumes:
       - /data/board/gogits:/data:rw
       - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - "10022:22"
       - "10080:3000"
@@ -53,6 +56,7 @@ services:
       - ../config/ssh_keys:/root/.ssh
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/jenkins/env
     ports:
@@ -74,6 +78,7 @@ services:
       - /data/board/cert:/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
       - /etc/board/cert:/etc/board/cert:rw
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/apiserver/env
     ports:
@@ -98,6 +103,8 @@ services:
       - board
     depends_on:
       - log
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "syslog"
       options:
@@ -110,6 +117,7 @@ services:
       - /data/board/cert:/cert:rw
       - ../config/collector/kubeconfig:/root/kubeconfig
       - /etc/board/cert:/etc/board/cert:rw
+      - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/collector/env
     networks:
@@ -131,6 +139,7 @@ services:
     volumes:
       - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
 #     - ../../src/ui/dist:/usr/share/nginx/html:z
+      - /etc/localtime:/etc/localtime:ro
     ports: 
       - 80:80
       - 8080:8080
