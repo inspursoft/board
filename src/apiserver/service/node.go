@@ -12,6 +12,7 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	v2 "github.com/google/cadvisor/info/v2"
@@ -188,7 +189,14 @@ func GetNodeList() (res []NodeListResult) {
 					}
 				}
 				if nodetype == NodeTypeEdge {
-					return AutonomousOffline
+					//TODO Ping the edgenode is not the only condition for AutonomousOffline
+					status, err := utils.PingIPAddr(v.NodeIP)
+					if err != nil {
+						logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
+					} else if !status {
+						logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
+						return AutonomousOffline
+					}
 				}
 				return Unknown
 			}(),
