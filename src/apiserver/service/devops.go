@@ -1,8 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -45,4 +48,29 @@ func ResolveRepoPath(repoName, username string) (repoPath string) {
 func ResolveDockerfileName(imageName, tag string) string {
 	imageName = imageName[strings.LastIndex(imageName, "/")+1:]
 	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
+}
+
+func FetchFileContentByDevOpsOpt(projectName string, branch string, filePath string) (io.Reader, error) {
+	if devOpsOpt() == "legacy" {
+		return os.Open(filePath)
+	}
+	relPath, err := filepath.Rel(BaseRepoPath(), filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve rel path base on: %s with raw path: %s, error: %+v", BaseRepoPath(), filePath, err)
+	}
+	logs.Debug("Current file path: %s and relative path is: %s", filePath, relPath)
+	parts := strings.Split(relPath, "/")
+	if len(parts) < 4 {
+		logs.Error("Invalid path pattern: %s to resolve into parts.", filePath)
+		return nil, fmt.Errorf("invalid path pattern: %s to resolve into parts", filePath)
+	}
+	username := parts[0]
+	repoName := parts[2]
+	filePathInRepo := strings.Join(parts[3:], "/")
+	logs.Debug("Resolve raw file path with username: %s, repo name: %s with path in repo: %s", username, repoName, filePathInRepo)
+	content, err := CurrentDevOps().GetRepoFile(username, repoName, branch, filePathInRepo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repo file by username: %s, repo name: %s, branch: %s, file path in repo: %s", username, repoName, branch, filePathInRepo)
+	}
+	return bytes.NewBuffer(content), nil
 }

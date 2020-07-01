@@ -25,6 +25,7 @@ type DevOps interface {
 	MergePullRequest(repoName, repoToken string) error
 	DeleteRepo(username string, repoName string) error
 	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
+	GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error)
 }
 
 func CurrentDevOps() DevOps {

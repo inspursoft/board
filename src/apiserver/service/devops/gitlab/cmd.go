@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -354,6 +355,27 @@ func (g *gitlabHandler) ForkRepo(forkedFromProjectID int, repoName string) (p Pr
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
 			return utils.UnmarshalToJSON(resp.Body, &p)
+		})
+	return
+}
+
+func (g *gitlabHandler) GetFileRawContent(project model.Project, branch string, filePath string) (content []byte, err error) {
+	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/projects/%d/repository/files/%s/raw", g.gitlabAPIBaseURL, project.ID, url.PathEscape(filePath)),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			queryParam := url.Values{}
+			queryParam.Add("ref", branch)
+			req.URL.RawQuery = queryParam.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == http.StatusNotFound {
+				return ErrFileDoesNotExists
+			}
+			content, err = ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return fmt.Errorf("failed to read from response body with error: %+v", err)
+			}
+			return err
 		})
 	return
 }

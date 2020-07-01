@@ -427,7 +427,6 @@ func (p *ServiceController) ToggleServiceAction() {
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
-		p.MergePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {

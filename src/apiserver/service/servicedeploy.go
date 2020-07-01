@@ -106,24 +106,30 @@ func DeployServiceByYaml(projectName, loadPath string) error {
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	deploymentFile, err := os.Open(deploymentAbsName)
+	deploymentFile, err := FetchFileContentByDevOpsOpt(projectName, "master", deploymentAbsName)
 	if err != nil {
 		return err
 	}
-
-	defer deploymentFile.Close()
+	defer func() {
+		if h, ok := deploymentFile.(*os.File); ok {
+			h.Close()
+		}
+	}()
 	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
 	if err != nil {
 		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
 		return err
 	}
-
-	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
-	serviceFile, err := os.Open(ServiceAbsName)
+	serviceAbsName := filepath.Join(loadPath, serviceFilename)
+	serviceFile, err := FetchFileContentByDevOpsOpt(projectName, "master", serviceAbsName)
 	if err != nil {
 		return err
 	}
-	defer serviceFile.Close()
+	defer func() {
+		if h, ok := serviceFile.(*os.File); ok {
+			h.Close()
+		}
+	}()
 	_, err = cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
 	if err != nil {
 		cli.AppV1().Deployment(projectName).Delete(deploymentInfo.Name)

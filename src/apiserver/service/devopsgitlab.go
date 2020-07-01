@@ -348,3 +348,24 @@ func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	}
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
+
+func (g GitlabDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
+	user, err := GetUserByName(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user by name: %s, error: %+v", username, err)
+	}
+	gitlabHandler := gitlab.NewGitlabHandler(user.RepoToken)
+	if gitlabHandler == nil {
+		return nil, fmt.Errorf("failed to create Gitlab handler")
+	}
+	project, err := g.GetRepo(user.RepoToken, repoName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+	}
+	content, err := gitlabHandler.GetFileRawContent(project, branch, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get file: %s from branch: %s in repo: %s", filePath, branch, repoName)
+	}
+	logs.Debug("Got file: %s with content: %s", filePath, string(content))
+	return content, nil
+}
