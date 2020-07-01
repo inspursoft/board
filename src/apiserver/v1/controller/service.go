@@ -417,6 +417,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
+		logs.Debug("Deploy service by YAML with project name: %s", s.ProjectName)
 		err := service.DeployServiceByYaml(s.ProjectName, p.RepoServicePath)
 		if err != nil {
 			p.ParseError(err, c.ParsePostK8sError)
@@ -426,6 +427,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
+		p.MergePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {

@@ -50,7 +50,7 @@ func ResolveDockerfileName(imageName, tag string) string {
 	return fmt.Sprintf("Dockerfile.%s_%s", imageName, tag)
 }
 
-func FetchFileContentByDevOpsOpt(projectName string, branch string, filePath string) (io.Reader, error) {
+func FetchFileContentByDevOpsOpt(branch string, filePath string) (io.Reader, error) {
 	if devOpsOpt() == "legacy" {
 		return os.Open(filePath)
 	}

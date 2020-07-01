@@ -106,7 +106,7 @@ func DeployServiceByYaml(projectName, loadPath string) error {
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	deploymentFile, err := FetchFileContentByDevOpsOpt(projectName, "master", deploymentAbsName)
+	deploymentFile, err := FetchFileContentByDevOpsOpt("master", deploymentAbsName)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func DeployServiceByYaml(projectName, loadPath string) error {
 		return err
 	}
 	serviceAbsName := filepath.Join(loadPath, serviceFilename)
-	serviceFile, err := FetchFileContentByDevOpsOpt(projectName, "master", serviceAbsName)
+	serviceFile, err := FetchFileContentByDevOpsOpt("master", serviceAbsName)
 	if err != nil {
 		return err
 	}
