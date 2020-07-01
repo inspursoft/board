@@ -200,26 +200,31 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		}
 	}
 
-	var affinity *v1.Affinity
-	if spec.Affinity.PodAffinity != nil || spec.Affinity.PodAntiAffinity != nil {
-		affinity = &v1.Affinity{}
-		if spec.Affinity.PodAffinity != nil {
-			affinity.PodAffinity = &v1.PodAffinity{}
-			for _, term := range spec.Affinity.PodAffinity {
-				affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-					affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-				)
-			}
-		}
-		if spec.Affinity.PodAntiAffinity != nil {
-			affinity.PodAntiAffinity = &v1.PodAntiAffinity{}
-			for _, term := range spec.Affinity.PodAntiAffinity {
-				affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-					affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-				)
-			}
+	affinity := &v1.Affinity{}
+	if spec.Affinity.PodAffinity != nil {
+		affinity.PodAffinity = &v1.PodAffinity{}
+		for _, term := range spec.Affinity.PodAffinity {
+			affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+				affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+			)
 		}
 	}
+	if spec.Affinity.PodAntiAffinity != nil {
+		affinity.PodAntiAffinity = &v1.PodAntiAffinity{}
+		for _, term := range spec.Affinity.PodAntiAffinity {
+			affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+				affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+			)
+		}
+	}
+	if spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution != nil {
+		affinity.NodeAffinity = &v1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+				NodeSelectorTerms: ToK8sNodeSelectorTerms(spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms),
+			},
+		}
+	}
+
 	return &v1.PodSpec{
 		Volumes:        volumes,
 		InitContainers: initContainers,
@@ -230,6 +235,28 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		Affinity:       affinity,
 		RestartPolicy:  v1.RestartPolicy(string(spec.RestartPolicy)),
 	}
+}
+
+func ToK8sNodeSelectorTerms(terms []model.NodeSelectorTerm) []v1.NodeSelectorTerm {
+	var nodeSelectorTerms []v1.NodeSelectorTerm
+	for _, term := range terms {
+		nodeSelectorTerms = append(nodeSelectorTerms, v1.NodeSelectorTerm{
+			MatchExpressions: ToK8sNodeSelectorRequirements(term.MatchExpressions),
+		})
+	}
+	return nodeSelectorTerms
+}
+
+func ToK8sNodeSelectorRequirements(NodeSelectorRequirements []model.NodeSelectorRequirement) []v1.NodeSelectorRequirement {
+	var K8sNodeSelectorRequirements []v1.NodeSelectorRequirement
+	for _, NodeSelectorRequirement := range NodeSelectorRequirements {
+		K8sNodeSelectorRequirements = append(K8sNodeSelectorRequirements, v1.NodeSelectorRequirement{
+			Key:      NodeSelectorRequirement.Key,
+			Operator: v1.NodeSelectorOperator(NodeSelectorRequirement.Operator),
+			Values:   NodeSelectorRequirement.Values,
+		})
+	}
+	return K8sNodeSelectorRequirements
 }
 
 func ToK8sAffinityTerm(term model.PodAffinityTerm) v1.PodAffinityTerm {
@@ -298,8 +325,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -707,8 +734,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath:              hp,
-		NFS:                   nfs,
+		HostPath: hp,
+		NFS:      nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -749,15 +776,15 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	}
 
 	return &model.K8sContainer{
-		Name:         container.Name,
-		Image:        container.Image,
-		Command:      container.Command,
-		Args:         container.Args,
-		WorkingDir:   container.WorkingDir,
-		Ports:        ports,
-		Env:          envs,
-		Resources:    resources,
-		VolumeMounts: mounts,
+		Name:            container.Name,
+		Image:           container.Image,
+		Command:         container.Command,
+		Args:            container.Args,
+		WorkingDir:      container.WorkingDir,
+		Ports:           ports,
+		Env:             envs,
+		Resources:       resources,
+		VolumeMounts:    mounts,
 		SecurityContext: FromK8sSecurityContext(container.SecurityContext),
 	}
 }
@@ -808,7 +835,7 @@ func FromK8sSecurityContext(context *v1.SecurityContext) *model.SecurityContext 
 		privileged = context.Privileged
 	}
 	return &model.SecurityContext{
-		Privileged:      privileged,
+		Privileged: privileged,
 	}
 }
 
@@ -1222,6 +1249,7 @@ func GenerateDeploymentConfig(deployment *appsv1.Deployment) *appsv1.Deployment 
 					ImagePullSecrets:   deployment.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     deployment.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					HostNetwork:        deployment.Spec.Template.Spec.HostNetwork,
 				},
 			},
 		},

@@ -1115,24 +1115,35 @@ func GetServiceType(svcType string) int {
 	}
 }
 
-func GetServiceContainers(projectName, serviceName string) ([]model.ServiceContainer, error) {
+func GetServiceContainers(s *model.ServiceStatus) ([]model.ServiceContainer, error) {
 	var config k8sassist.K8sAssistConfig
 	config.KubeConfigPath = kubeConfigPath()
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 
-	svc, _, err := k8sclient.AppV1().Service(projectName).Get(serviceName)
-	if err != nil {
-		return nil, err
-	}
-	if svc.Selector == nil {
-		return nil, nil
+	var opts model.ListOptions
+	if s.Type != model.ServiceEdgeComputing {
+		svc, _, err := k8sclient.AppV1().Service(s.ProjectName).Get(s.Name)
+		if err != nil {
+			return nil, err
+		}
+		if svc.Selector == nil {
+			return nil, nil
+		}
+		opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: svc.Selector})
+	} else {
+		deployment, _, err := k8sclient.AppV1().Deployment(s.ProjectName).Get(s.Name)
+		if err != nil {
+			return nil, err
+		}
+		if deployment.Spec.Selector == nil {
+			return nil, nil
+		}
+		opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: deployment.Spec.Selector})
 	}
 
-	var opts model.ListOptions
 	var serviceContainer model.ServiceContainer
 	var sContainers []model.ServiceContainer
-	opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: svc.Selector})
-	podList, err := k8sclient.AppV1().Pod(projectName).List(opts)
+	podList, err := k8sclient.AppV1().Pod(s.ProjectName).List(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -1141,7 +1152,7 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 		for j := range podList.Items[i].Spec.InitContainers {
 			serviceContainer.ContainerName = podList.Items[i].Spec.InitContainers[j].Name
 			serviceContainer.PodName = podList.Items[i].Name
-			serviceContainer.ServiceName = serviceName
+			serviceContainer.ServiceName = s.Name
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
 			var privileged bool
 			if podList.Items[i].Spec.InitContainers[j].SecurityContext != nil && podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged != nil {
@@ -1154,7 +1165,7 @@ func GetServiceContainers(projectName, serviceName string) ([]model.ServiceConta
 		for j := range podList.Items[i].Spec.Containers {
 			serviceContainer.ContainerName = podList.Items[i].Spec.Containers[j].Name
 			serviceContainer.PodName = podList.Items[i].Name
-			serviceContainer.ServiceName = serviceName
+			serviceContainer.ServiceName = s.Name
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
 			var privileged bool
 			if podList.Items[i].Spec.Containers[j].SecurityContext != nil && podList.Items[i].Spec.Containers[j].SecurityContext.Privileged != nil {
