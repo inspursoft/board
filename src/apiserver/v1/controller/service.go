@@ -218,7 +218,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 				logs.Debug("The statefulset %s is not ready %v", (*serviceStatus).Name, err)
 				(*serviceStatus).Status = uncompleted
 			}
-		case model.ServiceEdgeComputing:
+		case model.ServiceTypeEdgeComputing:
 			// Check the deployment status
 			deployment, _, _ := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 			if deployment == nil && serviceStatus.Name != k8sServices {
@@ -521,7 +521,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	}
 
 	serviceStatus := &model.Service{}
-	if s.Type != model.ServiceEdgeComputing {
+	if s.Type != model.ServiceTypeEdgeComputing {
 		serviceStatus, err = service.GetServiceByK8sassist(s.ProjectName, s.Name)
 		if err != nil {
 			p.ParseError(err, c.ParseGetK8sError)

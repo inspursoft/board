@@ -501,7 +501,7 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	}
 }
 
-func setDeploymentNodeSelector(nodeOrNodeGroupName string) map[string]string {
+func setDeploymentNodeSelector(nodeOrNodeGroupName string, serviceType int) map[string]string {
 	if nodeOrNodeGroupName == "" {
 		return nil
 	}
@@ -509,6 +509,9 @@ func setDeploymentNodeSelector(nodeOrNodeGroupName string) map[string]string {
 	if nodegroup != nil && nodegroup.ID != 0 {
 		return map[string]string{nodeOrNodeGroupName: "true"}
 	} else {
+		if serviceType == model.ServiceTypeEdgeComputing {
+			return map[string]string{"name": nodeOrNodeGroupName}
+		}
 		return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
 	}
 }
@@ -882,7 +885,7 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
 			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
 			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
-			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector, serviceConfig.ServiceType),
 			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
@@ -919,7 +922,7 @@ func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI stri
 			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
 			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
 			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
-			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector, serviceConfig.ServiceType),
 			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
@@ -1121,7 +1124,7 @@ func GetServiceContainers(s *model.ServiceStatus) ([]model.ServiceContainer, err
 	k8sclient := k8sassist.NewK8sAssistClient(&config)
 
 	var opts model.ListOptions
-	if s.Type != model.ServiceEdgeComputing {
+	if s.Type != model.ServiceTypeEdgeComputing {
 		svc, _, err := k8sclient.AppV1().Service(s.ProjectName).Get(s.Name)
 		if err != nil {
 			return nil, err

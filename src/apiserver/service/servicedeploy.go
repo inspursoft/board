@@ -43,7 +43,7 @@ func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
 	//logs.Debug("Marshaled deployment: ", deploymentConfig)
-	if serviceConfig.ServiceType == model.ServiceEdgeComputing {
+	if serviceConfig.ServiceType == model.ServiceTypeEdgeComputing {
 		deploymentConfig.Spec.Template.Spec.HostNetwork = true
 		deploymentConfig.Spec.Template.Spec.Affinity.NodeAffinity = model.NodeAffinity{
 			RequiredDuringSchedulingIgnoredDuringExecution: &model.NodeSelector{
@@ -64,7 +64,7 @@ func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (
 
 	var serviceInfo *model.Service
 	var serviceFileInfo []byte
-	if serviceConfig.ServiceType != model.ServiceEdgeComputing {
+	if serviceConfig.ServiceType != model.ServiceTypeEdgeComputing {
 		svcConfig := MarshalService(serviceConfig)
 		serviceInfo, serviceFileInfo, err = cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
 		if err != nil {

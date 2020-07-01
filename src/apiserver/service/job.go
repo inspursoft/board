@@ -200,7 +200,7 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 		Spec: model.PodSpec{
 			Volumes:       setDeploymentVolumes(jobConfig.ContainerList),
 			Containers:    setDeploymentContainers(jobConfig.ContainerList, registryURI),
-			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector),
+			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector, model.ServiceTypeJob),
 			Affinity:      setJobAffinity(jobConfig.AffinityList),
 			RestartPolicy: model.RestartPolicyNever,
 		},
