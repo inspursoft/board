@@ -395,9 +395,8 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, "Service already running.")
 		return
 	}
-
+	p.ResolveRepoServicePath(s.ProjectName, s.Name)
 	if devOpsOpt() == "legacy" {
-		p.ResolveRepoServicePath(s.ProjectName, s.Name)
 		if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
 			p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
 			return
