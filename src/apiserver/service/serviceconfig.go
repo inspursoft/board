@@ -1166,6 +1166,15 @@ func GetServiceContainers(s *model.ServiceStatus) ([]model.ServiceContainer, err
 			serviceContainer.ContainerName = podList.Items[i].Spec.Containers[j].Name
 			serviceContainer.PodName = podList.Items[i].Name
 			serviceContainer.ServiceName = s.Name
+			if podList.Items[i].Status.HostIP == "" {
+				hostName := podList.Items[i].Spec.NodeSelector["kubernetes.io/hostname"]
+				nodeInfo, err := GetNode(hostName)
+				if err != nil {
+					logs.Warning("Failed to get node inforation by node's hostname. error: ", err)
+				} else {
+					podList.Items[i].Status.HostIP = nodeInfo.NodeIP
+				}
+			}
 			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
 			var privileged bool
 			if podList.Items[i].Spec.Containers[j].SecurityContext != nil && podList.Items[i].Spec.Containers[j].SecurityContext.Privileged != nil {
