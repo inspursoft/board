@@ -119,9 +119,10 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		select {
 		case <-ctx.Done():
 			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Project and repo creation: %+v", err)
+				logs.Error("Failed to execute Gogits creation: %+v", err)
+				return
 			}
-			logs.Info("Successful create repo and Jenkins job.")
+			logs.Info("Successful create Gogits repo.")
 		}
 		gogsHandler := gogs.NewGogsHandler(username, accessToken)
 		if gogsHandler == nil {
@@ -159,9 +160,10 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		select {
 		case <-ctx.Done():
 			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Project and repo creation: %+v", err)
+				logs.Error("Failed to execute Jenkins job creation: %+v", err)
+				return
 			}
-			logs.Info("Successful create repo and Jenkins job.")
+			logs.Info("Successful create Jenkins job.")
 		}
 		jenkinsHandler := jenkins.NewJenkinsHandler()
 		err = jenkinsHandler.CreateJobWithParameter(repoName)
@@ -170,8 +172,6 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			cancel()
 		}
 	}()
-
-	wg.Wait()
 	return nil
 }
 
