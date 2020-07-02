@@ -258,10 +258,6 @@ func (l LegacyDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
-func (l LegacyDevOps) MergePullRequest(repoName, repoToken string) error {
-	return fmt.Errorf("unsupport merge pull request feature with the Gogits repo service")
-}
-
 func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 	user, err := GetUserByName(username)
 	if err != nil {
@@ -284,10 +280,6 @@ func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 		"X-Gitlab-Event": []string{"Push Hook"},
 	}
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
-}
-
-func (l LegacyDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
-	return nil, fmt.Errorf("unimplement get repo files feature with the Gogits repo service")
 }
 
 func PrepareKVMHost() error {
