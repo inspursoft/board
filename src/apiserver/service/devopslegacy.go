@@ -111,9 +111,18 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Project and repo creation: %+v", err)
+			}
+			logs.Info("Successful create repo and Jenkins job.")
+		}
 		gogsHandler := gogs.NewGogsHandler(username, accessToken)
 		if gogsHandler == nil {
 			logs.Error("failed to create Gogs handler")
@@ -142,12 +151,18 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			logs.Error("Failed to push readme.md file to the repo: %+v", err)
 			cancel()
 		}
-
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Project and repo creation: %+v", err)
+			}
+			logs.Info("Successful create repo and Jenkins job.")
+		}
 		jenkinsHandler := jenkins.NewJenkinsHandler()
 		err = jenkinsHandler.CreateJobWithParameter(repoName)
 		if err != nil {
@@ -155,14 +170,8 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			cancel()
 		}
 	}()
+
 	wg.Wait()
-	select {
-	case <-ctx.Done():
-		if err := ctx.Err(); err != nil {
-			logs.Error("Failed to execute Project and repo creation: %+v", err)
-		}
-		logs.Info("Successful create repo and Jenkins job.")
-	}
 	return nil
 }
 
