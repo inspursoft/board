@@ -304,11 +304,11 @@ func SyncProjectsWithK8s() error {
 			}
 		}
 		// Sync the helm release on this project namespace
-		err = SyncHelmReleaseWithK8s(namespace.Name)
-		if err != nil {
-			logs.Error("Failed to sync helm service with project name: %s, error: %+v", namespace.Name, err)
-			// Still can work
-		}
+		// err = SyncHelmReleaseWithK8s(namespace.Name)
+		// if err != nil {
+		// 	logs.Error("Failed to sync helm service with project name: %s, error: %+v", namespace.Name, err)
+		// 	// Still can work
+		// }
 
 		// Sync the services in this project namespace
 		err = SyncServiceWithK8s(namespace.Name)
