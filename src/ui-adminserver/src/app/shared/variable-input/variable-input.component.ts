@@ -3,11 +3,11 @@ import { FormGroup, FormControl, FormBuilder, ValidatorFn, Validators, AbstractC
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-my-input-template',
-  templateUrl: './my-input-template.component.html',
-  styleUrls: ['./my-input-template.component.css']
+  selector: 'variable-input',
+  templateUrl: './variable-input.component.html',
+  styleUrls: ['./variable-input.component.css']
 })
-export class MyInputTemplateComponent implements OnInit {
+export class VariableInputComponent implements OnInit {
   @Input() label = '';
   @Input() type: 'text' | 'number' | 'boolean' | 'enum' | 'password' = 'text';
   @Input() required = false;
@@ -150,7 +150,7 @@ export class MyInputTemplateComponent implements OnInit {
         this.inputValidatorFns.push(Validators.pattern(this.pattern));
       }
       if (this.type === 'password' && this.confirmPassword) {
-        this.inputValidatorFns.push(MyInputTemplateComponent.passwordValidator('inputControl', 'confirmControl'));
+        this.inputValidatorFns.push(VariableInputComponent.passwordValidator('inputControl', 'confirmControl'));
         this.confirmControl.setValidators(this.inputValidatorFns);
       }
     }
