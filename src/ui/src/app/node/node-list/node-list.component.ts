@@ -1,4 +1,4 @@
-import { Component, ComponentFactoryResolver, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NodeService } from '../node.service';
 import { MessageService } from '../../shared.service/message.service';
@@ -7,7 +7,6 @@ import { Message, RETURN_STATUS } from '../../shared/shared.types';
 import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
 import { NodeControlComponent } from '../node-control/node-control.component';
 import { NodeStatus, NodeStatusType } from '../node.types';
-import { NodeCreateNewComponent } from '../node-create-new/node-create-new.component';
 
 @Component({
   selector: 'app-node-list',
@@ -16,6 +15,7 @@ import { NodeCreateNewComponent } from '../node-create-new/node-create-new.compo
 })
 export class NodeListComponent extends CsModalParentBase implements OnInit {
   @ViewChild(NodeDetailComponent) nodeDetailModal;
+  @Output() creatingNode: EventEmitter<Array<NodeStatus>>;
   nodeList: Array<NodeStatus>;
   isInLoadWip = false;
 
@@ -26,6 +26,7 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
               public selfView: ViewContainerRef) {
     super(factoryResolver, selfView);
     this.nodeList = Array<NodeStatus>();
+    this.creatingNode = new EventEmitter<Array<NodeStatus>>();
   }
 
   ngOnInit(): void {
@@ -51,6 +52,8 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
         return 'NODE.STATUS_UNSCHEDULABLE';
       case NodeStatusType.Unknown:
         return 'NODE.STATUS_UNKNOWN';
+      case NodeStatusType.AutonomousOffline:
+        return 'NODE.STATUS_OFFLINE';
     }
   }
 
@@ -78,7 +81,20 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
   }
 
   showCreateNew() {
-    const instance = this.createNewModal(NodeCreateNewComponent);
-    instance.nodeList = this.nodeList;
+    this.creatingNode.emit(this.nodeList);
+  }
+
+  removeNode(node: NodeStatus) {
+    this.translateService.get('NODE.CONFIRM_TO_REMOVE_NODE', [node.nodeIp]).subscribe(res => {
+      this.messageService.showYesNoDialog(res).subscribe((message: Message) => {
+        if (message.returnStatus === RETURN_STATUS.rsConfirm) {
+          this.nodeService.removeEdgeNode(node.nodeName).subscribe(
+            () => this.messageService.showAlert('NODE.REMOVE_NODE_SUCCESSFULLY'),
+            () => this.messageService.showAlert('NODE.REMOVE_NODE_FAILED', {alertType: 'danger'}),
+            () => this.retrieve()
+          );
+        }
+      });
+    });
   }
 }

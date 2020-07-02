@@ -48,12 +48,12 @@
     </lib-dropdown-ex>
   </div>
   <div class="modal-footer">
-    <button type="button" [disabled]="isCreateNewWIP" class="btn btn-default" (click)="modalOpened = false">
+    <button type="button" [disabled]="isActionWip" class="btn btn-default" (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
-    <button type="button" [disabled]="isCreateNewWIP" class="btn btn-primary" (click)="addEdgeNode()">
+    <button type="button" [disabled]="isActionWip" class="btn btn-primary" (click)="addEdgeNode()">
       {{ 'NodeCreateNew.Commit' | translate }}
     </button>
-    <span *ngIf="isCreateNewWIP" class="spinner spinner-sm"></span>
+    <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>

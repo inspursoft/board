@@ -1,7 +1,11 @@
 import { HttpBase, HttpBind, HttpBindArray } from '../shared/ui-model/model-types';
 
 export enum NodeStatusType {
-  Schedulable = 1, Unschedulable, Unknown
+  Schedulable = 1, Unschedulable, Unknown, AutonomousOffline
+}
+
+export enum AddNodeType {
+  normal, edge
 }
 
 export class  NodeStatus extends HttpBase {
@@ -15,6 +19,16 @@ export class  NodeStatus extends HttpBase {
 
   get isMaster(): boolean {
     return Reflect.has(this.labels, this.masterKey);
+  }
+
+  get nodeTypeDescribe(): string {
+    if (this.nodeType === 'node') {
+      return 'NODE.NODE_TYPE_NODE';
+    } else if (this.nodeType === 'master') {
+      return 'NODE.NODE_TYPE_MASTER';
+    } else {
+      return 'NODE.NODE_TYPE_EDGE';
+    }
   }
 }
 

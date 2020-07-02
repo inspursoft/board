@@ -12,6 +12,7 @@ import { CoreModule } from '../core/core.module';
 import { NodeServiceControlComponent } from './node-service-control/node-service-control.component';
 import { NodeGroupControlComponent } from './node-group-control/node-group-control.component';
 import { NodeCreateNewComponent } from './node-create-new/node-create-new.component';
+import { NodeCreateNewGuideComponent } from './node-create-new-guide/node-create-new-guide.component';
 
 @NgModule({
   imports: [
@@ -28,7 +29,8 @@ import { NodeCreateNewComponent } from './node-create-new/node-create-new.compon
     NodeControlComponent,
     NodeServiceControlComponent,
     NodeGroupControlComponent,
-    NodeCreateNewComponent
+    NodeCreateNewComponent,
+    NodeCreateNewGuideComponent
   ],
   entryComponents: [
     NodeControlComponent,

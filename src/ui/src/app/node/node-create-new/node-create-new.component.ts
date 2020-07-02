@@ -1,7 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { EdgeNode, NodeStatus } from '../node.types';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { ValidationErrors } from '@angular/forms';
 import { catchError, map } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -15,14 +15,14 @@ import { TranslateService } from '@ngx-translate/core';
   styleUrls: ['./node-create-new.component.css']
 })
 export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
-  @Input() nodeList: Array<NodeStatus>;
+  nodeList: Array<NodeStatus>;
   patternNodeName: RegExp = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]$/;
   patternNodeIp: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   edgeNode: EdgeNode;
   cpuTypes: Array<string>;
   masters: Array<string>;
   registryMode: Array<{ key: string, value: string }>;
-  isCreateNewWIP = false;
+  isActionWip = false;
 
   constructor(private nodeService: NodeService,
               private messageService: MessageService,
@@ -31,6 +31,7 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
     this.edgeNode = new EdgeNode();
     this.cpuTypes = new Array<string>();
     this.masters = new Array<string>();
+    this.nodeList = new Array<NodeStatus>();
     this.registryMode = new Array<{ key: string, value: string }>();
   }
 
@@ -44,11 +45,13 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
         this.registryMode.push({key: Reflect.get(res, 'NodeCreateNew.Manual'), value: 'manual'});
       }
     );
+    this.isActionWip = true;
     this.nodeList.forEach(node => {
       if (node.nodeType === 'master') {
         this.masters.push(node.nodeName);
       }
     });
+    this.isActionWip = false;
   }
 
   get checkEdgeNodeIpFun() {
@@ -85,6 +88,7 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
 
   addEdgeNode() {
     if (this.verifyInputExValid() && this.verifyDropdownExValid()) {
+      this.isActionWip = true;
       this.nodeService.addEdgeNode(this.edgeNode).subscribe(
         () => this.messageService.showAlert('NodeCreateNew.AddSuccessfully'),
         () => this.modalOpened = false,

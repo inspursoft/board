@@ -19,6 +19,10 @@ export class NodeService {
     return this.http.getJson(`/api/v1/node`, NodeDetail, {param: {node_name: nodeName}});
   }
 
+  removeEdgeNode(nodeName: string): Observable<any> {
+    return this.http.delete(`/api/v1/edgenodes/${nodeName}`);
+  }
+
   toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<object>> {
     return this.http
       .get(`/api/v1/node/toggle`, {

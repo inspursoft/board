@@ -1,0 +1,36 @@
+<div class="add-node-container">
+  <div class="add-container">
+    <input title=""
+           type="radio"
+           id="normal"
+           name="nodeType"
+           checked
+           (click)="setAddNodeType(0)">
+    <label for="normal" class="create-text">
+      {{"NODE.NODE_ADD_NORMAL" | translate}}
+    </label>
+  </div>
+  <div class="add-container">
+    <input title=""
+           type="radio"
+           id="edge"
+           name="nodeType"
+           (click)="setAddNodeType(1)">
+    <label for="edge" class="create-text">
+      {{"NODE.NODE_ADD_EDGE" | translate}}
+    </label>
+    <a target="_blank" [href]="addNormalNodeUrl" hidden #addNormalLink></a>
+  </div>
+  <div class="add-btn-container">
+    <button class="btn btn-default cancel-build" (click)="cancelAdd()">
+      {{"BUTTON.CANCEL"|translate}}
+    </button>
+    <button [disabled]="btnOkDisable" class="btn btn-primary" (click)="addNode()">
+      {{"NODE.NODE_CREATE"|translate}}
+    </button>
+    <div *ngIf="isAdminSeverWorking === false && addNodeType === 0"
+         class="alert alert-warning admin-server-tip" role="alert">
+      {{'NODE.NODE_ADMIN_SERVER_TIP'| translate}}
+    </div>
+  </div>
+</div>
