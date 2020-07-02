@@ -1,14 +1,16 @@
 import { ICsMenuItemData } from './shared.types';
 
-export const DISMISS_ALERT_INTERVAL: number = 4;
-export const DISMISS_CHECK_DROPDOWN: number = 2000;
+export const DISMISS_ALERT_INTERVAL = 4;
+export const DISMISS_CHECK_DROPDOWN = 2000;
 
 export enum SERVICE_STATUS {
   PREPARING,
   RUNNING,
   STOPPED,
   WARNING,
-  DELETED
+  DELETED,
+  UnKnown = 8,
+  AutonomousOffline = 9
 }
 
 export enum GUIDE_STEP {

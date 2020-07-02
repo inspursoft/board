@@ -7,7 +7,8 @@ export enum ServiceType {
   ServiceTypeDeploymentOnly,
   ServiceTypeClusterIP,
   ServiceTypeStatefulSet,
-  ServiceTypeJob
+  ServiceTypeJob,
+  ServiceTypeEdgeComputing
 }
 
 export enum ServiceSource {

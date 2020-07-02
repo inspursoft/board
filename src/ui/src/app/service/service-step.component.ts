@@ -2,7 +2,6 @@ import { DragStatus } from '../shared/shared.types';
 import { SERVICE_STATUS } from '../shared/shared.const';
 import { HttpBase, HttpBind, HttpBindArray, HttpBindBoolean, HttpBindObject } from '../shared/ui-model/model-types';
 import { ServiceType } from './service.types';
-import { any } from 'codelyzer/util/function';
 
 export const PHASE_SELECT_PROJECT = 'SELECT_PROJECT';
 export const PHASE_CONFIG_CONTAINERS = 'CONFIG_CONTAINERS';
@@ -96,7 +95,7 @@ export class LoadBalance extends HttpBase {
 }
 
 export class ExternalService extends HttpBase {
-  @HttpBind('node_config') containerName = '';
+  @HttpBind('container_name') containerName = '';
   @HttpBindObject('node_config', NodeType) nodeConfig: NodeType;
   @HttpBindObject('load_balancer_config', LoadBalance) loadBalance: LoadBalance;
 
@@ -211,6 +210,7 @@ export class ServiceStep3Data extends ServiceStepDataBase {
   @HttpBindBoolean('session_affinity_flag', 1, 0) sessionAffinityFlag = false;
   @HttpBindArray('external_service_list', ExternalService) externalServiceList: Array<ExternalService>;
   @HttpBindArray('affinity_list', Affinity) affinityList: Array<Affinity>;
+  edgeNodeSelectorIsNode = true;
 
   protected prepareInit() {
     this.externalServiceList = Array<ExternalService>();
@@ -239,5 +239,27 @@ export class ServiceStep3Data extends ServiceStepDataBase {
       service_public: this.servicePublic ? '1' : '0',
       node_selector: this.nodeSelector
     };
+  }
+
+  get isShowExternalConfig() {
+    return this.serviceType === ServiceType.ServiceTypeNormalNodePort ||
+      this.serviceType === ServiceType.ServiceTypeStatefulSet;
+  }
+
+  get isShowAdvanceConfig() {
+    return this.serviceType === ServiceType.ServiceTypeNormalNodePort ||
+      this.serviceType === ServiceType.ServiceTypeStatefulSet;
+  }
+
+  get isEdgeComputingType(): boolean {
+    return this.serviceType === ServiceType.ServiceTypeEdgeComputing;
+  }
+
+  get isStatefulSetType() {
+    return this.serviceType === ServiceType.ServiceTypeStatefulSet;
+  }
+
+  get isClusterIpType() {
+    return this.serviceType === ServiceType.ServiceTypeClusterIP;
   }
 }
