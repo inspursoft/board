@@ -140,6 +140,7 @@ services:
       - 9090:9090
     volumes:
       - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "syslog"
       options:
