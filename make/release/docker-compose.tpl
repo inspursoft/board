@@ -115,27 +115,6 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
-  collector:
-    image: board_collector:__version__
-    restart: always
-    volumes:
-      - /data/board/cert:/cert:rw
-      - ../config/collector/kubeconfig:/root/kubeconfig
-      - /etc/board/cert:/etc/board/cert:rw
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - ../config/collector/env
-    networks:
-      - board
-    links:
-      - db
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "collector" 
   proxy:
     image: board_proxy:__version__
     networks:
@@ -234,6 +213,21 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
+  prometheus:
+    image: board_prometheus:__version__
+    restart: always
+    networks:
+      - board
+    ports:
+      - 9090:9090
+    volumes:
+      - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "prometheus"
 networks:
   board:
     external: true
