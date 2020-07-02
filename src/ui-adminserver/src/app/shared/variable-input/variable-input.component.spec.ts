@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LdapComponent } from './ldap.component';
+import { VariableInputComponent } from './variable-input.component';
 
-describe('LdapComponent', () => {
-  let component: LdapComponent;
-  let fixture: ComponentFixture<LdapComponent>;
+describe('VariableInputComponent', () => {
+  let component: VariableInputComponent;
+  let fixture: ComponentFixture<VariableInputComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LdapComponent ]
+      declarations: [ VariableInputComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LdapComponent);
+    fixture = TestBed.createComponent(VariableInputComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
