@@ -236,11 +236,14 @@ export class K8sService {
     return this.httpModel
       .post(`/api/v1/services/yaml/upload`, formData, {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        observe: 'response',
         params: {
           project_name: projectName
         }
-      }).pipe(map((res: HttpResponse<Service>) => res.body));
+      }).pipe(map(res => {
+        const service = new Service(res);
+        service.initFromRes();
+        return service;
+      }));
   }
 
   getServiceScaleInfo(serviceId: number): Observable<object> {
