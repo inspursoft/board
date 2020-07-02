@@ -139,6 +139,8 @@ func (p *ServiceController) DeployServiceAction() {
 	serviceFile := filepath.Join(newservice.Name, serviceFilename)
 	items := []string{deploymentFile, serviceFile}
 	p.PushItemsToRepo(items...)
+	p.CollaborateWithPullRequest("master", "master", items...)
+	p.MergeCollaborativePullRequest()
 
 	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: service.GetServiceType(deployInfo.Service.Type), ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
@@ -427,7 +429,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
-		p.MergePullRequest()
+		p.MergeCollaborativePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
