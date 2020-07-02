@@ -116,6 +116,7 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
+	    defer wg.Done()
 		select {
 		case <-ctx.Done():
 			if err := ctx.Err(); err != nil {
