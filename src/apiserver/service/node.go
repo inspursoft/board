@@ -12,6 +12,7 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	v2 "github.com/google/cadvisor/info/v2"
@@ -188,7 +189,14 @@ func GetNodeList() (res []NodeListResult) {
 					}
 				}
 				if nodetype == NodeTypeEdge {
-					return AutonomousOffline
+					//TODO Ping the edgenode is not the only condition for AutonomousOffline
+					status, err := utils.PingIPAddr(v.NodeIP)
+					if err != nil {
+						logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
+					} else if !status {
+						logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
+						return AutonomousOffline
+					}
 				}
 				return Unknown
 			}(),
@@ -723,6 +731,7 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	// Add in k8s
 	var node model.NodeCli
 	node.NodeName = edgenode.NodeName
+	node.Labels = make(map[string]string)
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
 	if edgenode.RegistryMode == "auto" {
@@ -755,12 +764,13 @@ func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
 		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
 		return false, err
 	}
-	logs.Debug("Edge hostname:", string(combo))
+	sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	logs.Debug("Edge hostname:", sshhostname)
 
 	//TODO Check the hostname config in edge yaml
 
-	if edgenode.NodeName != string(combo) {
-		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, string(combo))
+	if edgenode.NodeName != sshhostname {
+		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, sshhostname)
 		return false, nil
 	}
 	return true, nil

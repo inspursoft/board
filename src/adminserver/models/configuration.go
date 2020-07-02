@@ -7,73 +7,46 @@ import (
 	"github.com/alyu/configparser"
 )
 
-//Apiserver refers to those properties controlling Apiserver parameters.
-type Apiserver struct {
-	Hostname          string `json:"hostname"`
-	APIServerPort     string `json:"api_server_port"`
+type Board struct {
+	ArchType       string `json:"arch_type"`
+	Mode           string `json:"mode"`
+	AccessProtocol string `json:"access_protocol"`
+	Hostname       string `json:"hostname"`
+	APIServerPort  string `json:"api_server_port"`
+	DevopsOpt      string `json:"devops_opt"`
+	AuthMode       string `json:"auth_mode"`
+	AuditDebug     string `json:"audit_debug"`
+}
+
+type K8s struct {
 	KubeHTTPScheme    string `json:"kube_http_scheme"`
 	KubeMasterIP      string `json:"kube_master_ip"`
 	KubeMasterPort    string `json:"kube_master_port"`
 	RegistryIP        string `json:"registry_ip"`
 	RegistryPort      string `json:"registry_port"`
 	ImageBaselineTime string `json:"image_baseline_time"`
+	TillerPort        string `json:"tiller_port"`
+	DNSSuffix         string `json:"dns_suffix"`
 }
 
-//GetApiserver returns data extracted from the Apiserver part of the cfg file.
-func GetApiserver(section *configparser.Section) Apiserver {
-	array := [...]string{"hostname", "api_server_port", "kube_http_scheme", "kube_master_ip",
-		"kube_master_port", "registry_ip", "registry_port", "image_baseline_time"}
-	var apiserver Apiserver
-	value := reflect.ValueOf(&apiserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return apiserver
-}
-
-//UpdateApiserver sets value for properties of corresponding part of cfg file.
-func UpdateApiserver(section *configparser.Section, apiserver Apiserver) {
-	array := [...]string{"hostname", "api_server_port", "kube_http_scheme", "kube_master_ip",
-		"kube_master_port", "registry_ip", "registry_port", "image_baseline_time"}
-	value := reflect.ValueOf(&apiserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
-}
-
-//Gogitserver refers to those properties controlling Gogitserver parameters.
-type Gogitserver struct {
+type Gogs struct {
 	HostIP   string `json:"gogits_host_ip"`
 	HostPort string `json:"gogits_host_port"`
 	SSHPort  string `json:"gogits_ssh_port"`
 }
 
-//GetGogitserver returns data extracted from the Gogitserver part of the cfg file.
-func GetGogitserver(section *configparser.Section) Gogitserver {
-	array := [...]string{"gogits_host_ip", "gogits_host_port", "gogits_ssh_port"}
-	var gogitserver Gogitserver
-	value := reflect.ValueOf(&gogitserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return gogitserver
+type Gitlab struct {
+	HostIP     string `json:"gitlab_host_ip"`
+	HostPort   string `json:"gitlab_host_port"`
+	SSHPort    string `json:"gitlab_ssh_port"`
+	AdminToken string `json:"gitlab_admin_token"`
 }
 
-//UpdateGogitserver sets value for properties of corresponding part of cfg file.
-func UpdateGogitserver(section *configparser.Section, gogitserver Gogitserver) {
-	array := [...]string{"gogits_host_ip", "gogits_host_port", "gogits_ssh_port"}
-	value := reflect.ValueOf(&gogitserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
+type Prometheus struct {
+	URL string `json:"prometheus_url"`
 }
 
-//Jenkinsserver refers to those properties controlling Jenkinsserver parameters.
-type Jenkinsserver struct {
+type Jenkins struct {
 	HostIP        string `json:"jenkins_host_ip"`
 	HostPort      string `json:"jenkins_host_port"`
 	NodeIP        string `json:"jenkins_node_ip"`
@@ -84,135 +57,39 @@ type Jenkinsserver struct {
 	ExecutionMode string `json:"jenkins_execution_mode"`
 }
 
-//GetJenkinsserver returns data extracted from the Jenkinsserver part of the cfg file.
-func GetJenkinsserver(section *configparser.Section) Jenkinsserver {
-	array := [...]string{"jenkins_host_ip", "jenkins_host_port", "jenkins_node_ip", "jenkins_node_ssh_port",
-		"jenkins_node_username", "jenkins_node_password", "jenkins_node_volume", "jenkins_execution_mode"}
-	var jenkinsserver Jenkinsserver
-	value := reflect.ValueOf(&jenkinsserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return jenkinsserver
-}
-
-//UpdateJenkinsserver sets value for properties of corresponding part of cfg file.
-func UpdateJenkinsserver(section *configparser.Section, jenkinsserver Jenkinsserver) {
-	array := [...]string{"jenkins_host_ip", "jenkins_host_port", "jenkins_node_ip", "jenkins_node_ssh_port",
-		"jenkins_node_username", "jenkins_node_password", "jenkins_node_volume", "jenkins_execution_mode"}
-	value := reflect.ValueOf(&jenkinsserver).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
-}
-
-//Kvm refers to those properties controlling Kvm parameters.
 type Kvm struct {
 	RegistrySize string `json:"kvm_registry_size"`
 	RegistryPort string `json:"kvm_registry_port"`
 	ToolkitsPath string `json:"kvm_toolkits_path"`
 }
 
-//GetKvm returns data extracted from the Kvm part of the cfg file.
-func GetKvm(section *configparser.Section) Kvm {
-	array := [...]string{"kvm_registry_size", "kvm_registry_port", "kvm_toolkits_path"}
-	var kvm Kvm
-	value := reflect.ValueOf(&kvm).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return kvm
+type Es struct {
+	Memory   string `json:"elaseticsearch_memory_in_megabytes"`
+	Password string `json:"elastic_password"`
 }
 
-//UpdateKvm sets value for properties of corresponding part of cfg file.
-func UpdateKvm(section *configparser.Section, kvm Kvm) {
-	array := [...]string{"kvm_registry_size", "kvm_registry_port", "kvm_toolkits_path"}
-	value := reflect.ValueOf(&kvm).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
+type Db struct {
+	Password           string `json:"db_password"`
+	MaxConn            string `json:"db_max_connections"`
+	BoardAdminPassword string `json:"board_admin_password"`
 }
 
-//Other includes properties involving database, security, etc.
-type Other struct {
-	ArchType                        string `json:"arch_type"`
-	DBPassword                      string `json:"db_password"`
-	TokenCacheExpireSeconds         string `json:"token_cache_expire_seconds"`
-	TokenExpireSeconds              string `json:"token_expire_seconds"`
-	ElaseticsearchMemoryInMegabytes string `json:"elaseticsearch_memory_in_megabytes"`
-	TillerPort                      string `json:"tiller_port"`
-	BoardAdminPassword              string `json:"board_admin_password"`
-	AuthMode                        string `json:"auth_mode"`
-	VerificationURL                 string `json:"verification_url"`
-	RedirectionURL                  string `json:"redirection_url"`
-	AuditDebug                      string `json:"audit_debug"`
-	DNSSuffix                       string `json:"dns_suffix"`
-	DBMaxConnections                string `json:"db_max_connections"`
-	Mode                            string `json:"mode"`
+type Indata struct {
+	VerificationURL string `json:"verification_url"`
+	RedirectionURL  string `json:"redirection_url"`
 }
 
-//GetOther returns data extracted from the Other part of the cfg file.
-func GetOther(section *configparser.Section) Other {
-	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
-		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections", "mode"}
-	var other Other
-	value := reflect.ValueOf(&other).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return other
-}
-
-//UpdateOther sets value for properties of corresponding part of cfg file.
-func UpdateOther(section *configparser.Section, other Other) {
-	array := [...]string{"arch_type", "db_password", "token_cache_expire_seconds", "token_expire_seconds",
-		"elaseticsearch_memory_in_megabytes", "tiller_port", "board_admin_password", "auth_mode",
-		"verification_url", "redirection_url", "audit_debug", "dns_suffix", "db_max_connections", "mode"}
-	value := reflect.ValueOf(&other).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
-}
-
-//Ldap refers to those properties controlling Ldap parameters.
 type Ldap struct {
-	URL     string `json:"ldap_url"`
-	Basedn  string `json:"ldap_basedn"`
-	UID     string `json:"ldap_uid"`
-	Scope   string `json:"ldap_scope"`
-	Timeout string `json:"ldap_timeout"`
+	URL       string `json:"ldap_url"`
+	SearchDN  string `json:"ldap_searchdn"`
+	SearchPWD string `json:"ldap_search_pwd"`
+	Basedn    string `json:"ldap_basedn"`
+	Filter    string `json:"ldap_filter"`
+	UID       string `json:"ldap_uid"`
+	Scope     string `json:"ldap_scope"`
+	Timeout   string `json:"ldap_timeout"`
 }
 
-//GetLdap returns data extracted from the Ldap part of the cfg file.
-func GetLdap(section *configparser.Section) Ldap {
-	array := [...]string{"ldap_url", "ldap_basedn", "ldap_uid", "ldap_scope", "ldap_timeout"}
-	var ldap Ldap
-	value := reflect.ValueOf(&ldap).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return ldap
-}
-
-//UpdateLdap sets value for properties of corresponding part of cfg file.
-func UpdateLdap(section *configparser.Section, ldap Ldap) {
-	array := [...]string{"ldap_url", "ldap_basedn", "ldap_uid", "ldap_scope", "ldap_timeout"}
-	value := reflect.ValueOf(&ldap).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
-		}
-	}
-}
-
-//Email refers to those properties controlling Email parameters.
 type Email struct {
 	Identity   string `json:"email_identity"`
 	Server     string `json:"email_server"`
@@ -223,72 +100,90 @@ type Email struct {
 	SSL        string `json:"email_ssl"`
 }
 
-//GetEmail returns data extracted from the Email part of the cfg file.
-func GetEmail(section *configparser.Section) Email {
-	array := [...]string{"email_identity", "email_server", "email_server_port", "email_username",
-		"email_password", "email_from", "email_ssl"}
-	var email Email
-	value := reflect.ValueOf(&email).Elem()
-	for i := 0; i < value.NumField(); i++ {
-		value.Field(i).SetString(section.ValueOf(array[i]))
-	}
-	return email
+type TokenCfg struct {
+	CacheExpireSeconds string `json:"token_cache_expire_seconds"`
+	ExpireSeconds      string `json:"token_expire_seconds"`
 }
 
-//UpdateEmail sets value for properties of corresponding part of cfg file.
-func UpdateEmail(section *configparser.Section, email Email) {
-	array := [...]string{"email_identity", "email_server", "email_server_port", "email_username",
-		"email_password", "email_from", "email_ssl"}
-	value := reflect.ValueOf(&email).Elem()
+type Configuration struct {
+	Board         Board      `json:"board"`
+	K8s           K8s        `json:"k8s"`
+	Gogs          Gogs       `json:"gogs"`
+	Gitlab        Gitlab     `json:"gitlab"`
+	Prometheus    Prometheus `json:"prometheus"`
+	Jenkins       Jenkins    `json:"jenkins"`
+	Kvm           Kvm        `json:"kvm"`
+	Es            Es         `json:"es"`
+	Db            Db         `json:"db"`
+	Indata        Indata     `json:"indata"`
+	Ldap          Ldap       `json:"ldap"`
+	Email         Email      `json:"email"`
+	TokenCfg      TokenCfg   `json:"token"`
+	FirstTimePost bool       `json:"first_time_post"`
+	TmpExist      bool       `json:"tmp_exist"`
+	Current       string     `json:"current"`
+}
+
+func GetCfg(section *configparser.Section, part interface{}) interface{} {
+	value := reflect.ValueOf(part).Elem()
+	rtype := reflect.TypeOf(part).Elem()
+	var item string
 	for i := 0; i < value.NumField(); i++ {
+		item = rtype.Field(i).Tag.Get("json")
+		value.Field(i).SetString(section.ValueOf(item))
+	}
+	return part
+}
+
+func SetCfg(section *configparser.Section, part interface{}) {
+	value := reflect.ValueOf(part).Elem()
+	rtype := reflect.TypeOf(part).Elem()
+	var item string
+	for i := 0; i < value.NumField(); i++ {
+		item = rtype.Field(i).Tag.Get("json")
 		if value.Field(i).String() != "" {
-			section.SetValueFor(array[i], value.Field(i).String())
+			section.SetValueFor(item, value.Field(i).String())
 		}
 	}
 }
 
-//Configuration combines all the sections above together, referring to the whole cfg file.
-type Configuration struct {
-	Apiserver     Apiserver
-	Gogitserver   Gogitserver
-	Jenkinsserver Jenkinsserver
-	Kvm           Kvm
-	Other         Other
-	Ldap          Ldap
-	Email         Email
-	FirstTimePost bool   `json:"first_time_post"`
-	TmpExist      bool   `json:"tmp_exist"`
-	Current       string `json:"current"`
-}
-
-//GetConfiguration returns data extracted from the whole cfg file.
 func GetConfiguration(section *configparser.Section) Configuration {
 	configuration := Configuration{
-		Apiserver:     GetApiserver(section),
-		Gogitserver:   GetGogitserver(section),
-		Jenkinsserver: GetJenkinsserver(section),
-		Kvm:           GetKvm(section),
-		Other:         GetOther(section),
-		Ldap:          GetLdap(section),
-		Email:         GetEmail(section),
+		Board:         *GetCfg(section, &Board{}).(*Board),
+		K8s:           *GetCfg(section, &K8s{}).(*K8s),
+		Gogs:          *GetCfg(section, &Gogs{}).(*Gogs),
+		Gitlab:        *GetCfg(section, &Gitlab{}).(*Gitlab),
+		Prometheus:    *GetCfg(section, &Prometheus{}).(*Prometheus),
+		Jenkins:       *GetCfg(section, &Jenkins{}).(*Jenkins),
+		Kvm:           *GetCfg(section, &Kvm{}).(*Kvm),
+		Es:            *GetCfg(section, &Es{}).(*Es),
+		Db:            *GetCfg(section, &Db{}).(*Db),
+		Indata:        *GetCfg(section, &Indata{}).(*Indata),
+		Ldap:          *GetCfg(section, &Ldap{}).(*Ldap),
+		Email:         *GetCfg(section, &Email{}).(*Email),
+		TokenCfg:      *GetCfg(section, &TokenCfg{}).(*TokenCfg),
 		FirstTimePost: true,
 		TmpExist:      false,
 		Current:       "cfg"}
 	return configuration
 }
 
-//UpdateConfiguration sets value for properties for the cfg file.
 func UpdateConfiguration(section *configparser.Section, cfg *Configuration) {
-	UpdateApiserver(section, cfg.Apiserver)
-	UpdateGogitserver(section, cfg.Gogitserver)
-	UpdateJenkinsserver(section, cfg.Jenkinsserver)
-	UpdateKvm(section, cfg.Kvm)
-	UpdateOther(section, cfg.Other)
-	UpdateLdap(section, cfg.Ldap)
-	UpdateEmail(section, cfg.Email)
+	SetCfg(section, &(cfg.Board))
+	SetCfg(section, &(cfg.K8s))
+	SetCfg(section, &(cfg.Gogs))
+	SetCfg(section, &(cfg.Gitlab))
+	SetCfg(section, &(cfg.Prometheus))
+	SetCfg(section, &(cfg.Jenkins))
+	SetCfg(section, &(cfg.Kvm))
+	SetCfg(section, &(cfg.Es))
+	SetCfg(section, &(cfg.Db))
+	SetCfg(section, &(cfg.Indata))
+	SetCfg(section, &(cfg.Ldap))
+	SetCfg(section, &(cfg.Email))
+	SetCfg(section, &(cfg.TokenCfg))
 }
 
-//Account refers to a username with its password.
 type Account struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`

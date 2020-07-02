@@ -190,7 +190,7 @@ prepare: version
 
 start:
 	@echo "loading Board images..."
-	$(DOCKERNETWORK) create board &> /dev/null
+	$(DOCKERNETWORK) create board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
 
@@ -201,19 +201,19 @@ start_admin:
 	@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/adminserver/env
 	@sed -i "s|__CURDIR__|$(MAKEPATH)|g"  $(MAKEPATH)/adminserver/env
 	@if [ ! -f $(MAKEPATH)/adminserver/board.cfg ] ; then cp $(MAKEPATH)/board.cfg $(MAKEPATH)/adminserver/board.cfg ; fi
-	$(DOCKERNETWORK) create board &> /dev/null
+	$(DOCKERNETWORK) create board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Adminserver now."
 
 down:
 	@echo "stoping Board instance..."
-	$(DOCKERNETWORK) rm board &> /dev/null
+	$(DOCKERNETWORK) rm board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
 
 down_admin:
 	@echo "stoping Adminserver instance..."
-	$(DOCKERNETWORK) rm board &> /dev/null
+	$(DOCKERNETWORK) rm board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 
