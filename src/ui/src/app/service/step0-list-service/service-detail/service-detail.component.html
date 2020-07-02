@@ -25,7 +25,7 @@
           </cs-highlight>
         </clr-tab-content>
       </clr-tab>
-      <clr-tab>
+      <clr-tab *ngIf="curService.serviceType !== 7">
         <button clrTabLink (click)="getServiceYamlFile()">
           {{"SERVICE.SERVICE_DETAIL_SERVICE_FILE" | translate}}
         </button>

@@ -252,10 +252,7 @@ export class K8sService {
   }
 
   getNodePorts(projectName: string): Observable<Array<number>> {
-    return this.httpModel.get(`/api/v1/services/nodeports`, {
-        params: {project_name: projectName}
-      }
-    ).pipe(map((res: Array<number>) => res || new Array<number>()));
+    return this.httpModel.get(`/api/v1/services/nodeports`).pipe(map((res: Array<number>) => res || new Array<number>()));
   }
 
   getNodeSelectors(): Observable<Array<{ name: string, status: number }>> {
@@ -397,5 +394,26 @@ export class K8sService {
       params: httpParams
     });
     return this.httpModel.request<any>(req);
+  }
+
+  getEdgeNodes(): Observable<Array<{ description: string }>> {
+    return this.httpModel.get(`/api/v1/edgenodes`).pipe(
+      map((res: Array<string>) => {
+        const result = new Array<{ description: string }>();
+        res.forEach(value => result.push({description: value}));
+        return result;
+      })
+    );
+  }
+
+  getNodeGroups(): Observable<Array<{ description: string }>> {
+    return this.httpModel.get(`/api/v1/nodegroup`,
+      {params: {is_valid_node_group: '1'}}
+    ).pipe(map((res: Array<INodeGroup>) => {
+        const result = new Array<{ description: string }>();
+        res.forEach(nodeGroup => result.push({description: nodeGroup.nodegroup_name}));
+        return result;
+      })
+    );
   }
 }
