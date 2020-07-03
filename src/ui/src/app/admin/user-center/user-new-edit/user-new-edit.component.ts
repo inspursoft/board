@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UserService } from '../user-service/user-service';
-import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
-import { User } from '../../shared/shared.types';
-import { MessageService } from '../../shared.service/message.service';
+import { CsComponentBase } from '../../../shared/cs-components-library/cs-component-base';
+import { User } from '../../../shared/shared.types';
+import { MessageService } from '../../../shared.service/message.service';
 
 export enum editModel { emNew, emEdit }
 @Component({

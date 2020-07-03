@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { UserService } from '../../user-center/user-service/user-service';
+import { UserService } from '../../admin/user-center/user-service/user-service';
 import { User } from '../shared.types';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { MessageService } from '../../shared.service/message.service';

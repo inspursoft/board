@@ -3,9 +3,9 @@ import { ClrDatagridSortOrder, ClrDatagridStateInterface } from "@clr/angular";
 import { ActivatedRoute } from "@angular/router";
 import { UserService } from "../user-service/user-service";
 import { editModel } from "../user-new-edit/user-new-edit.component"
-import { AppInitService } from "../../shared.service/app-init.service";
-import { MessageService } from "../../shared.service/message.service";
-import { Message, RETURN_STATUS, User } from "../../shared/shared.types";
+import { AppInitService } from "../../../shared.service/app-init.service";
+import { MessageService } from "../../../shared.service/message.service";
+import { Message, RETURN_STATUS, User } from "../../../shared/shared.types";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Subscription } from "rxjs";
@@ -16,7 +16,7 @@ import { Subscription } from "rxjs";
   styleUrls: ["./user-list.component.css"]
 })
 
-export class UserList implements OnInit, OnDestroy {
+export class UserListComponent implements OnInit, OnDestroy {
   _deleteSubscription: Subscription;
   userListData = Array<User>();
   userListErrMsg = "";

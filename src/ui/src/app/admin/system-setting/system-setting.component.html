@@ -1,0 +1,18 @@
+<div class="setting-container">
+  <span class="setting-title">
+    <b>{{'SystemSetting.Title'| translate }}</b>
+  </span>
+  <div class="setting-line"></div>
+  <div class="k8s-proxy-container">
+    <div class="k8s-proxy start"
+         (click)="setK8sProxyEnable(true)"
+         [ngClass]="k8sProxyStatus.enable ? 'selected' : ''">
+      {{'SystemSetting.Enable' | translate}}
+    </div>
+    <div class="k8s-proxy stop"
+         (click)="setK8sProxyEnable(false)"
+         [ngClass]="k8sProxyStatus.enable ? '' : 'selected'">
+      {{'SystemSetting.Disable' | translate}}
+    </div>
+  </div>
+</div>
