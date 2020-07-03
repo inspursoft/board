@@ -14,6 +14,7 @@ import { SharedModule } from "./shared/shared.module";
 import { GlobalSearchComponent } from "./global-search/global-search.component";
 import { HttpClientModule, HttpClientXsrfModule } from "@angular/common/http";
 import { COMPONENTS_CUR_LANG } from "board-components-library";
+import { InitializePageComponent } from './initialize-page/initialize-page.component';
 
 export function appInitServiceFactory(appInitService: AppInitService) {
   return () => (appInitService);
@@ -53,7 +54,8 @@ export function InitBoardLibraryLang(appInitService: AppInitService): string {
   declarations: [
     AppComponent,
     GlobalSearchComponent,
-    MainContentComponent
+    MainContentComponent,
+    InitializePageComponent
   ],
   providers: [
     SystemInfoResolve,

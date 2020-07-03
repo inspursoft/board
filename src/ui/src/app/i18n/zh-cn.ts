@@ -2,6 +2,15 @@ export const LANG_ZH_CN = {
   AdminServer: {
     Name: '管理服务器'
   },
+  InitializeInfo: {
+    Title: 'Board正在初始化，请稍等',
+    UpdateAdminPassword: '正在更新Admin密码',
+    InitProjectRepo: '正在初始化项目仓库',
+    PrepareKvmHost: '正在准备KVM的主机',
+    InitKubernetesInfo: '正在初始化Kubernetes',
+    SyncUpK8s: '正在同步Kubernetes数据',
+    Ready: '准备就绪',
+  },
   "BUTTON": {
     "OK": "确定",
     "YES": "是",
