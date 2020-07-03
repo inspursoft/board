@@ -53,6 +53,8 @@ const (
 	partAutonomousOffline
 )
 
+var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
+
 type ServiceController struct {
 	c.BaseController
 }
@@ -141,6 +143,8 @@ func (p *ServiceController) DeployServiceAction() {
 	serviceFile := filepath.Join(newservice.Name, serviceFilename)
 	items := []string{deploymentFile, serviceFile}
 	p.PushItemsToRepo(items...)
+	p.CollaborateWithPullRequest("master", "master", items...)
+	p.MergeCollaborativePullRequest()
 
 	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
@@ -469,11 +473,12 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, "Service already running.")
 		return
 	}
-
 	p.ResolveRepoServicePath(s.ProjectName, s.Name)
-	if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
-		p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
-		return
+	if devOpsOpt() == "legacy" {
+		if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
+			p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
+			return
+		}
 	}
 	if reqServiceToggle.Toggle == 0 {
 		// stop service
@@ -490,6 +495,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		}
 	} else {
 		// start service
+		logs.Debug("Deploy service by YAML with project name: %s", s.ProjectName)
 		err := service.DeployServiceByYaml(s.ProjectName, p.RepoServicePath)
 		if err != nil {
 			p.ParseError(err, c.ParsePostK8sError)
@@ -499,7 +505,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
-
+		p.MergeCollaborativePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {

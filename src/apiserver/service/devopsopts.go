@@ -22,8 +22,10 @@ type DevOps interface {
 	CreateRepoAndJob(userID int64, projectName string) error
 	ForkRepo(forkedUser model.User, baseRepoName string) error
 	CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, message string) error
+	MergePullRequest(repoName, repoToken string) error
 	DeleteRepo(username string, repoName string) error
 	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
+	GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error)
 }
 
 func CurrentDevOps() DevOps {

@@ -429,6 +429,19 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 	}
 }
 
+func (b *BaseController) MergeCollaborativePullRequest() {
+	if b.CurrentUser.Username == b.Project.OwnerName {
+		logs.Info("User %s is the owner to the current repo: %s", b.CurrentUser.Username, b.Project.Name)
+		return
+	}
+	projectOwner, err := service.GetUserByName(b.Project.OwnerName)
+	if err != nil {
+		logs.Error("Failed to get project owner by user ID: %d, error: %+v", b.Project.OwnerID, err)
+		b.InternalError(err)
+	}
+	service.CurrentDevOps().MergePullRequest(b.Project.Name, projectOwner.RepoToken)
+}
+
 func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {
 	var err error
 	opt := &model.PodLogOptions{}
