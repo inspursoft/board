@@ -1,0 +1,12 @@
+<div class="init-container">
+  <div class="init-title-container">
+    <p class="init-title">
+      <b>{{'InitializeInfo.Title' | translate}}{{tailPoints}}</b>
+    </p>
+    <p class="init-title">({{curStep}}/{{totalSteps}}){{curStepMessage | translate}}</p>
+  </div>
+  <div class="progress flash progress-fade progress-container success">
+    <progress [max]="totalSteps" [value]="curStep" ></progress>
+  </div>
+</div>
+

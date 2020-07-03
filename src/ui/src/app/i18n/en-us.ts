@@ -2,6 +2,15 @@ export const LANG_EN_US = {
   AdminServer: {
     Name: 'Admin server'
   },
+  InitializeInfo: {
+    Title: 'Board is initializing, please wait',
+    UpdateAdminPassword: 'Updating admin password',
+    InitProjectRepo: 'Initializing repositories of project',
+    PrepareKvmHost: 'Preparing the HOST for KVM',
+    InitKubernetesInfo: 'Initializing Kubernetes',
+    SyncUpK8s: 'Syncing up the data from Kubernetes',
+    Ready: 'Ready',
+  },
   "BUTTON": {
     "OK": "OK",
     "YES": "Yes",

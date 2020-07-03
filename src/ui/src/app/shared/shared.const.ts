@@ -23,6 +23,7 @@ export enum GUIDE_STEP {
 
 export const AUDIT_RECORD_HEADER_KEY = 'audit';
 export const AUDIT_RECORD_HEADER_VALUE = 'true';
+export const RouteInitialize = 'initialize-page';
 export const RouteSignIn = 'account/sign-in';
 export const RouteSignUp = 'account/sign-up';
 export const RouteForgotPassword = 'account/forgot-password';
