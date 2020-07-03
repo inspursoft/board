@@ -11,10 +11,8 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"sync"
 
 	"github.com/astaxie/beego/logs"
-	"golang.org/x/net/context"
 )
 
 var BaseRepoPath = utils.GetConfig("BASE_REPO_PATH")
@@ -110,30 +108,14 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var wg sync.WaitGroup
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Gogits creation: %+v", err)
-				return
-			}
-			logs.Info("Successful create Gogits repo.")
-		}
 		gogsHandler := gogs.NewGogsHandler(username, accessToken)
 		if gogsHandler == nil {
 			logs.Error("failed to create Gogs handler")
-			cancel()
 		}
 		err = gogsHandler.CreateRepo(repoName)
 		if err != nil {
 			logs.Error("Failed to create repo: %s, error %+v", repoName, err)
-			cancel()
 		}
 		hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
 		err = gogsHandler.CreateHook(username, repoName, hookURL)
@@ -147,31 +129,19 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		if err != nil {
 			logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
 		}
-
 		repoHandler.SimplePush("Add some struts.", "readme.md")
 		if err != nil {
 			logs.Error("Failed to push readme.md file to the repo: %+v", err)
-			cancel()
 		}
+		logs.Info("Successful create Gogits repo.")
 	}()
-
-	wg.Add(1)
 	go func() {
-		defer wg.Done()
-		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Jenkins job creation: %+v", err)
-				return
-			}
-			logs.Info("Successful create Jenkins job.")
-		}
 		jenkinsHandler := jenkins.NewJenkinsHandler()
 		err = jenkinsHandler.CreateJobWithParameter(repoName)
 		if err != nil {
 			logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-			cancel()
 		}
+		logs.Info("Successful create Jenkins job.")
 	}()
 	return nil
 }
