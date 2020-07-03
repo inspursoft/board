@@ -1,21 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { json2String } from 'src/app/shared/tools';
 import 'src/assets/js/FileSaver.js';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { User } from '../account/account.model';
 
-import { OthersComponent } from './others/others.component';
-import { ApiserverComponent } from './apiserver/apiserver.component';
-import { GogitsComponent } from './gogits/gogits.component';
-import { JenkinsComponent } from './jenkins/jenkins.component';
-import { KvmComponent } from './kvm/kvm.component';
-import { LdapComponent } from './ldap/ldap.component';
-import { EmailComponent } from './email/email.component';
 import { MessageService } from '../shared/message/message.service';
 import { ConfigurationService } from '../shared.service/configuration.service';
-import { Configuration } from '../shared.service/configuration.model';
-import { CfgCardObjects } from './cfg.model';
+import { Configuration } from '../shared.service/cfg.model';
 
 declare var saveAs: any;
 
@@ -26,25 +18,19 @@ declare var saveAs: any;
 })
 export class CfgCardsComponent implements OnInit {
   config: Configuration;
-  cardList: CfgCardObjects;
   applyCfgModal = false;
   user: User;
   loadingFlag = false;
   disableApply = false;
+  passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)([A-Za-z\d#?!@$%^&*-]){8,20}$/;
 
-  @ViewChild('others') others: OthersComponent;
-  @ViewChild('apiserver') apiserver: ApiserverComponent;
-  @ViewChild('gogits') gogits: GogitsComponent;
-  @ViewChild('jenkins') jenkins: JenkinsComponent;
-  @ViewChild('kvm') kvm: KvmComponent;
-  @ViewChild('ldap') ldap: LdapComponent;
-  @ViewChild('email') email: EmailComponent;
+  showBaselineHelper = false;
+  newDate = new Date('2016-01-01 09:00:00');
 
   constructor(private configurationService: ConfigurationService,
               private messageService: MessageService,
               private router: Router) {
     this.config = new Configuration();
-    this.cardList = new CfgCardObjects();
     this.user = new User();
   }
 
@@ -76,6 +62,18 @@ export class CfgCardsComponent implements OnInit {
       console.error(err.message);
       this.messageService.showOnlyOkDialog('ERROR.HTTP_UNK', 'ACCOUNT.ERROR');
     }
+  }
+
+  onFocusBaselineHelper() {
+    this.showBaselineHelper = true;
+  }
+
+  onBlurBaselineHelper() {
+    this.showBaselineHelper = false;
+    const year = this.newDate.getFullYear();
+    const month = this.newDate.getMonth() + 1;
+    const day = this.newDate.getDate();
+    this.config.k8s.imageBaselineTime = '' + year + '-' + month + '-' + day + ' 00:00:00';
   }
 }
 

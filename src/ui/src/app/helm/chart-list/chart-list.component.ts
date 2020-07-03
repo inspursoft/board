@@ -45,7 +45,7 @@ export class ChartListComponent extends CsModalParentBase {
         (res: HelmRepoDetail) => {
           this.versionList.splice(0, this.versionList.length);
           this.versionList = res.versionList;
-          this.recordTotalCount = res.pagination.total_count;
+          this.recordTotalCount = res.pagination.TotalCount;
         },
         () => this.loadingWIP = false,
         () => this.loadingWIP = false);

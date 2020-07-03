@@ -118,7 +118,8 @@ export abstract class HttpBase {
           Reflect.set(this, propertyKey, resValue === metadataValue.booleanTrueValue);
         }
       } else {
-        if (Reflect.has(this.res, metadataValue.serverPropertyName)) {
+        if (Reflect.has(this.res, metadataValue.serverPropertyName) &&
+          Reflect.get(this.res, metadataValue.serverPropertyName)) {
           const resValue = Reflect.get(this.res, metadataValue.serverPropertyName);
           Reflect.set(this, propertyKey, resValue);
         }
@@ -133,37 +134,6 @@ export class Pagination extends HttpBase {
   @HttpBind('page_size') PageSize = 1;
   @HttpBind('total_count') TotalCount = 0;
   @HttpBind('page_count') PageCount = 0;
-}
-
-export abstract class ResponseArrayBase<T extends HttpBase> {
-  protected data: Array<T>;
-
-  abstract CreateOneItem(res: object): T;
-
-  protected constructor(protected res: object) {
-    this.data = Array<T>();
-    if (Array.isArray(this.res)) {
-      (this.res as Array<object>).forEach(item => this.data.push(this.CreateOneItem(item)));
-    }
-  }
-
-  get length() {
-    return this.data.length;
-  }
-
-  [Symbol.iterator]() {
-    let index = 0;
-    const self = this;
-    return {
-      next() {
-        if (index < self.data.length) {
-          return {value: self.data[index++], done: false};
-        } else {
-          return {value: undefined, done: true};
-        }
-      }
-    };
-  }
 }
 
 export abstract class ResponsePaginationBase<T extends HttpBase> {

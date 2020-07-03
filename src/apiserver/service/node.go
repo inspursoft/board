@@ -12,10 +12,12 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/model"
+	"git/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	v2 "github.com/google/cadvisor/info/v2"
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
+	//"golang.org/x/crypto/ssh"
 )
 
 type NodeStatus int
@@ -29,11 +31,13 @@ const (
 )
 
 const (
-	K8sLabel       = "kubernetes.io"
-	K8sNamespaces  = "kube-system cadvisor"
-	K8sMasterLabel = "node-role.kubernetes.io/master"
-	NodeTypeMaster = "master"
-	NodeTypeEdge   = "edge"
+	K8sLabel         = "kubernetes.io"
+	K8sNamespaces    = "kube-system cadvisor"
+	K8sMasterLabel   = "node-role.kubernetes.io/master"
+	K8sEdgeNodeLabel = "node-role.kubernetes.io/edge"
+	NodeTypeMaster   = "master"
+	NodeTypeEdge     = "edge"
+	NodeTypeNode     = "node"
 )
 
 type NodeListResult struct {
@@ -169,6 +173,7 @@ func GetNodeList() (res []NodeListResult) {
 	}
 
 	for _, v := range Node.Items {
+		nodetype := getNodeType(v)
 		res = append(res, NodeListResult{
 			NodeName:   getNodeAddress(v, "Hostname"),
 			NodeIP:     getNodeAddress(v, "InternalIP"),
@@ -183,10 +188,32 @@ func GetNodeList() (res []NodeListResult) {
 						return Running
 					}
 				}
+				if nodetype == NodeTypeEdge {
+					//TODO Ping the edgenode is not the only condition for AutonomousOffline
+					status, err := utils.PingIPAddr(v.NodeIP)
+					if err != nil {
+						logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
+					} else if !status {
+						logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
+						return AutonomousOffline
+					}
+				}
 				return Unknown
-			}()})
+			}(),
+			NodeType: nodetype})
 	}
 	return
+}
+
+//Get the node type based on labels
+func getNodeType(node model.Node) string {
+	if _, ok := node.ObjectMeta.Labels[K8sMasterLabel]; ok {
+		return NodeTypeMaster
+	}
+	if _, ok := node.ObjectMeta.Labels[K8sEdgeNodeLabel]; ok {
+		return NodeTypeEdge
+	}
+	return NodeTypeNode
 }
 
 func CreateNodeGroup(nodeGroup model.NodeGroup) (*model.NodeGroup, error) {
@@ -692,4 +719,59 @@ func DrainNodeServiceInstance(nodeName string) error {
 		}
 	}
 	return nil
+}
+
+// Create an edge node in kubernetes cluster
+func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
+	// This is to control the adding of edgenode manually
+
+	// TODO run ansible docker script to add an edge node by admin api
+	logs.Debug("To install edgenode by ansible: %v", edgenode)
+
+	// Add in k8s
+	var node model.NodeCli
+	node.NodeName = edgenode.NodeName
+	node.Labels = make(map[string]string)
+	node.Labels[K8sEdgeNodeLabel] = ""
+	node.Labels["name"] = edgenode.NodeName
+	if edgenode.RegistryMode == "auto" {
+		node.Labels["edge"] = "true"
+	}
+	return CreateNode(node)
+}
+
+// check the edge node hostname config
+func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
+	var sshUser = "root"
+	var sshPort = 22
+
+	sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	if err != nil {
+		logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	defer sshHandler.client.Close()
+
+	session, err := sshHandler.client.NewSession()
+	if err != nil {
+		logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	defer session.Close()
+
+	combo, err := session.CombinedOutput("hostname")
+	if err != nil {
+		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
+		return false, err
+	}
+	sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	logs.Debug("Edge hostname:", sshhostname)
+
+	//TODO Check the hostname config in edge yaml
+
+	if edgenode.NodeName != sshhostname {
+		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, sshhostname)
+		return false, nil
+	}
+	return true, nil
 }

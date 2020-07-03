@@ -44,9 +44,9 @@
         </div>
       </div>
       <div class="questions-container">
-        <div *ngIf="questions.length > 0">
+        <div *ngIf="chartRelease.questions.length > 0">
           <p>{{'HELM.RELEASE_CHART_QUESTION_SETTING' | translate}}</p>
-          <div class="question" *ngFor="let question of questions;let i = index">
+          <div class="question" *ngFor="let question of chartRelease.questions;let i = index">
             {{i}}.
             <ng-container *ngIf="question.questionType === 1"
                           [ngTemplateOutlet]="booleanTemplate"
@@ -63,7 +63,7 @@
           </div>
         </div>
         <div class="code-container" style="height: 100%; overflow-y: auto "
-             *ngIf="questions.length === 0">
+             *ngIf="chartRelease.questions.length === 0">
           <div class="code-editor" id="compile-editor"></div>
         </div>
       </div>
@@ -77,7 +77,7 @@
     </button>
     <button type="button" class="btn btn-primary"
             [disabled]="isReleaseWIP"
-            (click)="chartRelease()">
+            (click)="chartReleaseAction()">
       {{ 'HELM.RELEASE_CHART_RELEASE' | translate }}
     </button>
     <span *ngIf="isReleaseWIP" class="spinner spinner-sm"></span>

@@ -1,9 +1,9 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { HelmChartVersion, IHelmRepo, Questions, QuestionType } from '../helm.type';
+import { ChartRelease, HelmChartVersion, IHelmRepo, QuestionType } from '../helm.type';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { Project } from '../../project/project';
 import { HelmService } from '../helm.service';
@@ -18,12 +18,11 @@ import { GlobalAlertType } from '../../shared/shared.types';
 export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   repoInfo: IHelmRepo;
   chartVersion: HelmChartVersion;
+  chartRelease: ChartRelease;
   projectsList: Array<Project>;
   selectProject: Project = null;
   isReleaseWIP = false;
   releaseName = '';
-  chartValue = '';
-  questions: Questions;
   editor: any;
 
   constructor(private helmService: HelmService,
@@ -31,7 +30,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
               private messageService: MessageService) {
     super();
     this.projectsList = Array<Project>();
-    this.questions = new Questions({});
+    this.chartRelease = new ChartRelease();
   }
 
   ngOnInit(): void {
@@ -39,9 +38,8 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
       (res: Array<Project>) => this.projectsList = res || Array<Project>()
     );
     this.helmService.getChartRelease(this.repoInfo.id, this.chartVersion.name, this.chartVersion.version).subscribe(
-      (res: object) => {
-        this.chartValue = Reflect.get(res, 'values');
-        this.questions = new Questions(Reflect.get(res, 'questions'));
+      (res: ChartRelease) => {
+        this.chartRelease = res;
         this.setYamlEditorValue();
         this.updateYamlContainer();
       },
@@ -58,14 +56,14 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   setYamlEditorValue(): void {
     const ace = Reflect.get(window, 'ace');
     const yamlScriptMode = ace.require('ace/mode/yaml').Mode;
-    const editorName = this.questions.length === 0 ? 'compile-editor' : 'compile-editor-question';
+    const editorName = this.chartRelease.questions.length === 0 ? 'compile-editor' : 'compile-editor-question';
     this.editor = ace.edit(editorName);
     ace.require('ace/ext/beautify');
     this.editor.setFontSize(16);
     this.editor.setReadOnly(false);
     this.editor.session.setMode(new yamlScriptMode());
     this.editor.setTheme('ace/theme/monokai');
-    this.editor.setValue(this.chartValue);
+    this.editor.setValue(this.chartRelease.values);
     ace.require('ace/ext/language_tools');
     this.editor.setOptions({
       enableBasicAutocompletion: true,
@@ -107,7 +105,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   }
 
   setAnswer(variable: string, $event: any) {
-    const question = this.questions.getQuestionByVariable(variable);
+    const question = this.chartRelease.getQuestionByVariable(variable);
     if (question.questionType === QuestionType.qtBoolean) {
       question.answer = (($event as Event).target as HTMLInputElement).checked;
     } else if (question.questionType === QuestionType.qtString || question.questionType === QuestionType.qtInteger) {
@@ -115,7 +113,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
     }
   }
 
-  chartRelease() {
+  chartReleaseAction() {
     if (!this.selectProject) {
       this.messageService.showAlert('HELM.RELEASE_CHART_SELECT_PROJECT_TIP', {
         view: this.alertView,
@@ -130,7 +128,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         project_id: this.selectProject.project_id,
         owner_id: this.appInitService.currentUser.user_id,
         chart: this.chartVersion.name,
-        Answers: this.questions.postAnswers,
+        Answers: this.chartRelease.postAnswers,
         values: this.editor.getValue()
       }).subscribe(
         () => this.messageService.showAlert('HELM.RELEASE_CHART_RELEASE_SUCCESS'),

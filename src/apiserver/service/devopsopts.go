@@ -7,6 +7,7 @@ import (
 
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 var devOpsRegistries map[string]DevOps
+var boardAPIBaseURL = utils.GetConfig("BOARD_API_BASE_URL")
 
 type CommitItem struct {
 	PathWithName string
@@ -22,6 +23,7 @@ type DevOps interface {
 	ForkRepo(forkedUser model.User, baseRepoName string) error
 	CreatePullRequestAndComment(username, ownerName, repoName, repoToken, compareInfo, title, message string) error
 	DeleteRepo(username string, repoName string) error
+	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
 }
 
 func CurrentDevOps() DevOps {

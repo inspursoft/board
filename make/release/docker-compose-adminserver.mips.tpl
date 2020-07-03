@@ -31,4 +31,4 @@ services:
       - board
 networks:
   board:
-    external: false
+    external: true

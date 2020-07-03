@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 var ReservedUsernames = [...]string{"explore", "create", "assets", "css", "img", "js", "less", "plugins", "debug", "raw", "install", "api", "avatar", "user", "org", "help", "stars", "issues", "pulls", "commits", "repo", "template", "new", ".", ".."}
@@ -93,12 +95,21 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		return "", false
 	}
 	MemoryCache.Delete("validate_captcha")
+	if existing := MemoryCache.IsExist(user.Username); existing {
+		if lastToken, ok := MemoryCache.Get(user.Username).(string); ok {
+			logs.Info("Found last token stored in cache, will be removing it ...")
+			MemoryCache.Delete(lastToken)
+		}
+		logs.Info("Found last user stored in cache, will be removing it ...")
+		MemoryCache.Delete(user.Username)
+	}
 	payload := make(map[string]interface{})
 	payload["id"] = strconv.Itoa(int(user.ID))
 	payload["username"] = user.Username
 	payload["email"] = user.Email
 	payload["realname"] = user.Realname
 	payload["is_system_admin"] = user.SystemAdmin
+
 	token, err := t.SignToken(TokenServerURL(), payload)
 	if err != nil {
 		ca.InternalError(err)

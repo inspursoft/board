@@ -1,0 +1,38 @@
+div.add-node-container {
+  display: flex;
+  width: 100%;
+  min-height: 400px; /*fixed height*/
+  flex-direction: column;
+}
+
+div.add-container {
+  margin-top: 30px;
+}
+
+label.create-text:hover {
+  cursor: pointer;
+}
+
+label.create-text-disabled {
+  color: silver;
+}
+
+label.create-text-disabled:hover {
+  cursor: not-allowed;
+}
+
+button.cancel-build {
+  max-width: 100px;
+}
+
+div.add-btn-container {
+  display: flex;
+  margin-top: 30px;
+}
+
+div.admin-server-tip {
+  height: 40px;
+  text-align: center;
+  padding: 10px;
+  width: 240px;
+}

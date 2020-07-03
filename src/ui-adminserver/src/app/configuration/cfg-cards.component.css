@@ -33,9 +33,18 @@ label {
   float: right;
 }
 
+.card-block {
+  padding: .75rem 2.25rem;
+  border: 1px solid #d7d7d7;
+  background-color: #fff;
+}
+
+hr {
+  margin: 1rem 0;
+}
+
 form {
   position: relative;
-  width: 250px;
   margin: 0 auto;
 }
 

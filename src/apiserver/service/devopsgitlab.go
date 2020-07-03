@@ -1,18 +1,32 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
+	"net/http"
 	"strings"
-	"time"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
+	"golang.org/x/net/context"
 )
 
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+
+type gitlabJenkinsPushProjectPayload struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	GitHTTPURL string `json:"git_http_url"`
+}
+
+type gitlabJenkinsPushPayload struct {
+	Project      gitlabJenkinsPushProjectPayload `json:"project"`
+	NodeSelector string                          `json:"node_selector"`
+}
 
 type GitlabDevOps struct{}
 
@@ -115,49 +129,76 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	}
 	logs.Info("Initialize serve repo with name: %s ...", repoName)
 
-	gitlabHandler := gitlab.NewGitlabHandler(accessToken)
-	if gitlabHandler == nil {
-		return fmt.Errorf("failed to create Gitlab handler")
-	}
-	userInfo := model.User{Username: user.Username, Email: user.Email, RepoToken: user.RepoToken}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	projectInfo := model.Project{Name: repoName}
-	projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
-	if err != nil {
-		logs.Error("Failed to create repo via Gitlab API, error %+v", err)
-		return err
-	}
-	logs.Debug("Successful created Gitlab project: %+v", projectCreation)
-	projectInfo.ID = int64(projectCreation.ID)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Gogits creation: %+v", err)
+				return
+			}
+			logs.Info("Successful create Gogits repo.")
+		}
+		gitlabHandler := gitlab.NewGitlabHandler(accessToken)
+		if gitlabHandler == nil {
+			logs.Error("failed to create Gitlab handler")
+			cancel()
+		}
+		userInfo := model.User{Username: user.Username, Email: user.Email, RepoToken: user.RepoToken}
 
-	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
-	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
-	if err != nil {
-		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
-	}
-	logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
+		projectInfo := model.Project{Name: repoName}
+		projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
+		if err != nil {
+			logs.Error("Failed to create repo via Gitlab API, error %+v", err)
+			cancel()
+		}
+		logs.Debug("Successful created Gitlab project: %+v", projectCreation)
+		projectInfo.ID = int64(projectCreation.ID)
 
-	fileInfo := gitlab.FileInfo{
-		Name:    "README.md",
-		Path:    "README.md",
-		Content: "README file created by Board.",
-	}
+		hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
+		hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+		if err != nil {
+			logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
+		}
+		logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
 
-	fileCreation, err := gitlabHandler.ManipulateFile("create", userInfo, projectInfo, "master", fileInfo)
-	if err != nil {
-		logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)
-		return err
-	}
-	logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
+		fileInfo := gitlab.FileInfo{
+			Name:    "README.md",
+			Path:    "README.md",
+			Content: "README file created by Board.",
+		}
 
-	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(repoName)
-	if err != nil {
-		logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-		return err
-	}
-	logs.Debug("Waiting for services to be created...")
-	time.Sleep(time.Second * 12)
+		fileCreation, err := gitlabHandler.ManipulateFile("create", userInfo, projectInfo, "master", fileInfo)
+		if err != nil {
+			logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)
+			cancel()
+		}
+		logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Jenkins job creation: %+v", err)
+				return
+			}
+			logs.Info("Successful create Jenkins job.")
+		}
+
+		jenkinsHandler := jenkins.NewJenkinsHandler()
+		err = jenkinsHandler.CreateJobWithParameter(repoName)
+		if err != nil {
+			logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
+			cancel()
+		}
+	}()
 	return nil
 }
 
@@ -231,7 +272,7 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
 
 	projectInfo := model.Project{ID: int64(forkedCreation.ID)}
-	hookURL := fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
 	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
 	if err != nil {
 		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
@@ -298,4 +339,19 @@ func (g GitlabDevOps) DeleteRepo(username string, repoName string) error {
 	}
 	logs.Debug("Successful deleted project by ID: %d", project.ID)
 	return nil
+}
+
+func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {
+	var cp gitlabJenkinsPushPayload
+	err := json.Unmarshal(rawPayload, &cp)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal JSON custom push payload: %+v", err)
+	}
+	cp.NodeSelector = nodeSelection
+	logs.Debug("Resolve for push event hook payload: %+v", cp)
+	header := http.Header{
+		"content-type":   []string{"application/json"},
+		"X-Gitlab-Event": []string{"Push Hook"},
+	}
+	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }

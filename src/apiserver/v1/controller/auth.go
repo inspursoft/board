@@ -17,6 +17,11 @@ type AuthController struct {
 }
 
 func (u *AuthController) Prepare() {
+	initStatus := utils.GetConfig("INIT_STATUS")
+	if initStatus() != "READY" {
+		u.ServeStatus(http.StatusNotAcceptable, initStatus())
+		return
+	}
 	u.EnableXSRF = false
 	u.IsExternalAuth = utils.GetBoolValue("IS_EXTERNAL_AUTH")
 	u.RecordOperationAudit()

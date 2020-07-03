@@ -1,5 +1,4 @@
-import { IPagination } from '../shared/shared.types';
-import { HttpBase, HttpBind, ResponseArrayBase } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, HttpBindArray, HttpBindObject, Pagination } from '../shared/ui-model/model-types';
 
 export enum QuestionType {
   qtUnknown, qtBoolean, qtString, qtInteger
@@ -11,45 +10,21 @@ export enum HelmViewType {
 
 export enum ViewMethod {List = 'list', Card = 'card'}
 
-export class Questions extends ResponseArrayBase<Question> {
+export class ReleaseFile extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBind('contents') contents = '';
+}
 
-  CreateOneItem(res: object): Question {
-    return new Question(res);
-  }
+export class ReleaseTemplate extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBind('contents') contents = '';
+}
 
-  constructor(res: object) {
-    super(res);
-  }
-
-  get postAnswers(): { [key: string]: string } {
-    const result: { [key: string]: string } = {};
-    this.data.forEach(question => {
-      if (question.answerValue !== '' && question.answerValue !== question.default) {
-        Reflect.set(result, question.variable, question.answerValue);
-        if (question.isHasSubQuestion) {
-          question.subQuestions.forEach(subQuestion => {
-            if (subQuestion.answerValue !== '' && subQuestion.answerValue !== subQuestion.default) {
-              Reflect.set(result, subQuestion.variable, subQuestion.answerValue);
-            }
-          });
-        }
-      }
-    });
-    return result;
-  }
-
-  getQuestionByVariable(variable: string): Question {
-    let result: Question;
-    result = this.data.find(value => value.variable === variable);
-    if (result === undefined) {
-      this.data.forEach(value => {
-        if (value.isHasSubQuestion && result === undefined) {
-          result = value.subQuestions.find(subValue => subValue.variable === variable);
-        }
-      });
-    }
-    return result;
-  }
+export class ReleaseMetadata extends HttpBase {
+  @HttpBind('description') description = '';
+  @HttpBind('icon') icon = '';
+  @HttpBind('version') version = '';
+  @HttpBind('name') name = '';
 }
 
 export class Question extends HttpBase {
@@ -59,19 +34,11 @@ export class Question extends HttpBase {
   @HttpBind('type') type: string;
   @HttpBind('variable') variable: string;
   @HttpBind('description') description: string;
-
-  subQuestions: Array<Question>;
+  @HttpBindArray('subquestions', Question) subQuestions: Array<Question>;
   answerValue = '';
 
-  constructor(res: object) {
-    super(res);
+  protected prepareInit() {
     this.subQuestions = Array<Question>();
-    if (Reflect.has(res, 'subquestions')) {
-      (Reflect.get(res, 'subquestions') as Array<object>).forEach(value => {
-        const question = new Question(value);
-        this.subQuestions.push(question);
-      });
-    }
   }
 
   set answer(value: any) {
@@ -112,6 +79,51 @@ export class Question extends HttpBase {
     } else {
       return QuestionType.qtUnknown;
     }
+  }
+}
+
+export class ChartRelease extends HttpBase {
+  @HttpBindArray('files', ReleaseFile) files: Array<ReleaseFile>;
+  @HttpBindArray('questions', Question) questions: Array<Question>;
+  @HttpBindArray('templates', ReleaseTemplate) templates: Array<ReleaseTemplate>;
+  @HttpBindObject('metadata', ReleaseMetadata) metadata: ReleaseMetadata;
+  @HttpBind('values') values = '';
+
+  protected prepareInit() {
+    this.files = new Array<ReleaseFile>();
+    this.metadata = new ReleaseMetadata();
+    this.questions = new Array<Question>();
+    this.templates = new Array<ReleaseTemplate>();
+  }
+
+  get postAnswers(): { [key: string]: string } {
+    const result: { [key: string]: string } = {};
+    this.questions.forEach(question => {
+      if (question.answerValue !== '' && question.answerValue !== question.default) {
+        Reflect.set(result, question.variable, question.answerValue);
+        if (question.isHasSubQuestion) {
+          question.subQuestions.forEach(subQuestion => {
+            if (subQuestion.answerValue !== '' && subQuestion.answerValue !== subQuestion.default) {
+              Reflect.set(result, subQuestion.variable, subQuestion.answerValue);
+            }
+          });
+        }
+      }
+    });
+    return result;
+  }
+
+  getQuestionByVariable(variable: string): Question {
+    let result: Question;
+    result = this.questions.find(value => value.variable === variable);
+    if (result === undefined) {
+      this.questions.forEach(value => {
+        if (value.isHasSubQuestion && result === undefined) {
+          result = value.subQuestions.find(subValue => subValue.variable === variable);
+        }
+      });
+    }
+    return result;
   }
 }
 
@@ -171,87 +183,47 @@ export interface IChartReleaseDetail {
   workloadstatus: string;
 }
 
-export class HelmChartVersion {
-  name = '';
-  version = '';
-  description = '';
-  urls: Array<string>;
-  digest: string;
-  icon: string;
+export class HelmChartVersion extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBind('version') version = '';
+  @HttpBind('description') description = '';
+  @HttpBind('urls') urls: Array<string>;
+  @HttpBind('digest') digest = '';
+  @HttpBind('icon') icon = '';
 
-  constructor() {
+  protected prepareInit() {
     this.urls = Array<string>();
   }
-
-  static newFromServe(response: object): HelmChartVersion {
-    const version = new HelmChartVersion();
-    version.name = Reflect.get(response, 'name');
-    version.version = Reflect.get(response, 'version');
-    version.description = Reflect.get(response, 'description');
-    version.urls = Reflect.get(response, 'urls');
-    version.digest = Reflect.get(response, 'digest');
-    if (Reflect.has(response, 'icon')) {
-      version.icon = Reflect.get(response, 'icon');
-    }
-    return version;
-  }
 }
 
-export class HelmChart {
-  name = '';
-  versions: Array<HelmChartVersion>;
+export class HelmChart extends HttpBase {
+  @HttpBind('name') name = '';
+  @HttpBindArray('versions', HelmChartVersion) versions: Array<HelmChartVersion>;
 
-  constructor() {
+  protected prepareInit() {
     this.versions = Array<HelmChartVersion>();
   }
-
-  static newFromServe(response: object): HelmChart {
-    const chart = new HelmChart();
-    chart.name = Reflect.get(response, 'name');
-    const resVersions: Array<object> = Reflect.get(response, 'versions');
-    resVersions.forEach((resVersion: object) => {
-      const version = HelmChartVersion.newFromServe(resVersion);
-      chart.versions.push(version);
-    });
-    return chart;
-  }
 }
 
-export class HelmRepoDetail {
-  baseInfo: IHelmRepo;
-  pagination: IPagination;
-  charts: Array<HelmChart>;
+export class HelmRepoDetail extends HttpBase {
+  @HttpBind('id') id = 0;
+  @HttpBind('name') name = '';
+  @HttpBind('url') url = '';
+  @HttpBind('type') type = 0;
+  @HttpBindObject('pagination', Pagination) pagination: Pagination;
+  @HttpBindArray('charts', HelmChart) charts: Array<HelmChart>;
 
-  constructor() {
+  protected prepareInit() {
+    this.pagination = new Pagination();
+    this.pagination.PageCount = 1;
+    this.pagination.PageSize = 15;
     this.charts = Array<HelmChart>();
-    this.pagination = {page_count: 1, page_index: 0, page_size: 15, total_count: 0};
   }
 
   get versionList(): Array<HelmChartVersion> {
     const list = Array<HelmChartVersion>();
     this.charts.forEach((chart: HelmChart) => list.push(...chart.versions));
     return list;
-  }
-
-  static newFromServe(response: object): HelmRepoDetail {
-    const detail = new HelmRepoDetail();
-    detail.baseInfo = {
-      id: Reflect.get(response, 'id'),
-      name: Reflect.get(response, 'name'),
-      url: Reflect.get(response, 'url'),
-      type: Reflect.get(response, 'type')
-    };
-    if (Reflect.has(response, 'pagination')) {
-      detail.pagination = Reflect.get(response, 'pagination');
-    }
-    if (Reflect.has(response, 'charts')) {
-      const resCharts: Array<object> = Reflect.get(response, 'charts');
-      resCharts.forEach((resChart: object) => {
-        const chart = HelmChart.newFromServe(resChart);
-        detail.charts.push(chart);
-      });
-    }
-    return detail;
   }
 }
 

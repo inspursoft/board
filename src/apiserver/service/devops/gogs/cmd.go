@@ -73,7 +73,7 @@ type PullRequestInfo struct {
 	HasCreated bool  `json:"has_created"`
 }
 
-func NewGogsHandler(username, token string) *gogsHandler {
+func pingGogitsService() {
 	pingURL := fmt.Sprintf("%s", gogitsBaseURL())
 	for i := 0; i < maxRetryCount; i++ {
 		logs.Debug("Ping Gogits server %d time(s)...", i+1)
@@ -94,6 +94,10 @@ func NewGogsHandler(username, token string) *gogsHandler {
 		}
 		time.Sleep(time.Second)
 	}
+}
+
+func NewGogsHandler(username, token string) *gogsHandler {
+	pingGogitsService()
 	return &gogsHandler{
 		username: username,
 		token:    token,
@@ -101,6 +105,7 @@ func NewGogsHandler(username, token string) *gogsHandler {
 }
 
 func userExists(username string) (bool, error) {
+	pingGogitsService()
 	logs.Info("Requesting Gogits API of user exists ...")
 	err := utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/api/v1/users/%s", gogitsBaseURL(), username), nil, nil, func(req *http.Request, resp *http.Response) error {
 		if resp.StatusCode != http.StatusNotFound {
@@ -115,6 +120,7 @@ func userExists(username string) (bool, error) {
 }
 
 func SignUp(user model.User) error {
+	pingGogitsService()
 	userExists, err := userExists(user.Username)
 	if err != nil {
 		logs.Error("Error occurred while checking user existing: %+v", err)
@@ -242,9 +248,9 @@ func (g *gogsHandler) CreateIssueComment(ownerName string, baseRepoName string, 
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/api/v1/repos/%s/%s/issues/%d/comments", gogitsBaseURL(), ownerName, baseRepoName, issueIndex), g.getAccessHeader(), &opt)
 }
 
-func (g *gogsHandler) CreateHook(ownerName string, repoName string) error {
+func (g *gogsHandler) CreateHook(ownerName string, repoName string, hookURL string) error {
 	config := make(map[string]string)
-	config["url"] = fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL())
+	config["url"] = hookURL
 	config["content_type"] = "json"
 
 	opt := createHookOption{

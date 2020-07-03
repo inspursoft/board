@@ -2782,6 +2782,51 @@ paths:
           description: User need to log in as admin.
         500:
           description: Unexpected internal errors. 
+  /v1/nodes:
+    get:
+      summary: Return nodes in Board added by admin.
+      description: |
+        This endpoint returns all nodes in Board, and can be filtered by node name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: node_list_page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The page nubmer, default is 1.
+        - name: node_list_page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: The size of per page, default is 10, maximum is 100.
+      tags:
+        - Products
+      responses:
+        200:
+          description: Return all matched nodes.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/NodeDetail'
+          headers:
+            X-Total-Count:
+              description: The total count of nodes.
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page.
+              type: string
+        400:
+          description: Bad Request.
+        401:
+          description: User need to log in first.
+        500:
+          description: Internal errors.          
   /v1/nodes/availableresources:
     get:
       summary: Return the system available resources of nodes.
@@ -4917,6 +4962,46 @@ paths:
           description: User need to log in first.
         500:
           description: Internal errors. 
+  /v1/k8sproxy:
+    get:
+      summary: Get k8s proxy config info.
+      description: "Get k8s proxy config info of current configurations. \n"
+      tags:
+      - Products
+      responses:
+        200:
+          description: Get k8s proxy config info successfully.
+          schema:
+            $ref: '#/definitions/K8SProxyConfig'
+        500:
+          description: Unexpected internal error.
+    put:
+      summary: Set k8s proxy config info.
+      description: |
+        This endpoint is used to set k8s proxy config info.
+      parameters:
+      - name: token
+        in: header
+        type: string
+        required: true
+        description: Current available token.
+      - name: k8sproxyconfig
+        in: body
+        description: K8s proxy config to be modified.
+        required: true
+        schema:
+          $ref: '#/definitions/K8SProxyConfig'
+      tags:
+      - Products
+      responses:
+        200:
+          description: Setting k8s proxy config info successfully.
+        401:
+          description: User need to log in first.
+        403:
+          description: User does not have permission of admin role.
+        500:
+          description: Internal errors.
 responses:
   UnsupportedMediaType: 
     description: The Media Type of the request is not supported, it has to be "application/json"
@@ -7285,4 +7370,13 @@ definitions:
         description: The CPU type of this edgenode, arm64, arm32, x86.               
       master:  
         type: string
-        description: The name of this edgenode.         
+        description: The name of this edgenode.   
+      registry_mode:
+        type: string
+        description: The auto or mannual mode.        
+  K8SProxyConfig:
+    type: object
+    properties:
+      enable:
+        type: boolean
+        description: Whether enable the proxy or not.
