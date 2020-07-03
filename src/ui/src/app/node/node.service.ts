@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus } from './node.types';
+import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus, EdgeNode } from './node.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
@@ -17,6 +17,10 @@ export class NodeService {
 
   getNodeDetailByName(nodeName: string): Observable<NodeDetail> {
     return this.http.getJson(`/api/v1/node`, NodeDetail, {param: {node_name: nodeName}});
+  }
+
+  removeEdgeNode(nodeName: string): Observable<any> {
+    return this.http.delete(`/api/v1/edgenodes/${nodeName}`);
   }
 
   toggleNodeStatus(nodeName: string, status: boolean): Observable<HttpResponse<object>> {
@@ -65,6 +69,10 @@ export class NodeService {
       headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
       observe: 'response'
     });
+  }
+
+  addEdgeNode(edgeNode: EdgeNode): Observable<any> {
+    return this.http.post(`/api/v1/edgenodes`, edgeNode.getPostBody());
   }
 
   deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<object>> {

@@ -31,6 +31,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/pelletier/go-buffruneio v0.2.0 // indirect
+	github.com/prometheus/client_golang v1.6.1-0.20200611143850-c304bb07a67e
+	github.com/prometheus/common v0.10.1-0.20200519082330-df021da9b3f7 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect

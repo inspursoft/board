@@ -48,6 +48,9 @@ const (
 	deploying
 	completed
 	failed
+	unknown
+	autonomousOffline
+	partAutonomousOffline
 )
 
 type ServiceController struct {
@@ -109,6 +112,7 @@ func (p *ServiceController) DeployServiceAction() {
 	newservice.OwnerName = p.CurrentUser.Username
 	newservice.Public = configService.Public
 	newservice.ProjectName = project.Name
+	newservice.Type = configService.ServiceType
 
 	serviceInfo, err := service.CreateServiceConfig(newservice)
 	if err != nil {
@@ -138,9 +142,9 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.PushItemsToRepo(items...)
 
-	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, Type: service.GetServiceType(deployInfo.Service.Type), ServiceYaml: string(deployInfo.ServiceFileInfo),
+	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
-	_, err = service.UpdateService(updateService, "status", "type", "service_yaml", "deployment_yaml")
+	_, err = service.UpdateService(updateService, "status", "service_yaml", "deployment_yaml")
 	if err != nil {
 		p.InternalError(err)
 		return
@@ -179,7 +183,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 		switch serviceStatus.Type {
 		case model.ServiceTypeNormalNodePort, model.ServiceTypeClusterIP:
 			// Check the deployment status
-			deployment, _, err := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			deployment, _, _ := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 			if deployment == nil && serviceStatus.Name != k8sServices {
 				logs.Info("Failed to get deployment", err)
 				var reason = "The deployment is not established in cluster system"
@@ -209,10 +213,82 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 			}
 		case model.ServiceTypeStatefulSet:
 			// Check the statefulset status
-			statefulset, _, err := service.GetStatefulSet((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			statefulset, _, _ := service.GetStatefulSet((*serviceStatus).ProjectName, (*serviceStatus).Name)
 			if statefulset == nil || statefulset.Status.Replicas < *statefulset.Spec.Replicas {
 				logs.Debug("The statefulset %s is not ready %v", (*serviceStatus).Name, err)
 				(*serviceStatus).Status = uncompleted
+			}
+		case model.ServiceTypeEdgeComputing:
+			// Check the deployment status
+			deployment, _, _ := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
+			if deployment == nil && serviceStatus.Name != k8sServices {
+				logs.Info("Failed to get deployment", err)
+				var reason = "The deployment is not established in cluster system"
+				(*serviceStatus).Status = uncompleted
+				// TODO create a new field in serviceStatus for reason
+				(*serviceStatus).Comment = "Reason: " + reason
+				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+				if err != nil {
+					logs.Error("Failed to update deployment.")
+					break
+				}
+				continue
+			} else if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+				logs.Debug("The desired replicas number is not available",
+					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
+				//Get the nodes which the pod were deployed.
+				var status int
+				var reason string
+				podList, err := service.GetPodsByLabelSelector((*serviceStatus).ProjectName, &model.LabelSelector{
+					MatchLabels: deployment.Spec.Selector})
+				nodeList := service.GetNodeList()
+				if err != nil {
+					status = unknown
+					reason = "Get the pod info failed."
+				} else if nodeList == nil {
+					status = unknown
+					reason = "Get the node list failed."
+				} else {
+					AutonomousOfflineNum := 0
+					for _, pod := range podList.Items {
+						for _, node := range nodeList {
+							if node.NodeIP == pod.Status.HostIP && node.Status == service.AutonomousOffline {
+								AutonomousOfflineNum++
+							}
+						}
+					}
+					if AutonomousOfflineNum == 0 {
+						status = uncompleted
+						reason = "The desired replicas number is not available"
+					} else {
+						status = autonomousOffline
+						reason = "The nodes offline"
+					}
+					// } else if AutonomousOfflineNum == len(podList.Items) {
+					// 	status = autonomousOffline
+					// 	reason = "The nodes offline"
+					// } else {
+					// 	status = partAutonomousOffline
+					// 	reason = "The nodes offline"
+					// }
+				}
+
+				(*serviceStatus).Status = status
+				(*serviceStatus).Comment = "Reason: " + reason
+				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+				if err != nil {
+					logs.Error("Failed to update deployment replicas.")
+					break
+				}
+				continue
+			} else if deployment.Status.Replicas == deployment.Status.AvailableReplicas {
+				(*serviceStatus).Status = running
+				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
+				if err != nil {
+					logs.Error("Failed to update service in cluster.")
+					break
+				}
+				continue
 			}
 		}
 
@@ -443,11 +519,31 @@ func (p *ServiceController) GetServiceInfoAction() {
 	if s.Public != 1 {
 		p.ResolveUserPrivilegeByID(s.ProjectID)
 	}
-	serviceStatus, err := service.GetServiceByK8sassist(s.ProjectName, s.Name)
-	if err != nil {
-		p.ParseError(err, c.ParseGetK8sError)
-		return
+
+	serviceStatus := &model.Service{}
+	if s.Type != model.ServiceTypeEdgeComputing {
+		serviceStatus, err = service.GetServiceByK8sassist(s.ProjectName, s.Name)
+		if err != nil {
+			p.ParseError(err, c.ParseGetK8sError)
+			return
+		}
+	} else {
+		deployment, _, err := service.GetDeployment(s.ProjectName, s.Name)
+		if err != nil {
+			p.ParseError(err, c.ParseGetK8sError)
+			return
+		}
+		for _, container := range deployment.Spec.Template.Spec.Containers {
+			for _, port := range container.Ports {
+				serviceStatus.Ports = append(serviceStatus.Ports, model.ServicePort{
+					Name:     port.Name,
+					Protocol: string(port.Protocol),
+					NodePort: port.HostPort,
+				})
+			}
+		}
 	}
+
 	//Get NodeIP
 	//endpointUrl format /api/v1/namespaces/default/endpoints/
 	nodesStatus, err := service.GetNodesStatus()
@@ -467,7 +563,7 @@ func (p *ServiceController) GetServiceInfoAction() {
 	for _, items := range nodesStatus.Items {
 		serviceInfo.NodeName = append(serviceInfo.NodeName, items.Status.Addresses...)
 	}
-	serviceInfo.ServiceContainers, err = service.GetServiceContainers(s.ProjectName, s.Name)
+	serviceInfo.ServiceContainers, err = service.GetServiceContainers(s)
 	if err != nil {
 		p.ParseError(err, c.ParseGetK8sError)
 		return

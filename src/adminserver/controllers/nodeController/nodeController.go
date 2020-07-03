@@ -6,13 +6,14 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/token"
+	common "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 type NodeController struct {
@@ -134,8 +135,8 @@ func (controller *NodeController) PreparationAction() {
 		controller.CustomAbort(http.StatusBadRequest, "Failed to get the configuration.")
 		return
 	}
-	hostName := configuration.Apiserver.Hostname
-	masterIp := configuration.Apiserver.KubeMasterIP
+	hostName := configuration.Board.Hostname
+	masterIp := configuration.K8s.KubeMasterIP
 
 	var preparationData = nodeModel.PreparationData{HostIp: hostName, MasterIp: masterIp}
 	controller.Data["json"] = preparationData

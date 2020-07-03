@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"net/http"
 	"sync"
@@ -162,4 +163,13 @@ func CopyToPod(namespace, podName, container, src, dest string) error {
 	}
 	logs.Info("Copying the content of '%s' to '%s/%s/%s:%s'", src, namespace, podName, container, dest)
 	return k8sclient.AppV1().Pod(namespace).CopyToPod(podName, container, src, dest)
+}
+
+func GetPodsByLabelSelector(projectName string, labelSelector *model.LabelSelector) (*model.PodList, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	var opts model.ListOptions
+	opts.LabelSelector = types.LabelSelectorToString(labelSelector)
+	return k8sclient.AppV1().Pod(projectName).List(opts)
 }

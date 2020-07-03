@@ -10,7 +10,7 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/token"
+	common "git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io"
 	"io/ioutil"
@@ -29,9 +29,9 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the configuration")
 	}
-	hostName := configuration.Apiserver.Hostname
-	masterIp := configuration.Apiserver.KubeMasterIP
-	registryIp := configuration.Apiserver.KubeMasterIP
+	hostName := configuration.Board.Hostname
+	masterIp := configuration.K8s.KubeMasterIP
+	registryIp := configuration.K8s.RegistryIP
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
 	if _, err := os.Stat(hostFilePath); os.IsNotExist(err) {
@@ -376,7 +376,7 @@ func GetLogInfoInCache(nodeIp string) *nodeModel.NodeLog {
 
 func GetNodeControlStatusFromApiServer(nodeControlStatus *model.NodeControlStatus) error {
 	url := fmt.Sprintf("api/v1/nodes/%s", nodeControlStatus.NodeName)
-	return getResponseJsonFromApiServer(url, nodeControlStatus);
+	return getResponseJsonFromApiServer(url, nodeControlStatus)
 }
 
 func DeleteNode(nodeIp string) error {
@@ -385,7 +385,7 @@ func DeleteNode(nodeIp string) error {
 }
 
 func getNodeListFromApiServer(nodeList *[]nodeModel.ApiServerNodeListResult) error {
-	return getResponseJsonFromApiServer("api/v1/nodes", nodeList);
+	return getResponseJsonFromApiServer("api/v1/nodes", nodeList)
 }
 
 func deleteActionFromApiServer(urlPath string) error {
@@ -393,8 +393,8 @@ func deleteActionFromApiServer(urlPath string) error {
 	if errCfg != nil {
 		return fmt.Errorf("failed to get the configuration")
 	}
-	host := allConfig.Apiserver.Hostname
-	port := allConfig.Apiserver.APIServerPort
+	host := allConfig.Board.Hostname
+	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
 	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
@@ -426,8 +426,8 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 	if errCfg != nil {
 		return fmt.Errorf("failed to get the configuration")
 	}
-	host := allConfig.Apiserver.Hostname
-	port := allConfig.Apiserver.APIServerPort
+	host := allConfig.Board.Hostname
+	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
 	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {

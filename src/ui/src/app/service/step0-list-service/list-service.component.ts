@@ -156,6 +156,10 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
         return 'SERVICE.STATUS_STOPPED';
       case SERVICE_STATUS.WARNING:
         return 'SERVICE.STATUS_UNCOMPLETED';
+      case SERVICE_STATUS.UnKnown:
+        return 'SERVICE.STATUS_UNKNOWN';
+      case SERVICE_STATUS.AutonomousOffline:
+        return 'SERVICE.STATUS_EDGE';
     }
   }
 
@@ -163,7 +167,7 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
     return {
       running: status === SERVICE_STATUS.RUNNING,
       stopped: status === SERVICE_STATUS.STOPPED,
-      warning: status === SERVICE_STATUS.WARNING
+      warning: status === SERVICE_STATUS.WARNING || status === SERVICE_STATUS.AutonomousOffline
     };
   }
 

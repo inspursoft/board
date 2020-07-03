@@ -1,0 +1,59 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'NodeCreateNew.Title' | translate }}</h3>
+  <div class="modal-body node-create-body">
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputPattern]="patternNodeName"
+                  [inputLabel]="'NodeCreateNew.Name' | translate"
+                  [inputDefaultValue]="edgeNode.name"
+                  [validatorMessage]="[{key: 'pattern', message: 'NodeCreateNew.NamePatternMessage' | translate},
+                                   {key:'edgeNodeNameExists', message:'NodeCreateNew.NameExists' | translate}]"
+                  [validatorAsyncFn]="checkEdgeNodeNameFun"
+                  (commitEvent)="edgeNode.name = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputPattern]="patternNodeIp"
+                  [inputLabel]="'NodeCreateNew.Ip' | translate"
+                  [inputDefaultValue]="edgeNode.nodeIp"
+                  [validatorMessage]="[{key: 'pattern', message: 'NodeCreateNew.IpPatternMessage' | translate},
+                                   {key:'edgeNodeIpExists', message:'NodeCreateNew.IpExists' | translate}]"
+                  [validatorAsyncFn]="checkEdgeNodeIpFun"
+                  (commitEvent)="edgeNode.nodeIp = $event">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputLabel]="'NodeCreateNew.Password' | translate"
+                  [inputCategory]="3"
+                  [inputDefaultValue]="edgeNode.nodePassword"
+                  (commitEvent)="edgeNode.nodePassword = $event">
+    </lib-input-ex>
+    <lib-dropdown-ex [dropdownIsRequired]="true"
+                     [dropdownItems]="cpuTypes"
+                     [dropdownDefaultActiveIndex]="0"
+                     [dropdownLabel]="'NodeCreateNew.CpuType' | translate"
+                     (dropdownChangeItem)="edgeNode.cpuType = $event">
+    </lib-dropdown-ex>
+
+    <lib-dropdown-ex [dropdownIsRequired]="true"
+                     [dropdownItems]="masters"
+                     [dropdownDefaultActiveIndex]="0"
+                     [dropdownLabel]="'NodeCreateNew.Master' | translate"
+                     (dropdownChangeItem)="edgeNode.master = $event">
+    </lib-dropdown-ex>
+
+    <lib-dropdown-ex [dropdownIsRequired]="true"
+                     [dropdownItems]="registryMode"
+                     [dropdownKey]="'key'"
+                     [dropdownDefaultActiveIndex]="0"
+                     [dropdownLabel]="'NodeCreateNew.RegisterMode' | translate"
+                     (dropdownChangeItem)="setRegisterMode($event)">
+    </lib-dropdown-ex>
+  </div>
+  <div class="modal-footer">
+    <button type="button" [disabled]="isActionWip" class="btn btn-default" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" [disabled]="isActionWip" class="btn btn-primary" (click)="addEdgeNode()">
+      {{ 'NodeCreateNew.Commit' | translate }}
+    </button>
+    <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

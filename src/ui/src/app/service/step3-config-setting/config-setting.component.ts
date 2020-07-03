@@ -7,7 +7,9 @@ import {
   Container,
   ExternalService,
   PHASE_CONFIG_CONTAINERS,
-  PHASE_EXTERNAL_SERVICE, ServiceStep2Data, ServiceStep3Data,
+  PHASE_EXTERNAL_SERVICE,
+  ServiceStep2Data,
+  ServiceStep3Data,
   ServiceStepPhase,
 } from '../service-step.component';
 import { IDropdownTag } from '../../shared/shared.types';
@@ -31,6 +33,9 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
   serviceStep3Data: ServiceStep3Data;
   existingNodePorts: Array<number>;
   serviceTypes: Array<{ description: string, type: ServiceType }>;
+  edgeNodesList: Array<{ description: string }>;
+  edgeNodeGroupList: Array<{ description: string }>;
+  edgeNodeGroupModeList: Array<{ description: string }>;
 
   constructor(protected injector: Injector,
               private changeDetectorRef: ChangeDetectorRef) {
@@ -41,6 +46,9 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
     this.serviceStep2Data = new ServiceStep2Data();
     this.serviceStep3Data = new ServiceStep3Data();
     this.serviceTypes = new Array<{ description: string, type: ServiceType }>();
+    this.edgeNodesList = new Array<{ description: string }>();
+    this.edgeNodeGroupList = new Array<{ description: string }>();
+    this.edgeNodeGroupModeList = new Array<{ description: string }>();
   }
 
   ngOnInit() {
@@ -54,22 +62,49 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
       description: 'SERVICE.STEP_3_SERVICE_TYPE_STATEFUL',
       type: ServiceType.ServiceTypeStatefulSet
     });
-    this.isGetNodePortWip = true;
-    forkJoin(obsPreStepConfig, obsStepConfig).subscribe((res: [ServiceStep2Data, ServiceStep3Data]) => {
-      this.serviceStep2Data = res[0];
-      this.serviceStep3Data = res[1];
-      if (this.serviceStep3Data.externalServiceList.length === 0) {
-        const container = this.serviceStep2Data.containerList[0];
-        this.addNewExternalService();
-        this.setExternalInfo(container, 0);
-      }
-      this.k8sService.getNodePorts(this.serviceStep3Data.projectName).subscribe(
-        (ports: Array<number>) => this.existingNodePorts = ports,
-        () => this.isGetNodePortWip = false,
-        () => this.isGetNodePortWip = false
-      );
-      this.changeDetectorRef.reattach();
+    this.serviceTypes.push({
+      description: 'SERVICE.STEP_3_SERVICE_TYPE_INTERNAL',
+      type: ServiceType.ServiceTypeClusterIP
     });
+    this.edgeNodeGroupModeList.push({description: 'SERVICE.STEP_3_DEPLOY_MODE_EITHER'});
+    this.edgeNodeGroupModeList.push({description: 'SERVICE.STEP_3_DEPLOY_MODE_EACH'});
+    this.isGetNodePortWip = true;
+    forkJoin(obsPreStepConfig, obsStepConfig).subscribe(
+      (res: [ServiceStep2Data, ServiceStep3Data]) => {
+        this.serviceStep2Data = res[0];
+        this.serviceStep3Data = res[1];
+        if (this.serviceStep3Data.serviceType === 0) {
+          this.setServiceType({description: '', type: ServiceType.ServiceTypeNormalNodePort});
+        }
+        if (this.serviceStep3Data.externalServiceList.length === 0 &&
+          this.serviceStep2Data.containerList.length > 0) {
+          const container = this.serviceStep2Data.containerList[0];
+          this.addNewExternalService();
+          this.setExternalInfo(container, 0);
+        }
+        this.k8sService.getNodePorts(this.serviceStep3Data.projectName).subscribe(
+          (ports: Array<number>) => this.existingNodePorts = ports,
+          () => this.isGetNodePortWip = false,
+          () => this.isGetNodePortWip = false
+        );
+        const obsGetEdgeNodes = this.k8sService.getEdgeNodes();
+        const obsGetEdgeGroups = this.k8sService.getNodeGroups();
+        forkJoin(obsGetEdgeNodes, obsGetEdgeGroups).subscribe(
+          (edgeNodes: [Array<{ description: string }>, Array<{ description: string }>]) => {
+            this.edgeNodesList = edgeNodes[0];
+            this.edgeNodeGroupList = edgeNodes[1];
+            const nodeSelector = this.serviceStep3Data.nodeSelector;
+            if (this.serviceStep3Data.serviceType === ServiceType.ServiceTypeEdgeComputing && nodeSelector !== '') {
+              if (this.edgeNodesList.find(value => value.description === nodeSelector)) {
+                this.serviceStep3Data.edgeNodeSelectorIsNode = true;
+              } else if (this.edgeNodeGroupList.find(value => value.description === nodeSelector)) {
+                this.serviceStep3Data.edgeNodeSelectorIsNode = false;
+              }
+            }
+          }
+        );
+        this.changeDetectorRef.reattach();
+      });
     this.nodeSelectorList.push({name: 'SERVICE.STEP_3_NODE_DEFAULT', value: '', tag: null});
     this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
       res.forEach((value: { name: string, status: number }) => {
@@ -91,16 +126,21 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
     return this.checkServiceName.bind(this);
   }
 
-  get nodeSelectorDropdownText() {
-    return this.serviceStep3Data.nodeSelector === '' ? 'SERVICE.STEP_3_NODE_DEFAULT' : this.serviceStep3Data.nodeSelector;
-  }
-
   get curNodeSelector() {
     return this.nodeSelectorList.find(value => value.name === this.serviceStep3Data.nodeSelector);
   }
 
-  get isStatefulService() {
-    return this.serviceStep3Data.serviceType === ServiceType.ServiceTypeStatefulSet;
+  get activeNodeGroup(): { description: string } {
+    return this.edgeNodeGroupList.find(value => value.description === this.serviceStep3Data.nodeSelector);
+  }
+
+  get activeEdgeNode(): { description: string } {
+    return this.edgeNodesList.find(value => value.description === this.serviceStep3Data.nodeSelector);
+  }
+
+  get activeServiceTypeItem(): number {
+    const item = this.serviceTypes.find(value => value.type === this.serviceStep3Data.serviceType);
+    return this.serviceTypes.indexOf(item);
   }
 
   getItemTagClass(dropdownTag: IDropdownTag) {
@@ -121,18 +161,16 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
       container.containerPort.length > 0 ? container.containerPort[0] : 0;
   }
 
-  setNodePort(index: number, port: number) {
-    this.serviceStep3Data.externalServiceList[index].nodeConfig.nodePort = Number(port).valueOf();
-  }
-
   setServiceType(value: { description: string, type: ServiceType }) {
     this.serviceStep3Data.serviceType = value.type;
-    if (value.type === ServiceType.ServiceTypeStatefulSet) {
-      this.serviceStep3Data.externalServiceList.forEach(
-        (external: ExternalService) => external.nodeConfig.nodePort = 0
-      );
-    } else {
-      this.serviceStep3Data.clusterIp = '';
+    this.serviceStep3Data.clusterIp = '';
+    this.serviceStep3Data.nodeSelector = '';
+    this.serviceStep3Data.externalServiceList.splice(0, this.serviceStep3Data.externalServiceList.length);
+    if (this.serviceStep3Data.isShowExternalConfig &&
+      this.serviceStep2Data.containerList.length > 0) {
+      this.addNewExternalService();
+      const container = this.serviceStep2Data.containerList[0];
+      this.setExternalInfo(container, 0);
     }
   }
 
@@ -201,12 +239,14 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
 
   forward(): void {
     if (this.verifyInputExValid() && this.verifyDropdownExValid() && this.verifyInputNumberDropdownValid()) {
-      if (this.serviceStep3Data.externalServiceList.length === 0) {
+      if (this.serviceStep3Data.isShowExternalConfig && this.serviceStep3Data.externalServiceList.length === 0) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_MESSAGE`, {alertType: 'warning'});
       } else if (this.haveRepeatNodePort()) {
         this.messageService.showAlert(`SERVICE.STEP_3_EXTERNAL_REPEAT`, {alertType: 'warning'});
       } else if (this.serviceStep3Data.affinityList.find(value => value.services.length === 0)) {
         this.messageService.showAlert(`SERVICE.STEP_3_AFFINITY_MESSAGE`, {alertType: 'warning'});
+      } else if (this.serviceStep3Data.isEdgeComputingType && this.serviceStep3Data.nodeSelector === '') {
+        this.messageService.showAlert(`SERVICE.STEP_3_EDGE_NODE_WARNING`, {alertType: 'warning'});
       } else {
         this.isActionWip = true;
         this.k8sService.setServiceStepConfig(this.serviceStep3Data).subscribe(
@@ -219,5 +259,15 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
 
   backUpStep(): void {
     this.k8sService.stepSource.next({index: 2, isBack: true});
+  }
+
+  setEdgeNode(node: { description: string }) {
+    this.serviceStep3Data.nodeSelector = node.description;
+  }
+
+  setEdgeNodeMethod(value: number, event: Event) {
+    event.stopPropagation();
+    this.serviceStep3Data.nodeSelector = '';
+    this.serviceStep3Data.edgeNodeSelectorIsNode = value === 1;
   }
 }

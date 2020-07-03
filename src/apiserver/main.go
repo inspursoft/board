@@ -205,12 +205,12 @@ func syncUpWithK8s(ctx context.Context) {
 	}
 	if ctx.Value(systemInfo).(*model.SystemInfo).SyncK8s == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
-		return
+		if k8sForceInitSync() == "false" {
+			logs.Info("Skip sync up with K8s forcely. ")
+			return
+		}
 	}
-	if k8sForceInitSync() == "false" {
-		logs.Info("Skip sync up with K8s forcely. ")
-		return
-	}
+
 	logs.Info("Initialize to sync up with K8s status ...")
 	defer func() {
 		utils.SetConfig("SYNC_K8S", "finished")
@@ -256,15 +256,15 @@ func main() {
 		}
 		ctx := context.WithValue(context.Background(), systemInfo, info)
 		initBoardVersion(ctx)
-		utils.SetConfig("INIT_STATUS", "UPDATE_ADMIN_PASSWORD")
+		utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
 		updateAdminPassword(ctx)
-		utils.SetConfig("INIT_STATUS", "INIT_PROJECT_REPO")
+		utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
 		initProjectRepo(ctx)
-		utils.SetConfig("INIT_STATUS", "PREPARE_KVM_HOST")
+		utils.SetConfig("INIT_STATUS", "5_3_PREPARE_KVM_HOST")
 		prepareKVMHost(ctx)
-		utils.SetConfig("INIT_STATUS", "INIT_KUBERNETES_INFO")
+		utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
 		initKubernetesInfo(ctx)
-		utils.SetConfig("INIT_STATUS", "SYNC_UP_K8S")
+		utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
 		syncUpWithK8s(ctx)
 		utils.SetConfig("INIT_STATUS", "READY")
 	}()
