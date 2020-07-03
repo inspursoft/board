@@ -1661,3 +1661,158 @@ type SecurityContext struct {
 	// +optional
 	Privileged *bool `json:"privileged,omitempty" protobuf:"varint,2,opt,name=privileged"`
 }
+
+type DaemonSetList struct {
+	Items []DaemonSet `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// DaemonSet represents the configuration of a daemon set.
+type DaemonSet struct {
+	ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec       DaemonSetSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status     DaemonSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// DaemonSetSpec is the specification of a daemon set.
+type DaemonSetSpec struct {
+	Selector *LabelSelector `json:"selector" protobuf:"bytes,1,opt,name=selector"`
+
+	Template PodTemplateSpec `json:"template" protobuf:"bytes,2,opt,name=template"`
+
+	// An update strategy to replace existing DaemonSet pods with new pods.
+	// +optional
+	UpdateStrategy DaemonSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,3,opt,name=updateStrategy"`
+
+	// The minimum number of seconds for which a newly created DaemonSet pod should
+	// be ready without any of its container crashing, for it to be considered
+	// available. Defaults to 0 (pod will be considered available as soon as it
+	// is ready).
+	// +optional
+	MinReadySeconds int32 `json:"minReadySeconds,omitempty" protobuf:"varint,4,opt,name=minReadySeconds"`
+
+	// The number of old history to retain to allow rollback.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	// Defaults to 10.
+	// +optional
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty" protobuf:"varint,6,opt,name=revisionHistoryLimit"`
+}
+
+// DaemonSetStatus represents the current status of a daemon set.
+type DaemonSetStatus struct {
+	// The number of nodes that are running at least 1
+	// daemon pod and are supposed to run the daemon pod.
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	CurrentNumberScheduled int32 `json:"currentNumberScheduled" protobuf:"varint,1,opt,name=currentNumberScheduled"`
+
+	// The number of nodes that are running the daemon pod, but are
+	// not supposed to run the daemon pod.
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	NumberMisscheduled int32 `json:"numberMisscheduled" protobuf:"varint,2,opt,name=numberMisscheduled"`
+
+	// The total number of nodes that should be running the daemon
+	// pod (including nodes correctly running the daemon pod).
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	DesiredNumberScheduled int32 `json:"desiredNumberScheduled" protobuf:"varint,3,opt,name=desiredNumberScheduled"`
+
+	// The number of nodes that should be running the daemon pod and have one
+	// or more of the daemon pod running and ready.
+	NumberReady int32 `json:"numberReady" protobuf:"varint,4,opt,name=numberReady"`
+
+	// The most recent generation observed by the daemon set controller.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,5,opt,name=observedGeneration"`
+
+	// The total number of nodes that are running updated daemon pod
+	// +optional
+	UpdatedNumberScheduled int32 `json:"updatedNumberScheduled,omitempty" protobuf:"varint,6,opt,name=updatedNumberScheduled"`
+
+	// The number of nodes that should be running the
+	// daemon pod and have one or more of the daemon pod running and
+	// available (ready for at least spec.minReadySeconds)
+	// +optional
+	NumberAvailable int32 `json:"numberAvailable,omitempty" protobuf:"varint,7,opt,name=numberAvailable"`
+
+	// The number of nodes that should be running the
+	// daemon pod and have none of the daemon pod running and available
+	// (ready for at least spec.minReadySeconds)
+	// +optional
+	NumberUnavailable int32 `json:"numberUnavailable,omitempty" protobuf:"varint,8,opt,name=numberUnavailable"`
+
+	// Count of hash collisions for the DaemonSet. The DaemonSet controller
+	// uses this field as a collision avoidance mechanism when it needs to
+	// create the name for the newest ControllerRevision.
+	// +optional
+	CollisionCount *int32 `json:"collisionCount,omitempty" protobuf:"varint,9,opt,name=collisionCount"`
+
+	// Represents the latest available observations of a DaemonSet's current state.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []DaemonSetCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,10,rep,name=conditions"`
+}
+
+// DaemonSetUpdateStrategy is a struct used to control the update strategy for a DaemonSet.
+type DaemonSetUpdateStrategy struct {
+	// Type of daemon set update. Can be "RollingUpdate" or "OnDelete". Default is RollingUpdate.
+	// +optional
+	Type DaemonSetUpdateStrategyType `json:"type,omitempty" protobuf:"bytes,1,opt,name=type"`
+
+	// Rolling update config params. Present only if type = "RollingUpdate".
+	//---
+	// TODO: Update this to follow our convention for oneOf, whatever we decide it
+	// to be. Same as Deployment `strategy.rollingUpdate`.
+	// See https://github.com/kubernetes/kubernetes/issues/35345
+	// +optional
+	RollingUpdate *RollingUpdateDaemonSet `json:"rollingUpdate,omitempty" protobuf:"bytes,2,opt,name=rollingUpdate"`
+}
+
+type DaemonSetUpdateStrategyType string
+
+const (
+	// Replace the old daemons by new ones using rolling update i.e replace them on each node one after the other.
+	RollingUpdateDaemonSetStrategyType DaemonSetUpdateStrategyType = "RollingUpdate"
+
+	// Replace the old daemons only when it's killed
+	OnDeleteDaemonSetStrategyType DaemonSetUpdateStrategyType = "OnDelete"
+)
+
+// Spec to control the desired behavior of daemon set rolling update.
+type RollingUpdateDaemonSet struct {
+	// The maximum number of DaemonSet pods that can be unavailable during the
+	// update. Value can be an absolute number (ex: 5) or a percentage of total
+	// number of DaemonSet pods at the start of the update (ex: 10%). Absolute
+	// number is calculated from percentage by rounding up.
+	// This cannot be 0.
+	// Default value is 1.
+	// Example: when this is set to 30%, at most 30% of the total number of nodes
+	// that should be running the daemon pod (i.e. status.desiredNumberScheduled)
+	// can have their pods stopped for an update at any given
+	// time. The update starts by stopping at most 30% of those DaemonSet pods
+	// and then brings up new DaemonSet pods in their place. Once the new pods
+	// are available, it then proceeds onto other DaemonSet pods, thus ensuring
+	// that at least 70% of original number of DaemonSet pods are available at
+	// all times during the update.
+	// +optional
+	MaxUnavailable *IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,1,opt,name=maxUnavailable"`
+}
+
+type DaemonSetConditionType string
+
+// TODO: Add valid condition types of a DaemonSet.
+
+// DaemonSetCondition describes the state of a DaemonSet at a certain point.
+type DaemonSetCondition struct {
+	// Type of DaemonSet condition.
+	Type DaemonSetConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=DaemonSetConditionType"`
+	// Status of the condition, one of True, False, Unknown.
+	Status ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	// Last time the condition transitioned from one status to another.
+	// +optional
+	LastTransitionTime time.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
+	// The reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+	// A human readable message indicating details about the transition.
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+}

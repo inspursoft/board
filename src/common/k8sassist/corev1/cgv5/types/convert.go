@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/tools/remotecommand"
 )
@@ -440,6 +441,92 @@ func ToK8sTerminalSizeQueue(tsq model.TerminalSizeQueue) remotecommand.TerminalS
 			Height: size.Height,
 		}
 	})
+}
+
+func ToK8sDaemonSet(daemonset *model.DaemonSet) *appsv1.DaemonSet {
+	if daemonset == nil {
+		return nil
+	}
+	return &appsv1.DaemonSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       daemonsetKind,
+			APIVersion: daemonsetAPIVersion,
+		},
+		ObjectMeta: ToK8sObjectMeta(daemonset.ObjectMeta),
+		Spec:       ToK8sDaemonSetSpec(daemonset.Spec),
+		Status:     ToK8sDaemonSetStatus(daemonset.Status),
+	}
+}
+
+func ToK8sDaemonSetSpec(spec model.DaemonSetSpec) appsv1.DaemonSetSpec {
+	var templ v1.PodTemplateSpec
+	if t := ToK8sPodTemplateSpec(&spec.Template); t != nil {
+		templ = *t
+	}
+	return appsv1.DaemonSetSpec{
+		Selector:             ToK8sLabelSelector(spec.Selector),
+		Template:             templ,
+		UpdateStrategy:       ToK8sDaemonSetUpdateStrategy(spec.UpdateStrategy),
+		MinReadySeconds:      spec.MinReadySeconds,
+		RevisionHistoryLimit: spec.RevisionHistoryLimit,
+	}
+}
+
+func ToK8sDaemonSetUpdateStrategy(strategy model.DaemonSetUpdateStrategy) appsv1.DaemonSetUpdateStrategy {
+	return appsv1.DaemonSetUpdateStrategy{
+		Type:          appsv1.DaemonSetUpdateStrategyType(string(strategy.Type)),
+		RollingUpdate: ToK8sRollingUpdateDaemonSet(strategy.RollingUpdate),
+	}
+}
+
+func ToK8sRollingUpdateDaemonSet(rollingupdate *model.RollingUpdateDaemonSet) *appsv1.RollingUpdateDaemonSet {
+	if rollingupdate == nil {
+		return nil
+	}
+	var max *intstr.IntOrString
+	if modelmax := rollingupdate.MaxUnavailable; modelmax != nil {
+		m := intstr.Parse(modelmax.String())
+		max = &m
+	}
+	return &appsv1.RollingUpdateDaemonSet{
+		MaxUnavailable: max,
+	}
+}
+
+func ToK8sDaemonSetStatus(status model.DaemonSetStatus) appsv1.DaemonSetStatus {
+	return appsv1.DaemonSetStatus{
+		CurrentNumberScheduled: status.CurrentNumberScheduled,
+		NumberMisscheduled:     status.NumberMisscheduled,
+		DesiredNumberScheduled: status.DesiredNumberScheduled,
+		NumberReady:            status.NumberReady,
+		ObservedGeneration:     status.ObservedGeneration,
+		UpdatedNumberScheduled: status.UpdatedNumberScheduled,
+		NumberAvailable:        status.NumberAvailable,
+		NumberUnavailable:      status.NumberUnavailable,
+		CollisionCount:         status.CollisionCount,
+		Conditions:             ToK8sDaemonSetConditions(status.Conditions),
+	}
+}
+
+func ToK8sDaemonSetConditions(list []model.DaemonSetCondition) []appsv1.DaemonSetCondition {
+	if list == nil {
+		return nil
+	}
+	conds := make([]appsv1.DaemonSetCondition, 0, len(list))
+	for _, cond := range list {
+		conds = append(conds, ToK8sDaemonSetCondition(cond))
+	}
+	return conds
+}
+
+func ToK8sDaemonSetCondition(cond model.DaemonSetCondition) appsv1.DaemonSetCondition {
+	return appsv1.DaemonSetCondition{
+		Type:               appsv1.DaemonSetConditionType(string(cond.Type)),
+		Status:             v1.ConditionStatus(cond.Status),
+		LastTransitionTime: metav1.NewTime(cond.LastTransitionTime),
+		Reason:             cond.Reason,
+		Message:            cond.Message,
+	}
 }
 
 func FromK8sInfo(info *version.Info) *model.KubernetesInfo {
@@ -2101,6 +2188,155 @@ func GenerateStatefulSetConfig(statefulset *appsv1.StatefulSet) *appsv1.Stateful
 				},
 			},
 			ServiceName: statefulset.Spec.ServiceName,
+		},
+	}
+}
+
+// generate model daemonset list from k8s daemonset list
+func FromK8sDaemonSetList(daemonsetList *appsv1.DaemonSetList) *model.DaemonSetList {
+	if daemonsetList == nil {
+		return nil
+	}
+	items := make([]model.DaemonSet, 0)
+	for i := range daemonsetList.Items {
+		ds := FromK8sDaemonSet(&daemonsetList.Items[i])
+		items = append(items, *ds)
+	}
+	return &model.DaemonSetList{
+		Items: items,
+	}
+}
+
+func FromK8sDaemonSet(daemonset *appsv1.DaemonSet) *model.DaemonSet {
+	if daemonset == nil {
+		return nil
+	}
+	return &model.DaemonSet{
+		ObjectMeta: FromK8sObjectMeta(daemonset.ObjectMeta),
+		Spec:       FromK8sDaemonSetSpec(daemonset.Spec),
+		Status:     FromK8sDaemonSetStatus(daemonset.Status),
+	}
+}
+
+func FromK8sDaemonSetSpec(spec appsv1.DaemonSetSpec) model.DaemonSetSpec {
+	var template model.PodTemplateSpec
+	if t := FromK8sPodTemplateSpec(&spec.Template); t != nil {
+		template = *t
+	}
+	return model.DaemonSetSpec{
+		Selector:             FromK8sLabelSelector(spec.Selector),
+		Template:             template,
+		UpdateStrategy:       FromK8sDaemonSetUpdateStrategy(spec.UpdateStrategy),
+		MinReadySeconds:      spec.MinReadySeconds,
+		RevisionHistoryLimit: spec.RevisionHistoryLimit,
+	}
+}
+
+func FromK8sDaemonSetUpdateStrategy(strategy appsv1.DaemonSetUpdateStrategy) model.DaemonSetUpdateStrategy {
+	return model.DaemonSetUpdateStrategy{
+		Type:          model.DaemonSetUpdateStrategyType(string(strategy.Type)),
+		RollingUpdate: FromK8sRollingUpdateDaemonSet(strategy.RollingUpdate),
+	}
+}
+
+func FromK8sRollingUpdateDaemonSet(rollingupdate *appsv1.RollingUpdateDaemonSet) *model.RollingUpdateDaemonSet {
+	if rollingupdate == nil {
+		return nil
+	}
+	var max *model.IntOrString
+	if k8smax := rollingupdate.MaxUnavailable; k8smax != nil {
+		m := model.Parse(k8smax.String())
+		max = &m
+	}
+	return &model.RollingUpdateDaemonSet{
+		MaxUnavailable: max,
+	}
+}
+
+func FromK8sDaemonSetStatus(status appsv1.DaemonSetStatus) model.DaemonSetStatus {
+	return model.DaemonSetStatus{
+		CurrentNumberScheduled: status.CurrentNumberScheduled,
+		NumberMisscheduled:     status.NumberMisscheduled,
+		DesiredNumberScheduled: status.DesiredNumberScheduled,
+		NumberReady:            status.NumberReady,
+		ObservedGeneration:     status.ObservedGeneration,
+		UpdatedNumberScheduled: status.UpdatedNumberScheduled,
+		NumberAvailable:        status.NumberAvailable,
+		NumberUnavailable:      status.NumberUnavailable,
+		CollisionCount:         status.CollisionCount,
+		Conditions:             FromK8sDaemonSetConditions(status.Conditions),
+	}
+}
+
+func FromK8sDaemonSetConditions(list []appsv1.DaemonSetCondition) []model.DaemonSetCondition {
+	if list == nil {
+		return nil
+	}
+	conds := make([]model.DaemonSetCondition, 0, len(list))
+	for _, cond := range list {
+		conds = append(conds, FromK8sDaemonSetCondition(cond))
+	}
+	return conds
+}
+
+func FromK8sDaemonSetCondition(cond appsv1.DaemonSetCondition) model.DaemonSetCondition {
+	return model.DaemonSetCondition{
+		Type:               model.DaemonSetConditionType(string(cond.Type)),
+		Status:             model.ConditionStatus(cond.Status),
+		LastTransitionTime: cond.LastTransitionTime.Time,
+		Reason:             cond.Reason,
+		Message:            cond.Message,
+	}
+}
+
+func GenerateDaemonSetConfig(daemonset *appsv1.DaemonSet) *appsv1.DaemonSet {
+	containersConfig := []v1.Container{}
+	for _, container := range daemonset.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			Resources:      container.Resources,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &appsv1.DaemonSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       daemonsetKind,
+			APIVersion: daemonsetAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    daemonset.ObjectMeta.Labels,
+			Name:      daemonset.ObjectMeta.Name,
+			Namespace: daemonset.ObjectMeta.Namespace,
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: daemonset.Spec.Selector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: daemonset.Spec.Template.ObjectMeta.Labels,
+					Name:   daemonset.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           daemonset.Spec.Template.Spec.Affinity,
+					Volumes:            daemonset.Spec.Template.Spec.Volumes,
+					NodeSelector:       daemonset.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: daemonset.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   daemonset.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     daemonset.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+				},
+			},
+			UpdateStrategy:       daemonset.Spec.UpdateStrategy,
+			MinReadySeconds:      daemonset.Spec.MinReadySeconds,
+			RevisionHistoryLimit: daemonset.Spec.RevisionHistoryLimit,
 		},
 	}
 }
