@@ -413,8 +413,7 @@ render(os.path.join(templates_dir, "gogits", "app.ini"),
 
 
 render(os.path.join(templates_dir, "grafana", "prometheus-datasource.json"),
-        grafana_prometheus_ds,
-        prometheus_url=prometheus_url)
+        grafana_prometheus_ds)
 
 shutil.copy(os.path.join(templates_dir, "grafana", "kubernetes-dashboard.json"), grafana_dashboard)
 
