@@ -147,283 +147,329 @@ export const LANG_ZH_CN = {
     Node_Detail_Error_Failed_Request: '获取数据错误'
   },
   CONFIGURATIONS: {
-    API_SERVER: {
-      TITLE: 'Api Server',
+    BOARD: {
+      ARCH_TYPE: {
+        LABEL: '系统架构',
+        PLACEHOLDER: '',
+        HELPER: '默认架构是x86_64，现在也支持mips、arm64v8',
+      },
+      MODE: {
+        LABEL: '安全模式',
+        PLACEHOLDER: '',
+        HELPER: 'Board安全模式，默认为Normal。Security模式将在UI中隐藏Kibana、Grafana',
+      },
+      ACCESS_PROTOCOL: {
+        LABEL: '访问模式',
+        PLACEHOLDER: '',
+        HELPER: '如果在nginx上启用了ssl，则可以将其设置为https，默认为http',
+      },
       HOSTNAME: {
-        NAME: 'Board IP地址',
-        PLACEHOLDER: '如：192.168.1.10或reg.yourdomain.com',
-        TIPS: 'Board服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为Board需要被其他节点访问'
+        LABEL: 'Board IP地址',
+        PLACEHOLDER: '如：192.168.1.10',
+        HELPER: 'Board服务部署的主机地址，不要使用localhost或者127.0.0.1上，因为Board需要被其他节点访问',
       },
       API_SERVER_PORT: {
-        NAME: 'API服务器端口号',
+        LABEL: 'API服务器端口号',
         PLACEHOLDER: '1~65535，默认为8088',
-        TIPS: 'Board服务部署的端口号'
+        HELPER: 'Board服务部署的端口号',
       },
-      KUBE_HTTP_SCHEME: {
-        NAME: 'K8s网络请求方案',
-        PLACEHOLDER: 'K8s网络请求方案',
-        TIPS: 'Kubernetes(K8s)部署使用的网络协议，支持http和https。请依据所要连接的K8s的实际网络请求方案做选择，否则会造成连接失败。'
-      },
-      KUBE_MASTER_IP: {
-        NAME: 'K8s主节点IP',
-        PLACEHOLDER: '如：192.168.1.10',
-        TIPS: 'Kubernetes(K8s)部署的主机地址，不要使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问'
-      },
-      KUBE_MASTER_PORT: {
-        NAME: 'K8s主节点端口号',
+      DEVOPS_OPT: {
+        LABEL: 'git仓库',
         PLACEHOLDER: '',
-        TIPS: 'Kubernetes(K8s)部署的端口号。默认情况下，http使用8080端口，https使用6443端口。非默认情况下请按照实际情况填写。'
+        HELPER: '使用Gitlab或Gogs（legacy）作为Board DevOps的git存储库',
       },
-      REGISTRY_IP: {
-        NAME: '镜像仓库IP',
-        PLACEHOLDER: '如：192.168.1.10',
-        TIPS: '镜像仓库的地址，不要使用localhost或者127.0.0.1上，因为镜像仓库需要被其他节点访问'
+      AUTH_MODE: {
+        LABEL: '用户验证模式',
+        PLACEHOLDER: '',
+        HELPER: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP',
       },
-      REGISTRY_PORT: {
-        NAME: '镜像仓库端口号',
-        PLACEHOLDER: '1~65535，默认为5000',
-        TIPS: '镜像仓库的端口号，默认为5000'
-      },
-      IMAGE_BASELINE_TIME: {
-        NAME: '镜像基准时间',
-        PLACEHOLDER: '默认为2016-01-01 09:00:00',
-        TIPS: '镜像的基准时间，默认为2016-01-01 09:00:00。Board只读取这个时间后的镜像。'
+      AUDIT_DEBUG: {
+        LABEL: '审计模式',
+        PLACEHOLDER: '',
+        HELPER: '记录运行审核功能的所有运行切换，默认为否',
       },
     },
-    GOGITS: {
-      TITLE: 'Gogs',
-      GOGITS_HOST_IP: {
-        NAME: '服务IP地址',
+    K8S: {
+      KUBE_HTTP_SCHEME: {
+        LABEL: 'K8s网络请求方案',
+        PLACEHOLDER: '',
+        HELPER: 'Kubernetes(K8s)部署使用的网络协议，支持http和https。请依据所要连接的K8s的实际网络请求方案做选择，否则会造成连接失败',
+      },
+      KUBE_MASTER_IP: {
+        LABEL: 'K8s主节点IP',
         PLACEHOLDER: '如：192.168.1.10',
-        TIPS: 'gogs部署的主机地址，不要使用localhost或者127.0.0.1，因为需要被其他节点访问'
+        HELPER: 'Kubernetes(K8s)部署的主机地址，不要使用localhost或者127.0.0.1上，因为K8s需要被其他节点访问',
       },
-      GOGITS_HOST_PORT: {
-        NAME: '服务端口号',
+      KUBE_MASTER_PORT: {
+        LABEL: 'K8s主节点端口号',
+        PLACEHOLDER: '',
+        HELPER: 'Kubernetes(K8s)部署的端口号。默认情况下，http使用8080端口，https使用6443端口。非默认情况下请按照实际情况填写',
+      },
+      REGISTRY_IP: {
+        LABEL: '镜像仓库IP',
+        PLACEHOLDER: '如：192.168.1.10',
+        HELPER: '镜像仓库的地址，不要使用localhost或者127.0.0.1上，因为镜像仓库需要被其他节点访问',
+      },
+      REGISTRY_PORT: {
+        LABEL: '镜像仓库端口号',
+        PLACEHOLDER: '1~65535，默认为5000',
+        HELPER: '镜像仓库的端口号，默认为5000',
+      },
+      IMAGE_BASELINE_TIME: {
+        LABEL: '镜像基准时间',
+        PLACEHOLDER: '默认为2016-01-01 09:00:00',
+        HELPER: '镜像的基准时间，默认为2016-01-01 09:00:00。Board只读取这个时间后的镜像',
+      },
+      TILLER_PORT: {
+        LABEL: 'Tiller端口号',
+        PLACEHOLDER: '1~65535，默认为31111',
+        HELPER: 'Helm tiller的节点端口号，默认为31111',
+      },
+      DNS_SUFFIX: {
+        LABEL: 'DNS后缀',
+        PLACEHOLDER: '如：.cluster.local',
+        HELPER: 'Kubernetes DNS后缀，默认为.cluster.local',
+      },
+    },
+    GOGS: {
+      HOST_IP: {
+        LABEL: '服务IP地址',
+        PLACEHOLDER: '如：192.168.1.10',
+        HELPER: 'Gogs部署的主机地址，不要使用localhost或者127.0.0.1，因为需要被其他节点访问',
+      },
+      HOST_PORT: {
+        LABEL: '服务端口号',
         PLACEHOLDER: '1~65535，默认为10080',
-        TIPS: '服务部署的端口号，默认为10080'
+        HELPER: '服务部署的端口号，默认为10080',
       },
-      GOGITS_SSH_PORT: {
-        NAME: 'SSH请求端口号',
+      SSH_PORT: {
+        LABEL: 'SSH请求端口号',
         PLACEHOLDER: '1~65535，默认为10022',
-        TIPS: 'SSH(远程登录会话协议)的请求端口号，默认为10022'
+        HELPER: 'SSH(远程登录会话协议)的请求端口号，默认为10022',
+      },
+    },
+    GITLAB: {
+      HOST_IP: {
+        LABEL: '服务IP地址',
+        PLACEHOLDER: '如：192.168.1.10',
+        HELPER: 'Gitlab部署的主机地址，不要使用localhost或者127.0.0.1，因为需要被其他节点访问',
+      },
+      HOST_PORT: {
+        LABEL: '服务端口号',
+        PLACEHOLDER: '1~65535，默认为10088',
+        HELPER: '服务部署的端口号，默认为10088',
+      },
+      SSH_PORT: {
+        LABEL: 'SSH请求端口号',
+        PLACEHOLDER: '1~65535，默认为10028',
+        HELPER: 'SSH(远程登录会话协议)的请求端口号，默认为10028',
+      },
+      ADMIN_TOKEN: {
+        LABEL: '管理员token',
+        PLACEHOLDER: '如：1234567901234567890',
+        HELPER: '管理员token用于作为root用户登录Gitlab进行操作，请联系Gitlab服务器管理员获取此token',
+      },
+    },
+    PROMETHEUS: {
+      URL: {
+        LABEL: '网址',
+        PLACEHOLDER: '如：http://10.0.0.0:9090',
+        HELPER: '普罗米修斯（Prometheus）用于采集系统数据',
       },
     },
     JENKINS: {
-      TITLE: 'Jenkins',
-      JENKINS_HOST_IP: {
-        NAME: '主节点IP地址',
+      HOST_IP: {
+        LABEL: '主节点IP地址',
         PLACEHOLDER: '如：192.168.1.10',
-        TIPS: 'Jenkins主节点的地址，用于外部访问，不要使用localhost或者127.0.0.1'
+        HELPER: 'Jenkins主节点的地址，用于外部访问，不要使用localhost或者127.0.0.1',
       },
-      JENKINS_HOST_PORT: {
-        NAME: '主节点端口号',
+      HOST_PORT: {
+        LABEL: '主节点端口号',
         PLACEHOLDER: '1~65535，默认为8888',
-        TIPS: 'Jenkins主节点的端口号，默认为8888'
+        HELPER: 'Jenkins主节点的端口号，默认为8888',
       },
-      JENKINS_NODE_IP: {
-        NAME: '从节点IP地址',
+      NODE_IP: {
+        LABEL: '从节点IP地址',
         PLACEHOLDER: '如：192.168.1.11',
-        TIPS: 'Jenkins从节点的地址'
+        HELPER: 'Jenkins从节点的地址',
       },
-      JENKINS_NODE_SSH_PORT: {
-        NAME: '节点SSH请求端口号',
+      NODE_SSH_PORT: {
+        LABEL: '节点SSH请求端口号',
         PLACEHOLDER: '1~65535，默认为22',
-        TIPS: 'Node节点的SSH(远程登录会话协议)请求端口号，默认为22'
+        HELPER: 'Node节点的SSH(远程登录会话协议)请求端口号，默认为22',
       },
-      JENKINS_NODE_USERNAME: {
-        NAME: '节点用户名',
+      NODE_USERNAME: {
+        LABEL: '节点用户名',
         PLACEHOLDER: '',
-        TIPS: 'Jenkins的用户名'
+        HELPER: 'Jenkins的用户名',
       },
-      JENKINS_NODE_PASSWORD: {
-        NAME: '节点密码',
+      NODE_PASSWORD: {
+        LABEL: '节点密码',
         PLACEHOLDER: '节点主机密码',
-        TIPS: 'Jemkins节点主机的账户的密码，请在生产前使用此密码',
-        PATTERN_ERROR: '',
+        HELPER: 'Jemkins节点主机的账户的密码',
       },
-      JENKINS_NODE_VOLUME: {
-        NAME: '节点数据卷路径',
+      NODE_VOLUME: {
+        LABEL: '节点数据卷路径',
         PLACEHOLDER: '如：/data/jenkins_node',
-        TIPS: 'Node节点的数据卷的地址'
+        HELPER: 'Node节点的数据卷的地址',
       },
-      JENKINS_EXECUTION_MODE: {
-        NAME: '运行模式',
+      EXECUTION_MODE: {
+        LABEL: '运行模式',
         PLACEHOLDER: '',
-        TIPS: 'Jenkins集群的运行模式，支持单节点(single)或者多节点(multi)'
+        HELPER: 'Jenkins集群的运行模式，支持单节点(single)或者多节点(multi)',
       },
     },
     KVM: {
-      TITLE: 'KVM',
-      KVM_REGISTRY_SIZE: {
-        NAME: 'KVM仓库大小',
+      REGISTRY_SIZE: {
+        LABEL: 'KVM仓库大小',
         PLACEHOLDER: '默认为5',
-        TIPS: '需大于0，默认为5',
+        HELPER: '需大于0，默认为5',
       },
-      KVM_REGISTRY_PORT: {
-        NAME: 'KVM仓库端口号',
+      REGISTRY_PORT: {
+        LABEL: 'KVM仓库端口号',
         PLACEHOLDER: '1~65535，默认为8890',
-        TIPS: '1~65535，默认为8890',
+        HELPER: '1~65535，默认为8890',
       },
-      KVM_REGISTRY_PATH: {
-        NAME: 'KVM工具路径',
+      TOOLKITS_PATH: {
+        LABEL: 'KVM工具路径',
         PLACEHOLDER: '如：/root/kvm_toolkits',
-        TIPS: 'KVM工具存储的路径，默认为/root/kvm_toolkits',
+        HELPER: 'KVM工具存储的路径，默认为/root/kvm_toolkits',
+      },
+    },
+    ES: {
+      MEMORY_IN_MEGABYTES: {
+        LABEL: '内存',
+        PLACEHOLDER: '单位为MB，默认为1024',
+        HELPER: 'Elasticsearch可以使用的最大内存（MB），默认为1024',
+      },
+      PASSWORD: {
+        LABEL: '密码',
+        PLACEHOLDER: '',
+        HELPER: 'Elasticsearch的默认初始密码',
+      },
+    },
+    DB: {
+      DB_PASSWORD: {
+        LABEL: '数据库密码',
+        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
+        HELPER: 'mysql db的root用户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
+        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
+        CONFIRM_LABEL: '确认密码',
+      },
+      DB_MAX_CONNECTIONS: {
+        LABEL: '最大连接数',
+        PLACEHOLDER: '1~16384，推荐为1000',
+        HELPER: '数据库最大连接数，范围：1~16384，推荐为1000',
+      },
+      BOARD_ADMIN_PASSWORD: {
+        LABEL: 'Board管理员密码',
+        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
+        HELPER: 'Admin的初始密码仅在Board首次启动时才能生效，Board和Adminserver的admin账户共用这个密码。若要修改，需要配置Email参数，然后在Board启动成功后进行忘记密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
+        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
+        CONFIRM_LABEL: '确认密码',
+      },
+    },
+    INDATA: {
+      VERIFICATION_URL: {
+        LABEL: '验证地址',
+        PLACEHOLDER: '如：http://verification.mydomain.com',
+        HELPER: '外部令牌验证URL，用于与其他平台集成授权。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
+      },
+      REDIRECTION_URL: {
+        LABEL: '重定向地址',
+        PLACEHOLDER: '如：http://verification.mydomain.com',
+        HELPER: '外部令牌验证URL，用于与其他平台集成授权。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
       },
     },
     LDAP: {
-      TITLE: 'LDAP(轻型目录访问协议)',
-      LDAP_URL: {
-        NAME: '服务URL地址',
+      URL: {
+        LABEL: '服务URL地址',
         PLACEHOLDER: '如：ldaps://ldap.mydomain.com',
-        TIPS: 'LDAP服务的入口地址',
+        HELPER: 'LDAP服务的入口地址',
       },
-      LDAP_BASEDN: {
-        NAME: '服务DN来源',
+      SEARCHDN: {
+        LABEL: '搜索DN',
         PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
-        TIPS: 'LDAP验证用户是来自哪个源，ou为people,dc为mydomain,dc为com',
+        HELPER: '有权搜索LDAP/AD服务器的用户DN。如果您的LDAP/AD服务器不支持匿名搜索，则应配置此DN和搜索密码。',
       },
-      LDAP_UID: {
-        NAME: '服务匹配源',
-        PLACEHOLDER: 'uid/cn/email/...',
-        TIPS: '搜索中用于匹配用户的属性，可以是uid，cn，email，sAMAccountName或其他属性，具体取决于您的LDAP/AD',
-      },
-      LDAP_SCOPE: {
-        NAME: '服务匹配范围',
+      SEARCH_PWD: {
+        LABEL: '搜索密码',
         PLACEHOLDER: '',
-        TIPS: '搜索用户的范围，默认是Subtree',
+        HELPER: 'LDAP/AD服务器搜索密码',
       },
-      LDAP_TIMEOUT: {
-        NAME: '请求超时时间',
+      BASEDN: {
+        LABEL: '服务DN来源',
+        PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
+        HELPER: '搜索中用于匹配用户的属性，可以是uid，cn，email，sAMAccountName或其他属性，具体取决于您的LDAP/AD',
+      },
+      FILTER: {
+        LABEL: '过滤器',
+        PLACEHOLDER: '如：(objectClass=person)',
+        HELPER: 'LDAP/AD的搜索过滤器，请确保过滤器的语法正确',
+      },
+      UID: {
+        LABEL: '服务匹配源',
+        PLACEHOLDER: '如：uid/cn/email/...',
+        HELPER: '搜索中用于匹配用户的属性，可以是uid，cn，email，sAMAccountName或其他属性，具体取决于您的LDAP/AD',
+      },
+      SCOPE: {
+        LABEL: '服务匹配范围',
+        PLACEHOLDER: '',
+        HELPER: '搜索用户的范围，默认是Subtree',
+      },
+      TIMEOUT: {
+        LABEL: '请求超时时间',
         PLACEHOLDER: '单位为秒，默认值（最合理）为5秒',
-        TIPS: '连接到LDAP服务器的超时时间（以秒为单位）。默认值（最合理）是5秒',
+        HELPER: '连接到LDAP服务器的超时时间（以秒为单位）。默认值（最合理）是5秒',
       },
     },
     EMAIL: {
-      TITLE: '电子邮件',
-      EMAIL_IDENTITY: {
-        NAME: '身份',
+      IDENTITY: {
+        LABEL: '身份',
         PLACEHOLDER: '身份标识',
-        TIPS: '当不填写该值时使用用户名作为其身份标识，默认不填写',
+        HELPER: '当不填写该值时使用用户名作为其身份标识，默认不填写',
       },
-      EMAIL_SERVER: {
-        NAME: '服务IP地址',
+      SERVER: {
+        LABEL: '服务IP地址',
         PLACEHOLDER: '如：smtp.mydomain.com',
-        TIPS: '邮箱服务器地址',
+        HELPER: '邮箱服务器地址',
       },
-      EMAIL_SERVER_PORT: {
-        NAME: '服务端口号',
+      SERVER_PORT: {
+        LABEL: '服务端口号',
         PLACEHOLDER: '1~65535，默认为25',
-        TIPS: '邮箱服务器的端口号，默认为25',
+        HELPER: '邮箱服务器的端口号，默认为25',
       },
-      EMAIL_USERNAME: {
-        NAME: '用户名',
+      USERNAME: {
+        LABEL: '用户名',
         PLACEHOLDER: '如：admin@mydomain.com',
-        TIPS: '邮箱地址，如：admin@mydomain.com',
+        HELPER: '邮箱地址，如：admin@mydomain.com',
       },
-      EMAIL_PASSWORD: {
-        NAME: '邮箱密码',
+      PASSWORD: {
+        LABEL: '邮箱密码',
         PLACEHOLDER: '邮箱密码',
-        TIPS: '用于登录邮箱，发送邮件',
+        HELPER: '用于登录邮箱，发送邮件',
       },
-      EMAIL_FROM: {
-        NAME: '邮件来源',
+      FROM: {
+        LABEL: '邮件来源',
         PLACEHOLDER: '如：admin <admin@mydomain.com>',
-        TIPS: '如：admin <admin@mydomain.com>',
+        HELPER: '如：admin <admin@mydomain.com>',
       },
-      EMAIL_SSL: {
-        NAME: '是否启用SSL',
+      SSL: {
+        LABEL: '是否启用SSL',
         PLACEHOLDER: '',
-        TIPS: '是否启用SSL对网络连接进行加密，默认为否',
+        HELPER: '是否启用SSL对网络连接进行加密，默认为否',
       },
     },
-    OTHERS: {
-      TITLE: '初始化配置',
-      ARCH_TYPE: {
-        NAME: '系统架构',
-        PLACEHOLDER: '',
-        TIPS: '默认架构是x86_64，现在也支持mips、arm64v8',
-      },
-      SECURITY_MODE: {
-        NAME: '安全模式',
-        PLACEHOLDER: '',
-        TIPS: 'Board安全模式，默认为Normal。Security模式将在UI中隐藏Kibana、Grafana',
-      },
-      DATABASE_PASSWORD: {
-        NAME: '数据库密码',
-        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
-        TIPS: 'mysql db的root用户的密码，请在生产前使用此密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
-        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
-      },
-      DB_MAX_CONNECTION: {
-        NAME: '数据库最大连接数',
-        PLACEHOLDER: '1~16384，推荐为1000',
-        TIPS: '数据库最大连接数，范围：1~16384，推荐为1000',
-      },
-      TOKEN_CACHE_EXPIRE: {
-        NAME: 'Token缓存存留时间',
+    TOKEN: {
+      CACHE_EXPIRE_SECONDS: {
+        LABEL: '缓存存留时间',
         PLACEHOLDER: '单位为秒，推荐为1800',
-        TIPS: '存储在缓存中的令牌的到期秒数，推荐为1800',
+        HELPER: '存储在缓存中的令牌的到期秒数，推荐为1800',
       },
-      TOKEN_EXPIRE: {
-        NAME: 'Token存留时间',
+      EXPIRE_SECONDS: {
+        LABEL: '存留时间',
         PLACEHOLDER: '单位为秒，推荐为1800',
-        TIPS: '令牌的到期秒数，推荐为1800',
-      },
-      ELASETICSEARCH_MEMORY: {
-        NAME: 'Elasticsearch内存',
-        PLACEHOLDER: '单位为MB，默认为1024',
-        TIPS: 'Elasticsearch可以使用的最大内存（MB），默认为1024',
-      },
-      TILLER_PORT: {
-        NAME: 'Tiller端口号',
-        PLACEHOLDER: '1~65535，默认为31111',
-        TIPS: 'Helm tiller的节点端口号，默认为31111',
-      },
-      BOARD_ADMIN_PASSWORD: {
-        NAME: 'Admin密码',
-        PLACEHOLDER: '8~20位，支持数字、字母、特殊字符',
-        TIPS: 'Admin的初始密码仅在Board首次启动时才能生效，Board和Adminserver的admin账户共用这个密码。若要修改，需要配置Email参数，然后在Board启动成功后进行忘记密码。密码中必须包含大小字母、数字，8~20个字符，支持特殊字符#?!@$%^&*-',
-        PATTERN_ERROR: '密码中必须包含大小字母、数字，8~20个字符，只支持数字、字母、特殊字符#?!@$%^&*-',
-      },
-      BOARD_ADMIN_PASSWORD_OLD: {
-        NAME: 'Board Admin旧密码',
-        PLACEHOLDER: '',
-        TIPS: '请输入Board Admin旧密码用于系统验证，验证通过则可以在下方修改新密码。',
-      },
-      BOARD_ADMIN_PASSWORD_NEW: {
-        NAME: '新密码',
-        PLACEHOLDER: '',
-        TIPS: '请输入Board Admin新密码。',
-      },
-      BOARD_ADMIN_PASSWORD_CONFIRM: {
-        NAME: '确认密码',
-        PLACEHOLDER: '',
-        TIPS: '请确认一次上面输入的新密码。',
-      },
-      AUTH_MODE: {
-        NAME: '用户验证模式',
-        PLACEHOLDER: '',
-        TIPS: '默认情况下，身份验证模式为Database，即凭据存储在本地数据库中；如果要针对LDAP服务器验证用户的凭据，请将其设置为LDAP',
-      },
-      VERIFICATION_URL: {
-        NAME: '验证地址',
-        PLACEHOLDER: '如：http://verification.mydomain.com',
-        TIPS: '外部令牌验证URL，用于与其他平台集成授权。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
-      },
-      REDIRECTION_URL: {
-        NAME: '重定向地址',
-        PLACEHOLDER: '如：http://redirection.mydomain.com',
-        TIPS: '当令牌无效或UI将重定向到的过期时，请指定重定向URL。注：仅当用户验证模式设置为\'Indata\'时，此选项才可用',
-      },
-      AUDIT_DEBUG: {
-        NAME: '审计',
-        PLACEHOLDER: '',
-        TIPS: '记录运行审核功能的所有运行切换，默认为否',
-      },
-      DNS_SUFFIX: {
-        NAME: 'DNS后缀',
-        PLACEHOLDER: '如：.cluster.local',
-        TIPS: 'Kubernetes DNS后缀，默认为.cluster.local',
+        HELPER: '令牌的到期秒数，推荐为1800',
       },
     },
   },

@@ -103,11 +103,11 @@ endif
 
 # Package lists
 # TOPLEVEL_PKG := .
-INT_LIST := adminserver apiserver tokenserver collector/cmd
+INT_LIST := adminserver apiserver tokenserver
 ifndef ARCH
-	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum prometheus
 else
-	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
+	IMG_LIST := apiserver tokenserver log jenkins db proxy gogits prometheus
 endif
 
 
@@ -190,7 +190,7 @@ prepare: version
 
 start:
 	@echo "loading Board images..."
-	$(DOCKERNETWORK) create board &> /dev/null
+	$(DOCKERNETWORK) create board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
 
@@ -201,19 +201,19 @@ start_admin:
 	@cp $(MAKEPATH)/templates/adminserver/env-dev $(MAKEPATH)/adminserver/env
 	@sed -i "s|__CURDIR__|$(MAKEPATH)|g"  $(MAKEPATH)/adminserver/env
 	@if [ ! -f $(MAKEPATH)/adminserver/board.cfg ] ; then cp $(MAKEPATH)/board.cfg $(MAKEPATH)/adminserver/board.cfg ; fi
-	$(DOCKERNETWORK) create board &> /dev/null
+	$(DOCKERNETWORK) create board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) up -d
 	@echo "Start complete. You can visit Adminserver now."
 
 down:
 	@echo "stoping Board instance..."
-	$(DOCKERNETWORK) rm board &> /dev/null
+	$(DOCKERNETWORK) rm board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
 
 down_admin:
 	@echo "stoping Adminserver instance..."
-	$(DOCKERNETWORK) rm board &> /dev/null
+	$(DOCKERNETWORK) rm board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAMEADM) down -v
 	@echo "Done."
 
@@ -261,5 +261,5 @@ cleanall: cleanbinary cleanimage
 
 clean:
 	@echo "  make cleanall:         remove binaries and Board images"
-	@echo "  make cleanbinary:      remove apiserver tokenserver and collector/cmd binary"
+	@echo "  make cleanbinary:      remove apiserver tokenserver binary"
 	@echo "  make cleanimage:       remove Board images"

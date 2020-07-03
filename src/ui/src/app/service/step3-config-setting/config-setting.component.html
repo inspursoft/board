@@ -1,13 +1,118 @@
 <div class="config-container">
   <span>{{"SERVICE.STEP_3_SERVICE_CONFIG_TITLE"|translate}}:</span>
-  <div class="line-container">
-    <lib-dropdown-ex [dropdownLabel]="'SERVICE.STEP_3_TYPE' | translate"
-                     [dropdownKey]="'description'"
+  <lib-input-ex [inputIsRequired]="true"
+                [inputDisabled]="isActionWip"
+                [inputPattern]="patternServiceName"
+                [inputMaxlength]="63"
+                [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
+                [validatorMessage]="[{key:'pattern', message:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG' | translate},
+                                     {key:'serviceExist', message: 'SERVICE.STEP_3_SERVICE_NAME_EXIST' | translate}]"
+                [validatorAsyncFn]="checkServiceNameFun"
+                [inputDefaultValue]="serviceStep3Data.serviceName"
+                [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
+                (commitEvent)="serviceStep3Data.serviceName = $event">
+  </lib-input-ex>
+  <lib-input-ex [inputIsRequired]="true"
+                [inputCategory]="2"
+                [inputMin]="1"
+                [inputMax]="99"
+                [inputDisabled]="isActionWip"
+                [inputLabel]="'SERVICE.STEP_3_INSTANCE' | translate"
+                [inputDefaultValue]="serviceStep3Data.instance"
+                (commitEvent)="serviceStep3Data.instance = $event">
+  </lib-input-ex>
+  <label class="public">{{"SERVICE.STEP_3_EDGE_COMPUTING" | translate}}:
+    <input title=""
+           type="checkbox"
+           class="base-margin-left"
+           [disabled]="isActionWip"
+           [checked]="serviceStep3Data.isEdgeComputingType"
+           (click)="setServiceType(serviceStep3Data.isEdgeComputingType ?
+           {description: '', type: 1} :
+           {description: '', type: 7})">
+  </label>
+
+  <lib-dropdown-ex *ngIf="!serviceStep3Data.isEdgeComputingType"
+                   [dropdownLabel]="'SERVICE.STEP_3_TYPE' | translate"
+                   [dropdownKey]="'description'"
+                   [dropdownMinWidth]="310"
+                   [dropdownItems]="serviceTypes"
+                   [dropdownDisabled]="isActionWip"
+                   [dropdownDefaultActiveIndex]="activeServiceTypeItem"
+                   (dropdownChangeItem)="setServiceType($event)">
+    <ng-template libItemTemp let-description="description">
+      {{description | translate}}
+    </ng-template>
+    <ng-template libTitleTemp let-description="description">
+      {{description | translate}}
+    </ng-template>
+  </lib-dropdown-ex>
+
+  <lib-input-ex *ngIf="serviceStep3Data.isClusterIpType"
+                [inputDisabled]="isActionWip"
+                [inputPattern]="patternIP"
+                [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
+                [inputDefaultValue]="serviceStep3Data.clusterIp"
+                [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_3_CLUSTER_IP_FORMAT' | translate}]"
+                (commitEvent)="serviceStep3Data.clusterIp = $event">
+  </lib-input-ex>
+
+  <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
+    <input title=""
+           type="checkbox"
+           class="base-margin-left"
+           [disabled]="isActionWip"
+           [checked]="serviceStep3Data.servicePublic"
+           [(ngModel)]="serviceStep3Data.servicePublic">
+  </label>
+  <label class="public">{{"SERVICE.STEP_3_SESSION_AFFINITY_FLAG" | translate}}:
+    <input title=""
+           type="checkbox"
+           class="base-margin-left"
+           [disabled]="isActionWip"
+           [checked]="serviceStep3Data.sessionAffinityFlag"
+           [(ngModel)]="serviceStep3Data.sessionAffinityFlag">
+  </label>
+  <div *ngIf="serviceStep3Data.isEdgeComputingType" class="edge-item-container first">
+    <label>
+      <input title="" name="fromMethod" type="radio" [disabled]="isActionWip"
+             [checked]="serviceStep3Data.edgeNodeSelectorIsNode"
+             (click)="setEdgeNodeMethod(1, $event)">
+    </label>
+    <lib-dropdown-ex [dropdownLabel]="'SERVICE.STEP_3_EDGE_NODE' | translate"
                      [dropdownMinWidth]="310"
-                     [dropdownItems]="serviceTypes"
-                     [dropdownDisabled]="isActionWip"
-                     [dropdownDefaultActiveIndex]="0"
-                     (dropdownChangeItem)="setServiceType($event)">
+                     [dropdownLabelWidth]="168"
+                     [dropdownItems]="edgeNodesList"
+                     [dropdownKey]="'description'"
+                     [dropdownDisabled]="isActionWip || !serviceStep3Data.edgeNodeSelectorIsNode"
+                     [dropdownActiveItem]="activeEdgeNode"
+                     (dropdownChangeItem)="setEdgeNode($event)">
+    </lib-dropdown-ex>
+  </div>
+  <div *ngIf="serviceStep3Data.isEdgeComputingType" class="edge-item-container">
+    <label>
+      <input title="" name="fromMethod" type="radio" [disabled]="isActionWip"
+             [checked]="!serviceStep3Data.edgeNodeSelectorIsNode"
+             (click)="setEdgeNodeMethod(0, $event)">
+    </label>
+    <lib-dropdown-ex [dropdownLabel]="'SERVICE.STEP_3_EDGE_NODE_GROUP' | translate"
+                     [dropdownMinWidth]="310"
+                     [dropdownLabelWidth]="168"
+                     [dropdownKey]="'description'"
+                     [dropdownItems]="edgeNodeGroupList"
+                     [dropdownDisabled]="isActionWip || serviceStep3Data.edgeNodeSelectorIsNode"
+                     [dropdownActiveItem]="activeNodeGroup"
+                     (dropdownChangeItem)="setEdgeNode($event)">
+    </lib-dropdown-ex>
+  </div>
+
+  <div *ngIf="serviceStep3Data.isEdgeComputingType" class="edge-item-container">
+    <lib-dropdown-ex [dropdownLabel]="'SERVICE.STEP_3_DEPLOY_MODE' | translate"
+                     [dropdownMinWidth]="170"
+                     [dropdownKey]="'description'"
+                     [dropdownItems]="edgeNodeGroupModeList"
+                     [dropdownDisabled]="isActionWip || serviceStep3Data.edgeNodeSelectorIsNode"
+                     [dropdownDefaultActiveIndex]="0">
       <ng-template libItemTemp let-description="description">
         {{description | translate}}
       </ng-template>
@@ -16,68 +121,15 @@
       </ng-template>
     </lib-dropdown-ex>
   </div>
-  <div class="line-container">
-    <lib-input-ex [inputIsRequired]="true"
-                  [inputDisabled]="isActionWip"
-                  [inputPattern]="patternServiceName"
-                  [inputMaxlength]="63"
-                  [inputLabel]="'SERVICE.STEP_3_SERVICE_NAME' | translate"
-                  [validatorMessage]="[{key:'pattern', message:'SERVICE.STEP_3_SERVICE_NAME_PATTERN_NSG' | translate},
-                                       {key:'serviceExist', message: 'SERVICE.STEP_3_SERVICE_NAME_EXIST' | translate}]"
-                  [validatorAsyncFn]="checkServiceNameFun"
-                  [inputDefaultValue]="serviceStep3Data.serviceName"
-                  [inputPlaceholder]="'SERVICE.STEP_3_SERVICE_OF_NAME'| translate"
-                  (commitEvent)="serviceStep3Data.serviceName = $event">
-    </lib-input-ex>
-  </div>
-  <div class="line-container">
-    <lib-input-ex [inputIsRequired]="true"
-                  [inputCategory]="2"
-                  [inputMin]="1"
-                  [inputMax]="99"
-                  [inputDisabled]="isActionWip"
-                  [inputLabel]="'SERVICE.STEP_3_INSTANCE' | translate"
-                  [inputDefaultValue]="serviceStep3Data.instance"
-                  (commitEvent)="serviceStep3Data.instance = $event">
-    </lib-input-ex>
-  </div>
-  <div *ngIf="!isStatefulService" class="line-container">
-    <lib-input-ex [inputDisabled]="isActionWip"
-                  [inputPattern]="patternIP"
-                  [inputLabel]="'SERVICE.STEP_3_CLUSTER_IP' | translate"
-                  [inputDefaultValue]="serviceStep3Data.clusterIp"
-                  [validatorMessage]="[{key:'pattern',message:'SERVICE.STEP_3_CLUSTER_IP_FORMAT' | translate}]"
-                  (commitEvent)="serviceStep3Data.clusterIp = $event">
-    </lib-input-ex>
-  </div>
-  <div class="line-container">
-    <label class="public">{{"SERVICE.STEP_3_PUBLIC" | translate}}:
-      <input title=""
-             type="checkbox"
-             class="base-margin-left"
-             [disabled]="isActionWip"
-             [checked]="serviceStep3Data.servicePublic"
-             [(ngModel)]="serviceStep3Data.servicePublic">
-    </label>
-  </div>
-  <div class="line-container">
-    <label class="public">{{"SERVICE.STEP_3_SESSION_AFFINITY_FLAG" | translate}}:
-      <input title=""
-             type="checkbox"
-             class="base-margin-left"
-             [disabled]="isActionWip"
-             [checked]="serviceStep3Data.sessionAffinityFlag"
-             [(ngModel)]="serviceStep3Data.sessionAffinityFlag">
-    </label>
-  </div>
-  <div *ngFor="let externalService of serviceStep3Data.externalServiceList;let iIndex = index"
-       class="external-container">
-    <div class="line-container">
-      <clr-icon *ngIf="iIndex > 0 && !isActionWip" class="plus-icon" shape="minus"
-                (click)="removeExternalService(iIndex)"></clr-icon>
-      <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE"|translate}}</span>
-    </div>
-    <div class="line-container">
+
+  <div *ngIf="serviceStep3Data.isShowExternalConfig">
+    <div *ngFor="let externalService of serviceStep3Data.externalServiceList;let iIndex = index"
+         class="external-container">
+      <div class="line-container">
+        <clr-icon *ngIf="iIndex > 0 && !isActionWip" class="plus-icon" shape="minus"
+                  (click)="removeExternalService(iIndex)"></clr-icon>
+        <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE"|translate}}</span>
+      </div>
       <lib-dropdown-ex [dropdownItems]="serviceStep2Data.containerList"
                        [dropdownLabel]="'SERVICE.STEP_3_CONTAINER_NAME' | translate"
                        [dropdownKey]="'name'"
@@ -87,9 +139,8 @@
                        [dropdownTip]="'SERVICE.STEP_3_SELECT_CONTAINER' | translate"
                        (dropdownChangeItem)="setExternalInfo($event, iIndex)">
       </lib-dropdown-ex>
-    </div>
-    <div class="line-container" *ngIf="externalService.containerName !== ''">
-      <lib-input-ex *ngIf="inputExternalPortEnable(externalService.containerName)"
+      <lib-input-ex *ngIf="externalService.containerName !== '' &&
+                           inputExternalPortEnable(externalService.containerName)"
                     [inputCategory]="2"
                     [inputDefaultValue]="externalService.nodeConfig.targetPort"
                     [inputDisabled]="isActionWip"
@@ -99,35 +150,34 @@
                     [inputMax]="32766"
                     (commitEvent)="externalService.nodeConfig.targetPort = $event">
       </lib-input-ex>
-      <lib-dropdown-ex *ngIf="selectExternalPortEnable(externalService.containerName)"
+      <lib-dropdown-ex *ngIf="externalService.containerName !== '' &&
+                              selectExternalPortEnable(externalService.containerName)"
                        [dropdownLabel]="'SERVICE.STEP_3_CONTAINER_PORT' |translate"
-                       [dropdownDisabled]="externalService.containerName == '' || isActionWip"
+                       [dropdownDisabled]="isActionWip"
                        [dropdownItems]="getContainerPorts(externalService.containerName)"
                        [dropdownMinWidth]="310"
                        [dropdownDefaultActiveIndex]="iIndex === 0 ? 0 : -1"
                        [dropdownTip]="'SERVICE.STEP_3_SELECT_PORT' | translate"
                        (dropdownChangeItem)="externalService.nodeConfig.targetPort = $event">
       </lib-dropdown-ex>
-    </div>
-    <div class="line-container" *ngIf="externalService.containerName !== ''"
-         [style.display]="isStatefulService ? 'none' : 'flex'">
-      <lib-input-dropdown-number [label]="'SERVICE.STEP_3_NODE_PORT' | translate"
+      <lib-input-dropdown-number *ngIf="externalService.containerName !== '' &&
+                                        !serviceStep3Data.isStatefulSetType"
+                                 [label]="'SERVICE.STEP_3_NODE_PORT' | translate"
                                  [inUsedNumbers]="existingNodePorts"
                                  [activeItem]="externalService.nodeConfig.nodePort"
                                  [disabled]="isActionWip || isGetNodePortWip"
-                                 [dropdownMinWidth]="340"
-                                 [isRequired]="serviceStep3Data.clusterIp == '' && !isStatefulService"
+                                 [dropdownMinWidth]="'340'"
+                                 [isRequired]="true"
                                  [placeholder]="'SERVICE.STEP_3_EXTERNAL_PORT'| translate"
-                                 [validatorMessage]="[
-                                 {key: 'inUsed', message: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED' | translate}
-                                 ]"
+                                 [validatorMessage]="[{key: 'inUsed', message: 'SERVICE.STEP_3_NODE_PORT_ALREADY_USED' | translate}]"
                                  [max]="32767"
                                  [min]="30000"
                                  (changeItem)="externalService.nodeConfig.nodePort = $event">
       </lib-input-dropdown-number>
     </div>
   </div>
-  <div class="line-container">
+
+  <div *ngIf="serviceStep3Data.isShowExternalConfig" class="line-container">
     <clr-icon class="plus-icon"
               shape="plus"
               [ngClass]="{'disabled':serviceStep2Data.containerList.length == 0 || isActionWip}"
@@ -135,45 +185,49 @@
     </clr-icon>
     <span>{{"SERVICE.STEP_3_EXTERNAL_SERVICE_ADD"|translate}}</span>
   </div>
-  <div class="line-container" (click)="showAdvanced = !showAdvanced">
-    <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
-    <span>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</span>
-  </div>
-  <div class="line-container" *ngIf="showAdvanced">
-    <clr-icon shape="wrench" class="plus-icon" [ngClass]="{'disabled':isActionWip}" (click)="setAffinity()"></clr-icon>
-    <span>{{"SERVICE.STEP_3_SET_AFFINITY"|translate}}</span>
-  </div>
-  <div class="line-container" *ngIf="showAdvanced">
-    <div [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
-      <clr-icon shape="caret up" class="plus-icon" [ngClass]="{'disabled':isActionWip}"
-                (click)="setNodeSelector()"></clr-icon>
+  <div *ngIf="serviceStep3Data.isShowAdvanceConfig">
+    <div class="line-container" (click)="showAdvanced = !showAdvanced">
+      <div [ngClass]="{'advanced-open':showAdvanced,'advanced-close':!showAdvanced}" class="step-arrow"></div>
+      <span>{{"SERVICE.STEP_3_ADVANCED_CONFIG"|translate}}</span>
     </div>
-    <span>{{"SERVICE.STEP_3_NODE_SELECTOR"|translate}}:</span>
-  </div>
-  <div class="line-container" *ngIf="showAdvanced && showNodeSelector">
-    <lib-dropdown-ex [dropdownItems]="nodeSelectorList"
-                     [dropdownKey]="'name'"
-                     [dropdownDisabled]="isActionWip"
-                     [dropdownMinWidth]="310"
-                     [dropdpwnPosition]="'top-left'"
-                     [dropdownTip]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
-                     [dropdownActiveItem]="curNodeSelector"
-                     (dropdownChangeItem)="serviceStep3Data.nodeSelector = $event['value']">
-      <ng-template libItemTemp let-name="name" let-tag="tag">
-        <div class="temp-container">
-          {{name | translate}}
-          <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
+    <div class="line-container" *ngIf="showAdvanced">
+      <clr-icon shape="wrench" class="plus-icon" [ngClass]="{'disabled':isActionWip}"
+                (click)="setAffinity()"></clr-icon>
+      <span>{{"SERVICE.STEP_3_SET_AFFINITY"|translate}}</span>
+    </div>
+    <div class="line-container" *ngIf="showAdvanced">
+      <div [ngClass]="{'node-selector-close':showNodeSelector,'node-selector-open':!showNodeSelector}">
+        <clr-icon shape="caret up" class="plus-icon" [ngClass]="{'disabled':isActionWip}"
+                  (click)="setNodeSelector()"></clr-icon>
+      </div>
+      <span>{{"SERVICE.STEP_3_NODE_SELECTOR"|translate}}:</span>
+    </div>
+    <div *ngIf="showAdvanced && showNodeSelector"
+         class="line-container">
+      <lib-dropdown-ex [dropdownItems]="nodeSelectorList"
+                       [dropdownKey]="'name'"
+                       [dropdownDisabled]="isActionWip"
+                       [dropdownMinWidth]="310"
+                       [dropdpwnPosition]="'top-left'"
+                       [dropdownTip]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
+                       [dropdownActiveItem]="curNodeSelector"
+                       (dropdownChangeItem)="serviceStep3Data.nodeSelector = $event['value']">
+        <ng-template libItemTemp let-name="name" let-tag="tag">
+          <div class="temp-container">
+            {{name | translate}}
+            <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
         {{tag.description | translate}}</span>
-        </div>
-      </ng-template>
-      <ng-template libTitleTemp let-name="name" let-tag="tag">
-        <div class="temp-container">
-          {{name | translate}}
-          <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
+          </div>
+        </ng-template>
+        <ng-template libTitleTemp let-name="name" let-tag="tag">
+          <div class="temp-container">
+            {{name | translate}}
+            <span *ngIf="tag" class="tag label" [ngClass]="getItemTagClass(tag)">
         {{tag.description | translate}}</span>
-        </div>
-      </ng-template>
-    </lib-dropdown-ex>
+          </div>
+        </ng-template>
+      </lib-dropdown-ex>
+    </div>
   </div>
 </div>
 <div class="button-container">

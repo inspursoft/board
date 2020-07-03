@@ -12,7 +12,7 @@ import { DialogComponent } from './message/dialog/dialog.component';
 import { GlobalAlertComponent } from './message/global-alert/global-alert.component';
 import { HttpInterceptorService } from './http-client-interceptor';
 import { MessageService } from './message/message.service';
-import { MyInputTemplateComponent } from './my-input-template/my-input-template.component';
+import { VariableInputComponent } from './variable-input/variable-input.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
@@ -23,7 +23,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     AlertComponent,
     DialogComponent,
     GlobalAlertComponent,
-    MyInputTemplateComponent
+    VariableInputComponent
   ],
   entryComponents: [
     AlertComponent,
@@ -41,7 +41,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   exports: [
     HeaderComponent,
     BackTopComponent,
-    MyInputTemplateComponent
+    VariableInputComponent
   ],
   providers: [
     ScrollTools,

@@ -31,26 +31,27 @@ func GetAllCfg(which string, show bool) (*models.Configuration, error) {
 	}
 
 	//assigning values for each properties.
-	Cfgi := models.GetConfiguration(section)
+	cfg := models.GetConfiguration(section)
 
 	if !show {
-		Cfgi.Other.BoardAdminPassword = ""
-		Cfgi.Other.DBPassword = ""
-		Cfgi.Jenkinsserver.NodePassword = ""
-		Cfgi.Email.Password = ""
+		cfg.Db.BoardAdminPassword = ""
+		cfg.Db.Password = ""
+		cfg.Jenkins.NodePassword = ""
+		cfg.Email.Password = ""
+		cfg.Es.Password = ""
 	}
 
 	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
-	Cfgi.FirstTimePost = !encryption.CheckFileIsExist(backupPath)
+	cfg.FirstTimePost = !encryption.CheckFileIsExist(backupPath)
 	tmpPath := path.Join("/go", "/cfgfile/board.cfg.tmp")
-	Cfgi.TmpExist = encryption.CheckFileIsExist(tmpPath)
+	cfg.TmpExist = encryption.CheckFileIsExist(tmpPath)
 	if which == "" {
-		Cfgi.Current = "cfg"
+		cfg.Current = "cfg"
 	} else {
-		Cfgi.Current = "tmp"
+		cfg.Current = "tmp"
 	}
 
-	return &Cfgi, nil
+	return &cfg, nil
 }
 
 //UpdateCfg returns updated struct of data and set values for the cfg file.

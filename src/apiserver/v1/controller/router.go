@@ -132,7 +132,7 @@ func InitRouter() {
 			beego.NSRouter("/configmaps",
 				&ConfigMapController{},
 				"get:GetConfigMapListAction;post:AddConfigMapAction"),
-			beego.NSRouter("/configmaps/:configmapname([\\w]+)",
+			beego.NSRouter("/configmaps/:configmapname([\\w-]+)",
 				&ConfigMapController{},
 				"get:GetConfigMapAction;delete:RemoveConfigMapAction;put:UpdateConfigMapAction"),
 			beego.NSRouter("/node",
@@ -363,6 +363,9 @@ func InitRouter() {
 			beego.NSRouter("/k8sproxy",
 				&K8SProxyController{},
 				"get:GetK8SProxyConfig;put:SetK8SProxyConfig"),
+			beego.NSRouter("/prometheus",
+				&PrometheusController{},
+				"post:GetData"),
 		),
 	)
 
