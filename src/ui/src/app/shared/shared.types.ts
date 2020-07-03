@@ -63,15 +63,6 @@ export class GlobalAlertMessage {
   endMessage: string = '';
 }
 
-export class SignUp {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  realname: string;
-  comment: string;
-}
-
 export interface INode {
   node_name: string;
   node_ip: string;

@@ -37,7 +37,7 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
     this.isInLoadWip = true;
     this.nodeService.getNodes().subscribe(
       (res: Array<NodeStatus>) => {
-        this.nodeList = res;
+        this.nodeList = res.filter(value => value.nodeName !== '');
         this.isInLoadWip = false;
       },
       () => this.isInLoadWip = false
