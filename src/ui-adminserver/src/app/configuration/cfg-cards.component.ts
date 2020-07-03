@@ -22,6 +22,7 @@ export class CfgCardsComponent implements OnInit {
   user: User;
   loadingFlag = false;
   disableApply = false;
+  passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)([A-Za-z\d#?!@$%^&*-]){8,20}$/;
 
   showBaselineHelper = false;
   newDate = new Date('2016-01-01 09:00:00');
