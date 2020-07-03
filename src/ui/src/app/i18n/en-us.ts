@@ -139,6 +139,7 @@ export const LANG_EN_US = {
     "STORAGE": "Storage",
     "ADMIN_OPTIONS": "Admin Options",
     "USER_MANAGEMENT": "User management",
+    "SYSTEM_SETTING": "System setting",
     "AUDIT": "Operation Audit",
     "KIBANA": "Kibana",
     "GRAFANA": "Grafana",
@@ -839,6 +840,7 @@ export const LANG_EN_US = {
     "AUDIT_SYSTEM": "system",
     "AUDIT_RESET_PASSWORD": "Reset password",
     "AUDIT_FORGOT_PASSWORD": "Forgot password",
+    "AUDIT_K8S_PROXY":"Kubernetes proxy setting",
     "AUDIT_CREATE": "Create",
     "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",
@@ -970,4 +972,12 @@ export const LANG_EN_US = {
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
   },
+
+  SystemSetting: {
+    Title: 'Kubernetes proxy setting',
+    Enable: 'Enable',
+    Disable: 'Disable',
+    SetSuccessfully: 'Set successfully',
+    SetFailed: 'Set failed'
+  }
 };

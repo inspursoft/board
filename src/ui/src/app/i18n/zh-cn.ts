@@ -138,6 +138,7 @@ export const LANG_ZH_CN = {
     "CONFIG_MAP": "Config map",
     "STORAGE": "存储",
     "ADMIN_OPTIONS": "管理员选项",
+    "SYSTEM_SETTING": "系统设置",
     "USER_MANAGEMENT": "用户管理",
     "AUDIT": "操作审计",
     "KIBANA": "Kibana",
@@ -840,6 +841,7 @@ export const LANG_ZH_CN = {
     "AUDIT_RESET_PASSWORD": "重置密码",
     "AUDIT_FORGOT_PASSWORD": "忘记密码",
     "AUDIT_GET": "查询",
+    "AUDIT_K8S_PROXY":"Kubernetes代理设置",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",
     "AUDIT_UPDATE": "修改",
@@ -970,4 +972,12 @@ export const LANG_ZH_CN = {
     "SUPPORT_TEAM":"支持",
     "PROCESSOR_TYPE":"处理器类型",
   },
+
+  SystemSetting: {
+    Title: 'Kubernetes代理设置',
+    Enable: '启用',
+    Disable: '停用',
+    SetSuccessfully: '设置成功',
+    SetFailed: '设置失败'
+  }
 };

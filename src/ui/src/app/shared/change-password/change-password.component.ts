@@ -4,7 +4,7 @@
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { UserService } from '../../user-center/user-service/user-service';
+import { UserService } from '../../admin/user-center/user-service/user-service';
 import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessageService } from "../../shared.service/message.service";

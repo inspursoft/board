@@ -5,6 +5,7 @@ import { GlobalSearchComponent } from './global-search/global-search.component';
 import { AppInitService } from './shared.service/app-init.service';
 import { Observable } from 'rxjs';
 import { AppGuardService } from "./shared.service/app-guard.service";
+import { RouteSystemSetting } from './shared/shared.const';
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -29,7 +30,7 @@ const routes: Routes = [
       {path: 'nodes', loadChildren: './node/node.module#NodeModule'},
       {path: 'services', loadChildren: './service/service.module#ServiceModule'},
       {path: 'audit', loadChildren: './audit/audit.module#AuditModule'},
-      {path: 'user-center', loadChildren: './user-center/user-center.module#UserCenterModule'},
+      {path: 'admin', loadChildren: './admin/admin.module#AdminModule'},
       {path: 'projects', loadChildren: './project/project.module#ProjectModule'},
       {path: 'training-job', loadChildren: './job/job.module#JobModule'},
       {path: 'resource', loadChildren: './resource/resource.module#ResourceModule'},

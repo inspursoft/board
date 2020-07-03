@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpResponse } from "@angular/common/http";
-import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../shared/shared.const";
-import { User } from "../../shared/shared.types";
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from "../../../shared/shared.const";
+import { User } from "../../../shared/shared.types";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 

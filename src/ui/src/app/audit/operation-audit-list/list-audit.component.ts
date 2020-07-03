@@ -60,6 +60,7 @@ export class ListAuditComponent implements OnInit {
     this.objectQueryMap.push({key: "system", title: "AUDIT.AUDIT_SYSTEM"});
     this.objectQueryMap.push({key: "reset-password", title: "AUDIT.AUDIT_RESET_PASSWORD"});
     this.objectQueryMap.push({key: "forgot-password", title: "AUDIT.AUDIT_FORGOT_PASSWORD"});
+    this.objectQueryMap.push({key: "k8sproxy", title: "AUDIT.AUDIT_K8S_PROXY"});
   }
 
   initActionQueryMap() {
