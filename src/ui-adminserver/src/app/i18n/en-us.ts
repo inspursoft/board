@@ -620,7 +620,7 @@ export const LANG_EN_US = {
       ACCOUNT: 'Initialize the administrator password of Adminserver. The admin account will be shared with the Board.',
       EDIT_CONFIG_CONFIRM: 'It seems that there is already a configured cfg, do you want to re-edit it or start the Board directly?',
       FINISH: 'Board have been successfully started. Initialization needs to wait for a while, after waiting, you can access the following connection to access the Board or Adminserver.',
-      UNINSTALL: 'Board component uninstallation is complete!You can now go to the background to uninstall Adminserver and clear related data.',
+      UNINSTALL: 'Board component uninstallation is complete!You can now go to the background to uninstall Adminserver and clear related data. If you need to reinstall Board, please enter the adminserver folder in the background installation directory, execute "docker-compose -f docker-compose-adminserver.yml restart" and then start the reinstallation!',
       CLEAR_DATA: 'Clear all relevant data of Board',
       RESPONSIBILITY: 'I already know the impact of this operation and I am responsible for its consequences.',
     },

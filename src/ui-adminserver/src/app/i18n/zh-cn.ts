@@ -619,7 +619,7 @@ export const LANG_ZH_CN = {
       ACCOUNT: '初始化Adminserver的管理员密码。该admin账户将与Board共用。',
       EDIT_CONFIG_CONFIRM: '似乎已经有一个已配置的cfg，您要重新编辑它还是直接启动Board？',
       FINISH: 'Board已成功启动。初始化需要等待一段时间，等待之后，您可以访问以下连接来访问Board或Adminserver。',
-      UNINSTALL: 'Board组件卸载完成！您现在可以前往后台卸载Adminserver以及清除相关数据。',
+      UNINSTALL: 'Board组件卸载完成！您现在可以前往后台卸载Adminserver以及清除相关数据。若您需要重装Board，请进入后台安装目录中的adminserver文件夹，执行“docker-compose -f docker-compose-adminserver.yml restart”后开始重新安装！',
       CLEAR_DATA: '清除Board的所有相关数据',
       RESPONSIBILITY: '我已知晓该操作会造成什么影响并对此操作的后果进行负责',
     },
