@@ -73,8 +73,13 @@ func (p *AppV1Client) ConfigMap(namespace string) ConfigMapInterface {
 func (p *AppV1Client) StatefulSet(namespace string) StatefulSetClientInterface {
 	return apps.NewStatefulSets(namespace, p.Clientset.AppsV1().StatefulSets(namespace))
 }
+
 func (p *AppV1Client) Job(namespace string) JobInterface {
 	return apps.NewJob(namespace, p.Clientset.BatchV1().Jobs(namespace))
+}
+
+func (p *AppV1Client) DaemonSet(namespace string) DaemonSetInterface {
+	return apps.NewDaemonSets(namespace, p.Clientset.AppsV1().DaemonSets(namespace))
 }
 
 func (p *AppV1Client) Proxy() ProxyInterface {
@@ -101,6 +106,7 @@ type AppV1ClientInterface interface {
 	ConfigMap(namespace string) ConfigMapInterface
 	StatefulSet(namespace string) StatefulSetClientInterface
 	Job(namespace string) JobInterface
+	DaemonSet(namespace string) DaemonSetInterface
 	Proxy() ProxyInterface
 	Extend() ExtendInterface
 }
@@ -275,6 +281,16 @@ type JobInterface interface {
 	PatchToK8s(string, model.PatchType, *model.Job) (*model.Job, []byte, error)
 	CreateByYaml(io.Reader) (*model.Job, error)
 	CheckYaml(io.Reader) (*model.Job, error)
+}
+
+// DaemonSetInterface has methods to work with DaemonSet resources.
+type DaemonSetInterface interface {
+	Create(*model.DaemonSet) (*model.DaemonSet, []byte, error)
+	Update(*model.DaemonSet) (*model.DaemonSet, []byte, error)
+	UpdateStatus(*model.DaemonSet) (*model.DaemonSet, []byte, error)
+	Delete(name string) error
+	Get(name string) (*model.DaemonSet, []byte, error)
+	List(opts model.ListOptions) (*model.DaemonSetList, error)
 }
 
 type ProxyInterface interface {

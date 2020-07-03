@@ -1,0 +1,23 @@
+div.init-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+div.init-title-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+
+p.init-title {
+  font-size: 20px;
+  text-align: center;
+}
+
+div.progress-container {
+  max-height: 50px;
+  width: 400px;
+}
+

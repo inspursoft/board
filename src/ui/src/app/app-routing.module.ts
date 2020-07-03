@@ -4,8 +4,9 @@ import { MainContentComponent } from './main-content/main-content.component';
 import { GlobalSearchComponent } from './global-search/global-search.component';
 import { AppInitService } from './shared.service/app-init.service';
 import { Observable } from 'rxjs';
-import { AppGuardService } from "./shared.service/app-guard.service";
-import { RouteSystemSetting } from './shared/shared.const';
+import { AppGuardService, AppInitializeGuard, AppInitializePageGuard } from './shared.service/app-guard.service';
+import { RouteInitialize } from './shared/shared.const';
+import { InitializePageComponent } from './initialize-page/initialize-page.component';
 
 @Injectable()
 export class SystemInfoResolve implements Resolve<any> {
@@ -19,8 +20,18 @@ export class SystemInfoResolve implements Resolve<any> {
 }
 
 const routes: Routes = [
-  {path: 'account', loadChildren: './account/account.module#AccountModule', pathMatch: 'prefix'},
+  {
+    path: 'account',
+    loadChildren: './account/account.module#AccountModule',
+    pathMatch: 'prefix',
+    canActivate: [AppInitializeGuard]
+  },
   {path: '', redirectTo: '/account/sign-in', pathMatch: 'full'},
+  {
+    path: RouteInitialize,
+    component: InitializePageComponent,
+    canActivate: [AppInitializePageGuard]
+  },
   {
     path: '', component: MainContentComponent, resolve: {systeminfo: SystemInfoResolve},
     canActivate: [AppGuardService],
@@ -37,7 +48,7 @@ const routes: Routes = [
       {path: 'helm', loadChildren: './helm/helm.module#HelmModule'},
       {path: 'profile', loadChildren: './profile/profile.module#ProfileModule'},
       {path: 'storage', loadChildren: './storage/storage.module#StorageModule'},
-      {path: 'kibana-url', loadChildren:'./kibana/kibana.module#KibanaModule'},
+      {path: 'kibana-url', loadChildren: './kibana/kibana.module#KibanaModule'},
       {path: 'images', loadChildren: './image/image.module#ImageModule'},
     ]
   },

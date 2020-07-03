@@ -147,283 +147,330 @@ export const LANG_EN_US = {
     Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
   },
   CONFIGURATIONS: {
-    API_SERVER: {
-      TITLE: 'Api Server',
+    BOARD: {
+      ARCH_TYPE: {
+        LABEL: 'Architecture',
+        PLACEHOLDER: '',
+        HELPER: 'The default arch for Board is x86_64, also support mips and arm64v8 now',
+      },
+      MODE: {
+        LABEL: 'Security mode',
+        PLACEHOLDER: '',
+        HELPER: 'Security mode of Board, by default it\'s "Normal". "Security" mode will hide Kibana, Grafana in UI',
+      },
+      ACCESS_PROTOCOL: {
+        LABEL: 'Access mode',
+        PLACEHOLDER: '',
+        HELPER: 'It can be set to https if ssl is enabled on nginx. Default: http',
+      },
       HOSTNAME: {
-        NAME: 'Hostname',
-        PLACEHOLDER: 'eg：192.168.1.10 or reg.yourdomain.com',
-        TIPS: 'The IP address or hostname to access admin UI and Kubernetes Cluster apiserver. DO NOT use localhost or 127.0.0.1, because Board needs to be accessed by external clients.'
+        LABEL: 'Hostname',
+        PLACEHOLDER: 'eg：192.168.1.10',
+        HELPER: 'The IP address or hostname to access admin UI and Kubernetes Cluster apiserver. DO NOT use localhost or 127.0.0.1, because Board needs to be accessed by external clients.',
       },
       API_SERVER_PORT: {
-        NAME: 'Api server port',
+        LABEL: 'API server port',
         PLACEHOLDER: '1 ~ 65535, default: 8088',
-        TIPS: 'Port of the Board service deployment'
+        HELPER: 'Port of the Board service deployment',
       },
-      KUBE_HTTP_SCHEME: {
-        NAME: 'Kube http scheme',
-        PLACEHOLDER: 'Kube http scheme',
-        TIPS: 'Kubernetes (K8s) deployment uses network protocols that support http and https. Please choose according to the actual network request scheme of the K8s to be connected, otherwise the connection will fail.'
-      },
-      KUBE_MASTER_IP: {
-        NAME: 'Kube master IP',
-        PLACEHOLDER: 'eg: 192.168.1.10',
-        TIPS: 'Host address of Kubernetes (K8s) deployment, Do not use localhost or 127.0.0.1 because K8s need to be accessed by other nodes'
-      },
-      KUBE_MASTER_PORT: {
-        NAME: 'Kube master port',
+      DEVOPS_OPT: {
+        LABEL: 'Git repository',
         PLACEHOLDER: '',
-        TIPS: 'Port of Kubernetes (K8s). By default, http uses port 8080 and https uses port 6443. Please fill in according to the actual situation under non-default conditions.'
+        HELPER: 'DevOps option for Gitlab or Gogits(legacy) take as a git repository for Board.',
       },
-      REGISTRY_IP: {
-        NAME: 'Registry IP',
-        PLACEHOLDER: 'eg: 192.168.1.10',
-        TIPS: 'The address of the image registry, do not use localhost or 127.0.0.1, because the image registry needs other nodes to access'
+      AUTH_MODE: {
+        LABEL: 'Auth mode',
+        PLACEHOLDER: '',
+        HELPER: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials with a LDAP server.',
       },
-      REGISTRY_PORT: {
-        NAME: 'Registry port',
-        PLACEHOLDER: '1~65535, default: 5000',
-        TIPS: 'The port of the image registry, default: 5000'
-      },
-      IMAGE_BASELINE_TIME: {
-        NAME: 'Image baseline time',
-        PLACEHOLDER: 'default: 2016-01-01 09:00:00',
-        TIPS: 'The baseline time of images, it\'s 2016-01-01 09:00:00 by default. Board only reads the image after this time'
+      AUDIT_DEBUG: {
+        LABEL: 'Audit debug',
+        PLACEHOLDER: '',
+        HELPER: 'Record all operations switch of operation audit function, default: false',
       },
     },
-    GOGITS: {
-      TITLE: 'Gogs',
-      GOGITS_HOST_IP: {
-        NAME: 'Gogs host IP',
+    K8S: {
+      KUBE_HTTP_SCHEME: {
+        LABEL: 'Http scheme',
+        PLACEHOLDER: '',
+        HELPER: 'Kubernetes (K8s) deployment uses network protocols that support http and https. Please choose according to the actual network request scheme of the K8s to be connected, otherwise the connection will fail.',
+      },
+      KUBE_MASTER_IP: {
+        LABEL: 'Master IP',
         PLACEHOLDER: 'eg: 192.168.1.10',
-        TIPS: 'The host address of Gogs, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes'
+        HELPER: 'Host address of Kubernetes (K8s) deployment, Do not use localhost or 127.0.0.1 because K8s need to be accessed by other nodes',
       },
-      GOGITS_HOST_PORT: {
-        NAME: 'Gogs host port',
+      KUBE_MASTER_PORT: {
+        LABEL: 'Master port',
+        PLACEHOLDER: '',
+        HELPER: 'Port of Kubernetes (K8s). By default, http uses port 8080 and https uses port 6443. Please fill in according to the actual situation under non-default conditions.',
+      },
+      REGISTRY_IP: {
+        LABEL: 'Registry IP',
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        HELPER: 'The address of the image registry, do not use localhost or 127.0.0.1, because the image registry needs other nodes to access',
+      },
+      REGISTRY_PORT: {
+        LABEL: 'Registry port',
+        PLACEHOLDER: '1~65535, default: 5000',
+        HELPER: 'The port of the image registry, default: 5000',
+      },
+      IMAGE_BASELINE_TIME: {
+        LABEL: 'Image baseline time',
+        PLACEHOLDER: 'default: 2016-01-01 09:00:00',
+        HELPER: 'The baseline time of images, it\'s 2016-01-01 09:00:00 by default. Board only reads the image after this time',
+      },
+      TILLER_PORT: {
+        LABEL: 'Tiller port',
+        PLACEHOLDER: '1~65535, default: 31111',
+        HELPER: 'The helm tiller node port, default: 31111',
+      },
+      DNS_SUFFIX: {
+        LABEL: 'DNS suffix',
+        PLACEHOLDER: 'eg: .cluster.local',
+        HELPER: 'Kubernetes DNS suffix, default: .cluster.local',
+      },
+    },
+    GOGS: {
+      HOST_IP: {
+        LABEL: 'Host IP',
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        HELPER: 'The host address of Gogs, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes',
+      },
+      HOST_PORT: {
+        LABEL: 'Host port',
         PLACEHOLDER: '1~65535, default: 10080',
-        TIPS: 'Host port of Gogs, default: 10080'
+        HELPER: 'Host port of Gogs, default: 10080',
       },
-      GOGITS_SSH_PORT: {
-        NAME: 'Gogs SSH port',
+      SSH_PORT: {
+        LABEL: 'SSH port',
         PLACEHOLDER: '1~65535, default: 10022',
-        TIPS: 'Request port number for SSH (Secure Shell), default: 10022'
+        HELPER: 'Request port number for SSH (Secure Shell), default: 10022',
+      },
+    },
+    GITLAB: {
+      HOST_IP: {
+        LABEL: 'Host IP',
+        PLACEHOLDER: 'eg: 192.168.1.10',
+        HELPER: 'The host address of Gitlab, DO NOT use localhost or 127.0.0.1 because it needs to be accessed by other nodes',
+      },
+      HOST_PORT: {
+        LABEL: 'Host port',
+        PLACEHOLDER: '1~65535, default: 10088',
+        HELPER: 'Host port of Gitlab, default: 10088',
+      },
+      SSH_PORT: {
+        LABEL: 'SSH port',
+        PLACEHOLDER: '1~65535, default: 10028',
+        HELPER: 'Request port number for SSH (Secure Shell), default: 10028',
+      },
+      ADMIN_TOKEN: {
+        LABEL: 'Access token',
+        PLACEHOLDER: 'eg: 1234567901234567890',
+        HELPER: 'The admin access token for Gitlab as root user, please contact the Gitlab server administrator.',
+      },
+    },
+    PROMETHEUS: {
+      URL: {
+        LABEL: 'URL',
+        PLACEHOLDER: 'eg: http://10.0.0.0:9090',
+        HELPER: 'The Prometheus Service URL',
       },
     },
     JENKINS: {
-      TITLE: 'Jenkins',
-      JENKINS_HOST_IP: {
-        NAME: 'Jenkins host IP',
+      HOST_IP: {
+        LABEL: 'Jenkins host IP',
         PLACEHOLDER: 'eg: 192.168.1.10',
-        TIPS: 'The address of the Jenkins master for external access. Don\'t use localhost or 127.0.0.1'
+        HELPER: 'The address of the Jenkins master for external access. Don\'t use localhost or 127.0.0.1',
       },
-      JENKINS_HOST_PORT: {
-        NAME: 'Jenkins host port',
+      HOST_PORT: {
+        LABEL: 'Jenkins host port',
         PLACEHOLDER: '1~65535, default: 8888',
-        TIPS: 'Port number of the Jenkins master, default: 8888'
+        HELPER: 'Port number of the Jenkins master, default: 8888',
       },
-      JENKINS_NODE_IP: {
-        NAME: 'Jenkins node IP',
+      NODE_IP: {
+        LABEL: 'Jenkins node IP',
         PLACEHOLDER: 'eg: 192.168.1.11',
-        TIPS: 'The address of the Jenkins node'
+        HELPER: 'The address of the Jenkins node',
       },
-      JENKINS_NODE_SSH_PORT: {
-        NAME: 'Jenkins node SSH port',
+      NODE_SSH_PORT: {
+        LABEL: 'Jenkins node SSH port',
         PLACEHOLDER: '1~65535, default: 22',
-        TIPS: 'SSH (Secure Shell) request port number of the Node node, default: 22'
+        HELPER: 'SSH (Secure Shell) request port number of the Node node, default: 22',
       },
-      JENKINS_NODE_USERNAME: {
-        NAME: 'Jenkins node username',
+      NODE_USERNAME: {
+        LABEL: 'Jenkins node username',
         PLACEHOLDER: 'Jenkins node username',
-        TIPS: 'User name for logging in to the Node'
+        HELPER: 'User name for logging in to the Node',
       },
-      JENKINS_NODE_PASSWORD: {
-        NAME: 'Jenkins node password',
+      NODE_PASSWORD: {
+        LABEL: 'Jenkins node password',
         PLACEHOLDER: 'password of node mechine',
-        TIPS: 'The password of jenkins node mechine, please use this password before production.',
+        HELPER: 'The password of jenkins node mechine, please use this password before production.',
         PATTERN_ERROR: '',
       },
-      JENKINS_NODE_VOLUME: {
-        NAME: 'Jenkins node volume',
+      NODE_VOLUME: {
+        LABEL: 'Jenkins node volume',
         PLACEHOLDER: 'eg: /data/jenkins_node',
-        TIPS: 'The address of the data volume of the Node'
+        HELPER: 'The address of the data volume of the Node',
       },
-      JENKINS_EXECUTION_MODE: {
-        NAME: 'Jenkins execution mode',
+      EXECUTION_MODE: {
+        LABEL: 'Jenkins execution mode',
         PLACEHOLDER: '',
-        TIPS: 'Jenkins cluster operation mode, support single mode (single) or multi mode (multi)'
+        HELPER: 'Jenkins cluster operation mode, support single mode (single) or multi mode (multi)',
       },
     },
     KVM: {
-      TITLE: 'KVM',
-      KVM_REGISTRY_SIZE: {
-        NAME: 'Kvm registry size',
+      REGISTRY_SIZE: {
+        LABEL: 'Registry size',
         PLACEHOLDER: 'default: 5',
-        TIPS: 'Need to be greater than 0, the default is 5'
+        HELPER: 'Need to be greater than 0, the default is 5',
       },
-      KVM_REGISTRY_PORT: {
-        NAME: 'Kvm registry port',
+      REGISTRY_PORT: {
+        LABEL: 'Registry port',
         PLACEHOLDER: '1~65535, default: 8890',
-        TIPS: '1~65535, default: 8890'
+        HELPER: '1~65535, default: 8890',
       },
-      KVM_REGISTRY_PATH: {
-        NAME: 'Kvm registry path',
+      TOOLKITS_PATH: {
+        LABEL: 'Toolkits path',
         PLACEHOLDER: 'eg: /root/kvm_toolkits',
-        TIPS: 'KVM tool storage path, default is /root/kvm_toolkits'
+        HELPER: 'KVM tool storage path, default is /root/kvm_toolkits',
+      },
+    },
+    ES: {
+      MEMORY_IN_MEGABYTES: {
+        LABEL: 'Memory',
+        PLACEHOLDER: 'In MB, default: 1024',
+        HELPER: 'The max memory(MB) of elasticsearch can use, default: 1024',
+      },
+      PASSWORD: {
+        LABEL: 'Password',
+        PLACEHOLDER: '',
+        HELPER: 'The default initail password for elasticsearch',
+      },
+    },
+    DB: {
+      DB_PASSWORD: {
+        LABEL: 'DB Password',
+        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
+        HELPER: 'The password for the root user of mysql db, change this before any production use. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        CONFIRM_LABEL: 'Confirm password',
+      },
+      DB_MAX_CONNECTIONS: {
+        LABEL: 'DB Max Connection',
+        PLACEHOLDER: '1~16384, recommended: 1000',
+        HELPER: '1~16384, recommended: 1000',
+      },
+      BOARD_ADMIN_PASSWORD: {
+        LABEL: 'Board admin password',
+        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
+        HELPER: 'The initial password of Admin only takes effect when Board is started for the first time. This password is shared between the admin account of the Board and Adminserver. To modify it, you need to configure Email parameters, and then forget the password after the Board starts successfully. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
+        CONFIRM_LABEL: 'Confirm password',
+      },
+    },
+    INDATA: {
+      VERIFICATION_URL: {
+        LABEL: 'Verification url',
+        PLACEHOLDER: 'eg: http://verification.mydomain.com',
+        HELPER: 'External token verification URL as to integrate authorization with another platform. NOTE: This option is only available when auth_mode is set to \'Indata\'.',
+      },
+      REDIRECTION_URL: {
+        LABEL: 'Redirection url',
+        PLACEHOLDER: 'eg: http://redirection.mydomain.com',
+        HELPER: 'Specify redirection URL when token is invalid or expired the UI will redirect to. NOTE: This option is only available when auth_mode is set to \'Indata\'.',
       },
     },
     LDAP: {
-      TITLE: 'LDAP(Lightweight Directory Access Protocol)',
-      LDAP_URL: {
-        NAME: 'URL',
+      URL: {
+        LABEL: 'URL',
         PLACEHOLDER: 'eg: ldaps://ldap.mydomain.com',
-        TIPS: 'LDAP service entry address'
+        HELPER: 'LDAP service entry address',
       },
-      LDAP_BASEDN: {
-        NAME: 'Base dn',
-        PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
-        TIPS: 'LDAP verifies which source the user came from, ou is people, dc is mydomain, dc is com'
+      SEARCHDN: {
+        LABEL: 'Search DN',
+        PLACEHOLDER: 'eg: uid=searchuser,ou=people,dc=mydomain,dc=com',
+        HELPER: 'A user\'s DN who has the permission to search the LDAP/AD server. If your LDAP/AD server does not support anonymous search, you should configure this DN and search password.',
       },
-      LDAP_UID: {
-        NAME: 'UID type',
-        PLACEHOLDER: 'uid/cn/email/...',
-        TIPS: 'Attributes used to match users in the search, which can be uid, cn, email, sAMAccountName or other attributes, depending on your LDAP/AD'
-      },
-      LDAP_SCOPE: {
-        NAME: 'Scope',
+      SEARCH_PWD: {
+        LABEL: 'Search password',
         PLACEHOLDER: '',
-        TIPS: 'Search for the user\'s scope, default: Subtree'
+        HELPER: 'the password of the search DN',
       },
-      LDAP_TIMEOUT: {
-        NAME: 'Timeout',
+      BASEDN: {
+        LABEL: 'Base dn',
+        PLACEHOLDER: 'ou=people,dc=mydomain,dc=com',
+        HELPER: 'LDAP verifies which source the user came from, ou is people, dc is mydomain, dc is com',
+      },
+      FILTER: {
+        LABEL: 'Filter',
+        PLACEHOLDER: 'eg: (objectClass=person)',
+        HELPER: 'Search filter for LDAP/AD, make sure the syntax of the filter is correct.',
+      },
+      UID: {
+        LABEL: 'UID type',
+        PLACEHOLDER: 'uid/cn/email/...',
+        HELPER: 'Attributes used to match users in the search, which can be uid, cn, email, sAMAccountName or other attributes, depending on your LDAP/AD',
+      },
+      SCOPE: {
+        LABEL: 'Scope',
+        PLACEHOLDER: '',
+        HELPER: 'Search for the user\'s scope, default: Subtree',
+      },
+      TIMEOUT: {
+        LABEL: 'Timeout',
         PLACEHOLDER: 'The unit is seconds, default: (the most reasonable)5',
-        TIPS: 'The timeout in seconds to connect to the LDAP server. The unit is seconds. The default (most reasonable) is 5 seconds'
+        HELPER: 'The timeout in seconds to connect to the LDAP server. The unit is seconds. The default (most reasonable) is 5 seconds',
       },
     },
     EMAIL: {
-      TITLE: 'Email',
-      EMAIL_IDENTITY: {
-        NAME: 'Identity',
+      IDENTITY: {
+        LABEL: 'Identity',
         PLACEHOLDER: 'Identity',
-        TIPS: 'When the blank is not filled in, the username is used as its identity, and it is not filled in by default.'
+        HELPER: 'When the blank is not filled in, the username is used as its identity, and it is not filled in by default.'
       },
-      EMAIL_SERVER: {
-        NAME: 'Server IP',
+      SERVER: {
+        LABEL: 'Server IP',
         PLACEHOLDER: 'eg: smtp.mydomain.com',
-        TIPS: 'Email server address'
+        HELPER: 'Email server address'
       },
-      EMAIL_SERVER_PORT: {
-        NAME: 'Server port',
+      SERVER_PORT: {
+        LABEL: 'Server port',
         PLACEHOLDER: '1~65535, default: 25',
-        TIPS: 'Email server port, default: 25'
+        HELPER: 'Email server port, default: 25'
       },
-      EMAIL_USERNAME: {
-        NAME: 'Username',
+      USERNAME: {
+        LABEL: 'Username',
         PLACEHOLDER: 'eg: admin@mydomain.com',
-        TIPS: 'Email username, eg: admin@mydomain.com'
+        HELPER: 'Email username, eg: admin@mydomain.com'
       },
-      EMAIL_PASSWORD: {
-        NAME: 'Password',
+      PASSWORD: {
+        LABEL: 'Password',
         PLACEHOLDER: 'Email password',
-        TIPS: 'Used to login to the email and send mail'
+        HELPER: 'Used to login to the email and send mail'
       },
-      EMAIL_FROM: {
-        NAME: 'Email from',
+      FROM: {
+        LABEL: 'Email from',
         PLACEHOLDER: 'eg: admin <admin@mydomain.com>',
-        TIPS: 'eg: admin <admin@mydomain.com>'
+        HELPER: 'eg: admin <admin@mydomain.com>'
       },
-      EMAIL_SSL: {
-        NAME: 'Whether SSL',
+      SSL: {
+        LABEL: 'Whether SSL',
         PLACEHOLDER: '',
-        TIPS: 'Whether to enable SSL to encrypt the network connection, the default is false'
+        HELPER: 'Whether to enable SSL to encrypt the network connection, the default is false'
       },
     },
-    OTHERS: {
-      TITLE: 'Initialization',
-      ARCH_TYPE: {
-        NAME: 'Architecture',
-        PLACEHOLDER: '',
-        TIPS: 'The default arch for Board is x86_64, also support mips and arm64v8 now'
-      },
-      SECURITY_MODE: {
-        NAME: 'Security mode',
-        PLACEHOLDER: '',
-        TIPS: 'Security mode of Board, by default it\'s "Normal". "Security" mode will hide Kibana, Grafana in UI',
-      },
-      DATABASE_PASSWORD: {
-        NAME: 'Database password',
-        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
-        TIPS: 'The password for the root user of mysql db, change this before any production use. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-      },
-      DB_MAX_CONNECTION: {
-        NAME: 'DB Max Connection',
-        PLACEHOLDER: '1~16384, recommended: 1000',
-        TIPS: '1~16384, recommended: 1000',
-      },
-      TOKEN_CACHE_EXPIRE: {
-        NAME: 'Token cache expire',
+    TOKEN: {
+      CACHE_EXPIRE_SECONDS: {
+        LABEL: 'Token cache expire',
         PLACEHOLDER: 'In seconds, recommended: 1800',
-        TIPS: 'The expiration seconds of token stored in cache, recommended: 1800'
+        HELPER: 'The expiration seconds of token stored in cache, recommended: 1800',
       },
-      TOKEN_EXPIRE: {
-        NAME: 'Token expire',
+      EXPIRE_SECONDS: {
+        LABEL: 'Token expire',
         PLACEHOLDER: 'In seconds, recommended: 1800',
-        TIPS: 'The expiration seconds of token, recommended: 1800'
-      },
-      ELASETICSEARCH_MEMORY: {
-        NAME: 'Elaseticsearch memory',
-        PLACEHOLDER: 'In MB, default: 1024',
-        TIPS: 'The max memory(MB) of elasticsearch can use, default: 1024'
-      },
-      TILLER_PORT: {
-        NAME: 'Tiller port',
-        PLACEHOLDER: '1~65535, default: 31111',
-        TIPS: 'The helm tiller node port, default: 31111'
-      },
-      BOARD_ADMIN_PASSWORD: {
-        NAME: 'Board admin password',
-        PLACEHOLDER: '8~20 digits, numbers/letters/#?!@$%^&*-',
-        TIPS: 'The initial password of Admin only takes effect when Board is started for the first time. This password is shared between the admin account of the Board and Adminserver. To modify it, you need to configure Email parameters, and then forget the password after the Board starts successfully. The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-        PATTERN_ERROR: 'The password must contain large and small letters, numbers, 8~20 characters, support special characters #?!@$%^&*-',
-      },
-      BOARD_ADMIN_PASSWORD_OLD: {
-        NAME: 'Board Admin old password',
-        PLACEHOLDER: 'Board Admin old password',
-        TIPS: 'Please enter the old password of Board Admin for verification. If the verification is successful, you can modify the new password below.',
-      },
-      BOARD_ADMIN_PASSWORD_NEW: {
-        NAME: 'New password',
-        PLACEHOLDER: 'New password',
-        TIPS: 'Please enter a new Board Admin password.',
-      },
-      BOARD_ADMIN_PASSWORD_CONFIRM: {
-        NAME: 'Confirm password',
-        PLACEHOLDER: 'Confirm password',
-        TIPS: 'Please confirm the new password entered above.',
-      },
-      AUTH_MODE: {
-        NAME: 'Auth mode',
-        PLACEHOLDER: 'Auth mode',
-        TIPS: 'By default the auth mode is \'Database\', the credentials are stored in a local database. Set it to \'LDAP\' if you want to verify a user\'s credentials with a LDAP server.'
-      },
-      VERIFICATION_URL: {
-        NAME: 'Verification url',
-        PLACEHOLDER: 'eg: http://verification.mydomain.com',
-        TIPS: 'External token verification URL as to integrate authorization with another platform. NOTE: This option is only available when auth_mode is set to \'Indata\'.'
-      },
-      REDIRECTION_URL: {
-        NAME: 'Redirection url',
-        PLACEHOLDER: 'eg: http://redirection.mydomain.com',
-        TIPS: 'Specify redirection URL when token is invalid or expired the UI will redirect to. NOTE: This option is only available when auth_mode is set to \'Indata\'.'
-      },
-      AUDIT_DEBUG: {
-        NAME: 'Audit debug',
-        PLACEHOLDER: '',
-        TIPS: 'Record all operations switch of operation audit function, default: false'
-      },
-      DNS_SUFFIX: {
-        NAME: 'DNS suffix',
-        PLACEHOLDER: 'eg: .cluster.local',
-        TIPS: 'Kubernetes DNS suffix, default: .cluster.local'
+        HELPER: 'The expiration seconds of token, recommended: 1800',
       },
     },
   },

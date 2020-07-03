@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
 import { DashboardComponent } from './dashboard.component';
-import { TimeRangeScale } from './time-range-scale.component/time-range-scale.component';
+import { TimeRangeScaleComponent } from './time-range-scale.component/time-range-scale.component';
 import { DashboardService } from './dashboard.service';
 import { CoreModule } from '../core/core.module';
 import { RouterModule } from '@angular/router';
-import { GrafanaComponent } from "./grafana/grafana.component";
+import { GrafanaComponent } from './grafana/grafana.component';
 
 @NgModule({
   imports: [
@@ -16,7 +16,7 @@ import { GrafanaComponent } from "./grafana/grafana.component";
   declarations: [
     DashboardComponent,
     GrafanaComponent,
-    TimeRangeScale
+    TimeRangeScaleComponent
   ],
   providers: [
     DashboardService

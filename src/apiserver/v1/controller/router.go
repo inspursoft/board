@@ -363,6 +363,9 @@ func InitRouter() {
 			beego.NSRouter("/k8sproxy",
 				&K8SProxyController{},
 				"get:GetK8SProxyConfig;put:SetK8SProxyConfig"),
+			beego.NSRouter("/prometheus",
+				&PrometheusController{},
+				"post:GetData"),
 		),
 	)
 

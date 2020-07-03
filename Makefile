@@ -103,11 +103,11 @@ endif
 
 # Package lists
 # TOPLEVEL_PKG := .
-INT_LIST := adminserver apiserver tokenserver collector/cmd
+INT_LIST := adminserver apiserver tokenserver
 ifndef ARCH
-	IMG_LIST := adminserver apiserver tokenserver log collector jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum
+	IMG_LIST := adminserver apiserver tokenserver log jenkins db proxy proxy_adminserver gogits grafana elasticsearch kibana chartmuseum prometheus
 else
-	IMG_LIST := apiserver tokenserver log collector jenkins db proxy gogits
+	IMG_LIST := apiserver tokenserver log jenkins db proxy gogits prometheus
 endif
 
 
@@ -261,5 +261,5 @@ cleanall: cleanbinary cleanimage
 
 clean:
 	@echo "  make cleanall:         remove binaries and Board images"
-	@echo "  make cleanbinary:      remove apiserver tokenserver and collector/cmd binary"
+	@echo "  make cleanbinary:      remove apiserver tokenserver binary"
 	@echo "  make cleanimage:       remove Board images"
