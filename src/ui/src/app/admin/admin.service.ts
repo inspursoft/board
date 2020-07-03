@@ -4,9 +4,7 @@ import { Observable } from 'rxjs';
 import { HttpHeaders } from '@angular/common/http';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class AdminService {
 
   constructor(private http: ModelHttpClient) {

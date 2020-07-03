@@ -987,6 +987,6 @@ export const LANG_EN_US = {
     Enable: 'Enable',
     Disable: 'Disable',
     SetSuccessfully: 'Set successfully',
-    SetFailed: 'Set failed'
+    SetFailed: 'Failed to set'
   }
 };
