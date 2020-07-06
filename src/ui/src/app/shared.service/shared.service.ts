@@ -49,16 +49,18 @@ export class SharedService {
       }
     }).pipe(map((res: Array<any>) => {
         const members = Array<Member>();
-        res.forEach(u => {
-          if (u.user_deleted === 0) {
-            const m = new Member();
-            m.project_member_username = u.user_name;
-            m.project_member_user_id = u.user_id;
-            m.project_member_role_id = 1;
-            m.isMember = false;
-            members.push(m);
-          }
-        });
+        if (res && res.length > 0) {
+          res.forEach(u => {
+            if (u.user_deleted === 0) {
+              const m = new Member();
+              m.project_member_username = u.user_name;
+              m.project_member_user_id = u.user_id;
+              m.project_member_role_id = 1;
+              m.isMember = false;
+              members.push(m);
+            }
+          });
+        }
         return members;
       }));
   }
