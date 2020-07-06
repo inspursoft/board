@@ -12,7 +12,10 @@ export class NodeService {
   }
 
   getNodes(): Observable<Array<NodeStatus>> {
-    return this.http.getArray(`/api/v1/nodes`, NodeStatus);
+    return this.http.getArray(`/api/v1/nodes`, NodeStatus)
+      .pipe(
+        map((nodeStatusList: Array<NodeStatus>) => nodeStatusList.filter(value => value.nodeName !== ''))
+      );
   }
 
   getNodeDetailByName(nodeName: string): Observable<NodeDetail> {

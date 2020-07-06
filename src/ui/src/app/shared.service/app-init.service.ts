@@ -77,6 +77,10 @@ export class AppInitService {
     return window.location.protocol === 'https:' ? 'wss' : 'ws';
   }
 
+  get getHttpProtocol(): string {
+    return window.location.protocol === 'https:' ? 'https' : 'http';
+  }
+
   getCurrentUser(tokenParam?: string): Observable<User> {
     const token = this.tokenService.token || tokenParam;
     return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})

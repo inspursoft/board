@@ -3,7 +3,7 @@ import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { K8sService } from '../../service.k8s';
 import { AppInitService } from '../../../shared.service/app-init.service';
-import { Service, ServiceDetailInfo, ServiceNode, ServiceType } from '../../service.types';
+import { Service, ServiceDetailInfo, ServiceType } from '../../service.types';
 
 class NodeURL {
   constructor(public url: string, public identity: string, public route: string) {
@@ -58,39 +58,42 @@ export class ServiceDetailComponent {
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
-    this.k8sService.getServiceDetail(serviceId).subscribe((serviceDetail: ServiceDetailInfo) => {
-      if (serviceDetail.serviceContainers.length > 0) {
-        serviceDetail.serviceContainers.forEach(container => {
-          if (container.nodeIp !== '') {
-            serviceDetail.nodePorts.forEach(port => {
-              const nodeInfo = {
-                url: `http://${container.nodeIp}:${port}`,
-                identity: `${ownerName}_${projectName}_${this.curService.serviceName}_${port}`,
-                route: `http://${container.nodeIp}:${port}/deploy/${ownerName}/${projectName}/${this.curService.serviceName}`
-              };
-              this.urlList.push(nodeInfo);
-              this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).subscribe();
-            });
-          }
-        });
-        // this.k8sService.getNodesList({ping: true}).subscribe((nodeList: Array<ServiceNode>) => {
-        //   for (const nodePort of serviceDetail.nodePorts) {
-        //     for (const node of nodeList) {
-        //       const host = this.k8sHostName && this.k8sHostName.length > 0 ? this.k8sHostName : node.nodeIp;
-        //       const nodeInfo = {
-        //         url: `http://${host}:${nodePort}`,
-        //         identity: `${ownerName}_${projectName}_${this.curService.serviceName}_${nodePort}`,
-        //         route: `http://${host}:${nodePort}/deploy/${ownerName}/${projectName}/${this.curService.serviceName}`
-        //       };
-        //       this.urlList.push(nodeInfo);
-        //       this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).subscribe();
-        //     }
-        //   }
-        // });
-      }
-      this.serviceDetail = serviceDetail;
-      this.isOpenServiceDetail = true;
-    }, () => this.isOpenServiceDetail = false);
+    if (this.curService.serviceType !== ServiceType.ServiceTypeStatefulSet &&
+      this.curService.serviceType !== ServiceType.ServiceTypeClusterIP) {
+      this.k8sService.getServiceDetail(serviceId).subscribe((serviceDetail: ServiceDetailInfo) => {
+        if (serviceDetail.serviceContainers.length > 0) {
+          serviceDetail.serviceContainers.forEach(container => {
+            if (container.nodeIp !== '') {
+              serviceDetail.nodePorts.forEach(port => {
+                const nodeInfo = {
+                  url: `http://${container.nodeIp}:${port}`,
+                  identity: `${ownerName}_${projectName}_${this.curService.serviceName}_${port}`,
+                  route: `http://${container.nodeIp}:${port}/deploy/${ownerName}/${projectName}/${this.curService.serviceName}`
+                };
+                this.urlList.push(nodeInfo);
+                this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).subscribe();
+              });
+            }
+          });
+          // this.k8sService.getNodesList({ping: true}).subscribe((nodeList: Array<ServiceNode>) => {
+          //   for (const nodePort of serviceDetail.nodePorts) {
+          //     for (const node of nodeList) {
+          //       const host = this.k8sHostName && this.k8sHostName.length > 0 ? this.k8sHostName : node.nodeIp;
+          //       const nodeInfo = {
+          //         url: `http://${host}:${nodePort}`,
+          //         identity: `${ownerName}_${projectName}_${this.curService.serviceName}_${nodePort}`,
+          //         route: `http://${host}:${nodePort}/deploy/${ownerName}/${projectName}/${this.curService.serviceName}`
+          //       };
+          //       this.urlList.push(nodeInfo);
+          //       this.k8sService.addServiceRoute(nodeInfo.url, nodeInfo.identity).subscribe();
+          //     }
+          //   }
+          // });
+        }
+        this.serviceDetail = serviceDetail;
+        this.isOpenServiceDetail = true;
+      }, () => this.isOpenServiceDetail = false);
+    }
   }
 
   getDeploymentYamlFile(): Observable<string> {
