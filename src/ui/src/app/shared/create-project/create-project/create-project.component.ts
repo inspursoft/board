@@ -7,14 +7,13 @@ import { Observable } from 'rxjs';
 import { MessageService } from '../../../shared.service/message.service';
 
 @Component({
-  selector: 'create-project',
   styleUrls: [ './create-project.component.css' ],
   templateUrl: './create-project.component.html'
 })
 export class CreateProjectComponent extends CsModalChildBase {
   createProject: CreateProject;
   isCreateProjectWIP = false;
-  projectNamePattern = '^[a-z0-9]+(?:[-][a-z0-9]+)*$';
+  projectNamePattern = /^[a-z0-9]+(?:[-][a-z0-9]+)*$/;
   constructor(private sharedService: SharedService,
               private messageService: MessageService) {
     super();
@@ -37,11 +36,12 @@ export class CreateProjectComponent extends CsModalChildBase {
         () => this.messageService.showAlert('PROJECT.SUCCESSFUL_CREATED_PROJECT'),
         (err: HttpErrorResponse) => {
           this.isCreateProjectWIP = false;
-          if (err.status == 409) {
-            this.messageService.showAlert('PROJECT.PROJECT_NAME_ALREADY_EXISTS', {alertType: 'danger', view: this.alertView});
-          } else if (err.status == 400) {
-            this.messageService.showAlert('PROJECT.PROJECT_NAME_IS_ILLEGAL', {alertType: 'danger', view: this.alertView});
+          if (err.status === 409) {
+            this.messageService.showAlert('PROJECT.PROJECT_NAME_ALREADY_EXISTS', {alertType: 'danger'});
+          } else if (err.status === 400) {
+            this.messageService.showAlert('PROJECT.PROJECT_NAME_IS_ILLEGAL', {alertType: 'danger'});
           }
+          this.modalOpened = false;
         },
         () => {
           this.closeNotification.next(project.project_name);

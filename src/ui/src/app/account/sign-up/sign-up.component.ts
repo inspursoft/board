@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from '../../shared.service/message.service';
-import { AccountTypes } from '../account.types';
+import { AccountTypes, SignUp } from '../account.types';
 import { AccountService } from '../account.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
 import { RouteSignIn } from '../../shared/shared.const';
-import { SignUp } from '../../shared/shared.types';
 
 @Component({
    templateUrl: './sign-up.component.html',

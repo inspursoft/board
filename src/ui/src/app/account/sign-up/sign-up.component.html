@@ -1,7 +1,7 @@
 <header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
 <div class="content-container background">
   <div class="input-container">
-    <lib-input-ex libCheckItemExistingEx="username"
+    <lib-input-ex appLibCheckItemExistingEx="username"
                   libCheckPatternEx="username"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.USERNAME' | translate "
@@ -13,7 +13,7 @@
                   [inputMinlength]="4"
                   (commitEvent)="signUpModel.username = $event">
     </lib-input-ex>
-    <lib-input-ex libCheckItemExistingEx="email"
+    <lib-input-ex appLibCheckItemExistingEx="email"
                   libCheckPatternEx="email"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.EMAIL' | translate "

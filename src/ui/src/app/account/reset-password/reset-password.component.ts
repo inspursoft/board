@@ -7,7 +7,7 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { ParamMap } from "@angular/router/src/shared";
 import { AppInitService } from "../../shared.service/app-init.service";
 import { CsComponentBase } from "../../shared/cs-components-library/cs-component-base";
-import { SignUp } from "../../shared/shared.types";
+import { SignUp } from '../account.types';
 
 @Component({
   selector: 'reset-password',
@@ -17,7 +17,7 @@ import { SignUp } from "../../shared/shared.types";
 export class ResetPasswordComponent extends CsComponentBase implements OnInit {
   resetUuid: string;
   signUpModel: SignUp = new SignUp();
-  sendRequestWIP: boolean = false;
+  sendRequestWIP = false;
 
   constructor(private accountService: AccountService,
               private messageService: MessageService,

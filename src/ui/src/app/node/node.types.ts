@@ -34,13 +34,13 @@ export class  NodeStatus extends HttpBase {
 
 export class NodeGroupStatus extends HttpBase {
   projectName = '';
-  @HttpBind('nodegroup_id') id: number;
-  @HttpBind('nodegroup_name') name: string;
-  @HttpBind('nodegroup_comment') comment: string;
-  @HttpBind('nodegroup_owner_id') ownerId: number;
-  @HttpBind('nodegroup_creation_time') creationTime: string;
-  @HttpBind('nodegroup_update_time') updateTime: string;
-  @HttpBind('nodegroup_deleted') deleted: number;
+  @HttpBind('nodegroup_id') id = 0;
+  @HttpBind('nodegroup_name') name = '';
+  @HttpBind('nodegroup_comment') comment = '';
+  @HttpBind('nodegroup_owner_id') ownerId = 0;
+  @HttpBind('nodegroup_creation_time') creationTime = '';
+  @HttpBind('nodegroup_update_time') updateTime = '';
+  @HttpBind('nodegroup_deleted') deleted = 0;
 
   postBody(): { [p: string]: string } {
     return {

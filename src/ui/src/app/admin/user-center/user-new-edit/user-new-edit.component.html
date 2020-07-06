@@ -5,7 +5,7 @@
                   [inputLabel]="'USER_CENTER.USERNAME' | translate"
                   [inputDefaultValue]="userModel.user_name"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
-                  libCheckItemExistingEx="username"
+                  appLibCheckItemExistingEx="username"
                   libCheckPatternEx="username"
                   [inputMaxlength]="35"
                   [inputMinlength]="4"
@@ -17,7 +17,7 @@
                   [inputDefaultValue]="userModel.user_email"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
                   [inputCategory]="4"
-                  libCheckItemExistingEx="email"
+                  appLibCheckItemExistingEx="email"
                   libCheckPatternEx="email"
                   [inputPlaceholder]="'USER_CENTER.INPUT_EMAIL' | translate"
                   (commitEvent)="userModel.user_email = $event">

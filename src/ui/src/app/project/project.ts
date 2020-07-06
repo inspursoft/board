@@ -23,7 +23,7 @@ export class Role {
 }
 
 export class CreateProject {
-  projectName: string;
-  publicity: boolean;
-  comment: string
+  projectName = '';
+  publicity = false;
+  comment = '';
 }
