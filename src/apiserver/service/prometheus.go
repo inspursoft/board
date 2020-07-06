@@ -133,7 +133,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	para.NodeListData[0].NodeLogsData = make([]NodeLogs, request.TimeCount)
 
 	for i, v := range lineOfStorageCap[1:] {
-		nodeName := grepString(v, "node=[^,}]+")
+		nodeName := grepString(v, ", node=[^,}]+")
 		para.NodeListData[i+1].Name = strings.Trim(grepString(nodeName[0], `"[^"]+"`)[0], "\"")
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
 		data := grepString(v, "\n[0-9]+")
@@ -273,7 +273,8 @@ func (d *DashboardInfo) GetData(query, which string, v1api v1.API, ctx context.C
 }
 
 func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRange v1.Range, timeStampArray []int64) ([][]string, error) {
-	result, warnings, err := v1api.QueryRange(ctx, "kube_service_spec_selector{service!=\"kubernetes\"}", timeRange)
+	serviceQuery := `kube_service_spec_selector{namespace!~"cadvisor|istio-system|kube-public|kube-system", service!="kubernetes"}`
+	result, warnings, err := v1api.QueryRange(ctx, serviceQuery, timeRange)
 	if err != nil {
 		return [][]string{}, err
 	}
