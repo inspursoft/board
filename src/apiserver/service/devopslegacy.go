@@ -16,11 +16,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-type key int
 
-const (
-	storeItem key = iota
-)
 
 var BaseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
