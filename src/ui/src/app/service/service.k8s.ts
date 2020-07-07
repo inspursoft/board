@@ -400,7 +400,9 @@ export class K8sService {
     return this.httpModel.get(`/api/v1/edgenodes`).pipe(
       map((res: Array<string>) => {
         const result = new Array<{ description: string }>();
-        res.forEach(value => result.push({description: value}));
+        if (res && res.length > 0) {
+          res.forEach(value => result.push({description: value}));
+        }
         return result;
       })
     );

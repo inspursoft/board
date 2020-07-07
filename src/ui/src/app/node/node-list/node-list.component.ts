@@ -1,4 +1,14 @@
-import { Component, ComponentFactoryResolver, ElementRef, EventEmitter, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import {
+  Component,
+  ComponentFactoryResolver,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ViewContainerRef
+} from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NodeService } from '../node.service';
 import { MessageService } from '../../shared.service/message.service';
@@ -7,15 +17,17 @@ import { Message, RETURN_STATUS } from '../../shared/shared.types';
 import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
 import { NodeControlComponent } from '../node-control/node-control.component';
 import { NodeStatus, NodeStatusType } from '../node.types';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-node-list',
   templateUrl: './node-list.component.html',
   styleUrls: ['./node-list.component.css'],
 })
-export class NodeListComponent extends CsModalParentBase implements OnInit {
+export class NodeListComponent extends CsModalParentBase implements OnInit, OnDestroy {
   @ViewChild(NodeDetailComponent) nodeDetailModal;
   @Output() creatingNode: EventEmitter<Array<NodeStatus>>;
+  autoRefreshSubscription: Subscription;
   nodeList: Array<NodeStatus>;
   isInLoadWip = false;
 
@@ -31,6 +43,11 @@ export class NodeListComponent extends CsModalParentBase implements OnInit {
 
   ngOnInit(): void {
     this.retrieve();
+    this.autoRefreshSubscription = interval(60000).subscribe(() => this.retrieve());
+  }
+
+  ngOnDestroy(): void {
+    this.autoRefreshSubscription.unsubscribe();
   }
 
   retrieve(): void {
