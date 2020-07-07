@@ -5,6 +5,12 @@ import (
 	"git/inspursoft/board/src/common/utils"
 )
 
+type key int
+
+const (
+	storeItem key = iota
+)
+
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 var devOpsRegistries map[string]DevOps
 var boardAPIBaseURL = utils.GetConfig("BOARD_API_BASE_URL")
