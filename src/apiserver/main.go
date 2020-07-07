@@ -81,24 +81,17 @@ func setConfigurations() {
 	utils.SetConfig("AUTH_MODE", defaultAuthMode)
 }
 
-func initBoardVersion(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred from context: %+v", err)
-		return
-	}
+func initBoardVersion(ctx context.Context, cancel context.CancelFunc) {
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
+		cancel()
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
 	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
-func updateAdminPassword(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred from context: %+v", err)
-		return
-	}
+func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
 	if ctx.Value(systemInfo).(*model.SystemInfo).SetAdminPassword == "updated" {
 		logs.Info("Skip updating admin user as it has been updated.")
 		return
@@ -113,6 +106,7 @@ func updateAdminPassword(ctx context.Context) {
 	isSuccess, err := service.UpdateUser(user, "password", "salt")
 	if err != nil {
 		logs.Error("Failed to update user password: %+v", err)
+		cancel()
 	}
 	if isSuccess {
 		utils.SetConfig("SET_ADMIN_PASSWORD", "updated")
@@ -123,11 +117,7 @@ func updateAdminPassword(ctx context.Context) {
 	}
 }
 
-func initProjectRepo(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred from context: %+v", err)
-		return
-	}
+func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
 	if ctx.Value(systemInfo).(*model.SystemInfo).InitProjectRepo == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		return
@@ -142,11 +132,12 @@ func initProjectRepo(ctx context.Context) {
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
 		logs.Error("Failed to create admin user on current DevOps: %+v", err)
+		cancel()
 	}
-
 	token, err := devops.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)
+		cancel()
 	}
 	user := model.User{ID: adminUserID, RepoToken: token}
 	service.UpdateUser(user, "repo_token")
@@ -161,48 +152,38 @@ func initProjectRepo(ctx context.Context) {
 	err = devops.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
+		cancel()
 	}
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
 	service.SetSystemInfo("INIT_PROJECT_REPO", false)
 	logs.Info("Finished to create initial project and repo.")
 }
 
-func prepareKVMHost(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred at: %s from context: %+v", "prepare KVM host", err)
-		return
-	}
+func prepareKVMHost(ctx context.Context, cancel context.CancelFunc) {
 	if jenkinsExecutionMode() == "single" {
 		logs.Info("Skip preparing KVM host as it set as single slave node.")
 		return
 	}
 	if err := service.PrepareKVMHost(); err != nil {
 		logs.Error("Failed to prepare KVM host, error: %+v", err)
+		cancel()
 	}
 }
 
-func initKubernetesInfo(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred from context: %+v", err)
-		return
-	}
-	logs.Info("Initialize Kubernetes info")
+func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc) {
+	logs.Info("Initializing Kubernetes info")
 	info, err := service.GetKubernetesInfo()
 	if err != nil {
 		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
 		utils.SetConfig("KUBERNETES_VERSION", "NA")
-	} else {
-		utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
+		return
 	}
+	utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
 	service.SetSystemInfo("KUBERNETES_VERSION", true)
 	logs.Info("Finished to initialize Kubernetes info.")
 }
 
-func syncUpWithK8s(ctx context.Context) {
-	if err := ctx.Err(); err != nil {
-		logs.Error("Error occurred from context: %+v", err)
-		return
-	}
+func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 	if ctx.Value(systemInfo).(*model.SystemInfo).SyncK8s == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		if k8sForceInitSync() == "false" {
@@ -216,17 +197,18 @@ func syncUpWithK8s(ctx context.Context) {
 		utils.SetConfig("SYNC_K8S", "finished")
 		service.SetSystemInfo("SYNC_K8S", false)
 	}()
-	var err error
 	// Sync namespace with specific project ownerID
-	err = service.SyncNamespaceByOwnerID(adminUserID)
+	err := service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
+		cancel()
 	}
 	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
 		logs.Error("Failed to sync projects with K8s: %+v", err)
+		cancel()
 	}
 	logs.Info("Successful sync up with projects with K8s.")
 }
@@ -236,39 +218,71 @@ func main() {
 	c.InitController()
 	controller.InitRouter()
 	v2routers.InitRouterV2()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan bool)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		utils.SetConfig("INIT_STATUS", "NOT_READY")
-		dao.InitDB()
-		service.SetSystemInfo("DNS_SUFFIX", true)
-		service.SetSystemInfo("MODE", true)
-		service.SetSystemInfo("BOARD_HOST_IP", true)
-		service.SetSystemInfo("AUTH_MODE", false)
-		service.SetSystemInfo("REDIRECTION_URL", false)
-		service.SetSystemInfo("DEVOPS_OPT", false)
+		initializer := func() <-chan error {
+			e := make(chan error)
+			go func() {
+				defer close(e)
+				dao.InitDB()
+				service.SetSystemInfo("DNS_SUFFIX", true)
+				service.SetSystemInfo("MODE", true)
+				service.SetSystemInfo("BOARD_HOST_IP", true)
+				service.SetSystemInfo("AUTH_MODE", false)
+				service.SetSystemInfo("REDIRECTION_URL", false)
+				service.SetSystemInfo("DEVOPS_OPT", false)
 
-		info, err := service.GetSystemInfo()
-		if err != nil {
-			logs.Error("Failed to set system config: %+v", err)
-			panic(err)
+				info, err := service.GetSystemInfo()
+				if err != nil {
+					logs.Error("Failed to set system config: %+v", err)
+					panic(err)
+				}
+				utils.SetConfig("INIT_STATUS", "NOT_READY")
+				ctx = context.WithValue(ctx, systemInfo, info)
+				initBoardVersion(ctx, cancel)
+				utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
+				updateAdminPassword(ctx, cancel)
+				utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
+				initProjectRepo(ctx, cancel)
+				utils.SetConfig("INIT_STATUS", "5_3_PREPARE_KVM_HOST")
+				prepareKVMHost(ctx, cancel)
+				utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
+				initKubernetesInfo(ctx, cancel)
+				utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
+				syncUpWithK8s(ctx, cancel)
+				for {
+					select {
+					case <-ctx.Done():
+						e <- ctx.Err()
+					case <-done:
+						logs.Info("Finished as initialization has done.")
+						e <- nil
+					}
+				}
+			}()
+			return e
 		}
-		ctx := context.WithValue(context.Background(), systemInfo, info)
-		initBoardVersion(ctx)
-		utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
-		updateAdminPassword(ctx)
-		utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
-		initProjectRepo(ctx)
-		utils.SetConfig("INIT_STATUS", "5_3_PREPARE_KVM_HOST")
-		prepareKVMHost(ctx)
-		utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
-		initKubernetesInfo(ctx)
-		utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
-		syncUpWithK8s(ctx)
-		utils.SetConfig("INIT_STATUS", "READY")
+		close(done)
+		select {
+		case err := <-initializer():
+			if err != nil {
+				utils.SetConfig("INIT_STATUS", err.Error())
+				logs.Error("Failed to execute initialization with error: %+v", err)
+			} else {
+				utils.SetConfig("INIT_STATUS", "READY")
+				logs.Info("Finished executing Board initialization process.")
+			}
+		}
 	}()
-
+	go func() {
+		wg.Wait()
+	}()
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
