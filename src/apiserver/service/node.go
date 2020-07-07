@@ -543,6 +543,7 @@ func CreateNode(node model.NodeCli) (*model.Node, error) {
 	var nodek8s model.Node
 	nodek8s.ObjectMeta.Name = node.NodeName
 	nodek8s.ObjectMeta.Labels = node.Labels
+	nodek8s.Taints = node.Taints
 
 	newnode, err := n.Create(&nodek8s)
 	if err != nil {
@@ -734,6 +735,7 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	node.Labels = make(map[string]string)
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
+	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoSchedule})
 	if edgenode.RegistryMode == "auto" {
 		node.Labels["edge"] = "true"
 	}
