@@ -130,7 +130,15 @@ type Node struct {
 	ObjectMeta
 	NodeIP        string
 	Unschedulable bool
+	Taints        []Taint
 	Status        NodeStatus
+}
+
+type Taint struct {
+	Key       string
+	Value     string
+	Effect    TaintEffect
+	TimeAdded *time.Time
 }
 
 type NodeStatus struct {
@@ -253,6 +261,7 @@ type PodSpec struct {
 	HostNetwork    bool
 	Affinity       K8sAffinity
 	RestartPolicy  RestartPolicy
+	Tolerations    []Toleration
 }
 
 type PodStatus struct {
@@ -267,6 +276,30 @@ type PodTemplateSpec struct {
 	ObjectMeta
 	Spec PodSpec
 }
+
+type Toleration struct {
+	Key               string
+	Operator          TolerationOperator
+	Value             string
+	Effect            TaintEffect
+	TolerationSeconds *int64
+}
+
+// A toleration operator is the set of operators that can be used in a toleration.
+type TolerationOperator string
+
+const (
+	TolerationOpExists TolerationOperator = "Exists"
+	TolerationOpEqual  TolerationOperator = "Equal"
+)
+
+type TaintEffect string
+
+const (
+	TaintEffectNoSchedule       TaintEffect = "NoSchedule"
+	TaintEffectPreferNoSchedule TaintEffect = "PreferNoSchedule"
+	TaintEffectNoExecute        TaintEffect = "NoExecute"
+)
 
 type Volume struct {
 	Name string

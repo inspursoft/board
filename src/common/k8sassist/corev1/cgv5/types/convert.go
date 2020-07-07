@@ -235,6 +235,27 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		HostNetwork:    spec.HostNetwork,
 		Affinity:       affinity,
 		RestartPolicy:  v1.RestartPolicy(string(spec.RestartPolicy)),
+		Tolerations:    ToK8sTolerations(spec.Tolerations),
+	}
+}
+
+func ToK8sTolerations(modeltols []model.Toleration) []v1.Toleration {
+	var tols []v1.Toleration
+	if modeltols != nil {
+		for _, tol := range modeltols {
+			tols = append(tols, ToK8sToleration(tol))
+		}
+	}
+	return tols
+}
+
+func ToK8sToleration(tol model.Toleration) v1.Toleration {
+	return v1.Toleration{
+		Key:               tol.Key,
+		Operator:          v1.TolerationOperator(string(tol.Operator)),
+		Value:             tol.Value,
+		Effect:            v1.TaintEffect(string(tol.Effect)),
+		TolerationSeconds: tol.TolerationSeconds,
 	}
 }
 
@@ -326,8 +347,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -778,6 +799,27 @@ func FromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
 		RestartPolicy:  model.RestartPolicy(string(spec.RestartPolicy)),
+		Tolerations:    FromK8sTolerations(spec.Tolerations),
+	}
+}
+
+func FromK8sTolerations(tols []v1.Toleration) []model.Toleration {
+	var k8stols []model.Toleration
+	if tols != nil {
+		for _, tol := range tols {
+			k8stols = append(k8stols, FromK8sToleration(tol))
+		}
+	}
+	return k8stols
+}
+
+func FromK8sToleration(tol v1.Toleration) model.Toleration {
+	return model.Toleration{
+		Key:               tol.Key,
+		Operator:          model.TolerationOperator(string(tol.Operator)),
+		Value:             tol.Value,
+		Effect:            model.TaintEffect(string(tol.Effect)),
+		TolerationSeconds: tol.TolerationSeconds,
 	}
 }
 
@@ -821,8 +863,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -1050,6 +1092,31 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 	return modelServiceList
 }
 
+func ToK8sNodeTaints(taints []model.Taint) []v1.Taint {
+	var k8staints []v1.Taint
+	if taints != nil {
+		for _, t := range taints {
+			k8staints = append(k8staints, ToK8sNodeTaint(t))
+		}
+	}
+	return k8staints
+}
+
+func ToK8sNodeTaint(taint model.Taint) v1.Taint {
+	var added *metav1.Time
+	if taint.TimeAdded != nil {
+		added = &metav1.Time{
+			*taint.TimeAdded,
+		}
+	}
+	return v1.Taint{
+		Key:       taint.Key,
+		Value:     taint.Value,
+		Effect:    v1.TaintEffect(string(taint.Effect)),
+		TimeAdded: added,
+	}
+}
+
 // generate k8s node status from model node status
 func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	capacity := make(map[v1.ResourceName]resource.Quantity)
@@ -1172,6 +1239,7 @@ func ToK8sNode(node *model.Node) *v1.Node {
 		ObjectMeta: ToK8sObjectMeta(node.ObjectMeta),
 		Spec: v1.NodeSpec{
 			Unschedulable: node.Unschedulable,
+			Taints:        ToK8sNodeTaints(node.Taints),
 		},
 		Status: ToK8sNodeStatus(node.Status),
 	}
@@ -1195,8 +1263,32 @@ func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
 	k8sNode.Labels = node.Labels
 
 	k8sNode.Spec.Unschedulable = node.Unschedulable
+	k8sNode.Spec.Taints = ToK8sNodeTaints(node.Taints)
 
 	UpdateK8sNodeStatus(&k8sNode.Status, &node.Status)
+}
+
+func FromK8sNodeTaints(taints []v1.Taint) []model.Taint {
+	var ts []model.Taint
+	if taints != nil {
+		for _, t := range taints {
+			ts = append(ts, FromK8sNodeTaint(t))
+		}
+	}
+	return ts
+}
+
+func FromK8sNodeTaint(taint v1.Taint) model.Taint {
+	var t *time.Time
+	if taint.TimeAdded != nil {
+		t = &taint.TimeAdded.Time
+	}
+	return model.Taint{
+		Key:       taint.Key,
+		Value:     taint.Value,
+		Effect:    model.TaintEffect(string(taint.Effect)),
+		TimeAdded: t,
+	}
 }
 
 // adapt model node.Status from k8s node.Status
@@ -1252,6 +1344,7 @@ func FromK8sNode(node *v1.Node) *model.Node {
 		ObjectMeta:    FromK8sObjectMeta(node.ObjectMeta),
 		NodeIP:        node.ObjectMeta.Name,
 		Unschedulable: node.Spec.Unschedulable,
+		Taints:        FromK8sNodeTaints(node.Spec.Taints),
 		Status:        FromK8sNodeStatus(node.Status),
 	}
 }
@@ -1337,6 +1430,7 @@ func GenerateDeploymentConfig(deployment *appsv1.Deployment) *appsv1.Deployment 
 					InitContainers:     deployment.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
 					HostNetwork:        deployment.Spec.Template.Spec.HostNetwork,
+					Tolerations:        deployment.Spec.Template.Spec.Tolerations,
 				},
 			},
 		},
@@ -2185,6 +2279,7 @@ func GenerateStatefulSetConfig(statefulset *appsv1.StatefulSet) *appsv1.Stateful
 					ImagePullSecrets:   statefulset.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     statefulset.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					Tolerations:        statefulset.Spec.Template.Spec.Tolerations,
 				},
 			},
 			ServiceName: statefulset.Spec.ServiceName,
@@ -2332,6 +2427,7 @@ func GenerateDaemonSetConfig(daemonset *appsv1.DaemonSet) *appsv1.DaemonSet {
 					ImagePullSecrets:   daemonset.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     daemonset.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					Tolerations:        daemonset.Spec.Template.Spec.Tolerations,
 				},
 			},
 			UpdateStrategy:       daemonset.Spec.UpdateStrategy,
