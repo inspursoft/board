@@ -97,6 +97,7 @@ func TestMain(m *testing.M) {
 	utils.SetConfig("TOKEN_SERVER_URL", "http://%s:%s/tokenservice/token", "TOKEN_SERVER_IP", "TOKEN_SERVER_PORT")
 	utils.SetConfig("SSH_KEY_PATH", "/tmp/ssh-keys")
 	utils.SetConfig("AUDIT_DEBUG", "false")
+	utils.SetConfig("INIT_STATUS", "READY")
 
 	dao.InitDB()
 	systemInfo, err := service.GetSystemInfo()
