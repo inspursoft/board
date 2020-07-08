@@ -147,7 +147,7 @@ func TestSignUpAction(t *testing.T) {
 	var user model.User
 	user.Username = "testuser1"
 	user.Email = "testuser1@inspur.com"
-	user.Password = `MTIjJHF3RVI`
+	user.Password = `MTIjJHF3RVI=`
 	assert := assert.New(t)
 	req, err := json.Marshal(user)
 	assert.Nil(err, "user marshal fail")
