@@ -336,7 +336,7 @@ func TestChangePasswordAction(t *testing.T) {
 	t.Log("change user password")
 	changePwd := new(model.ChangePassword)
 	changePwd.OldPassword = user.Password
-	changePwd.NewPassword = "newpassword"
+	changePwd.NewPassword = "MTIzNDU2YT8="
 	body, err = json.Marshal(changePwd)
 	if err != nil {
 		t.Fatalf("read user marshal error: %v", err)
