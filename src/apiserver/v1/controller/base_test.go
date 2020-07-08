@@ -1,4 +1,4 @@
-package commons_test
+package controller_test
 
 import (
 	"git/inspursoft/board/src/apiserver/controllers/commons"
