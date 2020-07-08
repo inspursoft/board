@@ -36,7 +36,7 @@ func TestUserAction(t *testing.T) {
 
 	user := model.User{
 		Username:    "testuser",
-		Password:    "123456a?",
+		Password:    "MTIzNDU2YT8=",
 		Email:       "testuser@test.com",
 		Realname:    "testuser",
 		Comment:     "this is just a test account",
