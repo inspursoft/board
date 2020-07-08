@@ -398,3 +398,11 @@ func (g GitlabDevOps) GetRepoFile(username string, repoName string, branch strin
 	logs.Debug("Got file: %s with content: %s", filePath, string(content))
 	return content, nil
 }
+
+func (g GitlabDevOps) DeleteUser(username string) error {
+	user, err := g.GetUser(gitlabAdminToken(), username)
+	if err != nil {
+		return fmt.Errorf("failed to get repo user: %s, error: %+v", user.Username, err)
+	}
+	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
+}

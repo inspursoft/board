@@ -36,7 +36,7 @@ func TestUserAction(t *testing.T) {
 
 	user := model.User{
 		Username:    "testuser",
-		Password:    "testuserpasswrd",
+		Password:    "dGVzdHVzZXJwYXNzd3Jk",
 		Email:       "testuser@test.com",
 		Realname:    "testuser",
 		Comment:     "this is just a test account",
@@ -173,7 +173,7 @@ func TestChangeUserAccount(t *testing.T) {
 
 	user := model.User{
 		Username:    "testuseraccount",
-		Password:    "testuseraccountpwd",
+		Password:    "dGVzdHVzZXJwYXNzd3Jk",
 		Email:       "testuseraccount@test.com",
 		Realname:    "testuseraccount",
 		Comment:     "this is just a test account",
@@ -275,7 +275,7 @@ func TestChangePasswordAction(t *testing.T) {
 
 	user := model.User{
 		Username:    "testpassword",
-		Password:    "testpasswordpwd",
+		Password:    "dGVzdHVzZXJwYXNzd3Jk",
 		Email:       "testpasswordpwd@test.com",
 		Realname:    "testpasswordpwd",
 		Comment:     "this is just a test account",
@@ -336,7 +336,7 @@ func TestChangePasswordAction(t *testing.T) {
 	t.Log("change user password")
 	changePwd := new(model.ChangePassword)
 	changePwd.OldPassword = user.Password
-	changePwd.NewPassword = "newpassword"
+	changePwd.NewPassword = "MTIzNDU2YT8="
 	body, err = json.Marshal(changePwd)
 	if err != nil {
 		t.Fatalf("read user marshal error: %v", err)

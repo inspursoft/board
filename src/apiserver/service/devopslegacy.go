@@ -16,8 +16,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-
-
 var BaseRepoPath = utils.GetConfig("BASE_REPO_PATH")
 var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
 var JenkinsBaseURL = utils.GetConfig("JENKINS_BASE_URL")
@@ -287,6 +285,14 @@ func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 
 func (l LegacyDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
 	return nil, fmt.Errorf("unimplement get repo files feature with the Gogits repo service")
+}
+
+func (l LegacyDevOps) DeleteUser(username string) error {
+	adminUser, err := GetUserByName("admin")
+	if err != nil {
+		return fmt.Errorf("failed to get admin user with error: %+v", err)
+	}
+	return gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(username)
 }
 
 func PrepareKVMHost() error {

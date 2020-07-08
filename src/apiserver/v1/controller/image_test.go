@@ -14,8 +14,8 @@ import (
 
 func TestGetImageRegistryAction(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn("admin", "123456a?")
-	defer signOut("admin")
+	token := signIn(AdminUsername, AdminPassword)
+	defer signOut(AdminUsername)
 	assert.NotEmpty(token, "signIn error")
 
 	reqURL := "/api/v1/images/registry?token=" + token
@@ -29,8 +29,8 @@ func TestGetImageRegistryAction(t *testing.T) {
 
 func TestGetImagesAction(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn("admin", "123456a?")
-	defer signOut("admin")
+	token := signIn(AdminUsername, AdminPassword)
+	defer signOut(AdminUsername)
 	assert.NotEmpty(token, "signIn error")
 
 	reqURL := "/api/v1/images?token=" + token
@@ -47,8 +47,8 @@ var testimage = "nginx"
 
 func TestGetImageDetailAction(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn("admin", "123456a?")
-	defer signOut("admin")
+	token := signIn(AdminUsername, AdminPassword)
+	defer signOut(AdminUsername)
 	assert.NotEmpty(token, "signIn error")
 
 	imagepath := filepath.Join(testproject, testimage)
