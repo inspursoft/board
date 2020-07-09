@@ -121,7 +121,7 @@ func TestGetK8sJobPods(t *testing.T) {
 
 func TestGetK8sJobLogs(t *testing.T) {
 	readCloser, err := service.GetK8sPodLogs(podMOInfo[0].ProjectName, podMOInfo[0].Name, &model.PodLogOptions{})
-	ticker := time.NewTicker(time.Second * 1)
+	ticker := time.NewTicker(time.Second * 3)
 	count := 0
 	for range ticker.C {
 		count++

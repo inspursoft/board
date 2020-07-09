@@ -199,10 +199,8 @@ type SystemAdminController struct {
 }
 
 func (u *SystemAdminController) Prepare() {
-	u.EnableXSRF = true
-	if utils.GetBoolValue("TEST_MODE") {
-		logs.Debug("Temporarily disable XSRF in test mode.")
-		u.EnableXSRF = false
+	if !utils.GetBoolValue("TEST_MODE") {
+		u.EnableXSRF = true
 	}
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
