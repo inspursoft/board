@@ -5,25 +5,25 @@
       <tbody>
       <tr>
         <th><span>{{"STORAGE.PVC_NAME" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.name}}</td>
+        <td>{{curDetail.claim.name}}</td>
         <th><span>{{"STORAGE.PVC_CAPACITY" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.capacity}}</td>
+        <td>{{curDetail.claim.capacity}}</td>
       </tr>
       <tr>
         <th><span>{{"STORAGE.PVC_STATUS" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.statusDescription | translate}}</td>
+        <td>{{curDetail.claim.statusDescription | translate}}</td>
         <th><span>{{"STORAGE.PVC_ACCESS_MODES" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.accessMode}}</td>
+        <td>{{curDetail.claim.accessMode}}</td>
       </tr>
       <tr>
         <th><span>{{"STORAGE.PVC_CREATE_DESIGNATE_PV" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.designatedPv}}</td>
+        <td>{{curDetail.claim.designatedPv}}</td>
         <th><span>{{"STORAGE.PVC_CLASS" | translate}}:</span></th>
-        <td>{{curPersistentVolumeClaim.class}}</td>
+        <td>{{curDetail.claim.class}}</td>
       </tr>
       <tr>
         <th><span>{{"STORAGE.PVC_VOLUME" | translate}}:</span></th>
-        <td colspan="3">{{curPersistentVolumeClaim.volume}}</td>
+        <td colspan="3">{{curDetail.volume}}</td>
       </tr>
       <tr>
         <th><span>{{"STORAGE.PVC_EVENT" | translate}}:</span></th>

@@ -1,21 +1,23 @@
-import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
-import { ClrDatagridStateInterface } from "@clr/angular";
-import { TranslateService } from "@ngx-translate/core";
-import { Message, PersistentVolumeClaim, RETURN_STATUS } from "../../../shared/shared.types";
-import { MessageService } from "../../../shared.service/message.service";
-import { StorageService } from "../../storage.service";
-import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent-base";
-import { CreatePvcComponent } from "../../../shared/create-pvc/create-pvc.component";
-import { PvcDetailComponent } from "../pvc-detail.component/pvc-detail.component";
+import { Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { ClrDatagridStateInterface } from '@clr/angular';
+import { TranslateService } from '@ngx-translate/core';
+import { Message, RETURN_STATUS } from '../../../shared/shared.types';
+import { MessageService } from '../../../shared.service/message.service';
+import { StorageService } from '../../storage.service';
+import { CsModalParentBase } from '../../../shared/cs-modal-base/cs-modal-parent-base';
+import { CreatePvcComponent } from '../../../shared/create-pvc/create-pvc.component';
+import { PvcDetailComponent } from '../pvc-detail/pvc-detail.component';
+import { PersistentVolumeClaim, PersistentVolumeClaimDetail } from '../../sotrage.types';
 
 @Component({
   templateUrl: './pvc-list.component.html',
   styleUrls: ['./pvc-list.component.css']
 })
-export class PvcListComponent extends CsModalParentBase{
+export class PvcListComponent extends CsModalParentBase {
   isInLoadWip = false;
   pageIndex = 1;
   pageSize = 15;
+
   oldStateInfo: ClrDatagridStateInterface;
   pvcList: Array<PersistentVolumeClaim>;
 
@@ -36,33 +38,33 @@ export class PvcListComponent extends CsModalParentBase{
         (res: Array<PersistentVolumeClaim>) => this.pvcList = res,
         () => this.isInLoadWip = false,
         () => this.isInLoadWip = false
-      )
-    })
+      );
+    });
   }
 
-  createNewPvc(){
+  createNewPvc() {
     this.createNewModal(CreatePvcComponent).onAfterCommit.subscribe(
       () => this.refreshList(this.oldStateInfo)
     );
   }
 
-  deletePvc(pvcName: string, pvcId: number){
+  deletePvc(pvcName: string, pvcId: number) {
     this.translateService.get('STORAGE.PVC_DELETE_CONFIRM', [pvcName]).subscribe(res => {
       this.messageService.showDeleteDialog(res).subscribe((message: Message) => {
-        if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+        if (message.returnStatus === RETURN_STATUS.rsConfirm) {
           this.storageService.deletePvc(pvcId).subscribe(
             () => this.messageService.showAlert(`STORAGE.PVC_DELETE_SUCCESS`),
             () => this.messageService.showAlert(`STORAGE.PVC_DELETE_FAILED`),
-            () => this.refreshList(this.oldStateInfo))
+            () => this.refreshList(this.oldStateInfo));
         }
-      })
-    })
+      });
+    });
   }
 
-  showPvcDetail(pvcId: number){
-    this.storageService.getPvcDetailInfo(pvcId).subscribe((res: PersistentVolumeClaim) => {
-      let instance = this.createNewModal(PvcDetailComponent);
-      instance.curPersistentVolumeClaim = res;
+  showPvcDetail(pvcId: number) {
+    this.storageService.getPvcDetailInfo(pvcId).subscribe((res: PersistentVolumeClaimDetail) => {
+      const instance = this.createNewModal(PvcDetailComponent);
+      instance.curDetail = res;
     });
   }
 }

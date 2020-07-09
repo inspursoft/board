@@ -21,8 +21,8 @@
                     [inputMin]="0.1"
                     [inputCategory]="2"
                     [inputDisabled]="isCreateWip"
-                    [inputDefaultValue]="newPersistentVolume.capacity"
-                    (commitEvent)="newPersistentVolume.capacity = $event">
+                    [inputDefaultValue]="newPersistentVolume.capacityValue"
+                    (commitEvent)="newPersistentVolume.capacityValue = $event">
       </lib-input-ex>
       (Gi)
     </div>
@@ -126,28 +126,28 @@
                         [inputDisabled]="isCreateWip"
                         [inputLabel]="'STORAGE.PV_FS_TYPE' | translate"
                         [inputPlaceholder]="'eg. ext4'"
-                        [inputDefaultValue]="rbdPersistentVolume.options.fstype"
-                        (commitEvent)="rbdPersistentVolume.options.fstype = $event">
+                        [inputDefaultValue]="rbdPersistentVolume.options.fsType"
+                        (commitEvent)="rbdPersistentVolume.options.fsType = $event">
           </lib-input-ex>
         </div>
         <div class="dynamic-line-container">
           <lib-input-ex [inputIsRequired]="true"
                         [inputDisabled]="isCreateWip"
                         [inputLabel]="'STORAGE.PV_SECRET' | translate"
-                        [inputDefaultValue]="rbdPersistentVolume.options.secretname"
-                        (commitEvent)="rbdPersistentVolume.options.secretname = $event">
+                        [inputDefaultValue]="rbdPersistentVolume.options.secretName"
+                        (commitEvent)="rbdPersistentVolume.options.secretName = $event">
           </lib-input-ex>
           <lib-input-ex [inputIsRequired]="true"
                         [inputDisabled]="isCreateWip"
                         [inputLabel]="'STORAGE.PV_SECRET_NAMESPACE' | translate"
-                        [inputDefaultValue]="rbdPersistentVolume.options.secretnamespace"
-                        (commitEvent)="rbdPersistentVolume.options.secretnamespace = $event">
+                        [inputDefaultValue]="rbdPersistentVolume.options.secretNamespace"
+                        (commitEvent)="rbdPersistentVolume.options.secretNamespace = $event">
           </lib-input-ex>
         </div>
-        <pv-monitors [(isOpen)]="isEditPvMonitors"
-                     [monitorText]="rbdPersistentVolume.options.monitors"
-                     (onCommitMonitorText)="rbdPersistentVolume.options.monitors = $event">
-        </pv-monitors>
+        <app-pv-monitors [(isOpen)]="isEditPvMonitors"
+                         [monitorText]="rbdPersistentVolume.options.monitors"
+                         (commitMonitorText)="rbdPersistentVolume.options.monitors = $event">
+        </app-pv-monitors>
       </ng-container>
     </div>
   </div>

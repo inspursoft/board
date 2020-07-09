@@ -3,17 +3,10 @@ import { ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-
 import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
-import {
-  NFSPersistentVolume,
-  PersistentVolume,
-  PvAccessMode,
-  PvReclaimMode,
-  RBDPersistentVolume
-} from '../../../shared/shared.types';
 import { StorageService } from '../../storage.service';
 import { MessageService } from '../../../shared.service/message.service';
+import { NFSPersistentVolume, PersistentVolume, PvAccessMode, PvReclaimMode, RBDPersistentVolume } from '../../sotrage.types';
 
 @Component({
   templateUrl: './create-pv.component.html',
