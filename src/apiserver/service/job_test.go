@@ -122,9 +122,11 @@ func TestGetK8sJobPods(t *testing.T) {
 func TestGetK8sJobLogs(t *testing.T) {
 	readCloser, err := service.GetK8sPodLogs(podMOInfo[0].ProjectName, podMOInfo[0].Name, &model.PodLogOptions{})
 	ticker := time.NewTicker(time.Second * 1)
+	count := 0
 	for range ticker.C {
+		count++
 		logs.Debug("Waiting for getting K8s job's pod logs ...")
-		if readCloser != nil {
+		if readCloser != nil || count >= 100 {
 			ticker.Stop()
 			break
 		}
