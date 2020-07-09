@@ -43,13 +43,13 @@
       </tr>
       <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
         <th><span>{{"STORAGE.PV_SECRET" | translate}}:</span></th>
-        <td>{{curRBDPersistentVolume.options.secretname}}</td>
+        <td>{{curRBDPersistentVolume.options.secretName}}</td>
         <th><span>{{"STORAGE.PV_SECRET_NAMESPACE" | translate}}:</span></th>
-        <td>{{curRBDPersistentVolume.options.secretnamespace}}</td>
+        <td>{{curRBDPersistentVolume.options.secretNamespace}}</td>
       </tr>
       <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
         <th><span>{{"STORAGE.PV_FS_TYPE" | translate}}:</span></th>
-        <td colspan="3">{{curRBDPersistentVolume.options.fstype}}</td>
+        <td colspan="3">{{curRBDPersistentVolume.options.fsType}}</td>
       </tr>
       <tr *ngIf="curPersistentVolume.typeDescription == 'RBD'">
         <th><span>{{"STORAGE.PV_MONITORS" | translate}}:</span></th>

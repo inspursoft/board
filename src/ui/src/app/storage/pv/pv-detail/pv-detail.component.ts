@@ -1,6 +1,6 @@
-import { Component } from "@angular/core";
-import { NFSPersistentVolume, PersistentVolume, RBDPersistentVolume } from "../../../shared/shared.types";
-import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
+import { Component } from '@angular/core';
+import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
+import { NFSPersistentVolume, PersistentVolume, RBDPersistentVolume } from '../../sotrage.types';
 
 @Component({
   templateUrl: './pv-detail.component.html',

@@ -1,12 +1,13 @@
-import { Component, ComponentFactoryResolver, ViewContainerRef } from "@angular/core";
-import { ClrDatagridStateInterface } from "@clr/angular";
-import { TranslateService } from "@ngx-translate/core";
-import { Message, PersistentVolume, RETURN_STATUS } from "../../../shared/shared.types";
-import { CsModalParentBase } from "../../../shared/cs-modal-base/cs-modal-parent-base";
-import { CreatePvComponent } from "../create-pv.component/create-pv.component";
-import { StorageService } from "../../storage.service";
-import { PvDetailComponent } from "../pv-detail.compoent/pv-detail.component";
-import { MessageService } from "../../../shared.service/message.service";
+import { Component, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+import { ClrDatagridStateInterface } from '@clr/angular';
+import { TranslateService } from '@ngx-translate/core';
+import { Message, RETURN_STATUS } from '../../../shared/shared.types';
+import { CsModalParentBase } from '../../../shared/cs-modal-base/cs-modal-parent-base';
+import { CreatePvComponent } from '../create-pv/create-pv.component';
+import { StorageService } from '../../storage.service';
+import { PvDetailComponent } from '../pv-detail/pv-detail.component';
+import { MessageService } from '../../../shared.service/message.service';
+import { PersistentVolume } from '../../sotrage.types';
 
 @Component({
   templateUrl: './pv-list.component.html',
@@ -36,8 +37,8 @@ export class PvListComponent extends CsModalParentBase {
         (res: Array<PersistentVolume>) => this.pvList = res,
         () => this.isInLoadWip = false,
         () => this.isInLoadWip = false
-      )
-    })
+      );
+    });
   }
 
   createNewPv() {
@@ -48,7 +49,7 @@ export class PvListComponent extends CsModalParentBase {
 
   showPvDetail(pvId: number) {
     this.storageService.getPvDetailInfo(pvId).subscribe((res: PersistentVolume) => {
-      let instance = this.createNewModal(PvDetailComponent);
+      const instance = this.createNewModal(PvDetailComponent);
       instance.curPersistentVolume = res;
     });
   }
@@ -56,13 +57,13 @@ export class PvListComponent extends CsModalParentBase {
   deletePv(pvName: string, pvId: number) {
     this.translateService.get('STORAGE.PV_DELETE_CONFIRM', [pvName]).subscribe(res => {
       this.messageService.showDeleteDialog(res).subscribe((message: Message) => {
-        if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+        if (message.returnStatus === RETURN_STATUS.rsConfirm) {
           this.storageService.deletePv(pvId).subscribe(
             () => this.messageService.showAlert(`STORAGE.PV_DELETE_SUCCESS`),
             () => this.messageService.showAlert(`STORAGE.PV_DELETE_FAILED`),
-            () => this.refreshList(this.oldStateInfo))
+            () => this.refreshList(this.oldStateInfo));
         }
-      })
-    })
+      });
+    });
   }
 }
