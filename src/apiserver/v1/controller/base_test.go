@@ -98,8 +98,7 @@ func TestMain(m *testing.M) {
 	utils.SetConfig("SSH_KEY_PATH", "/tmp/ssh-keys")
 	utils.SetConfig("AUDIT_DEBUG", "false")
 	utils.SetConfig("INIT_STATUS", "READY")
-	utils.SetConfig("TEST_MODE", "true")
-	logs.Debug("Updated configurations in testing ...")
+
 	utils.ShowAllConfigs()
 	dao.InitDB()
 	systemInfo, err := service.GetSystemInfo()
