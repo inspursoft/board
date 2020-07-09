@@ -99,6 +99,7 @@ func TestMain(m *testing.M) {
 	utils.SetConfig("AUDIT_DEBUG", "false")
 	utils.SetConfig("INIT_STATUS", "READY")
 
+	utils.ShowAllConfigs()
 	dao.InitDB()
 	systemInfo, err := service.GetSystemInfo()
 	if err != nil {
@@ -112,7 +113,6 @@ func TestMain(m *testing.M) {
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
 	}
-
 	commons.InitController()
 	os.Exit(m.Run())
 }
