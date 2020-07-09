@@ -32,6 +32,7 @@ type DevOps interface {
 	DeleteRepo(username string, repoName string) error
 	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
 	GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error)
+	DeleteUser(username string) error
 }
 
 func CurrentDevOps() DevOps {
