@@ -48,7 +48,6 @@ func TestUserAction(t *testing.T) {
 	}
 	// init one assert
 	assert := assert.New(t)
-	beego.BConfig.WebConfig.EnableXSRF = false
 	// add user
 	t.Log("adding user")
 	r, _ := http.NewRequest("POST", fmt.Sprintf("/api/v1/adduser?token=%s", token), bytes.NewBuffer(body))
@@ -158,6 +157,7 @@ func TestUserAction(t *testing.T) {
 	t.Log("deleteing user")
 	r, _ = http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
 	w = httptest.NewRecorder()
+	beego.BConfig.WebConfig.EnableXSRF = false
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
 }
