@@ -149,7 +149,6 @@ func TestUserAction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("toggledUser unmarshal error: %v", err)
 	}
-
 	if !assert.Equal(updatedUser.SystemAdmin, toggledUser.SystemAdmin, "Toggle User SystemAdmin fail.") {
 		t.FailNow()
 	}
