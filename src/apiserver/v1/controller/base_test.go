@@ -26,6 +26,7 @@ const (
 )
 
 func init() {
+	beego.BConfig.WebConfig.EnableXSRF = false
 	controller.InitRouter()
 	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
 }
@@ -113,7 +114,6 @@ func TestMain(m *testing.M) {
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
 	}
-	beego.BConfig.WebConfig.EnableXSRF = false
 	commons.InitController()
 	os.Exit(m.Run())
 }

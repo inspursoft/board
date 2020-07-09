@@ -43,7 +43,7 @@ var configStatefulSet = model.ConfigServiceStep{
 	Instance:    1,
 	ServiceName: "unitteststatefulset001",
 	ServiceType: model.ServiceTypeStatefulSet,
-	ClusterIP:   "None",
+	// ClusterIP:   "None",
 	ContainerList: []model.Container{
 		model.Container{
 			Name: "nginx",

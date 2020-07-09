@@ -120,8 +120,8 @@ func TestGetK8sJobPods(t *testing.T) {
 }
 
 func TestGetK8sJobLogs(t *testing.T) {
-	time.Sleep(20 * time.Second)
 	readCloser, err := service.GetK8sPodLogs(podMOInfo[0].ProjectName, podMOInfo[0].Name, &model.PodLogOptions{})
+	time.Sleep(20 * time.Second)
 	if readCloser != nil {
 		defer readCloser.Close()
 		logs.Info("logs about pods of Job is %+v", readCloser)
