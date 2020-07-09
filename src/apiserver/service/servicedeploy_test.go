@@ -17,7 +17,7 @@ var configServiceStep = model.ConfigServiceStep{
 	Instance:    1,
 	ServiceName: "testService",
 	ContainerList: []model.Container{
-		model.Container{
+		{
 			Name: "testService",
 			Image: model.ImageIndex{
 				ImageName:   "library/demooanginx",
@@ -27,7 +27,7 @@ var configServiceStep = model.ConfigServiceStep{
 		},
 	},
 	ExternalServiceList: []model.ExternalService{
-		model.ExternalService{
+		{
 			ContainerName: "testService",
 			NodeConfig: model.NodeType{
 				TargetPort: 80,
@@ -45,7 +45,7 @@ var configStatefulSet = model.ConfigServiceStep{
 	ServiceType: model.ServiceTypeStatefulSet,
 	// ClusterIP:   "None",
 	ContainerList: []model.Container{
-		model.Container{
+		{
 			Name: "nginx",
 			Image: model.ImageIndex{
 				ImageName:   "library/nginx",
@@ -55,7 +55,7 @@ var configStatefulSet = model.ConfigServiceStep{
 		},
 	},
 	ExternalServiceList: []model.ExternalService{
-		model.ExternalService{
+		{
 			ContainerName: "nginx",
 			NodeConfig: model.NodeType{
 				TargetPort: 80,

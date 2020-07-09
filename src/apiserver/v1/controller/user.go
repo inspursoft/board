@@ -200,6 +200,10 @@ type SystemAdminController struct {
 
 func (u *SystemAdminController) Prepare() {
 	u.EnableXSRF = true
+	if utils.GetBoolValue("TEST_MODE") {
+		logs.Debug("Temporarily disable XSRF in test mode.")
+		u.EnableXSRF = false
+	}
 	u.ResolveSignedInUser()
 	u.RecordOperationAudit()
 	if !u.IsSysAdmin {

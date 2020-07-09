@@ -184,5 +184,6 @@ func InitializeDefaultConfig() {
 
 	SetConfig("GITLAB_BASE_URL", "http://%s:%s", "GITLAB_HOST_IP", "GITLAB_HOST_PORT")
 
+	AddEnv("TEST_MODE", "false")
 	ShowAllConfigs()
 }
