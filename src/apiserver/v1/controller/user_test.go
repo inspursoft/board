@@ -48,7 +48,7 @@ func TestUserAction(t *testing.T) {
 	}
 	// init one assert
 	assert := assert.New(t)
-
+	beego.BConfig.WebConfig.EnableXSRF = false
 	// add user
 	t.Log("adding user")
 	r, _ := http.NewRequest("POST", fmt.Sprintf("/api/v1/adduser?token=%s", token), bytes.NewBuffer(body))
