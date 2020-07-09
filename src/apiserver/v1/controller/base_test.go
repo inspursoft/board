@@ -12,6 +12,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
@@ -112,7 +113,7 @@ func TestMain(m *testing.M) {
 	if systemInfo.InitProjectRepo == "" {
 		initProjectRepo()
 	}
-
+	beego.BConfig.WebConfig.EnableXSRF = false
 	commons.InitController()
 	os.Exit(m.Run())
 }
