@@ -97,74 +97,59 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	timeRange.Start = time.Unix(timeStampArray[0], 0)
 	timeRange.End = time.Unix(timeStampArray[request.TimeCount-1], 0)
 
-	// if timestamp < timeStampArray[0] {
-	// 	para.IsOverMinLimit = true
-	// } else if timestamp > timeStampArray[request.TimeCount-1] {
-	// 	para.IsOverMaxLimit = true
-	// }
-
 	podInfo, err := para.GetServiceInfo(ctx, v1api, timeRange, timeStampArray)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
-
 	containerInfo, err := para.CountPod(ctx, v1api, timeRange, timeStampArray, podInfo)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
-
 	para.CountContainer(timeStampArray, containerInfo)
 
+	//filtering
 	for i := 0; i < len(para.ServiceListData); i++ {
 		if para.ServiceListData[i].Name != servicename {
 			para.ServiceListData[i].ServiceLogsData = []ServiceLogs{}
 		}
 	}
 
-	storageCapQuery := `kube_node_status_capacity{resource="ephemeral_storage"}`
-	storageCapResult, _, err := v1api.QueryRange(ctx, storageCapQuery, timeRange)
+	//init node info
+	kubeNodeQuery := `kube_node_info`
+	kubeNodeResult, _, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
-	lineOfStorageCap := strings.Split(storageCapResult.String(), "kube_node_status_capacity")
-	para.NodeCount = len(lineOfStorageCap) - 1
-	para.NodeListData = make([]NodeList, len(lineOfStorageCap))
+	linesOfNode := strings.Split(kubeNodeResult.String(), kubeNodeQuery)
+	para.NodeCount = len(linesOfNode) - 1
+	para.NodeListData = make([]NodeList, len(linesOfNode))
 	para.NodeListData[0].Name = "average"
 	para.NodeListData[0].NodeLogsData = make([]NodeLogs, request.TimeCount)
-
-	for i, v := range lineOfStorageCap[1:] {
+	for i, v := range linesOfNode[1:] {
 		nodeName := grepString(v, ", node=[^,}]+")
 		para.NodeListData[i+1].Name = strings.Trim(grepString(nodeName[0], `"[^"]+"`)[0], "\"")
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
 		data := grepString(v, "\n[0-9]+")
-		for j, w := range data {
+		for j := range data {
 			para.NodeListData[i+1].NodeLogsData[j].TimeStamp = timeStampArray[j]
-			digits, err := strconv.Atoi(strings.Trim(w, "\n"))
-			if err != nil {
-				return DashboardInfo{}, err
-			}
-			para.NodeListData[i+1].NodeLogsData[j].StorageTotal = digits
 		}
 	}
 
-	storageUsedQuery := `kube_node_status_capacity{resource="ephemeral_storage"} - kube_node_status_allocatable{resource="ephemeral_storage"}`
-	err = para.GetData(storageUsedQuery, "storageUsed", v1api, ctx, timeRange)
-	if err != nil {
-		return DashboardInfo{}, err
+	nodeInfoSelector := []string{"storageCap", "storageUsed", "memory", "CPU"}
+	nodeInfoQuery := []string{
+		`kube_node_status_capacity{resource="ephemeral_storage"}`,
+		`kube_node_status_capacity{resource="ephemeral_storage"} - kube_node_status_allocatable{resource="ephemeral_storage"}`,
+		`(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`,
+		`100 * (1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total))`}
+
+	for i, q := range nodeInfoQuery {
+		err = para.GetData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
 	}
 
-	memoUsageQuery := `(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`
-	err = para.GetData(memoUsageQuery, "memory", v1api, ctx, timeRange)
-	if err != nil {
-		return DashboardInfo{}, err
-	}
-
-	cpuUsageQuery := `100 * (1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total))`
-	err = para.GetData(cpuUsageQuery, "CPU", v1api, ctx, timeRange)
-	if err != nil {
-		return DashboardInfo{}, err
-	}
-
+	//filtering
 	for i := 0; i < len(para.NodeListData); i++ {
 		if para.NodeListData[i].Name != nodename {
 			para.NodeListData[i].NodeLogsData = []NodeLogs{}
@@ -172,25 +157,12 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	}
 
 	if nodename == "average" {
-		cpuUsageAvg := fmt.Sprintf("avg(%s)", cpuUsageQuery)
-		err = para.GetAvgData(cpuUsageAvg, "CPU", v1api, ctx, timeRange, timeStampArray)
-		if err != nil {
-			return DashboardInfo{}, err
-		}
-		memoUsageAvg := fmt.Sprintf("avg(%s)", memoUsageQuery)
-		err = para.GetAvgData(memoUsageAvg, "memory", v1api, ctx, timeRange, timeStampArray)
-		if err != nil {
-			return DashboardInfo{}, err
-		}
-		storageUsedAvg := fmt.Sprintf("avg(%s)", storageUsedQuery)
-		err = para.GetAvgData(storageUsedAvg, "storageUsed", v1api, ctx, timeRange, timeStampArray)
-		if err != nil {
-			return DashboardInfo{}, err
-		}
-		storageCapAvg := fmt.Sprintf("avg(%s)", storageCapQuery)
-		err = para.GetAvgData(storageCapAvg, "storageCap", v1api, ctx, timeRange, timeStampArray)
-		if err != nil {
-			return DashboardInfo{}, err
+		for i, q := range nodeInfoQuery {
+			avgQuery := fmt.Sprintf("avg(%s)", q)
+			err = para.GetAvgData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange, timeStampArray)
+			if err != nil {
+				return DashboardInfo{}, err
+			}
 		}
 	}
 
@@ -213,13 +185,12 @@ func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx contex
 	}
 	data := grepString(result.String(), "\n[0-9.]+")
 	for j, w := range data {
-		var digitsInt int
-		var digitsFloat float64
+		var digit interface{}
 		switch which {
 		case "storageUsed", "storageCap":
-			digitsInt, err = strconv.Atoi(strings.Trim(w, "\n"))
+			digit, err = strconv.Atoi(strings.Trim(w, "\n"))
 		case "CPU", "memory":
-			digitsFloat, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+			digit, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
 		}
 		if err != nil {
 			return err
@@ -227,13 +198,13 @@ func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx contex
 		switch which {
 		case "CPU":
 			d.NodeListData[0].NodeLogsData[j].TimeStamp = timeStampArray[j]
-			d.NodeListData[0].NodeLogsData[j].CPUUsage = digitsFloat
+			d.NodeListData[0].NodeLogsData[j].CPUUsage = digit.(float64)
 		case "memory":
-			d.NodeListData[0].NodeLogsData[j].MemoryUsage = digitsFloat
+			d.NodeListData[0].NodeLogsData[j].MemoryUsage = digit.(float64)
 		case "storageCap":
-			d.NodeListData[0].NodeLogsData[j].StorageTotal = digitsInt
+			d.NodeListData[0].NodeLogsData[j].StorageTotal = digit.(int)
 		case "storageUsed":
-			d.NodeListData[0].NodeLogsData[j].StorageUsed = digitsInt
+			d.NodeListData[0].NodeLogsData[j].StorageUsed = digit.(int)
 		}
 	}
 	return nil
@@ -244,28 +215,36 @@ func (d *DashboardInfo) GetData(query, which string, v1api v1.API, ctx context.C
 	if err != nil {
 		return err
 	}
-	lines := strings.Split(result.String(), "=>")
+	var delimiter string
+	switch which {
+	case "storageCap":
+		delimiter = "kube_node_status_capacity"
+	default:
+		delimiter = "=>"
+	}
+	lines := strings.Split(result.String(), delimiter)
 	for i, v := range lines[1:] {
 		data := grepString(v, "\n[0-9.]+")
 		for j, w := range data {
-			var digitsInt int
-			var digitsFloat float64
+			var digit interface{}
 			switch which {
-			case "storageUsed":
-				digitsInt, err = strconv.Atoi(strings.Trim(w, "\n"))
+			case "storageUsed", "storageCap":
+				digit, err = strconv.Atoi(strings.Trim(w, "\n"))
 			case "CPU", "memory":
-				digitsFloat, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+				digit, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
 			}
 			if err != nil {
 				return err
 			}
 			switch which {
 			case "CPU":
-				d.NodeListData[i+1].NodeLogsData[j].CPUUsage = digitsFloat
+				d.NodeListData[i+1].NodeLogsData[j].CPUUsage = digit.(float64)
 			case "memory":
-				d.NodeListData[i+1].NodeLogsData[j].MemoryUsage = digitsFloat
+				d.NodeListData[i+1].NodeLogsData[j].MemoryUsage = digit.(float64)
 			case "storageUsed":
-				d.NodeListData[i+1].NodeLogsData[j].StorageUsed = digitsInt
+				d.NodeListData[i+1].NodeLogsData[j].StorageUsed = digit.(int)
+			case "storageCap":
+				d.NodeListData[i+1].NodeLogsData[j].StorageTotal = digit.(int)
 			}
 		}
 	}
