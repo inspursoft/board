@@ -114,11 +114,11 @@ type PodLogOptions struct {
 }
 
 type ObjectMeta struct {
-	Name              string
-	Namespace         string
-	CreationTimestamp time.Time
-	DeletionTimestamp *time.Time
-	Labels            map[string]string
+	Name              string            `json:"name"`
+	Namespace         string            `json:"namespace"`
+	CreationTimestamp time.Time         `json:"creation_time,omitempty"`
+	DeletionTimestamp *time.Time        `json:"deletion_time,omitempty"`
+	Labels            map[string]string `json:"labels,omitempty"`
 }
 
 type GroupResource struct {
