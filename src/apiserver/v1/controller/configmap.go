@@ -73,6 +73,7 @@ func (n *ConfigMapController) RemoveConfigMapAction() {
 
 func (n *ConfigMapController) GetConfigMapListAction() {
 	projectName := n.GetString("project_name")
+	configmapName := n.GetString("configmap_name")
 	if projectName == "" {
 		res, err := service.GetConfigMapListByUser(n.CurrentUser.ID)
 		if err != nil {
@@ -81,7 +82,7 @@ func (n *ConfigMapController) GetConfigMapListAction() {
 			return
 		}
 		n.RenderJSON(res)
-	} else {
+	} else if configmapName == "" {
 		res, err := service.GetConfigMapListByProject(projectName)
 		if err != nil {
 			logs.Debug("Failed to get ConfigMap List")
@@ -89,6 +90,14 @@ func (n *ConfigMapController) GetConfigMapListAction() {
 			return
 		}
 		n.RenderJSON(res)
+	} else {
+		cm, err := service.GetConfigMapK8s(configmapName, projectName)
+		if err != nil {
+			logs.Debug("Failed to get ConfigMap")
+			n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
+			return
+		}
+		n.RenderJSON(cm)
 	}
 }
 
