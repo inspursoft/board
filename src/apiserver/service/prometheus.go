@@ -126,11 +126,9 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	para.NodeListData[0].Name = "average"
 	para.NodeListData[0].NodeLogsData = make([]NodeLogs, request.TimeCount)
 	for i, v := range linesOfNode[1:] {
-		nodeName := grepString(v, ", node=[^,}]+")
-		para.NodeListData[i+1].Name = strings.Trim(grepString(nodeName[0], `"[^"]+"`)[0], "\"")
+		para.NodeListData[i+1].Name = grepContent(v, `, node="([^"]+)"`)[0][1]
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
-		data := grepString(v, "\n[0-9]+")
-		for j := range data {
+		for j := 0; j < request.TimeCount; j++ {
 			para.NodeListData[i+1].NodeLogsData[j].TimeStamp = timeStampArray[j]
 		}
 	}
@@ -174,6 +172,11 @@ func grepString(src, reg string) []string {
 	return re.FindAllString(src, -1)
 }
 
+func grepContent(src, reg string) [][]string {
+	regex := regexp.MustCompile(reg)
+	return regex.FindAllStringSubmatch(src, -1)
+}
+
 func sliceToPrometheusMetrics(src []string) string {
 	return strings.Join(src, ", ")
 }
@@ -183,14 +186,14 @@ func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx contex
 	if err != nil {
 		return err
 	}
-	data := grepString(result.String(), "\n[0-9.]+")
+	data := grepContent(result.String(), "\n([0-9.]+)")
 	for j, w := range data {
 		var digit interface{}
 		switch which {
 		case "storageUsed", "storageCap":
-			digit, err = strconv.Atoi(strings.Trim(w, "\n"))
+			digit, err = strconv.Atoi(string(w[1]))
 		case "CPU", "memory":
-			digit, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+			digit, err = strconv.ParseFloat(string(w[1]), 64)
 		}
 		if err != nil {
 			return err
@@ -224,14 +227,14 @@ func (d *DashboardInfo) GetData(query, which string, v1api v1.API, ctx context.C
 	}
 	lines := strings.Split(result.String(), delimiter)
 	for i, v := range lines[1:] {
-		data := grepString(v, "\n[0-9.]+")
+		data := grepContent(v, "\n([0-9.]+)")
 		for j, w := range data {
 			var digit interface{}
 			switch which {
 			case "storageUsed", "storageCap":
-				digit, err = strconv.Atoi(strings.Trim(w, "\n"))
+				digit, err = strconv.Atoi(w[1])
 			case "CPU", "memory":
-				digit, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+				digit, err = strconv.ParseFloat(w[1], 64)
 			}
 			if err != nil {
 				return err
@@ -270,8 +273,7 @@ func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRa
 	podResults := make([][]string, len(lines))
 	for i, line := range lines {
 		d.ServiceCount++
-		serviceName := grepString(line, "service=[^,}]+")
-		d.ServiceListData[i+1].Name = strings.Trim(grepString(serviceName[0], `"[^"]+"`)[0], "\"")
+		d.ServiceListData[i+1].Name = grepContent(line, `service="([^"]+)"`)[0][1]
 		serviceSelectorLabels := grepString(line, "label_[^,}]+")
 		if len(serviceSelectorLabels) == 0 {
 			continue
