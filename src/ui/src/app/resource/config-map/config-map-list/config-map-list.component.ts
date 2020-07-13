@@ -26,22 +26,21 @@ export class ConfigMapListComponent extends CsModalParentBase {
 
   retrieve() {
     this.isInLoading = true;
-    //TODO: Add the pageIndex and pageSize params when backend is ok.
     this.resourceService.getConfigMapList('', 1, 15).subscribe(
       res => this.configMapList = res,
       () => this.isInLoading = false,
       () => this.isInLoading = false
-    )
+    );
   }
 
   confirmToDeleteConfigMap(configMap: ConfigMap) {
     this.messageService.showDeleteDialog(`RESOURCE.CONFIG_MAP_LIST_DELETE`).subscribe((message: Message) => {
-      if (message.returnStatus == RETURN_STATUS.rsConfirm) {
+      if (message.returnStatus === RETURN_STATUS.rsConfirm) {
         this.resourceService.deleteConfigMap(configMap.name, configMap.namespace).subscribe(
           () => this.messageService.showAlert(`RESOURCE.CONFIG_MAP_LIST_DELETE_SUCCESS`), null,
-          () => this.retrieve())
+          () => this.retrieve());
       }
-    })
+    });
   }
 
   createConfigMap() {

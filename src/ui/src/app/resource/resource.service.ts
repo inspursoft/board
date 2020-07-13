@@ -1,53 +1,50 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpResponse } from "@angular/common/http";
-import { Observable } from "rxjs";
-import { ConfigMap, ConfigMapDetail } from "./resource.types";
-import { map } from "rxjs/operators";
-import { decode, encode } from 'punycode';
-import { encodeUriQuery } from '@angular/router/src/url_tree';
-import { safeDecodeURIComponent } from 'ngx-cookie';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ConfigMap, ConfigMapDetail, ConfigMapProject } from './resource.types';
+import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
 @Injectable()
 export class ResourceService {
-  constructor(private http: HttpClient) {
+  constructor(private http: ModelHttpClient) {
 
   }
 
   createConfigMap(configMap: ConfigMap): Observable<any> {
-    return this.http.post(`/api/v1/configmaps`, configMap.postBody(), {observe: "response"})
+    return this.http.post(`/api/v1/configmaps`, configMap.getPostBody());
   }
 
   getConfigMapDetail(configMapName, projectName: string): Observable<ConfigMapDetail> {
-    return this.http.get(`/api/v1/configmaps/${configMapName}`, {
-      observe: "response", params: {
-        project_name: projectName
+    return this.http.getJson(`/api/v1/configmaps`, ConfigMapDetail, {
+      param: {
+        project_name: projectName,
+        configmap_name: configMapName,
       }
-    }).pipe(map((res: HttpResponse<Object>) => ConfigMapDetail.createFromRes(res.body)));
+    });
   }
 
   deleteConfigMap(configMapName, projectName: string): Observable<any> {
     return this.http.delete(`/api/v1/configmaps/${configMapName}`, {
-      observe: "response", params: {
+      observe: 'response', params: {
         project_name: projectName
       }
-    })
+    });
   }
 
   updateConfigMap(configMap: ConfigMap): Observable<any> {
-    return this.http.put(`/api/v1/configmaps/${configMap.name}`, configMap.postBody(), {observe: "response"})
+    return this.http.put(`/api/v1/configmaps/${configMap.name}`, configMap.getPostBody());
+  }
+
+  getAllProjects(): Observable<Array<ConfigMapProject>> {
+    return this.http.getArray('/api/v1/projects', ConfigMapProject);
   }
 
   getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<ConfigMap>> {
-    return this.http.get<Array<Object>>(`/api/v1/configmaps`, {
-      observe: "response", params: {
+    return this.http.getArray(`/api/v1/configmaps`, ConfigMap, {
+      param: {
         project_name: projectName,
         configmap_list_page: pageIndex.toString(),
         configmap_list_page_size: pageSize.toString()
       }
-    }).pipe(map((res: HttpResponse<Array<Object>>) => {
-      let result = Array<ConfigMap>();
-      res.body.forEach((configMap: Object) => result.push(ConfigMap.createFromRes(configMap)));
-      return result;
-    }));
+    });
   }
 }
