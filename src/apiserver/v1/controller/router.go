@@ -131,7 +131,7 @@ func InitRouter() {
 				"get:GetPVCNameExisting"),
 			beego.NSRouter("/configmaps",
 				&ConfigMapController{},
-				"get:GetConfigMapListAction;post:AddConfigMapAction"),
+				"get:GetConfigMapListAction;post:AddConfigMapAction;delete:RemoveConfigMapByName;put:UpdateConfigMapByName"),
 			beego.NSRouter("/configmaps/:configmapname([\\w-]+)",
 				&ConfigMapController{},
 				"get:GetConfigMapAction;delete:RemoveConfigMapAction;put:UpdateConfigMapAction"),
