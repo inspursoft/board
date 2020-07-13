@@ -146,3 +146,59 @@ func (n *ConfigMapController) UpdateConfigMapAction() {
 	logs.Info("Updated configmap %v", configmap)
 	n.RenderJSON(configmap)
 }
+
+//Remove a configmap by name and project
+func (n *ConfigMapController) RemoveConfigMapByName() {
+	projectName := n.GetString("project_name")
+	configmapName := n.GetString("configmap_name")
+	if projectName == "" || configmapName == "" {
+		n.CustomAbortAudit(http.StatusBadRequest, "ConfigMap Name and project should not null")
+		return
+	}
+	//TODO check ConfigMap existing
+	err := service.DeleteConfigMapK8s(configmapName, projectName)
+	if err != nil {
+		logs.Info("Delete ConfigMap %s from K8s Failed %v", configmapName, err)
+		n.InternalError(err)
+	}
+	logs.Info("Delete ConfigMap %s from K8s Successful %v", configmapName, err)
+}
+
+//Update a configmap by name and project
+func (n *ConfigMapController) UpdateConfigMapByName() {
+	projectName := n.GetString("project_name")
+	configmapName := n.GetString("configmap_name")
+	if projectName == "" || configmapName == "" {
+		n.CustomAbortAudit(http.StatusBadRequest, "ConfigMap Name and project should not null")
+		return
+	}
+
+	cm, err := service.GetConfigMapK8s(configmapName, projectName)
+	if err != nil {
+		logs.Debug("Failed to get ConfigMap")
+		n.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprint(err))
+		return
+	} else if cm == nil {
+		n.CustomAbortAudit(http.StatusNotFound, "ConfigMap Name not found")
+		return
+	}
+	var reqCM model.ConfigMapStruct
+	err = n.ResolveBody(&reqCM)
+	if err != nil {
+		return
+	}
+
+	if reqCM.Name == "" || reqCM.Namespace == "" {
+		n.CustomAbortAudit(http.StatusBadRequest, "ConfigMap Name and project should not null")
+		return
+	}
+
+	configmap, err := service.UpdateConfigMapK8s(&reqCM)
+	if err != nil {
+		logs.Debug("Failed to update configmap %v", reqCM)
+		n.InternalError(err)
+		return
+	}
+	logs.Info("Updated configmap %v", configmap)
+	n.RenderJSON(configmap)
+}
