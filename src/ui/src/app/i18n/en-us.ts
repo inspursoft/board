@@ -955,7 +955,7 @@ export const LANG_EN_US = {
   NodeCreateNew: {
     Title: 'Add node',
     Name: 'Node name',
-    NamePatternMessage: 'The node name is invalid',
+    NamePatternMessage: 'The node name is invalid:start or end with number or letters，the content middle supports \'-\'、\'.\'、\'_\'',
     NameExists: 'The node name already exists',
     Ip: 'Node ip',
     Password: 'Node password',

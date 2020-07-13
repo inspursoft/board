@@ -955,7 +955,7 @@ export const LANG_ZH_CN = {
   NodeCreateNew: {
     Title: '添加节点',
     Name: '节点名称',
-    NamePatternMessage: '节点名称格式不正确',
+    NamePatternMessage: '节点名称格式不正确:以数字或字母开头和结尾，中间支持\'-\'、\'.\'、\'_\'',
     NameExists: '节点名称已经存在',
     Ip: '节点IP',
     Password: '节点密码',

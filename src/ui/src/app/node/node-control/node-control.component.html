@@ -24,11 +24,11 @@
     </clr-tabs>
   </div>
   <div class="modal-footer">
-    <a *ngIf="tabServiceControlActive && nodeDeletable && !curNode.isMaster"
+    <a *ngIf="tabServiceControlActive && nodeDeletable && !curNode.isMaster && !curNode.isEdge"
        target="_blank" [href]="adminServerDeleteNodeUrl">
       {{ 'NodeControl.DeleteNode' | translate }}
     </a>
-    <clr-tooltip *ngIf="tabServiceControlActive && deleteNodeDisable">
+    <clr-tooltip *ngIf="showDeleteNodeTip">
       <a clrTooltipTrigger class="disabled" href="javascript: void(0)">
         {{ 'NodeControl.DeleteNode' | translate }}
       </a>
@@ -36,7 +36,7 @@
         {{"NodeControl.DeleteNodeTip" | translate}}
       </clr-tooltip-content>
     </clr-tooltip>
-    <clr-tooltip *ngIf="tabServiceControlActive">
+    <clr-tooltip *ngIf="tabServiceControlActive && !curNode.isEdge">
       <a href="javascript: void(0)" clrTooltipTrigger>
         <button type="button"
                 class="btn btn-warning-outline"

@@ -8,17 +8,21 @@ export enum AddNodeType {
   normal, edge
 }
 
-export class  NodeStatus extends HttpBase {
+export class NodeStatus extends HttpBase {
   readonly masterKey = 'node-role.kubernetes.io/master';
-  @HttpBind('node_name') nodeName: string;
-  @HttpBind('node_ip') nodeIp: string;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
   @HttpBind('node_type') nodeType = '';
-  @HttpBind('create_time') createTime: number;
+  @HttpBind('create_time') createTime = 0;
   @HttpBind('status') status: NodeStatusType;
   @HttpBind('labels') labels: { [p: string]: string };
 
   get isMaster(): boolean {
     return Reflect.has(this.labels, this.masterKey);
+  }
+
+  get isEdge(): boolean {
+    return this.nodeType === 'edge';
   }
 
   get nodeTypeDescribe(): string {
@@ -57,11 +61,11 @@ export class ServiceInstance extends HttpBase {
 }
 
 export class NodeControlStatus extends HttpBase {
-  @HttpBind('node_name') nodeName: string;
-  @HttpBind('node_ip') nodeIp: string;
-  @HttpBind('node_phase') nodePhase: string;
-  @HttpBind('node_deletable') deletable: boolean;
-  @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
+  @HttpBind('node_phase') nodePhase = '';
+  @HttpBind('node_deletable') deletable = false;
+  @HttpBind('node_unschedulable') nodeUnschedulable = false;
   @HttpBindArray('service_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
 
   prepareInit() {
