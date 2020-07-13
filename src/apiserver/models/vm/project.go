@@ -22,6 +22,7 @@ type Project struct {
 	CurrentUserRoleID int64     `json:"project_current_user_role_id" orm:"column(current_user_role_id)"`
 	ServiceCount      int       `json:"project_service_count" orm:"column(service_count)"`
 	IstioSupport      bool      `json:"project_istio_support" orm:"column(istio_support)"`
+	Deletable         bool      `json:"project_deletable,omitempty" orm:"-"`
 }
 
 func (p Project) ToMO() (m model.Project) {

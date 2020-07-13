@@ -29,6 +29,8 @@ const (
 	istioLabel     = "istio-injection"
 )
 
+var undeletableNamespaces = []string{kubeNamespace, istioNamespace, "kube-node-lease", "kube-public", "default", "library"}
+
 func CreateProject(project model.Project) (bool, error) {
 
 	projectID, err := dao.AddProject(project)
@@ -56,15 +58,26 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 	if err != nil {
 		return nil, err
 	}
+	p.Deletable = isDeletable(p.Name)
 	return p, nil
 }
 
 func GetProjectByName(name string) (*model.Project, error) {
-	return GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
+	p, err := GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
+	if err != nil {
+		return nil, err
+	}
+	p.Deletable = isDeletable(p.Name)
+	return p, nil
 }
 
 func GetProjectByID(id int64) (*model.Project, error) {
-	return GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
+	p, err := GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
+	if err != nil {
+		return nil, err
+	}
+	p.Deletable = isDeletable(p.Name)
+	return p, nil
 }
 
 func ProjectExists(projectName string) (bool, error) {
@@ -101,15 +114,36 @@ func ToggleProjectPublic(projectID int64, public int) (bool, error) {
 }
 
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
-	return dao.GetProjectsByUser(query, userID)
+	projects, err := dao.GetProjectsByUser(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range projects {
+		p.Deletable = isDeletable(p.Name)
+	}
+	return projects, nil
 }
 
 func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
-	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
+	paged, err := dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
+	if err != nil {
+		return nil, err
+	}
+	for i, p := range paged.ProjectList {
+		paged.ProjectList[i].Deletable = isDeletable(p.Name)
+	}
+	return paged, nil
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
-	return dao.GetProjectsByMember(query, userID)
+	projects, err := dao.GetProjectsByMember(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range projects {
+		p.Deletable = isDeletable(p.Name)
+	}
+	return projects, nil
 }
 
 func DeleteProject(userID, projectID int64) (bool, error) {
@@ -117,6 +151,10 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 	if err != nil {
 		logs.Error("Failed to delete project with ID: %d, error: %+v", projectID, err)
 		return false, err
+	}
+	if !project.Deletable {
+		logs.Error("Project %s is a builtin project that cannot be deleted.", project.Name)
+		return false, utils.ErrUnprocessableEntity
 	}
 	members, err := GetProjectMembers(project.ID)
 	if err != nil {
@@ -355,4 +393,13 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func isDeletable(project_name string) bool {
+	for _, name := range undeletableNamespaces {
+		if name == project_name {
+			return false
+		}
+	}
+	return true
 }
