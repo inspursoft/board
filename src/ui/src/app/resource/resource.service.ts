@@ -23,15 +23,18 @@ export class ResourceService {
   }
 
   deleteConfigMap(configMapName, projectName: string): Observable<any> {
-    return this.http.delete(`/api/v1/configmaps/${configMapName}`, {
+    return this.http.delete(`/api/v1/configmaps`, {
       observe: 'response', params: {
-        project_name: projectName
+        project_name: projectName,
+        configmap_name: configMapName
       }
     });
   }
 
   updateConfigMap(configMap: ConfigMap): Observable<any> {
-    return this.http.put(`/api/v1/configmaps/${configMap.name}`, configMap.getPostBody());
+    return this.http.put(`/api/v1/configmaps`, configMap.getPostBody(), {
+      params: {project_name: configMap.namespace, configmap_name: configMap.name}
+    });
   }
 
   getAllProjects(): Observable<Array<ConfigMapProject>> {
