@@ -58,26 +58,16 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 	if err != nil {
 		return nil, err
 	}
-	p.Deletable = isDeletable(p.Name)
+	setDeletable(p)
 	return p, nil
 }
 
 func GetProjectByName(name string) (*model.Project, error) {
-	p, err := GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
-	if err != nil {
-		return nil, err
-	}
-	p.Deletable = isDeletable(p.Name)
-	return p, nil
+	return GetProject(model.Project{Name: name, Deleted: 0}, "name", "deleted")
 }
 
 func GetProjectByID(id int64) (*model.Project, error) {
-	p, err := GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
-	if err != nil {
-		return nil, err
-	}
-	p.Deletable = isDeletable(p.Name)
-	return p, nil
+	return GetProject(model.Project{ID: id, Deleted: 0}, "id", "deleted")
 }
 
 func ProjectExists(projectName string) (bool, error) {
@@ -118,8 +108,8 @@ func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, err
 	if err != nil {
 		return nil, err
 	}
-	for _, p := range projects {
-		p.Deletable = isDeletable(p.Name)
+	for i := range projects {
+		setDeletable(projects[i])
 	}
 	return projects, nil
 }
@@ -129,8 +119,10 @@ func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int
 	if err != nil {
 		return nil, err
 	}
-	for i, p := range paged.ProjectList {
-		paged.ProjectList[i].Deletable = isDeletable(p.Name)
+	if paged != nil {
+		for i := range paged.ProjectList {
+			setDeletable(paged.ProjectList[i])
+		}
 	}
 	return paged, nil
 }
@@ -140,8 +132,8 @@ func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, e
 	if err != nil {
 		return nil, err
 	}
-	for _, p := range projects {
-		p.Deletable = isDeletable(p.Name)
+	for i := range projects {
+		setDeletable(projects[i])
 	}
 	return projects, nil
 }
@@ -395,11 +387,15 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 	return true, nil
 }
 
-func isDeletable(project_name string) bool {
+func setDeletable(p *model.Project) {
+	if p == nil {
+		return
+	}
 	for _, name := range undeletableNamespaces {
-		if name == project_name {
-			return false
+		if name == p.Name {
+			p.Deletable = false
+			return
 		}
 	}
-	return true
+	p.Deletable = true
 }
