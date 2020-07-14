@@ -54,6 +54,7 @@ export class ServiceDetailComponent {
     this.dns = `${this.curService.serviceName}.${this.curService.serviceProjectName}.svc${this.appInitService.systemInfo.dns_suffix}`;
     this.getDeploymentYamlFile()
       .subscribe(() => this.getServiceDetail(service.serviceId, service.serviceProjectName, service.serviceOwnerName));
+    this.isOpenServiceDetail = true;
     return this.closeNotification.asObservable();
   }
 
@@ -91,7 +92,6 @@ export class ServiceDetailComponent {
           // });
         }
         this.serviceDetail = serviceDetail;
-        this.isOpenServiceDetail = true;
       }, () => this.isOpenServiceDetail = false);
     }
   }
