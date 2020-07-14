@@ -7,7 +7,7 @@
     </div>
     <span class="dns"><b>DNS:</b>{{dns}}</span>
     <clr-tabs>
-      <clr-tab>
+      <clr-tab *ngIf="curService.serviceType !== 4 && curService.serviceType !== 5">
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
           <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></cs-highlight>

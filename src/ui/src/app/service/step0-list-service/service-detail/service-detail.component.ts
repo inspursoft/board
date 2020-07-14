@@ -54,10 +54,12 @@ export class ServiceDetailComponent {
     this.dns = `${this.curService.serviceName}.${this.curService.serviceProjectName}.svc${this.appInitService.systemInfo.dns_suffix}`;
     this.getDeploymentYamlFile()
       .subscribe(() => this.getServiceDetail(service.serviceId, service.serviceProjectName, service.serviceOwnerName));
+    this.isOpenServiceDetail = true;
     return this.closeNotification.asObservable();
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
+    console.log(this.curService.serviceType);
     if (this.curService.serviceType !== ServiceType.ServiceTypeStatefulSet &&
       this.curService.serviceType !== ServiceType.ServiceTypeClusterIP) {
       this.k8sService.getServiceDetail(serviceId).subscribe((serviceDetail: ServiceDetailInfo) => {
@@ -91,7 +93,6 @@ export class ServiceDetailComponent {
           // });
         }
         this.serviceDetail = serviceDetail;
-        this.isOpenServiceDetail = true;
       }, () => this.isOpenServiceDetail = false);
     }
   }
