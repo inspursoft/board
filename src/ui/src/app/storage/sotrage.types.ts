@@ -1,5 +1,4 @@
 import { HttpBase, HttpBind, HttpBindObject } from '../shared/ui-model/model-types';
-import { PersistentVolumeOptions, PersistentVolumeOptionsRBD } from '../shared/shared.types';
 
 export enum PvcAccessMode {
   ReadWriteOnce = 'ReadWriteOnce',

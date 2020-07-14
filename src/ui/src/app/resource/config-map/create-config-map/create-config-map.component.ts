@@ -1,10 +1,9 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit } from "@angular/core";
-import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
-import { ConfigMap } from "../../resource.types";
-import { ResourceService } from "../../resource.service";
-import { MessageService } from "../../../shared.service/message.service";
-import { SharedService } from "../../../shared.service/shared.service";
-import { Project } from "../../../project/project";
+import { ChangeDetectorRef, Component, EventEmitter, OnInit } from '@angular/core';
+import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
+import { ConfigMap, ConfigMapProject } from '../../resource.types';
+import { ResourceService } from '../../resource.service';
+import { MessageService } from '../../../shared.service/message.service';
+import { SharedService } from '../../../shared.service/shared.service';
 
 @Component({
   templateUrl: './create-config-map.component.html',
@@ -14,7 +13,7 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
   isCreateWip = false;
   onAfterCommit: EventEmitter<ConfigMap>;
   newConfigMap: ConfigMap;
-  projectList: Array<Project>;
+  projectList: Array<ConfigMapProject>;
   isLoadWip = false;
   configMapNamePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
 
@@ -25,20 +24,20 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
     super();
     this.onAfterCommit = new EventEmitter<ConfigMap>();
     this.newConfigMap = new ConfigMap();
-    this.projectList = Array<Project>();
+    this.projectList = Array<ConfigMapProject>();
   }
 
   ngOnInit(): void {
     this.isLoadWip = true;
-    this.sharedService.getAllProjects().subscribe(
-      (res: Array<Project>) => this.projectList = res,
+    this.resourceService.getAllProjects().subscribe(
+      (res: Array<ConfigMapProject>) => this.projectList = res,
       () => this.isLoadWip = false,
       () => this.isLoadWip = false
     );
   }
 
-  changeSelectProject(project: Project) {
-    this.newConfigMap.namespace = project.project_name;
+  changeSelectProject(project: ConfigMapProject) {
+    this.newConfigMap.namespace = project.projectName;
   }
 
   createConfigMap() {
@@ -51,7 +50,7 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
         },
         () => this.modalOpened = false,
         () => this.modalOpened = false
-      )
+      );
     }
   }
 

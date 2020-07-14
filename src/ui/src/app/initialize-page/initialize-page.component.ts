@@ -73,7 +73,7 @@ export class InitializePageComponent implements OnInit, OnDestroy {
             const messageArr = res.message.split('_');
             this.totalSteps = Number(messageArr[0]);
             this.curStep = Number(messageArr[1]);
-            const messageKey = res.message.substr(res.message.indexOf(messageArr[1]) + 2);
+            const messageKey = res.message.substr(res.message.indexOf(messageArr[2]));
             this.curStepMessage = this.messageMap.get(messageKey);
           } else {
             this.curStepMessage = this.messageMap.get(res.message);
