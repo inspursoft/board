@@ -59,7 +59,6 @@ export class ServiceDetailComponent {
   }
 
   getServiceDetail(serviceId: number, projectName: string, ownerName: string): void {
-    console.log(this.curService.serviceType);
     if (this.curService.serviceType !== ServiceType.ServiceTypeStatefulSet &&
       this.curService.serviceType !== ServiceType.ServiceTypeClusterIP) {
       this.k8sService.getServiceDetail(serviceId).subscribe((serviceDetail: ServiceDetailInfo) => {
