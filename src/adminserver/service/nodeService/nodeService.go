@@ -10,7 +10,7 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/model"
-	common "git/inspursoft/board/src/common/token"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io"
 	"io/ioutil"
@@ -259,6 +259,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				Status:       item.Status,
 				NodeName:     item.NodeName,
 				IsMaster:     isMaster,
+				IsEdge:       item.NodeType == "edge",
 				LogTime:      logTime,
 				Origin:       origin})
 		}

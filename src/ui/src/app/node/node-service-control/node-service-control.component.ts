@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { NodeService } from '../node.service';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
@@ -22,8 +22,7 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
   curPageSize = 6;
   autoRefreshSubscription: Subscription;
 
-  constructor(private nodeService: NodeService,
-              private view: ViewContainerRef) {
+  constructor(private nodeService: NodeService) {
     super();
     this.nodeControlStatus = new NodeControlStatus({});
     this.serviceInstanceList = Array<ServiceInstance>();
@@ -33,7 +32,7 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
 
   ngOnInit() {
     this.refreshData();
-    this.autoRefreshSubscription = interval(3000).subscribe(() => this.refreshData());
+    this.autoRefreshSubscription = interval(10000).subscribe(() => this.refreshData());
   }
 
   ngOnDestroy() {
