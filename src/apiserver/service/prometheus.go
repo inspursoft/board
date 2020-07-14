@@ -116,9 +116,12 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 
 	//init node info
 	kubeNodeQuery := `kube_node_info`
-	kubeNodeResult, _, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
+	kubeNodeResult, warnings, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
 	if err != nil {
 		return DashboardInfo{}, err
+	}
+	if len(warnings) > 0 {
+		logs.Info("Warnings: %v\n", warnings)
 	}
 	linesOfNode := strings.Split(kubeNodeResult.String(), kubeNodeQuery)
 	para.NodeCount = len(linesOfNode) - 1
@@ -138,10 +141,10 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 		`kube_node_status_capacity{resource="ephemeral_storage"}`,
 		`kube_node_status_capacity{resource="ephemeral_storage"} - kube_node_status_allocatable{resource="ephemeral_storage"}`,
 		`(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`,
-		`100 * (1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total))`}
+		`(1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total)) * 100`}
 
 	for i, q := range nodeInfoQuery {
-		err = para.GetData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
+		err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
 		if err != nil {
 			return DashboardInfo{}, err
 		}
@@ -157,7 +160,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	if nodename == "average" {
 		for i, q := range nodeInfoQuery {
 			avgQuery := fmt.Sprintf("avg(%s)", q)
-			err = para.GetAvgData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange, timeStampArray)
+			err = para.GetAvgNodeData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange, timeStampArray)
 			if err != nil {
 				return DashboardInfo{}, err
 			}
@@ -168,20 +171,26 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 }
 
 func grepString(src, reg string) []string {
-	re, _ := regexp.Compile(reg)
-	return re.FindAllString(src, -1)
+	regex, err := regexp.Compile(reg)
+	if err != nil {
+		return nil
+	}
+	return regex.FindAllString(src, -1)
 }
 
 func grepContent(src, reg string) [][]string {
-	regex := regexp.MustCompile(reg)
+	regex, err := regexp.Compile(reg)
+	if err != nil {
+		return nil
+	}
 	return regex.FindAllStringSubmatch(src, -1)
 }
 
-func sliceToPrometheusMetrics(src []string) string {
+func sliceToString(src []string) string {
 	return strings.Join(src, ", ")
 }
 
-func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, timeStampArray []int64) error {
+func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, timeStampArray []int64) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
@@ -213,41 +222,46 @@ func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx contex
 	return nil
 }
 
-func (d *DashboardInfo) GetData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
+func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
 	}
-	var delimiter string
-	switch which {
-	case "storageCap":
-		delimiter = "kube_node_status_capacity"
-	default:
-		delimiter = "=>"
-	}
-	lines := strings.Split(result.String(), delimiter)
-	for i, v := range lines[1:] {
-		data := grepContent(v, "\n([0-9.]+)")
-		for j, w := range data {
-			var digit interface{}
-			switch which {
-			case "storageUsed", "storageCap":
-				digit, err = strconv.Atoi(w[1])
-			case "CPU", "memory":
-				digit, err = strconv.ParseFloat(w[1], 64)
-			}
-			if err != nil {
-				return err
-			}
-			switch which {
-			case "CPU":
-				d.NodeListData[i+1].NodeLogsData[j].CPUUsage = digit.(float64)
-			case "memory":
-				d.NodeListData[i+1].NodeLogsData[j].MemoryUsage = digit.(float64)
-			case "storageUsed":
-				d.NodeListData[i+1].NodeLogsData[j].StorageUsed = digit.(int)
-			case "storageCap":
-				d.NodeListData[i+1].NodeLogsData[j].StorageTotal = digit.(int)
+	lines := strings.Split(result.String(), "{")
+	for _, v := range lines[1:] {
+		var whichNode string
+		switch which {
+		case "CPU":
+			whichNode = `instance="([^":]+)["|:]`
+		default:
+			whichNode = `, node="([^"]+)"`
+		}
+		cur := grepContent(v, whichNode)[0][1]
+		for j := 1; j <= d.NodeCount; j++ {
+			if d.NodeListData[j].Name == cur {
+				data := grepContent(v, "\n([0-9.]+)")
+				for k, w := range data {
+					var digit interface{}
+					switch which {
+					case "storageUsed", "storageCap":
+						digit, err = strconv.Atoi(w[1])
+					case "CPU", "memory":
+						digit, err = strconv.ParseFloat(w[1], 64)
+					}
+					if err != nil {
+						return err
+					}
+					switch which {
+					case "CPU":
+						d.NodeListData[j].NodeLogsData[k].CPUUsage = digit.(float64)
+					case "memory":
+						d.NodeListData[j].NodeLogsData[k].MemoryUsage = digit.(float64)
+					case "storageUsed":
+						d.NodeListData[j].NodeLogsData[k].StorageUsed = digit.(int)
+					case "storageCap":
+						d.NodeListData[j].NodeLogsData[k].StorageTotal = digit.(int)
+					}
+				}
 			}
 		}
 	}
@@ -282,7 +296,7 @@ func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRa
 		for s, time := range timeStampArray {
 			d.ServiceListData[i+1].ServiceLogsData[s].TimeStamp = time
 		}
-		grepName := "kube_pod_labels{" + sliceToPrometheusMetrics(serviceSelectorLabels) + "}"
+		grepName := fmt.Sprintf("kube_pod_labels{%s}", sliceToString(serviceSelectorLabels))
 		pods, _, err := v1api.QueryRange(ctx, grepName, timeRange)
 		if err != nil {
 			return [][]string{}, err
@@ -307,7 +321,7 @@ func (d *DashboardInfo) CountPod(ctx context.Context, v1api v1.API, timeRange v1
 				}
 			}
 			podName := grepString(podline, "pod=[^,}]+")
-			containerGrepName := "kube_pod_container_info{" + sliceToPrometheusMetrics(podName) + "}"
+			containerGrepName := fmt.Sprintf("kube_pod_container_info{%s}", sliceToString(podName))
 			containers, _, err := v1api.QueryRange(ctx, containerGrepName, timeRange)
 			if err != nil {
 				return [][]string{}, err
