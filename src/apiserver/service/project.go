@@ -29,7 +29,7 @@ const (
 	istioLabel     = "istio-injection"
 )
 
-var undeletableNamespaces = []string{kubeNamespace, istioNamespace, "kube-node-lease", "kube-public", "default", "library"}
+var undeletableNamespaces = []string{kubeNamespace, istioNamespace, "kube-node-lease", "kube-public", "default", "library", "kubeedge", "cadvisor"}
 
 func CreateProject(project model.Project) (bool, error) {
 
