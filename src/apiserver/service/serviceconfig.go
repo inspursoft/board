@@ -510,7 +510,9 @@ func setDeploymentNodeSelector(nodeOrNodeGroupName string, serviceType int) map[
 		return map[string]string{nodeOrNodeGroupName: "true"}
 	} else {
 		if serviceType == model.ServiceTypeEdgeComputing {
-			return map[string]string{"name": nodeOrNodeGroupName}
+			//return map[string]string{"name": nodeOrNodeGroupName}
+			// TODO need unify the label pattern for edge node for verion 1.2 1.3+
+			return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
 		}
 		return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
 	}
