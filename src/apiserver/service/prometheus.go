@@ -190,6 +190,21 @@ func sliceToString(src []string) string {
 	return strings.Join(src, ", ")
 }
 
+func nodeDataTypeConvert(data, which string) interface{} {
+	var num interface{}
+	var err error
+	switch which {
+	case "storageUsed", "storageCap":
+		num, err = strconv.Atoi(data)
+	case "CPU", "memory":
+		num, err = strconv.ParseFloat(data, 64)
+	}
+	if err != nil {
+		return nil
+	}
+	return num
+}
+
 func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, timeStampArray []int64) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
@@ -197,26 +212,16 @@ func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx co
 	}
 	data := grepContent(result.String(), "\n([0-9.]+)")
 	for j, w := range data {
-		var digit interface{}
-		switch which {
-		case "storageUsed", "storageCap":
-			digit, err = strconv.Atoi(string(w[1]))
-		case "CPU", "memory":
-			digit, err = strconv.ParseFloat(string(w[1]), 64)
-		}
-		if err != nil {
-			return err
-		}
 		switch which {
 		case "CPU":
 			d.NodeListData[0].NodeLogsData[j].TimeStamp = timeStampArray[j]
-			d.NodeListData[0].NodeLogsData[j].CPUUsage = digit.(float64)
+			d.NodeListData[0].NodeLogsData[j].CPUUsage = nodeDataTypeConvert(w[1], which).(float64)
 		case "memory":
-			d.NodeListData[0].NodeLogsData[j].MemoryUsage = digit.(float64)
+			d.NodeListData[0].NodeLogsData[j].MemoryUsage = nodeDataTypeConvert(w[1], which).(float64)
 		case "storageCap":
-			d.NodeListData[0].NodeLogsData[j].StorageTotal = digit.(int)
+			d.NodeListData[0].NodeLogsData[j].StorageTotal = nodeDataTypeConvert(w[1], which).(int)
 		case "storageUsed":
-			d.NodeListData[0].NodeLogsData[j].StorageUsed = digit.(int)
+			d.NodeListData[0].NodeLogsData[j].StorageUsed = nodeDataTypeConvert(w[1], which).(int)
 		}
 	}
 	return nil
@@ -229,37 +234,20 @@ func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx conte
 	}
 	lines := strings.Split(result.String(), "{")
 	for _, v := range lines[1:] {
-		var whichNode string
-		switch which {
-		case "CPU":
-			whichNode = `instance="([^":]+)["|:]`
-		default:
-			whichNode = `, node="([^"]+)"`
-		}
-		cur := grepContent(v, whichNode)[0][1]
+		cur := grepContent(v, `(, node|^instance)="([^":]+)`)[0][2]
 		for j := 1; j <= d.NodeCount; j++ {
 			if d.NodeListData[j].Name == cur {
 				data := grepContent(v, "\n([0-9.]+)")
 				for k, w := range data {
-					var digit interface{}
-					switch which {
-					case "storageUsed", "storageCap":
-						digit, err = strconv.Atoi(w[1])
-					case "CPU", "memory":
-						digit, err = strconv.ParseFloat(w[1], 64)
-					}
-					if err != nil {
-						return err
-					}
 					switch which {
 					case "CPU":
-						d.NodeListData[j].NodeLogsData[k].CPUUsage = digit.(float64)
+						d.NodeListData[j].NodeLogsData[k].CPUUsage = nodeDataTypeConvert(w[1], which).(float64)
 					case "memory":
-						d.NodeListData[j].NodeLogsData[k].MemoryUsage = digit.(float64)
+						d.NodeListData[j].NodeLogsData[k].MemoryUsage = nodeDataTypeConvert(w[1], which).(float64)
 					case "storageUsed":
-						d.NodeListData[j].NodeLogsData[k].StorageUsed = digit.(int)
+						d.NodeListData[j].NodeLogsData[k].StorageUsed = nodeDataTypeConvert(w[1], which).(int)
 					case "storageCap":
-						d.NodeListData[j].NodeLogsData[k].StorageTotal = digit.(int)
+						d.NodeListData[j].NodeLogsData[k].StorageTotal = nodeDataTypeConvert(w[1], which).(int)
 					}
 				}
 			}
