@@ -10,6 +10,7 @@ export const LANG_ZH_CN = {
     InitKubernetesInfo: '正在初始化Kubernetes',
     SyncUpK8s: '正在同步Kubernetes数据',
     Ready: '准备就绪',
+    InitBoardFailed: '初始化Board失败，请联系Board管理员'
   },
   "BUTTON": {
     "OK": "确定",
@@ -957,6 +958,7 @@ export const LANG_ZH_CN = {
     Name: '节点名称',
     NamePatternMessage: '节点名称格式不正确:以数字或字母开头和结尾，中间支持\'-\'、\'.\'、\'_\'',
     NameExists: '节点名称已经存在',
+    NameInputRequired: '节点名称不能为空',
     Ip: '节点IP',
     Password: '节点密码',
     IpPatternMessage: '节点IP格式不正确',
@@ -967,7 +969,9 @@ export const LANG_ZH_CN = {
     Commit: '提交',
     AddSuccessfully: '添加节点成功',
     Auto: '自动',
-    Manual: '手动'
+    Manual: '手动',
+    ParamsErrorMessage: '输入参数错误',
+    TimeOutMessage: '添加超时'
   },
 
   "GUIDE":{

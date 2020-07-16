@@ -147,5 +147,13 @@ export class Service extends HttpBase {
   @HttpBind('service_is_member') serviceIsMember = -1;
   @HttpBind('service_type') serviceType: ServiceType = ServiceType.ServiceTypeUnknown;
   @HttpBind('service_comment') serviceComment = '';
+
+  get isNotEdgeNode(): boolean {
+    return this.serviceType !== ServiceType.ServiceTypeEdgeComputing;
+  }
+
+  get isNormalNode(): boolean {
+    return this.serviceType === ServiceType.ServiceTypeNormalNodePort;
+  }
 }
 

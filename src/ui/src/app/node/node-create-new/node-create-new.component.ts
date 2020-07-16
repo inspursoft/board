@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { EdgeNode, NodeStatus } from '../node.types';
-import { Observable, of, Subject } from 'rxjs';
+import { interval, Observable, of, Subject, Subscription, TimeoutError } from 'rxjs';
 import { ValidationErrors } from '@angular/forms';
 import { catchError, map } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -14,31 +14,34 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './node-create-new.component.html',
   styleUrls: ['./node-create-new.component.css']
 })
-export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
+export class NodeCreateNewComponent extends CsModalChildBase implements OnInit, OnDestroy {
   nodeList: Array<NodeStatus>;
-  patternNodeName: RegExp = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]$/;
+  patternNodeName: RegExp = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]*$/;
   patternNodeIp: RegExp = /^((?:(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(?:25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d))))$/;
   edgeNode: EdgeNode;
-  cpuTypes: Array<string>;
+  cpuTypes: Array<{ description: string }>;
   masters: Array<string>;
   registryMode: Array<{ key: string, value: string }>;
   isActionWip = false;
+  subRefreshInterval: Subscription;
+  checkTimes = 0;
 
   constructor(private nodeService: NodeService,
               private messageService: MessageService,
               private translateService: TranslateService) {
     super();
     this.edgeNode = new EdgeNode();
-    this.cpuTypes = new Array<string>();
+    this.cpuTypes = new Array<{ description: string }>();
     this.masters = new Array<string>();
     this.nodeList = new Array<NodeStatus>();
     this.registryMode = new Array<{ key: string, value: string }>();
   }
 
   ngOnInit() {
-    this.cpuTypes.push('X86');
-    this.cpuTypes.push('ARM64');
-    this.cpuTypes.push('ARM32');
+    this.cpuTypes.push({description: 'auto-detect'});
+    this.cpuTypes.push({description: 'X86'});
+    this.cpuTypes.push({description: 'ARM64'});
+    this.cpuTypes.push({description: 'ARM32'});
     this.translateService.get(['NodeCreateNew.Auto', 'NodeCreateNew.Manual']).subscribe(
       res => {
         this.registryMode.push({key: Reflect.get(res, 'NodeCreateNew.Auto'), value: 'auto'});
@@ -54,12 +57,23 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
     this.isActionWip = false;
   }
 
+  ngOnDestroy() {
+    if (this.subRefreshInterval) {
+      this.subRefreshInterval.unsubscribe();
+    }
+    super.ngOnDestroy();
+  }
+
   get checkEdgeNodeIpFun() {
     return this.checkEdgeNodeIp.bind(this);
   }
 
   get checkEdgeNodeNameFun() {
     return this.checkEdgeNodeName.bind(this);
+  }
+
+  cpuTypeDisableFun(item: { description: string }): boolean {
+    return item.description !== 'auto-detect';
   }
 
   checkEdgeNodeIp(control: HTMLInputElement): Observable<ValidationErrors | null> {
@@ -86,13 +100,49 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit {
     this.edgeNode.registryMode = register.value;
   }
 
+  setCpuType(type: { description: string }) {
+    this.edgeNode.cpuType = type.description;
+  }
+
+  checkNodeBuildStatus() {
+    this.nodeService.getNodes().subscribe(
+      (res: Array<NodeStatus>) => {
+        res.forEach(value => {
+          if (value.nodeName === this.edgeNode.name) {
+            this.messageService.showAlert('NodeCreateNew.AddSuccessfully');
+            this.modalOpened = false;
+          }
+          if (this.checkTimes > 5) {
+            this.messageService.showAlert('NodeCreateNew.TimeOutMessage', {alertType: 'danger'});
+            this.modalOpened = false;
+          }
+          this.checkTimes += 1;
+        });
+      },
+      () => this.modalOpened = false
+    );
+  }
+
   addEdgeNode() {
     if (this.verifyInputExValid() && this.verifyDropdownExValid()) {
       this.isActionWip = true;
       this.nodeService.addEdgeNode(this.edgeNode).subscribe(
-        () => this.messageService.showAlert('NodeCreateNew.AddSuccessfully'),
-        () => this.modalOpened = false,
-        () => this.modalOpened = false
+        () => this.subRefreshInterval = interval(10000).subscribe(() => this.checkNodeBuildStatus()),
+        (err: HttpErrorResponse | TimeoutError) => {
+          this.translateService.get('NodeCreateNew.ParamsErrorMessage').subscribe(msg => {
+              if (err instanceof HttpErrorResponse) {
+                if (err.status === 400) {
+                  const errMsg = `${msg}: ${err.error}`;
+                  this.messageService.cleanNotification();
+                  this.messageService.showAlert(errMsg, {alertType: 'danger'});
+                }
+              } else {
+                this.messageService.showAlert(msg, {alertType: 'danger'});
+              }
+              this.modalOpened = false;
+            }
+          );
+        }
       );
     }
   }

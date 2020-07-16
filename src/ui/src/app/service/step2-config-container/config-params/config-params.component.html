@@ -39,7 +39,7 @@
     <lib-input-array-ex [inputCategory]="'number'"
                         [inputArrayFixed]="fixedContainerPort.get(container)"
                         [inputMin]="1"
-                        [inputArrayDefault]="container.containerPort"
+                        [inputArrayDefault]="defaultContainerPorts"
                         [inputMax]="65535"
                         [inputPlaceholder]="'[1..65535]'"
                         [validatorFns]="[validContainerPortsFun]"

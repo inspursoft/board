@@ -29,6 +29,7 @@ export class InitializePageComponent implements OnInit, OnDestroy {
   totalSteps = 1;
   curStep = 1;
   curStepMessage = '';
+  initFailed = false;
 
   constructor(private appInitService: AppInitService,
               private route: Router,
@@ -46,14 +47,18 @@ export class InitializePageComponent implements OnInit, OnDestroy {
     this.messageMap.set('READY', 'InitializeInfo.Ready');
     this.subscription = interval(2000).subscribe(
       (res: number) => {
-        if (res % 3 === 0) {
-          this.tailPoints = '..';
-        } else if (res % 3 === 1) {
-          this.tailPoints = '...';
+        if (this.initFailed) {
+          this.tailPoints = '';
         } else {
-          this.tailPoints = '.';
+          if (res % 3 === 0) {
+            this.tailPoints = '..';
+          } else if (res % 3 === 1) {
+            this.tailPoints = '...';
+          } else {
+            this.tailPoints = '.';
+          }
+          this.reloadData();
         }
-        this.reloadData();
       }
     );
   }
@@ -75,10 +80,14 @@ export class InitializePageComponent implements OnInit, OnDestroy {
             this.curStep = Number(messageArr[1]);
             const messageKey = res.message.substr(res.message.indexOf(messageArr[2]));
             this.curStepMessage = this.messageMap.get(messageKey);
+          } else if (res.message === 'context canceled') {
+            this.curStepMessage = 'InitializeInfo.InitBoardFailed';
+            this.initFailed = true;
           } else {
             this.curStepMessage = this.messageMap.get(res.message);
           }
         } else {
+          this.initFailed = true;
           this.messageService.showGlobalMessage(err.message, {
             globalAlertType: GlobalAlertType.gatShowDetail,
             errorObject: err

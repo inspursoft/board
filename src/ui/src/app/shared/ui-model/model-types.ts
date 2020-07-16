@@ -86,7 +86,7 @@ export abstract class HttpBase {
   }
 
   initFromRes() {
-    if (!this.res) {
+    if (!this.res || typeof this.res !== 'object') {
       return;
     }
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);

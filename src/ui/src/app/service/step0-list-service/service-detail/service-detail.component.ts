@@ -92,7 +92,7 @@ export class ServiceDetailComponent {
           // });
         }
         this.serviceDetail = serviceDetail;
-      }, () => this.isOpenServiceDetail = false);
+      }, () => this.isOpenServiceDetail = true);
     }
   }
 

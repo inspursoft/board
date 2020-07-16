@@ -26,7 +26,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   patternMemLimit: RegExp = /^[0-9]*Mi$/;
   container: Container;
   showEnvironmentValue = false;
-  fixedContainerEnv: Map<string, Array<EnvStruct>>;
+  fixedContainerEnv: Map<Container, Array<EnvStruct>>;
   fixedContainerPort: Map<Container, Array<number>>;
   step2Data: ServiceStep2Data;
   curContainerType: ContainerType = ContainerType.runContainer;
@@ -112,6 +112,11 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     this.showEnvironmentValue = true;
   }
 
+  get defaultContainerPorts(): Array<number> {
+    const fixedPorts = this.fixedContainerPort.get(this.container);
+    return this.container.containerPort.filter(value => fixedPorts.indexOf(value) === -1);
+  }
+
   getDefaultEnvsData() {
     const result = Array<EnvType>();
     this.container.env.forEach((value: EnvStruct) => {
@@ -125,8 +130,8 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   getDefaultEnvsFixedData(): Array<string> {
     const result = Array<string>();
-    if (this.fixedContainerEnv.has(this.container.image.imageName)) {
-      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container.image.imageName);
+    if (this.fixedContainerEnv.has(this.container)) {
+      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container);
       fixedEnvs.forEach(value => result.push(value.dockerFileEnvName));
     }
     return result;
@@ -151,6 +156,10 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
         this.container.containerPort.push(value);
       }
     });
+    if (this.fixedContainerPort.has(this.container)) {
+      const fixedPorts = this.fixedContainerPort.get(this.container);
+      fixedPorts.forEach(value => this.container.containerPort.push(value));
+    }
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {

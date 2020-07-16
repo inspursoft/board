@@ -1,12 +1,15 @@
 <div class="init-container">
   <div class="init-title-container">
-    <p class="init-title">
+    <p *ngIf="!initFailed" class="init-title">
       <b>{{'InitializeInfo.Title' | translate}}{{tailPoints}}</b>
     </p>
-    <p class="init-title">({{curStep}}/{{totalSteps}}){{curStepMessage | translate}}</p>
+    <p [ngStyle]="{color: initFailed ? 'red': ''}" class="init-title">
+      <span *ngIf="!initFailed">({{curStep}}/{{totalSteps}})</span>
+      {{curStepMessage | translate}}
+    </p>
   </div>
-  <div class="progress flash progress-fade progress-container success">
-    <progress [max]="totalSteps" [value]="curStep" ></progress>
+  <div *ngIf="!initFailed" class="progress flash progress-fade progress-container success">
+    <progress [max]="totalSteps" [value]="curStep"></progress>
   </div>
 </div>
 

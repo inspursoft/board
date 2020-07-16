@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { delay, map } from 'rxjs/operators';
+import { delay, map, timeout } from 'rxjs/operators';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus, EdgeNode } from './node.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
@@ -75,7 +75,7 @@ export class NodeService {
   }
 
   addEdgeNode(edgeNode: EdgeNode): Observable<any> {
-    return this.http.post(`/api/v1/edgenodes`, edgeNode.getPostBody());
+    return this.http.post(`/api/v1/edgenodes`, edgeNode.getPostBody()).pipe(timeout(20000));
   }
 
   deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<object>> {
