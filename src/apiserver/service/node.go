@@ -174,33 +174,54 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		nodetype := getNodeType(v)
-		res = append(res, NodeListResult{
-			NodeName:   getNodeAddress(v, "Hostname"),
-			NodeIP:     getNodeAddress(v, "InternalIP"),
-			CreateTime: v.CreationTimestamp.Unix(),
-			Labels:     v.ObjectMeta.Labels,
-			Status: func() NodeStatus {
-				if v.Unschedulable {
-					return Unschedulable
-				}
-				for _, cond := range v.Status.Conditions {
-					if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
-						return Running
+		if nodetype != NodeTypeEdge {
+			res = append(res, NodeListResult{
+				NodeName:   getNodeAddress(v, "Hostname"),
+				NodeIP:     getNodeAddress(v, "InternalIP"),
+				CreateTime: v.CreationTimestamp.Unix(),
+				Labels:     v.ObjectMeta.Labels,
+				Status: func() NodeStatus {
+					if v.Unschedulable {
+						return Unschedulable
 					}
-				}
-				if nodetype == NodeTypeEdge {
-					//TODO Ping the edgenode is not the only condition for AutonomousOffline
-					status, err := utils.PingIPAddr(v.NodeIP)
-					if err != nil {
-						logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
-					} else if !status {
-						logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
-						return AutonomousOffline
+					for _, cond := range v.Status.Conditions {
+						if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+							return Running
+						}
 					}
+					return Unknown
+				}(),
+				NodeType: nodetype})
+		} else {
+			var nodeitem NodeListResult
+			if name, ok := v.Labels["kubernetes.io/hostname"]; ok {
+				nodeitem.NodeName = name
+			} else {
+				nodeitem.NodeName = v.NodeIP
+			}
+			nodeitem.NodeIP = v.NodeIP
+			nodeitem.CreateTime = v.CreationTimestamp.Unix()
+			nodeitem.Labels = v.ObjectMeta.Labels
+			nodeitem.Status = Unknown
+
+			// update status
+			for _, cond := range v.Status.Conditions {
+				if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+					nodeitem.Status = Running
 				}
-				return Unknown
-			}(),
-			NodeType: nodetype})
+			}
+			if nodeitem.Status != Running {
+				//TODO Ping the edgenode is not the only condition for AutonomousOffline
+				status, err := utils.PingIPAddr(v.NodeIP)
+				if err != nil {
+					logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
+				} else if !status {
+					logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
+					nodeitem.Status = AutonomousOffline
+				}
+			}
+			res = append(res, nodeitem)
+		}
 	}
 	return
 }
