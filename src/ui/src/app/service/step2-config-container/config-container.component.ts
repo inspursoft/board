@@ -25,7 +25,7 @@ export class ConfigContainerComponent extends ServiceStepComponentBase implement
   imageDetailSourceList: Map<string, Array<ServiceImageDetail>>;
   imageTagNotReadyList: Map<Container, boolean>;
   fixedContainerPort: Map<Container, Array<number>>;
-  fixedContainerEnv: Map<string, Array<EnvStruct>>;
+  fixedContainerEnv: Map<Container, Array<EnvStruct>>;
   serviceStep2Data: ServiceStep2Data;
   serviceStep2DataInit: ServiceStep2DataInit;
   curContainerType: ContainerType = ContainerType.runContainer;
@@ -37,7 +37,7 @@ export class ConfigContainerComponent extends ServiceStepComponentBase implement
     this.imageDetailSourceList = new Map<string, Array<ServiceImageDetail>>();
     this.imageTagNotReadyList = new Map<Container, boolean>();
     this.fixedContainerPort = new Map<Container, Array<number>>();
-    this.fixedContainerEnv = new Map<string, Array<EnvStruct>>();
+    this.fixedContainerEnv = new Map<Container, Array<EnvStruct>>();
     this.serviceStep2Data = new ServiceStep2Data();
     this.serviceStep2DataInit = new ServiceStep2DataInit();
   }
@@ -98,12 +98,10 @@ export class ConfigContainerComponent extends ServiceStepComponentBase implement
     if (this.imageDetailSourceList.has(image.imageName)) {
       const detailList: Array<ServiceImageDetail> = this.imageDetailSourceList.get(image.imageName);
       container.image.imageTag = detailList[0].imageTag;
-      this.setDefaultContainerInfo(container);
       this.setContainerFixedInfo(container);
     } else {
       this.getImageDetailList(container).subscribe((res: Array<ServiceImageDetail>) => {
         container.image.imageTag = res[0].imageTag;
-        this.setDefaultContainerInfo(container);
         this.setContainerFixedInfo(container);
       });
     }
@@ -112,7 +110,6 @@ export class ConfigContainerComponent extends ServiceStepComponentBase implement
   changeSelectImageDetail(imageName: string, imageDetail: ServiceImageDetail) {
     const container = this.curStep2Data.containerList.find(value => value.image.imageName === imageName);
     container.image.imageTag = imageDetail.imageTag;
-    this.setDefaultContainerInfo(container);
     this.setContainerFixedInfo(container);
   }
 
@@ -145,45 +142,26 @@ export class ConfigContainerComponent extends ServiceStepComponentBase implement
             const env = new EnvStruct();
             env.dockerFileEnvName = value.envName;
             env.dockerFileEnvValue = value.envValue;
+            if (container.env.find(value1 => value1.dockerFileEnvName === value.envName) === undefined) {
+              container.env.push(env);
+            }
             fixedEnvs.push(env);
           });
-          this.fixedContainerEnv.set(imageIndex.imageName, fixedEnvs);
+          this.fixedContainerEnv.set(container, fixedEnvs);
         }
         if (res.imageExpose.length > 0) {
           const fixedPorts: Array<number> = Array();
           res.imageExpose.forEach(value => {
             const port: number = Number(value).valueOf();
             fixedPorts.push(port);
+            if (container.containerPort.find(value1 => value1 === port) === undefined) {
+              container.containerPort.push(port);
+            }
           });
           this.fixedContainerPort.set(container, fixedPorts);
         }
       }, () => this.messageService.cleanNotification()
     );
-  }
-
-
-  setDefaultContainerInfo(container: Container): void {
-    const imageIndex = container.image;
-    this.k8sService.getContainerDefaultInfo(imageIndex.imageName, imageIndex.imageTag, imageIndex.projectName).subscribe(
-      (res: ServiceDockerfileData) => {
-        if (res.imageCmd !== '') {
-          container.command = res.imageCmd;
-        }
-        if (res.imageEnv.length > 0) {
-          res.imageEnv.forEach(value => {
-            const env = new EnvStruct();
-            env.dockerFileEnvName = value.envName;
-            env.dockerFileEnvValue = value.envValue;
-            container.env.push(env);
-          });
-        }
-        if (res.imageExpose.length > 0) {
-          res.imageExpose.forEach(value => {
-            const port: number = Number(value).valueOf();
-            container.containerPort.push(port);
-          });
-        }
-      }, () => this.messageService.cleanNotification());
   }
 
   forward(): void {

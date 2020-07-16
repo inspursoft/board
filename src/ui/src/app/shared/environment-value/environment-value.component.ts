@@ -2,13 +2,13 @@
  * Created by liyanq on 9/4/17.
  */
 
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
-import { ValidatorFn, Validators } from "@angular/forms";
-import { CsModalChildBase } from "../cs-modal-base/cs-modal-child-base";
-import { ConfigMapDetail, ConfigMap } from "../../resource/resource.types";
-import { ResourceService } from "../../resource/resource.service";
-import { HttpErrorResponse } from "@angular/common/http";
-import { MessageService } from "../../shared.service/message.service";
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ValidatorFn, Validators } from '@angular/forms';
+import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
+import { ConfigMapDetail, ConfigMap } from '../../resource/resource.types';
+import { ResourceService } from '../../resource/resource.service';
+import { MessageService } from '../../shared.service/message.service';
 
 export class EnvType {
   public envName = '';
@@ -23,15 +23,15 @@ export class EnvType {
 }
 
 @Component({
-  selector: "environment-value",
-  templateUrl: "./environment-value.component.html",
-  styleUrls: ["./environment-value.component.css"],
+  selector: 'environment-value',
+  templateUrl: './environment-value.component.html',
+  styleUrls: ['./environment-value.component.css'],
   providers: [ResourceService]
 })
 export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
   patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
   envsData: Array<EnvType>;
-  envsText = "";
+  envsText = '';
   inputValidator: Array<ValidatorFn>;
   configMapList: Array<ConfigMap>;
   configMapDetail: Map<number, ConfigMapDetail>;
@@ -47,6 +47,8 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
               private resourceService: ResourceService) {
     super();
     this.envsData = Array<EnvType>();
+    this.inputFixedKeyList = new Array<string>();
+    this.inputEnvsData = new Array<EnvType>();
     this.onConfirm = new EventEmitter<Array<EnvType>>();
     this.inputValidator = Array<ValidatorFn>();
     this.configMapList = Array<ConfigMap>();
@@ -59,11 +61,11 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     if (this.inputEnvsData && this.inputEnvsData.length > 0) {
       this.envsData = this.envsData.concat(this.inputEnvsData);
       this.envsData.forEach((value: EnvType, index: number) => {
-        let detail = new ConfigMapDetail();
-        detail.dataList.push({key: value.envConfigMapKey, value: value.envConfigMapKey})
+        const detail = new ConfigMapDetail();
+        detail.dataList.push({key: value.envConfigMapKey, value: value.envConfigMapKey});
         this.configMapDetail.set(index, detail);
-        this.bindConfigMap.set(index, value.envConfigMapKey != '')
-      })
+        this.bindConfigMap.set(index, value.envConfigMapKey !== '');
+      });
     }
     this.resourceService.getConfigMapList(this.projectName, 0, 0).subscribe(
       (res: Array<ConfigMap>) => this.configMapList = res);
@@ -71,7 +73,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
   }
 
   addNewEnv() {
-    this.envsData.push(new EnvType("", ""));
+    this.envsData.push(new EnvType('', ''));
   }
 
   confirmEnvInfo() {
@@ -89,10 +91,10 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
 
   envTextAddClick() {
     try {
-      let envTypes = this.envsText.split(";").map((str: string) => {
-        let envStrPair = str.split("=");
+      const envTypes = this.envsText.split(';').map((str: string) => {
+        const envStrPair = str.split('=');
         if (!this.patternEnv.test(envStrPair[0]) || !this.patternEnv.test(envStrPair[1])) {
-          throw new Error()
+          throw new Error();
         }
         return new EnvType(envStrPair[0], envStrPair[1]);
       });
@@ -107,11 +109,11 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     envInfo.envConfigMapName = configMap.name;
     this.resourceService.getConfigMapDetail(configMap.name, this.projectName).subscribe(
       (res: ConfigMapDetail) => this.configMapDetail.set(index, res),
-      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: "danger", view: this.alertView})
-    )
+      (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: 'danger', view: this.alertView})
+    );
   }
 
-  changeConfigMapKey(envInfo: EnvType, data: {key: string, value: string}) {
+  changeConfigMapKey(envInfo: EnvType, data: { key: string, value: string }) {
     envInfo.envValue = data.value;
     envInfo.envConfigMapKey = data.key;
   }
@@ -123,5 +125,9 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
       envInfo.envConfigMapName = '';
       envInfo.envConfigMapKey = '';
     }
+  }
+
+  isFixed(env: EnvType): boolean {
+    return this.inputFixedKeyList.find(value => env.envName === value) !== undefined;
   }
 }

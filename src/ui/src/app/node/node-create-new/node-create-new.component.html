@@ -5,8 +5,10 @@
                   [inputPattern]="patternNodeName"
                   [inputLabel]="'NodeCreateNew.Name' | translate"
                   [inputDefaultValue]="edgeNode.name"
-                  [validatorMessage]="[{key: 'pattern', message: 'NodeCreateNew.NamePatternMessage' | translate},
-                                   {key:'edgeNodeNameExists', message:'NodeCreateNew.NameExists' | translate}]"
+                  [validatorMessage]="[
+                  {key: 'required', message: 'NodeCreateNew.NameInputRequired' | translate},
+                  {key: 'pattern', message: 'NodeCreateNew.NamePatternMessage' | translate},
+                  {key:'edgeNodeNameExists', message:'NodeCreateNew.NameExists' | translate}]"
                   [validatorAsyncFn]="checkEdgeNodeNameFun"
                   (commitEvent)="edgeNode.name = $event">
     </lib-input-ex>
@@ -27,9 +29,11 @@
     </lib-input-ex>
     <lib-dropdown-ex [dropdownIsRequired]="true"
                      [dropdownItems]="cpuTypes"
+                     [dropdownKey]="'description'"
                      [dropdownDefaultActiveIndex]="0"
+                     [dropdownItemDisabledFn]="cpuTypeDisableFun"
                      [dropdownLabel]="'NodeCreateNew.CpuType' | translate"
-                     (dropdownChangeItem)="edgeNode.cpuType = $event">
+                     (dropdownChangeItem)="setCpuType($event)">
     </lib-dropdown-ex>
 
     <lib-dropdown-ex [dropdownIsRequired]="true"

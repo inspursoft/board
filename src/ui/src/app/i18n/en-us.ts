@@ -10,6 +10,7 @@ export const LANG_EN_US = {
     InitKubernetesInfo: 'Initializing Kubernetes',
     SyncUpK8s: 'Syncing up the data from Kubernetes',
     Ready: 'Ready',
+    InitBoardFailed: 'Failed to initialize Board, please contact with administrator of Board'
   },
   "BUTTON": {
     "OK": "OK",
@@ -957,6 +958,7 @@ export const LANG_EN_US = {
     Name: 'Node name',
     NamePatternMessage: 'The node name is invalid:start or end with number or letters，the content middle supports \'-\'、\'.\'、\'_\'',
     NameExists: 'The node name already exists',
+    NameInputRequired: 'The node name is can not empty',
     Ip: 'Node ip',
     Password: 'Node password',
     IpPatternMessage: 'The node ip is invalid',
@@ -967,7 +969,9 @@ export const LANG_EN_US = {
     Commit: 'Commit',
     AddSuccessfully: 'Added node successfully',
     Auto: 'Auto',
-    Manual: 'Manual'
+    Manual: 'Manual',
+    ParamsErrorMessage: 'Input params error',
+    TimeOutMessage: 'Timeout has occurred'
   },
 
   "GUIDE":{

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { K8sService } from '../../../service.k8s';
-import { Service } from '../../../service.types';
+import { Service, ServiceType } from '../../../service.types';
 
 @Component({
   selector: 'app-locate',
@@ -26,10 +26,16 @@ export class LocateComponent implements OnInit {
 
   ngOnInit() {
     this.actionIsEnabledEvent.emit(false);
-    this.k8sService.getNodeSelectors().subscribe(
-      (res: Array<{ name: string, status: number }>) =>
-        res.forEach(value => this.nodeSelectorList.push(value.name))
-    );
+    if (this.service.serviceType === ServiceType.ServiceTypeEdgeComputing) {
+      this.k8sService.getEdgeNodes().subscribe(
+        (res: Array<{ description: string }>) => res.forEach(node => this.nodeSelectorList.push(node.description))
+      );
+    } else {
+      this.k8sService.getNodeSelectors().subscribe(
+        (res: Array<{ name: string, status: number }>) =>
+          res.forEach(value => this.nodeSelectorList.push(value.name))
+      );
+    }
     this.k8sService.getLocate(this.service.serviceProjectName, this.service.serviceName).subscribe(
       res => {
         if (res && res !== '') {
