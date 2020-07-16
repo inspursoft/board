@@ -97,6 +97,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	timeRange.Start = time.Unix(timeStampArray[0], 0)
 	timeRange.End = time.Unix(timeStampArray[request.TimeCount-1], 0)
 
+	//get service info
 	podInfo, err := para.GetServiceInfo(ctx, v1api, timeRange, timeStampArray)
 	if err != nil {
 		return DashboardInfo{}, err
@@ -106,7 +107,6 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 		return DashboardInfo{}, err
 	}
 	para.CountContainer(timeStampArray, containerInfo)
-
 	//filtering
 	for i := 0; i < len(para.ServiceListData); i++ {
 		if para.ServiceListData[i].Name != servicename {
@@ -115,7 +115,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	}
 
 	//init node info
-	kubeNodeQuery := `kube_node_info`
+	kubeNodeQuery := `kube_node_info{kubelet_version!=""}`
 	kubeNodeResult, warnings, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
 	if err != nil {
 		return DashboardInfo{}, err
@@ -123,7 +123,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	if len(warnings) > 0 {
 		logs.Info("Warnings: %v\n", warnings)
 	}
-	linesOfNode := strings.Split(kubeNodeResult.String(), kubeNodeQuery)
+	linesOfNode := strings.Split(kubeNodeResult.String(), "{")
 	para.NodeCount = len(linesOfNode) - 1
 	para.NodeListData = make([]NodeList, len(linesOfNode))
 	para.NodeListData[0].Name = "average"
@@ -143,27 +143,29 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 		`(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`,
 		`(1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total)) * 100`}
 
-	for i, q := range nodeInfoQuery {
-		err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
-		if err != nil {
-			return DashboardInfo{}, err
+	if nodename == "average" {
+		for i := 0; i < request.TimeCount; i++ {
+			para.NodeListData[0].NodeLogsData[i].TimeStamp = timeStampArray[i]
+		}
+		for i, q := range nodeInfoQuery {
+			avgQuery := fmt.Sprintf("avg(%s)", q)
+			err = para.GetAvgNodeData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange)
+			if err != nil {
+				return DashboardInfo{}, err
+			}
+		}
+	} else {
+		for i, q := range nodeInfoQuery {
+			err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
+			if err != nil {
+				return DashboardInfo{}, err
+			}
 		}
 	}
-
 	//filtering
 	for i := 0; i < len(para.NodeListData); i++ {
 		if para.NodeListData[i].Name != nodename {
 			para.NodeListData[i].NodeLogsData = []NodeLogs{}
-		}
-	}
-
-	if nodename == "average" {
-		for i, q := range nodeInfoQuery {
-			avgQuery := fmt.Sprintf("avg(%s)", q)
-			err = para.GetAvgNodeData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange, timeStampArray)
-			if err != nil {
-				return DashboardInfo{}, err
-			}
 		}
 	}
 
@@ -205,7 +207,7 @@ func nodeDataTypeConvert(data, which string) interface{} {
 	return num
 }
 
-func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, timeStampArray []int64) error {
+func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
@@ -214,7 +216,6 @@ func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx co
 	for j, w := range data {
 		switch which {
 		case "CPU":
-			d.NodeListData[0].NodeLogsData[j].TimeStamp = timeStampArray[j]
 			d.NodeListData[0].NodeLogsData[j].CPUUsage = nodeDataTypeConvert(w[1], which).(float64)
 		case "memory":
 			d.NodeListData[0].NodeLogsData[j].MemoryUsage = nodeDataTypeConvert(w[1], which).(float64)
