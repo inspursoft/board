@@ -115,7 +115,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	}
 
 	//init node info
-	kubeNodeQuery := `kube_node_info{kubelet_version!=""}`
+	kubeNodeQuery := `node_netstat_Ip_Forwarding`
 	kubeNodeResult, warnings, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
 	if err != nil {
 		return DashboardInfo{}, err
@@ -128,8 +128,14 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	para.NodeListData = make([]NodeList, len(linesOfNode))
 	para.NodeListData[0].Name = "average"
 	para.NodeListData[0].NodeLogsData = make([]NodeLogs, request.TimeCount)
+	ipToNodeName := make(map[string]string)
 	for i, v := range linesOfNode[1:] {
-		para.NodeListData[i+1].Name = grepContent(v, `, node="([^"]+)"`)[0][1]
+		nodeIP := grepContent(v, `instance="([^":]+)`)[0][1]
+		para.NodeListData[i+1].Name = nodeIP
+		nodeNameItem := grepContent(v, `kubernetes_node="([^"]+)`)
+		if len(nodeNameItem) > 0 {
+			ipToNodeName[nodeIP] = nodeNameItem[0][1]
+		}
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
 		for j := 0; j < request.TimeCount; j++ {
 			para.NodeListData[i+1].NodeLogsData[j].TimeStamp = timeStampArray[j]
@@ -156,7 +162,7 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 		}
 	} else {
 		for i, q := range nodeInfoQuery {
-			err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange)
+			err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange, ipToNodeName)
 			if err != nil {
 				return DashboardInfo{}, err
 			}
@@ -228,16 +234,23 @@ func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx co
 	return nil
 }
 
-func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
+func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, ipToNodeName map[string]string) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
 	}
 	lines := strings.Split(result.String(), "{")
 	for _, v := range lines[1:] {
-		cur := grepContent(v, `(, node|^instance)="([^":]+)`)[0][2]
+		var cur string
+		curArray := grepContent(v, `, node="([^"]+)`)
+		if len(curArray) > 0 {
+			cur = curArray[0][1]
+		} else {
+			cur = grepContent(v, `^instance="([^":]+)`)[0][1]
+		}
 		for j := 1; j <= d.NodeCount; j++ {
-			if d.NodeListData[j].Name == cur {
+			ip := d.NodeListData[j].Name
+			if cur == ip || cur == ipToNodeName[ip] {
 				data := grepContent(v, "\n([0-9.]+)")
 				for k, w := range data {
 					switch which {
