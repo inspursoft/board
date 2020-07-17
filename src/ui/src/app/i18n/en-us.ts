@@ -890,6 +890,7 @@ export const LANG_EN_US = {
     "NODE_TYPE_NODE": "Local node",
     "NODE_TYPE_MASTER": "Master",
     "NODE_TYPE_EDGE": "Edge node",
+    "NODE_TYPE_UNKNOWN": "Unknown",
     "OPERATION": "Operation",
     "ITEMS": " record(s) found.",
     "NODE_DETAILS": "Node Details",
