@@ -61,7 +61,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
         tap((event: HttpEvent<any>) => {
           if (event instanceof HttpResponse) {
             const res = event as HttpResponse<object>;
-            if (res.ok && res.headers.has('token') && res.headers.get('token') !== '') {
+            if (res.ok && res.headers.has('Token') && res.headers.get('Token') !== '') {
               this.appTokenService.chainResponse(res);
             } else if (this.isNotExceptUrl(res)) {
               this.translateService.get('ERROR.INVALID_TOKEN').subscribe(value => {

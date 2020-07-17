@@ -22,7 +22,8 @@ export class AppTokenService {
   }
 
   chainResponse(r: HttpResponse<object>): HttpResponse<object> {
-    this.token = r.headers.get('token');
+    this.token = r.headers.get('Token');
+    console.log(this.token);
     localStorage.setItem('token', this.token);
     return r;
   }
