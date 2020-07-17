@@ -132,9 +132,8 @@ export class NodeCreateNewComponent extends CsModalChildBase implements OnInit, 
           this.translateService.get('NodeCreateNew.ParamsErrorMessage').subscribe(msg => {
               if (err instanceof HttpErrorResponse) {
                 if (err.status === 400) {
-                  const errMsg = `${msg}: ${err.error}`;
                   this.messageService.cleanNotification();
-                  this.messageService.showAlert(errMsg, {alertType: 'danger'});
+                  this.messageService.showAlert(msg, {alertType: 'danger'});
                 }
               } else {
                 this.messageService.showAlert(msg, {alertType: 'danger'});

@@ -2,22 +2,22 @@ package nodeController
 
 import (
 	"fmt"
+	"git/inspursoft/board/src/adminserver/controllers"
 	"git/inspursoft/board/src/adminserver/models/nodeModel"
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/service/nodeService"
 	"git/inspursoft/board/src/common/model"
-	common "git/inspursoft/board/src/common/token"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
 type NodeController struct {
-	beego.Controller
+	controllers.BaseController
 }
 
 func (controller *NodeController) Render() error {
