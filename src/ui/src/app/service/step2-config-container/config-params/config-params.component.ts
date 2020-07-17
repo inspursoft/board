@@ -113,8 +113,10 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   get defaultContainerPorts(): Array<number> {
-    const fixedPorts = this.fixedContainerPort.get(this.container);
-    return this.container.containerPort.filter(value => fixedPorts.indexOf(value) === -1);
+    if (this.fixedContainerPort.has(this.container)) {
+      const fixedPorts = this.fixedContainerPort.get(this.container);
+      return this.container.containerPort.filter(value => fixedPorts.indexOf(value) === -1);
+    }
   }
 
   getDefaultEnvsData() {

@@ -890,6 +890,7 @@ export const LANG_ZH_CN = {
     "NODE_TYPE_MASTER": "控制节点",
     "NODE_TYPE_EDGE": "边缘节点",
     "NODE_STATUS": "节点状态",
+    "NODE_TYPE_UNKNOWN": "未知",
     "OPERATION": "操作",
     "ITEMS": " 条记录。",
     "NODE_DETAILS": "节点明细",

@@ -30,8 +30,10 @@ export class NodeStatus extends HttpBase {
       return 'NODE.NODE_TYPE_NODE';
     } else if (this.nodeType === 'master') {
       return 'NODE.NODE_TYPE_MASTER';
-    } else {
+    } else if (this.nodeType === 'edge') {
       return 'NODE.NODE_TYPE_EDGE';
+    } else {
+      return 'NODE.NODE_TYPE_UNKNOWN';
     }
   }
 }
