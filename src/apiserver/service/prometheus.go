@@ -132,7 +132,10 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	for i, v := range linesOfNode[1:] {
 		nodeIP := grepContent(v, `instance="([^":]+)`)[0][1]
 		para.NodeListData[i+1].Name = nodeIP
-		ipToNodeName[nodeIP] = grepContent(v, `nodename="([^"]+)`)[0][1]
+		nodeNameItem := grepContent(v, `kubernetes_node="([^"]+)`)
+		if len(nodeNameItem) > 0 {
+			ipToNodeName[nodeIP] = nodeNameItem[0][1]
+		}
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
 		for j := 0; j < request.TimeCount; j++ {
 			para.NodeListData[i+1].NodeLogsData[j].TimeStamp = timeStampArray[j]
@@ -238,7 +241,13 @@ func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx conte
 	}
 	lines := strings.Split(result.String(), "{")
 	for _, v := range lines[1:] {
-		cur := grepContent(v, `(, node|^instance)="([^":]+)`)[0][2]
+		var cur string
+		curArray := grepContent(v, `, node="([^"]+)`)
+		if len(curArray) > 0 {
+			cur = curArray[0][1]
+		} else {
+			cur = grepContent(v, `^instance="([^":]+)`)[0][1]
+		}
 		for j := 1; j <= d.NodeCount; j++ {
 			ip := d.NodeListData[j].Name
 			if cur == ip || cur == ipToNodeName[ip] {
