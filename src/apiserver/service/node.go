@@ -203,6 +203,7 @@ func GetNodeList() (res []NodeListResult) {
 			nodeitem.CreateTime = v.CreationTimestamp.Unix()
 			nodeitem.Labels = v.ObjectMeta.Labels
 			nodeitem.Status = Unknown
+			nodeitem.NodeType = nodetype
 
 			// update status
 			for _, cond := range v.Status.Conditions {
