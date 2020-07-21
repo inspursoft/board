@@ -1,6 +1,6 @@
 <clr-header [class.signInBackground]="isSignIn"  [class.signInForecolor]="isSignIn">
-  <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
-  <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
+  <app-change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></app-change-password>
+  <app-user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></app-user-setting>
   <div class="branding">
     <img *ngIf="isMipsEnv || isArmEnv" alt="" title="Mips platform" class="mips-logo" [src]="mipsLogoUrl"/>
     <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">

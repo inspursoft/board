@@ -28,7 +28,7 @@ export class AppMenuItemUrlDirective {
 }
 
 @Component({
-  selector: 'cs-vertical-nav',
+  selector: 'app-cs-vertical-nav',
   templateUrl: './cs-vertical-nav.component.html',
   styleUrls: ['./cs-vertical-nav.component.css']
 })

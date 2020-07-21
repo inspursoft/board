@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ConfigMap, ConfigMapDetail, ConfigMapProject } from './resource.types';
+import { ConfigMapProject } from './resource.types';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
+import { SharedConfigMap, SharedConfigMapDetail } from '../shared/shared.types';
 
 @Injectable()
 export class ResourceService {
@@ -9,12 +10,12 @@ export class ResourceService {
 
   }
 
-  createConfigMap(configMap: ConfigMap): Observable<any> {
+  createConfigMap(configMap: SharedConfigMap): Observable<any> {
     return this.http.post(`/api/v1/configmaps`, configMap.getPostBody());
   }
 
-  getConfigMapDetail(configMapName, projectName: string): Observable<ConfigMapDetail> {
-    return this.http.getJson(`/api/v1/configmaps`, ConfigMapDetail, {
+  getConfigMapDetail(configMapName, projectName: string): Observable<SharedConfigMapDetail> {
+    return this.http.getJson(`/api/v1/configmaps`, SharedConfigMapDetail, {
       param: {
         project_name: projectName,
         configmap_name: configMapName,
@@ -31,7 +32,7 @@ export class ResourceService {
     });
   }
 
-  updateConfigMap(configMap: ConfigMap): Observable<any> {
+  updateConfigMap(configMap: SharedConfigMap): Observable<any> {
     return this.http.put(`/api/v1/configmaps`, configMap.getPostBody(), {
       params: {project_name: configMap.namespace, configmap_name: configMap.name}
     });
@@ -41,8 +42,8 @@ export class ResourceService {
     return this.http.getArray('/api/v1/projects', ConfigMapProject);
   }
 
-  getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<ConfigMap>> {
-    return this.http.getArray(`/api/v1/configmaps`, ConfigMap, {
+  getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<SharedConfigMap>> {
+    return this.http.getArray(`/api/v1/configmaps`, SharedConfigMap, {
       param: {
         project_name: projectName,
         configmap_list_page: pageIndex.toString(),

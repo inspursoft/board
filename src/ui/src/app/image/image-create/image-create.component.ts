@@ -12,9 +12,8 @@ import { ImageService } from '../image.service';
 import { MessageService } from '../../shared.service/message.service';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { WebsocketService } from '../../shared.service/websocket.service';
-import { EnvType } from '../../shared/environment-value/environment-value.component';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
-import { BUTTON_STYLE, GlobalAlertType, RETURN_STATUS, Tools } from '../../shared/shared.types';
+import { BUTTON_STYLE, GlobalAlertType, RETURN_STATUS, SharedEnvType, Tools } from '../../shared/shared.types';
 import { BuildImageData, CreateImageMethod, Image, ImageCopy, ImageDetail, ImageEnv } from '../image.types';
 
 const AUTO_REFRESH_IMAGE_LIST = 2000;
@@ -170,9 +169,12 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   get defaultEnvsData() {
-    const result = Array<EnvType>();
+    const result = Array<SharedEnvType>();
     this.customerNewImage.imageDockerFile.imageEnv.forEach(value => {
-      result.push(new EnvType(value.envName, value.envValue));
+      const env = new SharedEnvType();
+      env.envName = value.envName;
+      env.envValue = value.envValue;
+      result.push(env);
     });
     return result;
   }
@@ -542,10 +544,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     }
   }
 
-  setEnvironment(envsData: Array<EnvType>) {
+  setEnvironment(envsData: Array<SharedEnvType>) {
     const envsArray = this.customerNewImage.imageDockerFile.imageEnv;
     envsArray.splice(0, envsArray.length);
-    envsData.forEach((value: EnvType) => {
+    envsData.forEach((value: SharedEnvType) => {
       const env = new ImageEnv();
       env.envName = value.envName;
       env.envValue = value.envValue;

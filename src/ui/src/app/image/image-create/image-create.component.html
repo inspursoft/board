@@ -149,7 +149,7 @@
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
             <div class="file-list"
                  *ngFor="let file of filesList.get(customerNewImage.imageName)">
@@ -223,7 +223,7 @@
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
           </div>
         </ng-template>
@@ -260,7 +260,7 @@
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
             <div *ngIf="uploadTarPackageName != ''" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
@@ -288,11 +288,11 @@
         </div>
       </div>
     </div>
-    <environment-value *ngIf="isOpenEnvironment"
+    <app-environment-value *ngIf="isOpenEnvironment"
                        [inputEnvsData]="defaultEnvsData"
                        (closeNotification)="isOpenEnvironment = false"
                        (onConfirm)="setEnvironment($event)">
-    </environment-value>
+    </app-environment-value>
     <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
       <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
       <div class="modal-body">

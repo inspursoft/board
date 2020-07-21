@@ -8,8 +8,7 @@ import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-chil
 import { MessageService } from '../../../shared.service/message.service';
 import { Container, ContainerType, EnvStruct, ServiceStep2Data, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
-import { EnvType } from '../../../shared/environment-value/environment-value.component';
-import { NodeAvailableResources } from '../../../shared/shared.types';
+import { NodeAvailableResources, SharedEnvType } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
 
 @Component({
@@ -122,9 +121,11 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   }
 
   getDefaultEnvsData() {
-    const result = Array<EnvType>();
+    const result = Array<SharedEnvType>();
     this.container.env.forEach((value: EnvStruct) => {
-      const env = new EnvType(value.dockerFileEnvName, value.dockerFileEnvValue);
+      const env = new SharedEnvType();
+      env.envName = value.dockerFileEnvName;
+      env.envValue = value.dockerFileEnvValue;
       env.envConfigMapKey = value.configMapKey;
       env.envConfigMapName = value.configMapName;
       result.push(env);
@@ -141,9 +142,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return result;
   }
 
-  setEnvironment(envsData: Array<EnvType>) {
+  setEnvironment(envsData: Array<SharedEnvType>) {
     this.container.env.splice(0, this.container.env.length);
-    envsData.forEach((value: EnvType) => {
+    envsData.forEach((value: SharedEnvType) => {
       const env = new EnvStruct();
       env.dockerFileEnvName = value.envName;
       env.dockerFileEnvValue = value.envValue;

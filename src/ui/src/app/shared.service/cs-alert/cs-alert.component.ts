@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AlertMessage } from '../../shared/shared.types';
 import { interval, Observable, Subject, Subscription } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { DISMISS_ALERT_INTERVAL } from "../../shared/shared.const";
+import { DISMISS_ALERT_INTERVAL } from '../../shared/shared.const';
 
 @Component({
   templateUrl: './cs-alert.component.html',
@@ -15,8 +15,8 @@ import { DISMISS_ALERT_INTERVAL } from "../../shared/shared.const";
     ])
   ]
 })
-export class CsAlertComponent implements OnInit{
-  _isOpen = false;
+export class CsAlertComponent implements OnInit {
+  isOpenValue = false;
   curMessage: AlertMessage;
   onCloseEvent: Subject<any>;
   animation: string;
@@ -30,24 +30,24 @@ export class CsAlertComponent implements OnInit{
 
   ngOnInit(): void {
     this.timeRemaining = DISMISS_ALERT_INTERVAL;
-    this.intervalSubscription = interval(1000).subscribe(()=>{
-      if (this.isRunningAnimation){
-        if (this.timeRemaining == 0){
+    this.intervalSubscription = interval(1000).subscribe(() => {
+      if (this.isRunningAnimation) {
+        if (this.timeRemaining === 0) {
           this.animation = 'hidden';
           setTimeout(() => this.isOpen = false, 500);
         } else {
-          this.timeRemaining --;
+          this.timeRemaining--;
         }
       }
-    })
+    });
   }
 
   get isOpen(): boolean {
-    return this._isOpen;
+    return this.isOpenValue;
   }
 
   set isOpen(value: boolean) {
-    this._isOpen = value;
+    this.isOpenValue = value;
     if (!value) {
       this.onCloseEvent.next();
       this.intervalSubscription.unsubscribe();

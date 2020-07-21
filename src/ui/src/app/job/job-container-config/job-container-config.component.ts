@@ -5,10 +5,10 @@ import { map } from 'rxjs/operators';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { JobContainer, JobEnv, JobNodeAvailableResources, JobVolumeMounts } from '../job.type';
 import { JobVolumeMountsComponent } from '../job-volume-mounts/job-volume-mounts.component';
-import { EnvType } from '../../shared/environment-value/environment-value.component';
 import { JobService } from '../job.service';
 import { MessageService } from '../../shared.service/message.service';
 import { of } from 'rxjs/internal/observable/of';
+import { SharedEnvType } from '../../shared/shared.types';
 
 @Component({
   selector: 'app-job-container-config',
@@ -104,10 +104,12 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
     return result;
   }
 
-  getDefaultEnvsData(): Array<EnvType> {
-    const result = Array<EnvType>();
+  getDefaultEnvsData(): Array<SharedEnvType> {
+    const result = Array<SharedEnvType>();
     this.container.env.forEach((value: JobEnv) => {
-      const env = new EnvType(value.dockerfileEnvName, value.dockerfileEnvValue);
+      const env = new SharedEnvType();
+      env.envName = value.dockerfileEnvName;
+      env.envValue = value.dockerfileEnvValue;
       env.envConfigMapKey = value.configMapKey;
       env.envConfigMapName = value.configMapName;
       result.push(env);
@@ -147,10 +149,10 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
       }));
   }
 
-  setEnvironment(envsData: Array<EnvType>) {
+  setEnvironment(envsData: Array<SharedEnvType>) {
     const envsArray = this.container.env;
     envsArray.splice(0, envsArray.length);
-    envsData.forEach((value: EnvType) => {
+    envsData.forEach((value: SharedEnvType) => {
       const env = new JobEnv();
       env.dockerfileEnvName = value.envName;
       env.dockerfileEnvValue = value.envValue;

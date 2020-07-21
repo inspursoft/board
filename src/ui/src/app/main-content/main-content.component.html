@@ -1,29 +1,29 @@
-<header-content [isSignIn]="isSignIn"
-                [hasSignedIn]="hasSignedIn"
-                [searchContent]="searchContent">
-</header-content>
+<app-header-content [isSignIn]="isSignIn"
+                    [hasSignedIn]="hasSignedIn"
+                    [searchContent]="searchContent">
+</app-header-content>
 <div class="outlet-container-grafana" *ngIf="showMaxGrafanaWindow">
   <router-outlet></router-outlet>
 </div>
 <div class="content-container-1" *ngIf="hideMaxGrafanaWindow">
-  <cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
+  <app-cs-vertical-nav *ngIf="hasSignedIn" [navSource]="navSource">
     <ng-template [appVerticalNavGuide]="'service'">
-      <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
-                [show]="isFirstLogin && guideStep == 3"
-                [isShowIcon]="true"
-                (onClose)="setGuideNoneStep()"
-                (onNextStep)="guideNextStep(3)">
-      </cs-guide>
+      <app-cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                    [show]="isFirstLogin && guideStep == 3"
+                    [isShowIcon]="true"
+                    (closeGuide)="setGuideNoneStep()"
+                    (nextStep)="guideNextStep(3)">
+      </app-cs-guide>
     </ng-template>
     <ng-template [appVerticalNavGuide]="'projects'">
-      <cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
-                [show]="isFirstLogin && guideStep == 1"
-                [isShowIcon]="true"
-                (onClose)="setGuideNoneStep()"
-                (onNextStep)="guideNextStep(1)">
-      </cs-guide>
+      <app-cs-guide [description]="'SIDE_NAV.GUIDE_SERVICE_LIST'"
+                    [show]="isFirstLogin && guideStep == 1"
+                    [isShowIcon]="true"
+                    (closeGuide)="setGuideNoneStep()"
+                    (nextStep)="guideNextStep(1)">
+      </app-cs-guide>
     </ng-template>
-  </cs-vertical-nav>
+  </app-cs-vertical-nav>
   <div class="outlet-container">
     <router-outlet></router-outlet>
   </div>

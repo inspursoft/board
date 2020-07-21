@@ -9,9 +9,10 @@ export class CsModalParentBase extends CsComponentBase {
   }
 
   createNewModal<T extends CsModalChildBase>(newComponent: Type<T>): T {
-    let factory = this.factoryResolver.resolveComponentFactory(newComponent);
-    let componentRef = this.selfView.createComponent(factory);
+    const factory = this.factoryResolver.resolveComponentFactory(newComponent);
+    const componentRef = this.selfView.createComponent(factory);
     componentRef.instance.openModal().subscribe(() => this.selfView.remove(this.selfView.indexOf(componentRef.hostView)));
     return componentRef.instance;
   }
 }
+
