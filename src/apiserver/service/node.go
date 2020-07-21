@@ -767,36 +767,76 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 
 // check the edge node hostname config
 func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
-	var sshUser = "root"
-	var sshPort = 22
+	// var sshUser = "root"
+	// var sshPort = 22
 
-	sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	// sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	// if err != nil {
+	// 	logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// defer sshHandler.client.Close()
+
+	// session, err := sshHandler.client.NewSession()
+	// if err != nil {
+	// 	logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// defer session.Close()
+
+	// combo, err := session.CombinedOutput("hostname")
+	// if err != nil {
+	// 	logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	// logs.Debug("Edge hostname:", sshhostname)
+
+	sshhostname, err := GetEdgeHostname(edgenode.NodeIP, edgenode.Password)
 	if err != nil {
-		logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+		logs.Debug("Failed to get Edge hostname %s", edgenode.NodeIP)
 		return false, err
 	}
-	defer sshHandler.client.Close()
-
-	session, err := sshHandler.client.NewSession()
-	if err != nil {
-		logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
-		return false, err
-	}
-	defer session.Close()
-
-	combo, err := session.CombinedOutput("hostname")
-	if err != nil {
-		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
-		return false, err
-	}
-	sshhostname := strings.Replace(string(combo), "\n", "", -1)
-	logs.Debug("Edge hostname:", sshhostname)
 
 	//TODO Check the hostname config in edge yaml
 
 	if edgenode.NodeName != sshhostname {
 		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, sshhostname)
-		return false, nil
+		return false, errors.New("edge node hostname mismatched")
 	}
 	return true, nil
+}
+
+//Get the edge hostname by IP
+func GetEdgeHostname(edgeIP string, edgePassword string) (string, error) {
+	var sshUser = "root"
+	var sshPort = 22
+
+	if edgeIP == "" || edgePassword == "" {
+		logs.Debug("IP address or Password invalid")
+		return "", errors.New("IP address or Password invalid")
+	}
+
+	sshHandler, err := NewSecureShell(edgeIP, sshPort, sshUser, edgePassword)
+	if err != nil {
+		logs.Debug("Failed to dail edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	defer sshHandler.client.Close()
+
+	session, err := sshHandler.client.NewSession()
+	if err != nil {
+		logs.Debug("Failed to get session edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	defer session.Close()
+
+	combo, err := session.CombinedOutput("hostname")
+	if err != nil {
+		logs.Debug("Failed to get hostname edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	logs.Debug("Edge node %s hostname: %s", edgeIP, sshhostname)
+	return sshhostname, nil
 }

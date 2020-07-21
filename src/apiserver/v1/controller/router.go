@@ -154,6 +154,8 @@ func InitRouter() {
 				&NodeController{}, "get:EdgeNodeList;post:AddEdgeNodeAction"),
 			beego.NSRouter("/edgenodes/:nodename(.*)",
 				&NodeController{}, "get:GetEdgeNodeAction;delete:RemoveEdgeNodeAction"),
+			beego.NSRouter("/edgenodes/checkedgename",
+				&NodeController{}, "get:CheckEdgeName"),
 			beego.NSRouter("/nodegroup",
 				&NodeGroupController{},
 				"get:GetNodeGroupsAction;post:AddNodeGroupAction;delete:DeleteNodeGroupAction"),
