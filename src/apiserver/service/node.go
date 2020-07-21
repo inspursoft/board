@@ -199,7 +199,7 @@ func GetNodeList() (res []NodeListResult) {
 			} else {
 				nodeitem.NodeName = v.NodeIP
 			}
-			nodeitem.NodeIP = v.NodeIP
+			nodeitem.NodeIP = getNodeAddress(v, "InternalIP")
 			nodeitem.CreateTime = v.CreationTimestamp.Unix()
 			nodeitem.Labels = v.ObjectMeta.Labels
 			nodeitem.Status = Unknown
