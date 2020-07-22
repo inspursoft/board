@@ -42,9 +42,9 @@ export class ChangePasswordComponent extends CsModalChildBase {
   submitChangePassword(): void {
     if (this.verifyInputExValid()) {
       const curUser = this.appInitService.currentUser;
-      if (curUser.user_id > 0) {
+      if (curUser.userId > 0) {
         this.isWorkWip = true;
-        this.userService.changeUserPassword(curUser.user_id, this.curPassword, this.newPassword).subscribe(() => {
+        this.userService.changeUserPassword(curUser.userId, this.curPassword, this.newPassword).subscribe(() => {
             this.isOpen = false;
             this.messageService.showAlert('HEAD_NAV.CHANGE_PASSWORD_SUCCESS');
           },

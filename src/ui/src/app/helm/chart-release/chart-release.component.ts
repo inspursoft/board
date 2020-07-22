@@ -123,7 +123,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         chartversion: this.chartVersion.version,
         repository_id: this.repoInfo.id,
         project_id: this.selectProject.projectId,
-        owner_id: this.appInitService.currentUser.user_id,
+        owner_id: this.appInitService.currentUser.userId,
         chart: this.chartVersion.name,
         Answers: this.chartRelease.postAnswers,
         values: this.editor.getValue()

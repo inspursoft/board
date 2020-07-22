@@ -51,8 +51,8 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     if (this.hasSignedIn) {
       this.currentUser = this.appInitService.currentUser;
-      this.authMode = this.appInitService.systemInfo.auth_mode;
-      this.redirectionURL = this.appInitService.systemInfo.redirection_url;
+      this.authMode = this.appInitService.systemInfo.authMode;
+      this.redirectionURL = this.appInitService.systemInfo.redirectionUrl;
     }
   }
 
@@ -80,11 +80,8 @@ export class HeaderComponent implements OnInit {
 
   doSearch(event) {
     this.searchContent = event.target.value;
-    if (this.hasSignedIn) {
-      this.router.navigate(['/search'], {queryParams: {q: this.searchContent, token: this.appInitService.token}});
-    } else {
-      this.router.navigate(['/search'], {queryParams: {q: this.searchContent}});
-    }
+    this.router.navigate(['/search'], {queryParams: {q: this.searchContent}})
+      .then(() => this.messageService.cleanNotification());
   }
 
   clickLogoAction() {
@@ -94,7 +91,7 @@ export class HeaderComponent implements OnInit {
   }
 
   logOut() {
-    this.sharedService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
+    this.sharedService.signOut(this.appInitService.currentUser.userName).subscribe(() => {
       localStorage.removeItem('token');
       this.appInitService.token = '';
       this.appInitService.currentUser = new User();

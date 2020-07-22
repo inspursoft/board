@@ -8,8 +8,9 @@ import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-chil
 import { MessageService } from '../../../shared.service/message.service';
 import { Container, ContainerType, EnvStruct, ServiceStep2Data, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
-import { NodeAvailableResources, SharedEnvType } from '../../../shared/shared.types';
+import { SharedEnvType } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
+import { NodeAvailableResources } from '../../service.types';
 
 @Component({
   selector: 'app-config-params',
@@ -171,7 +172,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
-          Number.parseInt(control.value, 0) > Number.parseInt(value.cpu_available, 0) * 1000);
+          Number.parseInt(control.value, 0) > Number.parseInt(value.cpuAvailable, 0) * 1000);
         if (isInValid) {
           return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
         } else {
@@ -185,7 +186,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
-          Number.parseInt(control.value, 0) > Number.parseInt(value.mem_available, 0) / (1024 * 1024));
+          Number.parseInt(control.value, 0) > Number.parseInt(value.memAvailable, 0) / (1024 * 1024));
         if (isInValid) {
           return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
         } else {

@@ -34,15 +34,15 @@ export class MemberComponent extends CsModalChildBase {
   }
 
   get isProjectOwner(): boolean {
-    return this.project.projectOwnerId === this.appInitService.currentUser.user_id;
+    return this.project.projectOwnerId === this.appInitService.currentUser.userId;
   }
 
   get isSelf(): boolean {
-    return this.appInitService.currentUser.user_id === this.selectedMember.userId;
+    return this.appInitService.currentUser.userId === this.selectedMember.userId;
   }
 
   get isSystemAdmin(): boolean {
-    return this.appInitService.currentUser.user_system_admin === 1;
+    return this.appInitService.currentUser.userSystemAdmin === 1;
   }
 
   get isOnesProject(): boolean {

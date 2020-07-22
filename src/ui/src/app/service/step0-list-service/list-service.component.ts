@@ -268,7 +268,7 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
   }
 
   isSystemAdminOrOwner(service: Service): boolean {
-    return this.appInitService.currentUser.user_system_admin === 1 ||
-      service.serviceOwnerId === this.appInitService.currentUser.user_id;
+    return this.appInitService.currentUser.userSystemAdmin === 1 ||
+      service.serviceOwnerId === this.appInitService.currentUser.userId;
   }
 }

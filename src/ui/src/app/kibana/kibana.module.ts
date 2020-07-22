@@ -1,9 +1,9 @@
-import { NgModule } from "@angular/core";
-import { RouterModule } from "@angular/router";
-import { KibanaComponent } from "./kibana/kibana.component";
-import { KibanaService } from "./kibana.service";
-import { CoreModule } from "../core/core.module";
-import { SharedModule } from "../shared/shared.module";
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { KibanaComponent } from './kibana/kibana.component';
+import { KibanaService } from './kibana.service';
+import { CoreModule } from '../core/core.module';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [

@@ -19,14 +19,14 @@ export class AccountSettingComponent implements OnInit {
 
   @Input()
   get isOpen() {
-    return this._isOpen;
+    return this.isOpenValue;
   }
 
   set isOpen(open: boolean) {
-    this._isOpen = open;
-    this.isOpenChange.emit(this._isOpen);
+    this.isOpenValue = open;
+    this.isOpenChange.emit(this.isOpenValue);
   }
-  _isOpen = false;
+  isOpenValue = false;
   isWorkWip = false;
   curUser: User = new User();
 

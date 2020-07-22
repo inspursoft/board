@@ -500,7 +500,7 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
 
   get grafanaViewUrl(): string {
     const protocol = this.appInitService.getHttpProtocol;
-    return `${protocol}://${this.appInitService.systemInfo.board_host}/grafana/dashboard/db/kubernetes/`;
+    return `${protocol}://${this.appInitService.systemInfo.boardHost}/grafana/dashboard/db/kubernetes/`;
   }
 
   get showGrafanaWindow(): boolean {

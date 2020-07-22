@@ -3,57 +3,57 @@
   <div class="modal-body input-container">
     <lib-input-ex [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.USERNAME' | translate"
-                  [inputDefaultValue]="userModel.user_name"
+                  [inputDefaultValue]="userModel.userName"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
                   appLibCheckItemExistingEx="username"
-                  libCheckPatternEx="username"
+                  appLibCheckPatternEx="username"
                   [inputMaxlength]="35"
                   [inputMinlength]="4"
                   [inputPlaceholder]="'USER_CENTER.INPUT_USERNAME' | translate"
-                  (commitEvent)="userModel.user_name = $event">
+                  (commitEvent)="userModel.userName = $event">
     </lib-input-ex>
     <lib-input-ex [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.EMAIL' | translate"
-                  [inputDefaultValue]="userModel.user_email"
+                  [inputDefaultValue]="userModel.userEmail"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
                   [inputCategory]="4"
                   appLibCheckItemExistingEx="email"
-                  libCheckPatternEx="email"
+                  appLibCheckPatternEx="email"
                   [inputPlaceholder]="'USER_CENTER.INPUT_EMAIL' | translate"
-                  (commitEvent)="userModel.user_email = $event">
+                  (commitEvent)="userModel.userEmail = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="CurEditModel == 0"
                   [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.PASSWORD' | translate "
-                  [inputDefaultValue]="userModel.user_password"
+                  [inputDefaultValue]="userModel.userPassword"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
                   [inputCategory]="3"
                   [sourcePassword]="true"
-                  libCheckPatternEx="password"
+                  appLibCheckPatternEx="password"
                   [inputPlaceholder]="'USER_CENTER.INPUT_PASSWORD' | translate "
-                  (commitEvent)="userModel.user_password = $event">
+                  (commitEvent)="userModel.userPassword = $event">
     </lib-input-ex>
     <lib-input-ex *ngIf="CurEditModel == 0"
                   [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.CONFIRM_PASSWORD' | translate "
-                  [inputDefaultValue]="userModel.user_confirm_password"
+                  [inputDefaultValue]="userModel.userConfirmPassword"
                   [inputDisabled]="CurEditModel == 1 || isWorkWIP"
                   [inputCategory]="3"
                   [verifyPassword]="true"
                   [inputPlaceholder]="'USER_CENTER.INPUT_CONFIRM_PASSWORD' | translate "
-                  (commitEvent)="userModel.user_confirm_password = $event">
+                  (commitEvent)="userModel.userConfirmPassword = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'ACCOUNT.REALNAME' | translate "
-                  [inputDefaultValue]="userModel.user_realname"
+                  [inputDefaultValue]="userModel.userRealName"
                   [inputDisabled]="isWorkWIP"
                   [inputMaxlength]="20"
-                  (commitEvent)="userModel.user_realname = $event">
+                  (commitEvent)="userModel.userRealName = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'USER_CENTER.COMMENT' | translate "
-                  [inputDefaultValue]="userModel.user_comment"
+                  [inputDefaultValue]="userModel.userComment"
                   [inputDisabled]="isWorkWIP"
                   [inputMaxlength]="50"
-                  (commitEvent)="userModel.user_comment = $event">
+                  (commitEvent)="userModel.userComment = $event">
     </lib-input-ex>
   </div>
   <div class="modal-footer">

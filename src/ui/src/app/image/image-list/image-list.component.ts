@@ -50,7 +50,7 @@ export class ImageListComponent extends CsModalParentBase implements OnInit {
   }
 
   get isSystemAdmin(): boolean {
-    return this.appInitService.currentUser.user_system_admin === 1;
+    return this.appInitService.currentUser.userSystemAdmin === 1;
   }
 
   clickSelectProject() {

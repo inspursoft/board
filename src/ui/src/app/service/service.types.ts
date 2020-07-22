@@ -53,6 +53,13 @@ export class ServiceNode extends HttpBase {
   @HttpBind('status') status = 0;
 }
 
+export class ServiceNodeGroup extends HttpBase {
+  @HttpBind('nodegroup_id') id = 0;
+  @HttpBind('nodegroup_project') project = '';
+  @HttpBind('nodegroup_name') name = '';
+  @HttpBind('nodegroup_comment') comment = '';
+}
+
 export class ServiceProject extends HttpBase {
   @HttpBind('project_id') projectId = -1;
   @HttpBind('project_name') projectName = '';
@@ -155,5 +162,13 @@ export class Service extends HttpBase {
   get isNormalNode(): boolean {
     return this.serviceType === ServiceType.ServiceTypeNormalNodePort;
   }
+}
+
+export class NodeAvailableResources extends HttpBase {
+  @HttpBind('node_id') id = 0;
+  @HttpBind('node_name') name = '';
+  @HttpBind('cpu_available') cpuAvailable = '';
+  @HttpBind('mem_available') memAvailable = '';
+  @HttpBind('storage_available') storageAvailable = '';
 }
 

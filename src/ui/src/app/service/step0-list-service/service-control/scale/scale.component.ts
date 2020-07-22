@@ -64,7 +64,6 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
   }
 
   actionExecute() {
-    console.log("ddd");
     if (this.verifyInputExValid()) {
       if (this.scaleModule === ScaleMethod.smManually) {
         this.isActionInWIPChange.emit(true);

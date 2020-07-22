@@ -1,7 +1,7 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { EdgeNode, NodeStatus } from '../node.types';
-import { interval, Observable, of, Subject, Subscription, TimeoutError } from 'rxjs';
+import { interval, Observable, of, Subscription, TimeoutError } from 'rxjs';
 import { ValidationErrors } from '@angular/forms';
 import { catchError, map } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';

@@ -1,4 +1,4 @@
-import { HttpBase, HttpBind, HttpBindObject } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind } from '../shared/ui-model/model-types';
 
 export class ConfigMapDetailMetadata extends HttpBase {
   @HttpBind('namespace') namespace = '';

@@ -2,7 +2,7 @@
 <div class="content-container background">
   <div class="input-container">
     <lib-input-ex appLibCheckItemExistingEx="username"
-                  libCheckPatternEx="username"
+                  appLibCheckPatternEx="username"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.USERNAME' | translate "
                   [inputDefaultValue]="signUpModel.username"
@@ -14,7 +14,7 @@
                   (commitEvent)="signUpModel.username = $event">
     </lib-input-ex>
     <lib-input-ex appLibCheckItemExistingEx="email"
-                  libCheckPatternEx="email"
+                  appLibCheckPatternEx="email"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.EMAIL' | translate "
                   [inputDefaultValue]="signUpModel.email"
@@ -24,7 +24,7 @@
                   [validatorMessage]="[{key: 'required', message: 'ACCOUNT.EMAIL_IS_REQUIRED' | translate}]"
                   (commitEvent)="signUpModel.email = $event">
     </lib-input-ex>
-    <lib-input-ex libCheckPatternEx="password"
+    <lib-input-ex appLibCheckPatternEx="password"
                   [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.PASSWORD' | translate "
                   [inputDefaultValue]="signUpModel.password"

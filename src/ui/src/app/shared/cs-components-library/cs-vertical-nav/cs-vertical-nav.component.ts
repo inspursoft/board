@@ -63,7 +63,7 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   get adminServerUrl(): string {
-    return `http://${this.appInitService.systemInfo.board_host}:8082/account/login`;
+    return `http://${this.appInitService.systemInfo.boardHost}:8082/account/login`;
   }
 
   setIsShowAdminServer() {

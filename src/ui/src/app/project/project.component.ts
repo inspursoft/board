@@ -101,8 +101,8 @@ export class ProjectComponent {
   }
 
   isSystemAdminOrOwner(project: SharedProject): boolean {
-    return this.appInitService.currentUser.user_system_admin === 1 ||
-      project.projectOwnerId === this.appInitService.currentUser.user_id;
+    return this.appInitService.currentUser.userSystemAdmin === 1 ||
+      project.projectOwnerId === this.appInitService.currentUser.userId;
   }
 
   guideNextStep(step: GUIDE_STEP) {

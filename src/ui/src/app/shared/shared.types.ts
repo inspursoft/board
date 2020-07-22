@@ -151,64 +151,35 @@ export class SharedConfigMapDetail extends HttpBase {
   }
 }
 
-
-export interface INode {
-  node_name: string;
-  node_ip: string;
-  status: number;
+export class SystemInfo extends HttpBase {
+  @HttpBind('board_host') boardHost = '';
+  @HttpBind('auth_mode') authMode = '';
+  @HttpBind('set_auth_password') setAuthPassword = '';
+  @HttpBind('init_project_repo') initProjectRepo = '';
+  @HttpBind('sync_k8s') syncK8s = '';
+  @HttpBind('redirection_url') redirectionUrl = '';
+  @HttpBind('board_version') boardVersion = '';
+  @HttpBind('devops_opt') devOpsOpt = '';
+  @HttpBind('kubernetes_version') kubernetesVersion = '';
+  @HttpBind('processor_type') processorType = '';
+  @HttpBind('dns_suffix') dnsSuffix = '';
+  @HttpBind('mode') mode = '';
 }
 
-export interface INodeGroup {
-  nodegroup_id: number;
-  nodegroup_project: string;
-  nodegroup_name: string;
-  nodegroup_comment: string;
-}
-
-export class NodeAvailableResources {
-  node_id = 0;
-  node_name = '';
-  cpu_available = '';
-  mem_available = '';
-  storage_available = '';
-}
-
-export class SystemInfo {
-  board_host = '';
-  auth_mode = '';
-  set_auth_password = '';
-  init_project_repo = '';
-  sync_k8s = '';
-  redirection_url = '';
-  board_version = '';
-  kubernetes_version = '';
-  processor_type = '';
-  dns_suffix = '';
-  mode = '';
-
-  constructor() {
-  }
-}
-
-export class User {
-  user_id = 0;
-  user_name = '';
-  user_email = '';
-  user_password = '';
-  user_confirm_password = '';
-  user_realname = '';
-  user_comment = '';
-  user_deleted = 0;
-  user_system_admin = 0;
-  user_reset_uuid = '';
-  user_salt: string = '';
-  user_creation_time: Date;
-  user_update_time: Date;
-
-  constructor() {
-    this.user_creation_time = new Date();
-    this.user_update_time = new Date();
-  }
+export class User extends HttpBase {
+  @HttpBind('user_id') userId = 0;
+  @HttpBind('user_name') userName = '';
+  @HttpBind('user_email') userEmail = '';
+  @HttpBind('user_password') userPassword = '';
+  @HttpBind('user_confirm_password') userConfirmPassword = '';
+  @HttpBind('user_realname') userRealName = '';
+  @HttpBind('user_comment') userComment = '';
+  @HttpBind('user_deleted') userDeleted = 0;
+  @HttpBind('user_system_admin') userSystemAdmin = 0;
+  @HttpBind('user_reset_uuid') userResetUuid = '';
+  @HttpBind('user_salt') userSalt = '';
+  @HttpBind('user_creation_time') userCreationTime = '';
+  @HttpBind('user_update_time') userUpdateTime = '';
 }
 
 export enum DragStatus {

@@ -45,7 +45,7 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
     if (this.showDeleteNodeTip) {
       return `javascript:void(0)`;
     } else {
-      return `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
+      return `http://${this.appInitService.systemInfo.boardHost}:8082/resource/node-list`;
     }
   }
 
