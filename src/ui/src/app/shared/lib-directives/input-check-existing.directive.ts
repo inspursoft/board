@@ -1,14 +1,14 @@
 import { Directive, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ValidationErrors } from '@angular/forms/src/directives/validators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { InputExComponent } from 'board-components-library';
+import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { ValidationErrors } from "@angular/forms/src/directives/validators";
-import { UsernameInUseKey } from "../shared.const";
-import { Observable, of } from "rxjs";
-import { catchError, map } from "rxjs/operators";
-import { MessageService } from "../../shared.service/message.service";
-import { InputExComponent } from "board-components-library";
-import { TranslateService } from "@ngx-translate/core";
+import { MessageService } from '../../shared.service/message.service';
+import { UsernameInUseKey } from '../shared.const';
 
 @Directive({
   selector: '[appLibCheckItemExistingEx]'

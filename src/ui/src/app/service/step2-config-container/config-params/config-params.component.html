@@ -108,14 +108,14 @@
   </div>
 </clr-modal>
 
-<environment-value *ngIf="showEnvironmentValue"
-                   [isProvideBindConfigMap]="true"
-                   [projectName]="step2Data.projectName"
-                   [inputEnvsData]="getDefaultEnvsData()"
-                   [inputFixedKeyList]="getDefaultEnvsFixedData()"
-                   (closeNotification)="showEnvironmentValue = false"
-                   (onConfirm)="setEnvironment($event)">
-</environment-value>
+<app-environment-value *ngIf="showEnvironmentValue"
+                       [isProvideBindConfigMap]="true"
+                       [projectName]="step2Data.projectName"
+                       [inputEnvsData]="getDefaultEnvsData()"
+                       [inputFixedKeyList]="getDefaultEnvsFixedData()"
+                       (closeNotification)="showEnvironmentValue = false"
+                       (onConfirm)="setEnvironment($event)">
+</app-environment-value>
 
 
 

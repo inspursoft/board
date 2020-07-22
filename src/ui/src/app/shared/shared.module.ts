@@ -1,12 +1,8 @@
 import { NgModule } from '@angular/core';
 import { HeaderComponent } from './header/header.component';
-import { CheckItemExistingDirective } from './directives/check-item-existing.directive';
-import { CheckItemIdenticalDirective } from './directives/check-item-identical.directive';
-import { CheckItemPatternDirective } from './directives/check-item-pattern.directive';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { AccountSettingComponent } from './account-setting/account-setting.component';
-import { ValidateOnBlurDirective } from './directives/validate-onblur.directive';
-import { CsSearchInput } from './cs-components-library/cs-search-input/cs-search-input.component';
+import { CsSearchInputComponent } from './cs-components-library/cs-search-input/cs-search-input.component';
 import { EnvironmentValueComponent } from './environment-value/environment-value.component';
 import { SizePipe } from './pipes/size-pipe';
 import { CsGuideComponent } from './cs-components-library/cs-guide/cs-guide.component';
@@ -19,27 +15,23 @@ import {
   AppMenuItemUrlDirective,
   CsVerticalNavComponent
 } from './cs-components-library/cs-vertical-nav/cs-vertical-nav.component';
-import 'inspurprism';
-import { CsModalChildBaseSelector } from './cs-modal-base/cs-modal-child-base';
+import { CsModalViewContainerSelectorDirective } from './cs-modal-base/cs-modal-child-base';
 import { CreatePvcComponent } from './create-pvc/create-pvc.component';
 import { CoreModule } from '../core/core.module';
 import { LibCheckPatternExDirective } from './lib-directives/input-check-pattern.directive';
 import { LibCheckExistingExDirective } from './lib-directives/input-check-existing.directive';
 import { CustomHttpProvider } from './ui-model/model-http-client';
+import 'inspurprism';
 
 @NgModule({
   imports: [CoreModule],
   exports: [
     HeaderComponent,
-    CheckItemExistingDirective,
-    CheckItemIdenticalDirective,
     LibCheckPatternExDirective,
     LibCheckExistingExDirective,
-    CheckItemPatternDirective,
-    ValidateOnBlurDirective,
     EnvironmentValueComponent,
-    CsSearchInput,
-    CsModalChildBaseSelector,
+    CsSearchInputComponent,
+    CsModalViewContainerSelectorDirective,
     CsGuideComponent,
     CsProgressComponent,
     CsHighlightComponent,
@@ -49,15 +41,11 @@ import { CustomHttpProvider } from './ui-model/model-http-client';
     SafePipe
   ],
   declarations: [
-    CheckItemExistingDirective,
-    CheckItemIdenticalDirective,
-    CheckItemPatternDirective,
     LibCheckPatternExDirective,
     LibCheckExistingExDirective,
-    ValidateOnBlurDirective,
-    CsSearchInput,
+    CsSearchInputComponent,
     CsProgressComponent,
-    CsModalChildBaseSelector,
+    CsModalViewContainerSelectorDirective,
     SizePipe,
     SafePipe,
     CsGuideComponent,

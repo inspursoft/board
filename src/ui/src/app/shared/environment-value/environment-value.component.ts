@@ -6,53 +6,40 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidatorFn, Validators } from '@angular/forms';
 import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
-import { ConfigMapDetail, ConfigMap } from '../../resource/resource.types';
-import { ResourceService } from '../../resource/resource.service';
 import { MessageService } from '../../shared.service/message.service';
-
-export class EnvType {
-  public envName = '';
-  public envValue = '';
-  public envConfigMapName = '';
-  public envConfigMapKey = '';
-
-  constructor(name, value: string) {
-    this.envName = name.trim();
-    this.envValue = value.trim();
-  }
-}
+import { SharedConfigMap, SharedConfigMapDetail, SharedEnvType } from '../shared.types';
+import { SharedService } from '../../shared.service/shared.service';
 
 @Component({
-  selector: 'environment-value',
+  selector: 'app-environment-value',
   templateUrl: './environment-value.component.html',
   styleUrls: ['./environment-value.component.css'],
-  providers: [ResourceService]
 })
 export class EnvironmentValueComponent extends CsModalChildBase implements OnInit {
   patternEnv = /^[\w-$/\\=\"[\]{}@&:,'`\t. ?]+$/;
-  envsData: Array<EnvType>;
+  envsData: Array<SharedEnvType>;
   envsText = '';
   inputValidator: Array<ValidatorFn>;
-  configMapList: Array<ConfigMap>;
-  configMapDetail: Map<number, ConfigMapDetail>;
+  configMapList: Array<SharedConfigMap>;
+  configMapDetail: Map<number, SharedConfigMapDetail>;
   bindConfigMap: Map<number, boolean>;
 
-  @Input() inputEnvsData: Array<EnvType>;
+  @Input() inputEnvsData: Array<SharedEnvType>;
   @Input() inputFixedKeyList: Array<string>;
   @Input() isProvideBindConfigMap = false;
   @Input() projectName = '';
-  @Output() onConfirm: EventEmitter<Array<EnvType>>;
+  @Output() confirm: EventEmitter<Array<SharedEnvType>>;
 
   constructor(private messageService: MessageService,
-              private resourceService: ResourceService) {
+              private sharedService: SharedService) {
     super();
-    this.envsData = Array<EnvType>();
+    this.envsData = new Array<SharedEnvType>();
     this.inputFixedKeyList = new Array<string>();
-    this.inputEnvsData = new Array<EnvType>();
-    this.onConfirm = new EventEmitter<Array<EnvType>>();
+    this.inputEnvsData = new Array<SharedEnvType>();
+    this.confirm = new EventEmitter<Array<SharedEnvType>>();
     this.inputValidator = Array<ValidatorFn>();
-    this.configMapList = Array<ConfigMap>();
-    this.configMapDetail = new Map<number, ConfigMapDetail>();
+    this.configMapList = Array<SharedConfigMap>();
+    this.configMapDetail = new Map<number, SharedConfigMapDetail>();
     this.bindConfigMap = new Map<number, boolean>();
   }
 
@@ -60,25 +47,25 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     this.inputValidator.push(Validators.required);
     if (this.inputEnvsData && this.inputEnvsData.length > 0) {
       this.envsData = this.envsData.concat(this.inputEnvsData);
-      this.envsData.forEach((value: EnvType, index: number) => {
-        const detail = new ConfigMapDetail();
+      this.envsData.forEach((value: SharedEnvType, index: number) => {
+        const detail = new SharedConfigMapDetail();
         detail.dataList.push({key: value.envConfigMapKey, value: value.envConfigMapKey});
         this.configMapDetail.set(index, detail);
         this.bindConfigMap.set(index, value.envConfigMapKey !== '');
       });
     }
-    this.resourceService.getConfigMapList(this.projectName, 0, 0).subscribe(
-      (res: Array<ConfigMap>) => this.configMapList = res);
+    this.sharedService.getConfigMapList(this.projectName, 0, 0).subscribe(
+      (res: Array<SharedConfigMap>) => this.configMapList = res);
     this.modalOpened = true;
   }
 
   addNewEnv() {
-    this.envsData.push(new EnvType('', ''));
+    this.envsData.push(new SharedEnvType());
   }
 
   confirmEnvInfo() {
     if (this.verifyInputExValid() && this.verifyDropdownExValid()) {
-      this.onConfirm.emit(this.envsData);
+      this.confirm.emit(this.envsData);
       this.modalOpened = false;
     }
   }
@@ -93,10 +80,13 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     try {
       const envTypes = this.envsText.split(';').map((str: string) => {
         const envStrPair = str.split('=');
+        const env = new SharedEnvType();
         if (!this.patternEnv.test(envStrPair[0]) || !this.patternEnv.test(envStrPair[1])) {
           throw new Error();
         }
-        return new EnvType(envStrPair[0], envStrPair[1]);
+        env.envName = envStrPair[0];
+        env.envValue = envStrPair[1];
+        return env;
       });
       this.envsData = this.envsData.concat(envTypes);
     } catch (e) {
@@ -105,20 +95,20 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     }
   }
 
-  changeConfigMap(index: number, envInfo: EnvType, configMap: ConfigMap) {
+  changeConfigMap(index: number, envInfo: SharedEnvType, configMap: SharedConfigMap) {
     envInfo.envConfigMapName = configMap.name;
-    this.resourceService.getConfigMapDetail(configMap.name, this.projectName).subscribe(
-      (res: ConfigMapDetail) => this.configMapDetail.set(index, res),
+    this.sharedService.getConfigMapDetail(configMap.name, this.projectName).subscribe(
+      (res: SharedConfigMapDetail) => this.configMapDetail.set(index, res),
       (err: HttpErrorResponse) => this.messageService.showAlert(err.message, {alertType: 'danger', view: this.alertView})
     );
   }
 
-  changeConfigMapKey(envInfo: EnvType, data: { key: string, value: string }) {
+  changeConfigMapKey(envInfo: SharedEnvType, data: { key: string, value: string }) {
     envInfo.envValue = data.value;
     envInfo.envConfigMapKey = data.key;
   }
 
-  changeBindConfigMap(index: number, envInfo: EnvType, event: Event) {
+  changeBindConfigMap(index: number, envInfo: SharedEnvType, event: Event) {
     const checked = (event.target as HTMLInputElement).checked;
     this.bindConfigMap.set(index, checked);
     if (!checked) {
@@ -127,7 +117,7 @@ export class EnvironmentValueComponent extends CsModalChildBase implements OnIni
     }
   }
 
-  isFixed(env: EnvType): boolean {
+  isFixed(env: SharedEnvType): boolean {
     return this.inputFixedKeyList.find(value => env.envName === value) !== undefined;
   }
 }

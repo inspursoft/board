@@ -1,5 +1,5 @@
-import { QueryList, ViewChildren } from "@angular/core";
-import { DropdownExComponent, InputArrayExComponent, InputDropdownNumberComponent, InputExComponent } from "board-components-library";
+import { QueryList, ViewChildren } from '@angular/core';
+import { DropdownExComponent, InputArrayExComponent, InputDropdownNumberComponent, InputExComponent } from 'board-components-library';
 
 export class CsComponentBase {
   @ViewChildren(InputExComponent) inputExComponents: QueryList<InputExComponent>;

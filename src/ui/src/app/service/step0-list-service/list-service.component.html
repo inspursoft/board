@@ -3,13 +3,13 @@
 </app-service-create-yaml>
 <div *ngIf="isNormalStatus">
   <div class="clr-row flex-items-xs-right">
-    <cs-guide *ngIf="isFirstLogin && guideStep == 4"
-              [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
-              [show]="isFirstLogin && guideStep == 4"
-              [position]="'left-middle'"
-              (onClose)="setGuideNoneStep()"
-              (onNextStep)="guideNextStep(4)">
-    </cs-guide>
+    <app-cs-guide *ngIf="isFirstLogin && guideStep == 4"
+                  [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
+                  [show]="isFirstLogin && guideStep == 4"
+                  [position]="'left-middle'"
+                  (closeGuide)="setGuideNoneStep()"
+                  (nextStep)="guideNextStep(4)">
+    </app-cs-guide>
     <button class="btn btn-primary"
             (click)="isBuildServiceWIP = true">
       {{ 'SERVICE.CREATE_SERVICE' | translate }}

@@ -5,7 +5,7 @@ import { AppInitService } from '../../shared.service/app-init.service';
 import { MessageService } from '../../shared.service/message.service';
 
 @Component({
-  selector: 'user-setting',
+  selector: 'app-user-setting',
   templateUrl: './account-setting.component.html',
   styleUrls: ['./account-setting.component.css'],
   providers: [UserService]

@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isActionInWIP">
   <div class="modal-title">
     <span>{{ "SERVICE.SERVICE_CONTROL" | translate }}</span>
-    <cs-progress [progressData]="uploadProgressValue"></cs-progress>
+    <app-cs-progress [progressData]="uploadProgressValue"></app-cs-progress>
   </div>
   <div class="modal-body">
     <clr-tabs>

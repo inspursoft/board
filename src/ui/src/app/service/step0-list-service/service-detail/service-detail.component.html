@@ -10,7 +10,7 @@
       <clr-tab *ngIf="curService.isNormalNode">
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></cs-highlight>
+          <app-cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -18,11 +18,11 @@
           {{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE" | translate}}
         </button>
         <clr-tab-content  *clrIfActive>
-          <cs-highlight
+          <app-cs-highlight
              *ngIf="deploymentYamlFile.length > 0"
              [language]="'yaml'"
              [code]="deploymentYamlFile">
-          </cs-highlight>
+          </app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab *ngIf="curService.isNotEdgeNode">
@@ -30,7 +30,7 @@
           {{"SERVICE.SERVICE_DETAIL_SERVICE_FILE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
+          <app-cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>

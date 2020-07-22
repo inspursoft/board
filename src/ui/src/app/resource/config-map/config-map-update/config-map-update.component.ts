@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
-import { ConfigMap, ConfigMapDetail } from '../../resource.types';
 import { ResourceService } from '../../resource.service';
 import { MessageService } from '../../../shared.service/message.service';
+import { SharedConfigMap, SharedConfigMapDetail } from '../../../shared/shared.types';
 
 @Component({
   templateUrl: './config-map-update.component.html',
@@ -10,7 +10,7 @@ import { MessageService } from '../../../shared.service/message.service';
 })
 
 export class ConfigMapUpdateComponent extends CsModalChildBase implements OnInit {
-  configMapDetail: ConfigMapDetail;
+  configMapDetail: SharedConfigMapDetail;
   configMapName = '';
   projectName = '';
   isLoadWip = false;
@@ -19,7 +19,7 @@ export class ConfigMapUpdateComponent extends CsModalChildBase implements OnInit
   constructor(private resourceService: ResourceService,
               private messageService: MessageService) {
     super();
-    this.configMapDetail = new ConfigMapDetail();
+    this.configMapDetail = new SharedConfigMapDetail();
   }
 
   ngOnInit(): void {
@@ -33,7 +33,7 @@ export class ConfigMapUpdateComponent extends CsModalChildBase implements OnInit
 
   updateConfigMap() {
     if (this.verifyInputExValid()) {
-      const configMap = new ConfigMap();
+      const configMap = new SharedConfigMap();
       configMap.name = this.configMapName;
       configMap.namespace = this.projectName;
       this.configMapDetail.dataList.forEach(value => configMap.dataList.push(value));

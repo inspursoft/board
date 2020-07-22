@@ -3,7 +3,7 @@ import { HttpProgressEvent } from '@angular/common/http';
 import { interval, Subscription } from 'rxjs';
 
 @Component({
-  selector: 'cs-progress',
+  selector: 'app-cs-progress',
   styleUrls: ['./cs-progress.component.css'],
   templateUrl: './cs-progress.component.html'
 })
