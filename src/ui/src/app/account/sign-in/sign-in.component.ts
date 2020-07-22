@@ -1,13 +1,13 @@
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
 import { ResSignIn, ResSignInType, ReqSignIn } from '../account.types';
 import { MessageService } from '../../shared.service/message.service';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { AccountService } from '../account.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { RouteDashboard, RouteForgotPassword, RouteSignUp } from '../../shared/shared.const';
 import { AppTokenService } from '../../shared.service/app-token.service';
-import { TranslateService } from '@ngx-translate/core';
 import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
 
 @Component({
@@ -30,8 +30,8 @@ export class SignInComponent extends CsComponentBase implements OnInit {
               private translateService: TranslateService,
               private router: Router) {
     super();
-    this.authMode = this.appInitService.systemInfo.auth_mode;
-    this.redirectionURL = this.appInitService.systemInfo.redirection_url;
+    this.authMode = this.appInitService.systemInfo.authMode;
+    this.redirectionURL = this.appInitService.systemInfo.redirectionUrl;
     this.curErrorSignIn = new ResSignIn();
     this.signInUser = new ReqSignIn();
   }
@@ -43,7 +43,7 @@ export class SignInComponent extends CsComponentBase implements OnInit {
   }
 
   get verifyPictureUrl() {
-    return `http://${this.appInitService.systemInfo.board_host}/captcha/${this.signInUser.captchaId}.png`;
+    return `http://${this.appInitService.systemInfo.boardHost}/captcha/${this.signInUser.captchaId}.png`;
   }
 
   refreshVerifyPicture() {

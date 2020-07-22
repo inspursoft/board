@@ -2,22 +2,22 @@
   <h3 class="modal-title">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</h3>
   <div class="modal-body input-container">
     <lib-input-ex [inputLabel]="'ACCOUNT.USERNAME' | translate "
-                  [inputDefaultValue]="curUser.user_name"
+                  [inputDefaultValue]="curUser.userName"
                   [inputDisabled]="true">
     </lib-input-ex>
     <lib-input-ex [inputDisabled]="true"
                   [inputLabel]="'ACCOUNT.EMAIL' | translate "
-                  [inputDefaultValue]="curUser.user_email">
+                  [inputDefaultValue]="curUser.userEmail">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'ACCOUNT.REALNAME' | translate "
-                  [inputDefaultValue]="curUser.user_realname"
+                  [inputDefaultValue]="curUser.userRealName"
                   [inputDisabled]="isWorkWip"
-                  (commitEvent)="curUser.user_realname = $event">
+                  (commitEvent)="curUser.userRealName = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'ACCOUNT.COMMENT' | translate"
-                  [inputDefaultValue]="curUser.user_comment"
+                  [inputDefaultValue]="curUser.userComment"
                   [inputDisabled]="isWorkWip"
-                  (commitEvent)="curUser.user_comment = $event">
+                  (commitEvent)="curUser.userComment = $event">
     </lib-input-ex>
   </div>
   <div class="modal-footer">

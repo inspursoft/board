@@ -25,6 +25,7 @@ export class AppGuardService implements CanActivate, CanActivateChild {
         return true;
       }), catchError(() => {
         if (state.url.indexOf('/search') === 0) {
+          this.messageService.cleanNotification();
           return of(true);
         } else {
           this.router.navigate(['/account/sign-in']).then();

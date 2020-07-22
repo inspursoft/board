@@ -1,12 +1,12 @@
 <div class="clr-row flex-items-xs-right">
   <button *ngIf="authMode === 'db_auth'" class="btn btn-primary"
           (click)="addUser()">{{'USER_CENTER.ADD_USER' | translate}}</button>
-  <new-user *ngIf="showNewUser"
-            [CurEditModel]="curEditModel"
-            [userModel]="curUser"
-            [(isOpen)]="showNewUser"
-            (SubmitSuccessEvent)="refreshData(oldStateInfo)">
-  </new-user>
+  <app-new-user *ngIf="showNewUser"
+                [CurEditModel]="curEditModel"
+                [userModel]="curUser"
+                [(isOpen)]="showNewUser"
+                (SubmitSuccessEvent)="refreshData(oldStateInfo)">
+  </app-new-user>
 </div>
 <clr-datagrid (clrDgRefresh)="refreshData($event)" [clrDgLoading]="isInLoading">
   <clr-dg-placeholder>{{userListErrMsg | translate}}</clr-dg-placeholder>
@@ -23,23 +23,23 @@
   <clr-dg-column>{{'USER_CENTER.LIST_COL_SYSTEM_ADMIN' | translate}}</clr-dg-column>
   <clr-dg-column>{{'USER_CENTER.LIST_COL_OPERATION' | translate}}</clr-dg-column>
   <clr-dg-row *ngFor="let user of userListData">
-    <clr-dg-cell class="text-with-omit">{{user.user_name}}</clr-dg-cell>
-    <clr-dg-cell>{{user.user_email}}</clr-dg-cell>
-    <clr-dg-cell>{{user.user_creation_time | date:'short'}}</clr-dg-cell>
+    <clr-dg-cell class="text-with-omit">{{user.userName}}</clr-dg-cell>
+    <clr-dg-cell>{{user.userEmail}}</clr-dg-cell>
+    <clr-dg-cell>{{user.userCreationTime | date:'short'}}</clr-dg-cell>
     <clr-dg-cell>
       <input type="checkbox"
-             [disabled]="setUserSystemAdminWIP || user.user_id == currentUserID || user.user_deleted == 1"
-             [checked]="user.user_system_admin"
-             (change)="setUserSystemAdmin(user,$event)">
+             [disabled]="setUserSystemAdminWIP || user.userId == currentUserID || user.userDeleted == 1"
+             [checked]="user.userSystemAdmin"
+             (change)="setUserSystemAdmin(user, $event)">
     </clr-dg-cell>
     <clr-dg-cell>
-      <clr-icon [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
+      <clr-icon [ngClass]="{'disabled': user.userDeleted == 1 ||  user.userId == 1 || user.userId == currentUserID}"
                 (click)="deleteUser(user)"
                 class="trash"
                 shape="trash">
       </clr-icon>
       <clr-icon *ngIf="authMode === 'db_auth'"
-                [ngClass]="{'disabled': user.user_deleted == 1 ||  user.user_id == 1 || user.user_id == currentUserID}"
+                [ngClass]="{'disabled': user.userDeleted == 1 ||  user.userId == 1 || user.userId == currentUserID}"
                 (click)="editUser(user)"
                 class="edit"
                 shape="edit">

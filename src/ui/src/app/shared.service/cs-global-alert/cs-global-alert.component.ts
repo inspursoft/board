@@ -68,8 +68,8 @@ export class CsGlobalAlertComponent implements OnInit {
   }
 
   loginClick() {
-    const authMode = this.appInitService.systemInfo.auth_mode;
-    const redirectionURL = this.appInitService.systemInfo.redirection_url;
+    const authMode = this.appInitService.systemInfo.authMode;
+    const redirectionURL = this.appInitService.systemInfo.redirectionUrl;
     if (authMode === 'indata_auth') {
       window.location.href = redirectionURL;
       this.isOpen = false;

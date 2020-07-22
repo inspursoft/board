@@ -33,7 +33,7 @@ export class ServiceDetailComponent {
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService) {
-    this.boardHost = this.appInitService.systemInfo.board_host;
+    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.closeNotification = new Subject<any>();
     this.urlList = Array<NodeURL>();
   }
@@ -51,7 +51,7 @@ export class ServiceDetailComponent {
 
   openModal(service: Service): Observable<any> {
     this.curService = service;
-    this.dns = `${this.curService.serviceName}.${this.curService.serviceProjectName}.svc${this.appInitService.systemInfo.dns_suffix}`;
+    this.dns = `${this.curService.serviceName}.${this.curService.serviceProjectName}.svc${this.appInitService.systemInfo.dnsSuffix}`;
     this.getDeploymentYamlFile()
       .subscribe(() => this.getServiceDetail(service.serviceId, service.serviceProjectName, service.serviceOwnerName));
     this.isOpenServiceDetail = true;

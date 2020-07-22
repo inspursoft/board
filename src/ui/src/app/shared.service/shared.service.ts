@@ -12,7 +12,7 @@ import {
   SharedConfigMapDetail,
   SharedCreateProject,
   SharedMember,
-  SharedProject
+  SharedProject, User
 } from '../shared/shared.types';
 
 @Injectable()
@@ -32,32 +32,21 @@ export class SharedService {
     );
   }
 
-  search(content: string): Observable<any> {
-    return this.http.get('/api/v1/search', {
-      params: {
-        q: content,
-        token: this.appInitService.token
-      }
-    });
-  }
-
   getAssignedMembers(projectId: number): Observable<Array<SharedMember>> {
     return this.http.getArray(`/api/v1/projects/${projectId}/members`, SharedMember);
   }
 
   getAvailableMembers(projectId: number): Observable<Array<SharedMember>> {
-    return this.http.get(`/api/v1/projects/${projectId}/members`, {
-      params: {
-        type: 'available'
-      }
-    }).pipe(map((res: Array<any>) => {
+    return this.http.getArray(`/api/v1/projects/${projectId}/members`, User, {
+      param: {type: 'available'}
+    }).pipe(map((res: Array<User>) => {
       const members = Array<SharedMember>();
       if (res && res.length > 0) {
         res.forEach(u => {
-          if (u.user_deleted === 0) {
+          if (u.userDeleted === 0) {
             const m = new SharedMember();
-            m.userName = u.user_name;
-            m.userId = u.user_id;
+            m.userName = u.userName;
+            m.userId = u.userId;
             m.roleId = 1;
             m.isMember = false;
             members.push(m);

@@ -71,7 +71,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
-    this.boardHost = this.appInitService.systemInfo.board_host;
+    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: '', message: ''};
@@ -125,7 +125,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   public initCustomerNewImage(projectId: number, projectName: string): void {
     this.customerNewImage = new BuildImageData();
-    this.customerNewImage.imageDockerFile.imageAuthor = this.appInitService.currentUser.user_name;
+    this.customerNewImage.imageDockerFile.imageAuthor = this.appInitService.currentUser.userName;
     this.customerNewImage.projectId = projectId;
     this.customerNewImage.projectName = projectName;
     this.customerNewImage.imageTemplate = 'dockerfile-template';
@@ -342,8 +342,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           this.cancelButtonDisable = true;
           this.isNeedAutoRefreshImageList = false;
           this.appInitService.setAuditLog({
-            operation_user_id: this.appInitService.currentUser.user_id,
-            operation_user_name: this.appInitService.currentUser.user_name,
+            operation_user_id: this.appInitService.currentUser.userId,
+            operation_user_name: this.appInitService.currentUser.userName,
             operation_project_id: this.customerNewImage.projectId,
             operation_project_name: this.customerNewImage.projectName,
             operation_object_type: 'images',

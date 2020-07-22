@@ -26,6 +26,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
     this.exceptUrls.push('/captcha');
     this.exceptUrls.push('/api/v1/systeminfo');
     this.exceptUrls.push('/api/v1/log-out');
+    this.exceptUrls.push('/api/v1/search');
     this.exceptUrls.push('/api/v1/sign-in');
     this.exceptUrls.push('/api/v1/user-exists');
     this.exceptUrls.push('/api/v1/sign-up');
