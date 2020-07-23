@@ -777,6 +777,7 @@ export const LANG_ZH_CN = {
     "PV_IMAGE":"镜像",
     "PV_FS_TYPE":"文件系统类型",
     "PV_SECRET":"密钥",
+    "PV_CREATE_SUCCESS":"创建pv成功",
     "PV_SECRET_NAMESPACE":"密钥命名空间",
     "PV_CONFIG_MONITORS":"配置监视器",
     "PV_CONFIG_MONITORS_ADD":"添加配置",

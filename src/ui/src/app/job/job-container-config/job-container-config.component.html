@@ -80,9 +80,9 @@
   </div>
 </clr-modal>
 <app-environment-value *ngIf="showEnvironmentValue"
-                   [isProvideBindConfigMap]="true"
-                   [projectName]="projectName"
-                   [inputEnvsData]="getDefaultEnvsData()"
-                   (closeNotification)="showEnvironmentValue = false"
-                   (onConfirm)="setEnvironment($event)">
+                       [isProvideBindConfigMap]="true"
+                       [projectName]="projectName"
+                       [inputEnvsData]="getDefaultEnvsData()"
+                       (closeNotification)="showEnvironmentValue = false"
+                       (confirm)="setEnvironment($event)">
 </app-environment-value>

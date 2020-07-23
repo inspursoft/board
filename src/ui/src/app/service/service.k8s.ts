@@ -1,5 +1,5 @@
 import { Injectable, Type } from '@angular/core';
-import { HttpHeaders, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpHeaders, HttpParams, HttpRequest, HttpResponse, HttpClient } from '@angular/common/http';
 import { Observable, Subject, zip } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ServiceStepDataBase, ServiceStepPhase } from './service-step.component';
