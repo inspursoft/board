@@ -18,7 +18,7 @@ if sys.version_info[:3][0] == 2:
 
 if sys.version_info[:3][0] == 3:
     import configparser as ConfigParser
-    import io as StringIO
+    from io import StringIO
 
 base_dir = os.path.dirname(__file__)
 config_dir = os.path.join(base_dir, "config")
@@ -117,7 +117,7 @@ gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
 
 gitlab_host_ip = rcp.get("configuration", "gitlab_host_ip")
 gitlab_host_port = rcp.get("configuration", "gitlab_host_port")
-gitlab_ssh_port = rcp.get("configuration", "gitlab_ssh_port")
+gitlab_host_ssh_port = rcp.get("configuration", "gitlab_host_ssh_port")
 gitlab_admin_token = rcp.get("configuration", "gitlab_admin_token")
 
 prometheus_url = rcp.get("configuration", "prometheus_url")
@@ -282,7 +282,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         gogits_ssh_port=gogits_ssh_port,
         gitlab_host_ip=gitlab_host_ip,
         gitlab_host_port=gitlab_host_port,
-        gitlab_ssh_port=gitlab_ssh_port,
+        gitlab_host_ssh_port=gitlab_host_ssh_port,
         gitlab_admin_token=gitlab_admin_token,
         jenkins_host_ip=jenkins_host_ip,
         jenkins_host_port=jenkins_host_port,
