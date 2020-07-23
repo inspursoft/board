@@ -100,4 +100,14 @@ export class NodeService {
     return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null)
       .pipe(delay(500 * serviceInstanceCount));
   }
+
+  getNodeName(nodeIp, nodePassword: string): Observable<string> {
+    return this.http.get(`/api/v1/edgenodes/checkedgename`, {
+      responseType: 'text',
+      params: {
+        edge_ip: nodeIp,
+        edge_password: nodePassword
+      }
+    });
+  }
 }

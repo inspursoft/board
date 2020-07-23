@@ -4,7 +4,7 @@ import { Observable, Subject } from 'rxjs';
 import { MessageService } from '../../shared.service/message.service';
 
 @Directive({
-  selector: '[appModalViewContainerSelector], div.modal-body, div.modal-title'
+  selector: '[appModalViewContainerSelector], .modal-body, .modal-title'
 })
 export class CsModalViewContainerSelectorDirective {
   @HostBinding('tabindex') tabIndex = '-1';
