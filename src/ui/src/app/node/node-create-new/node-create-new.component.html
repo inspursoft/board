@@ -2,6 +2,24 @@
   <h3 class="modal-title">{{ 'NodeCreateNew.Title' | translate }}</h3>
   <div class="modal-body node-create-body">
     <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="isActionWip"
+                  [inputPattern]="patternNodeIp"
+                  [inputLabel]="'NodeCreateNew.Ip' | translate"
+                  [inputDefaultValue]="edgeNode.nodeIp"
+                  [validatorMessage]="[{key: 'pattern', message: 'NodeCreateNew.IpPatternMessage' | translate},
+                                   {key:'edgeNodeIpExists', message:'NodeCreateNew.IpExists' | translate}]"
+                  [validatorAsyncFn]="checkEdgeNodeIpFun"
+                  (commitEvent)="setIpAndPassword($event, true)">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="isActionWip"
+                  [inputLabel]="'NodeCreateNew.Password' | translate"
+                  [inputCategory]="3"
+                  [inputDefaultValue]="edgeNode.nodePassword"
+                  (commitEvent)="setIpAndPassword($event, false)">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="true"
                   [inputPattern]="patternNodeName"
                   [inputLabel]="'NodeCreateNew.Name' | translate"
                   [inputDefaultValue]="edgeNode.name"
@@ -12,23 +30,9 @@
                   [validatorAsyncFn]="checkEdgeNodeNameFun"
                   (commitEvent)="edgeNode.name = $event">
     </lib-input-ex>
-    <lib-input-ex [inputIsRequired]="true"
-                  [inputPattern]="patternNodeIp"
-                  [inputLabel]="'NodeCreateNew.Ip' | translate"
-                  [inputDefaultValue]="edgeNode.nodeIp"
-                  [validatorMessage]="[{key: 'pattern', message: 'NodeCreateNew.IpPatternMessage' | translate},
-                                   {key:'edgeNodeIpExists', message:'NodeCreateNew.IpExists' | translate}]"
-                  [validatorAsyncFn]="checkEdgeNodeIpFun"
-                  (commitEvent)="edgeNode.nodeIp = $event">
-    </lib-input-ex>
-    <lib-input-ex [inputIsRequired]="true"
-                  [inputLabel]="'NodeCreateNew.Password' | translate"
-                  [inputCategory]="3"
-                  [inputDefaultValue]="edgeNode.nodePassword"
-                  (commitEvent)="edgeNode.nodePassword = $event">
-    </lib-input-ex>
     <lib-dropdown-ex [dropdownIsRequired]="true"
                      [dropdownItems]="cpuTypes"
+                     [dropdownDisabled]="isActionWip"
                      [dropdownKey]="'description'"
                      [dropdownDefaultActiveIndex]="0"
                      [dropdownItemDisabledFn]="cpuTypeDisableFun"
@@ -39,6 +43,7 @@
     <lib-dropdown-ex [dropdownIsRequired]="true"
                      [dropdownItems]="masters"
                      [dropdownDefaultActiveIndex]="0"
+                     [dropdownDisabled]="isActionWip"
                      [dropdownLabel]="'NodeCreateNew.Master' | translate"
                      (dropdownChangeItem)="edgeNode.master = $event">
     </lib-dropdown-ex>
@@ -46,6 +51,7 @@
     <lib-dropdown-ex [dropdownIsRequired]="true"
                      [dropdownItems]="registryMode"
                      [dropdownKey]="'key'"
+                     [dropdownDisabled]="isActionWip"
                      [dropdownDefaultActiveIndex]="0"
                      [dropdownLabel]="'NodeCreateNew.RegisterMode' | translate"
                      (dropdownChangeItem)="setRegisterMode($event)">

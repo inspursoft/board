@@ -77,14 +77,14 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
     if (this.verifyDropdownExValid() && this.verifyInputExValid()) {
       this.isCreateWip = true;
       this.sharedService.createNewPvc(this.newPersistentVolumeClaim).subscribe(
-        () => this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS'),
+        () => {
+          this.modalOpened = false;
+          this.onAfterCommit.emit(this.newPersistentVolumeClaim);
+          this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS');
+        },
         (error: HttpErrorResponse) => {
           this.messageService.showAlert(error.message, {alertType: 'warning', view: this.alertView});
           this.isCreateWip = false;
-        },
-        () => {
-          this.onAfterCommit.emit(this.newPersistentVolumeClaim);
-          this.modalOpened = false;
         }
       );
     }

@@ -291,7 +291,7 @@
     <app-environment-value *ngIf="isOpenEnvironment"
                        [inputEnvsData]="defaultEnvsData"
                        (closeNotification)="isOpenEnvironment = false"
-                       (onConfirm)="setEnvironment($event)">
+                       (confirm)="setEnvironment($event)">
     </app-environment-value>
     <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
       <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
