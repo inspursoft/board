@@ -97,6 +97,8 @@ then
 fi
 echo ""
 
+docker run --rm -v $(pwd)/board.cfg:/app/instance/board.cfg gitlab-helper:1.0
+
 echo "[Step $item]: preparing environment ...";  let item+=1
 #if [ -n "$host" ]
 #then
