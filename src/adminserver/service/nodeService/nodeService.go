@@ -124,7 +124,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 		"-v %s:/tmp/log \\\n "+
 		"-v %s:/tmp/hosts_dir \\\n"+
 		"-v %s:/ansible_k8s/pre-env \\\n "+
-		"%s \\\n k8s_install:1",
+		"%s \\\n k8s_install:1.18",
 		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
 	if err := secure.ExecuteCommand(cmdStr); err != nil {
