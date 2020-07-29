@@ -19,31 +19,17 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
+	cmdGitlabHelper := fmt.Sprintf("docker run --rm -v %s/board.cfg:/app/instance/board.cfg gitlab-helper:1.0", models.MakePath)
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
 	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
-
-	err = shell.ExecuteCommand(cmdPrepare)
-	if err != nil {
-		return err
+	cmdList := []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
+	for _, cmd := range cmdList {
+		err = shell.ExecuteCommand(cmd)
+		if err != nil {
+			return err
+		}
 	}
-	//time.Sleep(time.Duration(3) * time.Second)
-	/*
-		// TODO:
-		delete account in sqlite
-	*/
-
-	err = shell.ExecuteCommand(cmdComposeDown)
-	if err != nil {
-		return err
-	}
-	//time.Sleep(time.Duration(10) * time.Second)
-
-	err = shell.ExecuteCommand(cmdComposeUp)
-	if err != nil {
-		return err
-	}
-
 	RemoveUUIDTokenCache()
 
 	return nil

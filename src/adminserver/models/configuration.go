@@ -36,10 +36,12 @@ type Gogs struct {
 }
 
 type Gitlab struct {
-	HostIP     string `json:"gitlab_host_ip"`
-	HostPort   string `json:"gitlab_host_port"`
-	SSHPort    string `json:"gitlab_ssh_port"`
-	AdminToken string `json:"gitlab_admin_token"`
+	HostIP      string `json:"gitlab_host_ip"`
+	HostPort    string `json:"gitlab_host_port"`
+	SSHPort     string `json:"gitlab_host_ssh_port"`
+	AdminToken  string `json:"gitlab_admin_token"`
+	SSHUsername string `json:"gitlab_ssh_username"`
+	SSHPassword string `json:"gitlab_ssh_password"`
 }
 
 type Prometheus struct {

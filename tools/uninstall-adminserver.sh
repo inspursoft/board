@@ -13,7 +13,8 @@ silentFlag=flase
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
-sed -i "s|$workdir|__CURDIR__|g"  $workdir/env
+rm -f $workdir/env
+cp $workdir/../templates/adminserver/env-release $workdir/env
 
 while [ $# -gt 0 ]; do
         case $1 in
