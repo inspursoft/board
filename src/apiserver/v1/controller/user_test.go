@@ -36,7 +36,7 @@ func TestUserAction(t *testing.T) {
 
 	user := model.User{
 		Username:    "testuser",
-		Password:    "MTIzNDU2YT8=",
+		Password:    "testuserpasswrd",
 		Email:       "testuser@test.com",
 		Realname:    "testuser",
 		Comment:     "this is just a test account",
@@ -48,6 +48,7 @@ func TestUserAction(t *testing.T) {
 	}
 	// init one assert
 	assert := assert.New(t)
+
 	// add user
 	t.Log("adding user")
 	r, _ := http.NewRequest("POST", fmt.Sprintf("/api/v1/adduser?token=%s", token), bytes.NewBuffer(body))
@@ -149,6 +150,7 @@ func TestUserAction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("toggledUser unmarshal error: %v", err)
 	}
+
 	if !assert.Equal(updatedUser.SystemAdmin, toggledUser.SystemAdmin, "Toggle User SystemAdmin fail.") {
 		t.FailNow()
 	}
@@ -157,7 +159,7 @@ func TestUserAction(t *testing.T) {
 	r, _ = http.NewRequest("DELETE", fmt.Sprintf("/api/v1/users/%d?token=%s", readUser.ID, token), nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	// assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
+	assert.Equal(http.StatusOK, w.Code, "Delete User fail.")
 }
 
 func TestChangeUserAccount(t *testing.T) {
@@ -171,7 +173,7 @@ func TestChangeUserAccount(t *testing.T) {
 
 	user := model.User{
 		Username:    "testuseraccount",
-		Password:    "dGVzdHVzZXJwYXNzd3Jk",
+		Password:    "testuseraccountpwd",
 		Email:       "testuseraccount@test.com",
 		Realname:    "testuseraccount",
 		Comment:     "this is just a test account",
@@ -273,7 +275,7 @@ func TestChangePasswordAction(t *testing.T) {
 
 	user := model.User{
 		Username:    "testpassword",
-		Password:    "dGVzdHVzZXJwYXNzd3Jk",
+		Password:    "testpasswordpwd",
 		Email:       "testpasswordpwd@test.com",
 		Realname:    "testpasswordpwd",
 		Comment:     "this is just a test account",
@@ -334,7 +336,7 @@ func TestChangePasswordAction(t *testing.T) {
 	t.Log("change user password")
 	changePwd := new(model.ChangePassword)
 	changePwd.OldPassword = user.Password
-	changePwd.NewPassword = "MTIzNDU2YT8="
+	changePwd.NewPassword = "newpassword"
 	body, err = json.Marshal(changePwd)
 	if err != nil {
 		t.Fatalf("read user marshal error: %v", err)

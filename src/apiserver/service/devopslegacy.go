@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"golang.org/x/net/context"
@@ -108,68 +109,71 @@ func (l LegacyDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 		logs.Error("Failed to initialize default user's repo: %+v", err)
 		return err
 	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	done := make(chan bool)
-	handle := func() <-chan error {
-		e := make(chan error)
-		go func() {
-			defer close(e)
-			ctx = context.WithValue(ctx, storeItem, "Gogits repo")
-			gogsHandler := gogs.NewGogsHandler(username, accessToken)
-			if gogsHandler == nil {
-				logs.Error("failed to create Gogs handler")
-				cancel()
-			}
-			err = gogsHandler.CreateRepo(repoName)
-			if err != nil {
-				logs.Error("Failed to create repo: %s, error %+v", repoName, err)
-				cancel()
-			}
-			hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-			err = gogsHandler.CreateHook(username, repoName, hookURL)
-			if err != nil {
-				logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
-				cancel()
-			}
-			CreateFile("readme.md", "Repo created by Board.", repoPath)
-			repoHandler, err := OpenRepo(repoPath, username, email)
-			if err != nil {
-				logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
-				cancel()
-			}
-			repoHandler.SimplePush("Add some struts.", "readme.md")
-			if err != nil {
-				logs.Error("Failed to push readme.md file to the repo: %+v", err)
-				cancel()
-			}
 
-			ctx = context.WithValue(ctx, storeItem, "Jenkins job")
-			jenkinsHandler := jenkins.NewJenkinsHandler()
-			err = jenkinsHandler.CreateJobWithParameter(repoName)
-			if err != nil {
-				logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-				cancel()
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+	    defer wg.Done()
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Gogits creation: %+v", err)
+				return
+			}
+			logs.Info("Successful create Gogits repo.")
+		}
+		gogsHandler := gogs.NewGogsHandler(username, accessToken)
+		if gogsHandler == nil {
+			logs.Error("failed to create Gogs handler")
+			cancel()
+		}
+		err = gogsHandler.CreateRepo(repoName)
+		if err != nil {
+			logs.Error("Failed to create repo: %s, error %+v", repoName, err)
+			cancel()
+		}
+		hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
+		err = gogsHandler.CreateHook(username, repoName, hookURL)
+		if err != nil {
+			logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+		}
+
+		CreateFile("readme.md", "Repo created by Board.", repoPath)
+
+		repoHandler, err := OpenRepo(repoPath, username, email)
+		if err != nil {
+			logs.Error("Failed to open the repo: %s, error: %+v.", repoPath, err)
+		}
+
+		repoHandler.SimplePush("Add some struts.", "readme.md")
+		if err != nil {
+			logs.Error("Failed to push readme.md file to the repo: %+v", err)
+			cancel()
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		select {
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				logs.Error("Failed to execute Jenkins job creation: %+v", err)
+				return
 			}
 			logs.Info("Successful create Jenkins job.")
-			for {
-				select {
-				case <-ctx.Done():
-					if err := ctx.Err(); err != nil {
-						logs.Error("Canceled context in creation %s, error: %+v", ctx.Value(storeItem), err)
-						e <- err
-					}
-					logs.Debug("Execution for %s in context has done.", ctx.Value(storeItem))
-				case <-done:
-					logs.Debug("Finished executing both Gogits with Jenkins process.")
-					e <- nil
-				}
-			}
-		}()
-		return e
-	}
-	close(done)
-	return <-handle()
+		}
+		jenkinsHandler := jenkins.NewJenkinsHandler()
+		err = jenkinsHandler.CreateJobWithParameter(repoName)
+		if err != nil {
+			logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
+			cancel()
+		}
+	}()
+	return nil
 }
 
 func (l LegacyDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error {
@@ -255,10 +259,6 @@ func (l LegacyDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
-func (l LegacyDevOps) MergePullRequest(repoName, repoToken string) error {
-	return fmt.Errorf("unsupport merge pull request feature with the Gogits repo service")
-}
-
 func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 	user, err := GetUserByName(username)
 	if err != nil {
@@ -281,18 +281,6 @@ func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 		"X-Gitlab-Event": []string{"Push Hook"},
 	}
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
-}
-
-func (l LegacyDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
-	return nil, fmt.Errorf("unimplement get repo files feature with the Gogits repo service")
-}
-
-func (l LegacyDevOps) DeleteUser(username string) error {
-	adminUser, err := GetUserByName("admin")
-	if err != nil {
-		return fmt.Errorf("failed to get admin user with error: %+v", err)
-	}
-	return gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(username)
 }
 
 func PrepareKVMHost() error {

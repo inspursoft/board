@@ -37,8 +37,6 @@ var addSSHKeyResponse gitlab.AddSSHKeyResponse
 var createdProject gitlab.ProjectCreation
 var createdForkProject gitlab.ProjectCreation
 
-var createdMR gitlab.MRCreation
-
 var branch = "master"
 var sourceBranch = branch
 var targetBranch = sourceBranch
@@ -49,7 +47,7 @@ var fileInfo = gitlab.FileInfo{
 	Content: "# myrepo",
 }
 
-var adminAccessToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+var adminAccessToken = "bHRRGveFRwqPz7Y7gseC"
 var sshPubKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDaa046MKqllR1bE0pfPYwcVYHmBx291OzeWj5VHS6FCsVeLnky99pJigp3uwDz68uTDOx1I+zUU3XE39o4591isCCbM9ba5l2hKvGnHUoTRdG6Pkc9gy+OdKIJMGFca58Bt1hhPCa5FT8cQadsSnr7rGmg1O5tfG6a9mjzKFjn3nNNlYi5U6BsJxD3ReV5mVkFea5wH2yMzrHCSxTQiyLM8owB9Dem7Mrqz799sfB9MjC6ryVGwJd8oZOxGCB7hNz/Eenb+EUjdevxLFAVZgakTk4vDm/ubVfQjrdxGg4MaAbD4+kYNezEfh9c5W2uC0QlZHQhItEoMqytmWmjeZF7 root@10.110.25.227"
 
 func TestMain(m *testing.M) {
@@ -59,13 +57,13 @@ func TestMain(m *testing.M) {
 
 func TestUserCreation(t *testing.T) {
 	var err error
-	createdUser, err = gitlab.NewGitlabHandler(adminAccessToken()).CreateUser(user)
+	createdUser, err = gitlab.NewGitlabHandler(adminAccessToken).CreateUser(user)
 	assert.New(t).Nilf(err, "Error occurred while creating user via Gitlab API: %+v", err)
 }
 
 func TestImpersonateToken(t *testing.T) {
 	var err error
-	createdUserToken, err = gitlab.NewGitlabHandler(adminAccessToken()).ImpersonationToken(createdUser)
+	createdUserToken, err = gitlab.NewGitlabHandler(adminAccessToken).ImpersonationToken(createdUser)
 	logs.Debug("Impersonated token: %+v", createdUserToken)
 	assert.New(t).Nilf(err, "Error occurred while impersonating token via Gitlab API: %+v", err)
 }
@@ -107,13 +105,13 @@ func TestCreateFileToRepo(t *testing.T) {
 
 func TestForkRepo(t *testing.T) {
 	var err error
-	createdForkUser, err = gitlab.NewGitlabHandler(adminAccessToken()).CreateUser(forkUser)
+	createdForkUser, err = gitlab.NewGitlabHandler(adminAccessToken).CreateUser(forkUser)
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while creating fork user via Gitlab API: %+v", err)
 	assert.NotNilf(createdForkUser, "Failed to create fork user with detail: %+v", forkUser)
 	forkUser.ID = int64(createdForkUser.ID)
 
-	createdForkUserToken, err = gitlab.NewGitlabHandler(adminAccessToken()).ImpersonationToken(createdForkUser)
+	createdForkUserToken, err = gitlab.NewGitlabHandler(adminAccessToken).ImpersonationToken(createdForkUser)
 	assert.Nilf(err, "Error occurred while impersonating token to fork user via Gitlab API: %+v", err)
 	assert.NotNilf(createdForkUser, "Failed to impersonate token with forked user detail: %+v", forkUser)
 
@@ -144,30 +142,19 @@ func TestCreateMR(t *testing.T) {
 	assert.NotNilf(mrCreation, "Failed to create MR with detail: %+v", mrCreation)
 }
 
-func TestMergeMR(t *testing.T) {
-	gitlabHandler := gitlab.NewGitlabHandler(createdUserToken.Token)
-	mrList, err := gitlabHandler.ListMR(project)
-	assert := assert.New(t)
-	assert.Lenf(mrList, 1, "No MR found for repo: %s", project.Name)
-	assert.Nilf(err, "Error occurred while list MR via Gitlab API: %+v", err)
-	createdMR = mrList[0]
-	mrAcceptance, err := gitlabHandler.AcceptMR(project, createdMR.IID)
-	assert.Nilf(err, "Error occurred while merging MR via Gitlab API: %+v", err)
-	assert.NotNilf(mrAcceptance, "Failed to merge MR with detail: %+v", mrAcceptance)
-}
-
 func TestDeleteRepo(t *testing.T) {
 	assert := assert.New(t)
 	err := gitlab.NewGitlabHandler(createdForkUserToken.Token).DeleteProject(createdForkProject.ID)
 	assert.Nilf(err, "Error occurred while deleting fork project via Gitlab API: %+v", err)
 	err = gitlab.NewGitlabHandler(createdUserToken.Token).DeleteProject(createdProject.ID)
 	assert.Nilf(err, "Error occurred while deleting project via Gitlab API: %+v", err)
+
 }
 
 func TestUserDeletion(t *testing.T) {
-	err := gitlab.NewGitlabHandler(adminAccessToken()).DeleteUser(createdForkUser.ID)
+	err := gitlab.NewGitlabHandler(adminAccessToken).DeleteUser(createdForkUser.ID)
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while deleting fork user via Gitlab API: %+v", err)
-	err = gitlab.NewGitlabHandler(adminAccessToken()).DeleteUser(createdUser.ID)
+	err = gitlab.NewGitlabHandler(adminAccessToken).DeleteUser(createdUser.ID)
 	assert.Nilf(err, "Error occurred while deleting user via Gitlab API: %+v", err)
 }

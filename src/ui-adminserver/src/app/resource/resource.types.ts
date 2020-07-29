@@ -85,7 +85,6 @@ export class NodeListType extends ResponseBase {
   @HttpBind('origin') origin: number;
   @HttpBind('status') status: number;
   @HttpBind('is_master') isMaster: boolean;
-  @HttpBind('is_edge') isEdge: boolean;
 }
 
 export class NodeList extends ResponseArrayBase<NodeListType> {

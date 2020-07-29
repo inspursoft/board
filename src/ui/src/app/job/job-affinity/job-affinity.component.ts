@@ -62,6 +62,7 @@ export class JobAffinityComponent extends CsModalChildBase {
           const jobCard = new JobAffinityCardData();
           jobCard.jobName = job.jobName;
           jobCard.status = DragStatus.dsReady;
+          console.log(job);
           this.sourceList.push(jobCard);
         }
       });

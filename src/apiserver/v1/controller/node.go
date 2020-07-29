@@ -304,7 +304,7 @@ func (n *NodeController) AddEdgeNodeAction() {
 	//TODO Check the hostname config
 	res, err := service.CheckEdgeHostname(reqNode)
 	if res != true || err != nil {
-		n.CustomAbortAudit(http.StatusBadRequest, "edgenode config error.")
+		n.CustomAbortAudit(http.StatusBadRequest, "edgename config error.")
 		return
 	}
 
@@ -355,24 +355,4 @@ func (n *NodeController) RemoveEdgeNodeAction() {
 		return
 	}
 	logs.Debug("Removed Edge %s", nodeName)
-}
-
-// Get edge node hostname and check exsiting
-func (n *NodeController) CheckEdgeName() {
-	edgeIP := n.GetString("edge_ip")
-	edgePassword := n.GetString("edge_password")
-
-	if edgeIP == "" || edgePassword == "" {
-		n.CustomAbortAudit(http.StatusBadRequest, "IP or password invalid")
-		return
-	}
-
-	edgeHostname, err := service.GetEdgeHostname(edgeIP, edgePassword)
-	if err != nil {
-		logs.Debug("Failed to get edge hostname %v", err)
-		n.CustomAbortAudit(http.StatusBadRequest, "IP or password invalid")
-		return
-	}
-
-	n.RenderJSON(edgeHostname)
 }

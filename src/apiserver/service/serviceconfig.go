@@ -510,9 +510,7 @@ func setDeploymentNodeSelector(nodeOrNodeGroupName string, serviceType int) map[
 		return map[string]string{nodeOrNodeGroupName: "true"}
 	} else {
 		if serviceType == model.ServiceTypeEdgeComputing {
-			//return map[string]string{"name": nodeOrNodeGroupName}
-			// TODO need unify the label pattern for edge node for verion 1.2 1.3+
-			return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
+			return map[string]string{"name": nodeOrNodeGroupName}
 		}
 		return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
 	}
@@ -874,12 +872,6 @@ func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 	return k8sAffinity
 }
 
-// Create a torleration for Edge Service
-func addDeploymentEdgeToleration(nodeselector map[string]string) model.Toleration {
-	logs.Debug("Create a torleration for %v", nodeselector)
-	return model.Toleration{Key: "edge", Operator: model.TolerationOpExists, Effect: model.TaintEffectNoSchedule}
-}
-
 func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI string) *model.Deployment {
 	if serviceConfig == nil {
 		return nil
@@ -898,10 +890,6 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 		},
 	}
 
-	// Add a torleration for the Edge service
-	if serviceConfig.ServiceType == model.ServiceTypeEdgeComputing {
-		podTemplate.Spec.Tolerations = append(podTemplate.Spec.Tolerations, addDeploymentEdgeToleration(podTemplate.Spec.NodeSelector))
-	}
 	//TODO need to redesign the volume config step and unite container volumes
 	if podTemplate.Spec.InitContainers != nil {
 		podTemplate.Spec.Volumes = addInitContainerVolumes(serviceConfig.InitContainerList, podTemplate.Spec.Volumes)

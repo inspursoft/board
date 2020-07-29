@@ -29,8 +29,6 @@ const (
 	istioLabel     = "istio-injection"
 )
 
-var undeletableNamespaces = []string{kubeNamespace, istioNamespace, "kube-node-lease", "kube-public", "default", "library", "kubeedge", "cadvisor"}
-
 func CreateProject(project model.Project) (bool, error) {
 
 	projectID, err := dao.AddProject(project)
@@ -58,7 +56,6 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 	if err != nil {
 		return nil, err
 	}
-	setDeletable(p)
 	return p, nil
 }
 
@@ -104,38 +101,15 @@ func ToggleProjectPublic(projectID int64, public int) (bool, error) {
 }
 
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
-	projects, err := dao.GetProjectsByUser(query, userID)
-	if err != nil {
-		return nil, err
-	}
-	for i := range projects {
-		setDeletable(projects[i])
-	}
-	return projects, nil
+	return dao.GetProjectsByUser(query, userID)
 }
 
 func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
-	paged, err := dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
-	if err != nil {
-		return nil, err
-	}
-	if paged != nil {
-		for i := range paged.ProjectList {
-			setDeletable(paged.ProjectList[i])
-		}
-	}
-	return paged, nil
+	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
-	projects, err := dao.GetProjectsByMember(query, userID)
-	if err != nil {
-		return nil, err
-	}
-	for i := range projects {
-		setDeletable(projects[i])
-	}
-	return projects, nil
+	return dao.GetProjectsByMember(query, userID)
 }
 
 func DeleteProject(userID, projectID int64) (bool, error) {
@@ -143,10 +117,6 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 	if err != nil {
 		logs.Error("Failed to delete project with ID: %d, error: %+v", projectID, err)
 		return false, err
-	}
-	if !project.Deletable {
-		logs.Error("Project %s is a builtin project that cannot be deleted.", project.Name)
-		return false, utils.ErrUnprocessableEntity
 	}
 	members, err := GetProjectMembers(project.ID)
 	if err != nil {
@@ -385,17 +355,4 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-func setDeletable(p *model.Project) {
-	if p == nil {
-		return
-	}
-	for _, name := range undeletableNamespaces {
-		if name == p.Name {
-			p.Deletable = false
-			return
-		}
-	}
-	p.Deletable = true
 }

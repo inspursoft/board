@@ -39,7 +39,7 @@ export class NodeCreateNewGuideComponent extends CsModalParentBase implements On
   }
 
   ngOnInit() {
-    this.addNormalNodeUrl = `http://${this.appInitService.systemInfo.boardHost}:8082/resource/node-list`;
+    this.addNormalNodeUrl = `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
     this.checkAdminServer();
   }
 

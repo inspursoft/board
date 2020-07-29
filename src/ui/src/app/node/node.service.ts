@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { delay, map, timeout } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus, EdgeNode } from './node.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
@@ -12,10 +12,7 @@ export class NodeService {
   }
 
   getNodes(): Observable<Array<NodeStatus>> {
-    return this.http.getArray(`/api/v1/nodes`, NodeStatus)
-      .pipe(
-        map((nodeStatusList: Array<NodeStatus>) => nodeStatusList.filter(value => value.nodeName !== ''))
-      );
+    return this.http.getArray(`/api/v1/nodes`, NodeStatus);
   }
 
   getNodeDetailByName(nodeName: string): Observable<NodeDetail> {
@@ -75,7 +72,7 @@ export class NodeService {
   }
 
   addEdgeNode(edgeNode: EdgeNode): Observable<any> {
-    return this.http.post(`/api/v1/edgenodes`, edgeNode.getPostBody()).pipe(timeout(20000));
+    return this.http.post(`/api/v1/edgenodes`, edgeNode.getPostBody());
   }
 
   deleteNodeGroup(groupId: number, nodeGroupName: string): Observable<HttpResponse<object>> {
@@ -99,15 +96,5 @@ export class NodeService {
   drainNodeService(nodeName: string, serviceInstanceCount: number): Observable<any> {
     return this.http.put(`/api/v1/nodes/${nodeName}/drain`, null)
       .pipe(delay(500 * serviceInstanceCount));
-  }
-
-  getNodeName(nodeIp, nodePassword: string): Observable<string> {
-    return this.http.get(`/api/v1/edgenodes/checkedgename`, {
-      responseType: 'text',
-      params: {
-        edge_ip: nodeIp,
-        edge_password: nodePassword
-      }
-    });
   }
 }

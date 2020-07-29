@@ -109,9 +109,7 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
     this.k8sService.getNodeSelectors().subscribe((res: Array<{ name: string, status: number }>) => {
       res.forEach((value: { name: string, status: number }) => {
         this.nodeSelectorList.push({
-          name: value.name,
-          value: value.name,
-          tag: {
+          name: value.name, value: value.name, tag: {
             type: value.status === 1 ? 'success' : 'warning',
             description: value.status === 1 ? 'SERVICE.STEP_3_NODE_STATUS_SCHEDULABLE' : 'SERVICE.STEP_3_NODE_STATUS_UNSCHEDULABLE'
           }
@@ -129,13 +127,11 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
   }
 
   get curNodeSelector() {
-    const selector = this.nodeSelectorList.find(nodeSelector => nodeSelector.value === this.serviceStep3Data.nodeSelector);
-    return selector ? Object.assign({}, selector) : {};
+    return this.nodeSelectorList.find(value => value.name === this.serviceStep3Data.nodeSelector);
   }
 
   get activeNodeGroup(): { description: string } {
-    const description = this.edgeNodeGroupList.find(value => value.description === this.serviceStep3Data.nodeSelector);
-    return description ? Object.assign({}, description) : {description: ''};
+    return this.edgeNodeGroupList.find(value => value.description === this.serviceStep3Data.nodeSelector);
   }
 
   get activeEdgeNode(): { description: string } {
@@ -166,17 +162,15 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
   }
 
   setServiceType(value: { description: string, type: ServiceType }) {
-    if (this.serviceStep3Data.serviceType !== value.type) {
-      this.serviceStep3Data.serviceType = value.type;
-      this.serviceStep3Data.clusterIp = '';
-      this.serviceStep3Data.nodeSelector = '';
-      this.serviceStep3Data.externalServiceList.splice(0, this.serviceStep3Data.externalServiceList.length);
-      if (this.serviceStep3Data.isShowExternalConfig &&
-        this.serviceStep2Data.containerList.length > 0) {
-        this.addNewExternalService();
-        const container = this.serviceStep2Data.containerList[0];
-        this.setExternalInfo(container, 0);
-      }
+    this.serviceStep3Data.serviceType = value.type;
+    this.serviceStep3Data.clusterIp = '';
+    this.serviceStep3Data.nodeSelector = '';
+    this.serviceStep3Data.externalServiceList.splice(0, this.serviceStep3Data.externalServiceList.length);
+    if (this.serviceStep3Data.isShowExternalConfig &&
+      this.serviceStep2Data.containerList.length > 0) {
+      this.addNewExternalService();
+      const container = this.serviceStep2Data.containerList[0];
+      this.setExternalInfo(container, 0);
     }
   }
 
@@ -213,10 +207,6 @@ export class ConfigSettingComponent extends ServiceStepComponentBase implements 
     if (!this.isActionWip) {
       this.showNodeSelector = !this.showNodeSelector;
     }
-  }
-
-  setNodeSelectorValue(selector: { name: string, value: string, tag: IDropdownTag }) {
-    this.serviceStep3Data.nodeSelector = selector.value;
   }
 
   checkServiceName(control: HTMLInputElement): Observable<ValidationErrors | null> {

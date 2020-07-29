@@ -3,6 +3,7 @@ import { AppInitService } from '../shared.service/app-init.service';
 
 
 @Component({
+  selector: 'profile',
   styleUrls: ['./profile.component.css'],
   templateUrl: './profile.component.html'
 })
@@ -12,9 +13,9 @@ export class ProfileComponent {
   processorType = '';
 
   constructor(private appInitService: AppInitService) {
-    this.version = this.appInitService.systemInfo.boardVersion;
-    this.k8sVersion = this.appInitService.systemInfo.kubernetesVersion;
-    this.processorType = this.appInitService.systemInfo.processorType;
+    this.version = this.appInitService.systemInfo.board_version;
+    this.k8sVersion = this.appInitService.systemInfo.kubernetes_version;
+    this.processorType = this.appInitService.systemInfo.processor_type;
   }
 
   get isShowProcessorType(): boolean {

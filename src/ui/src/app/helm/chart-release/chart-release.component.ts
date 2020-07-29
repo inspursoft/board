@@ -5,10 +5,11 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ChartRelease, HelmChartVersion, IHelmRepo, QuestionType } from '../helm.type';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
+import { Project } from '../../project/project';
 import { HelmService } from '../helm.service';
 import { MessageService } from '../../shared.service/message.service';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { GlobalAlertType, SharedProject } from '../../shared/shared.types';
+import { GlobalAlertType } from '../../shared/shared.types';
 
 @Component({
   templateUrl: './chart-release.component.html',
@@ -18,8 +19,8 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
   repoInfo: IHelmRepo;
   chartVersion: HelmChartVersion;
   chartRelease: ChartRelease;
-  projectsList: Array<SharedProject>;
-  selectProject: SharedProject = null;
+  projectsList: Array<Project>;
+  selectProject: Project = null;
   isReleaseWIP = false;
   releaseName = '';
   editor: any;
@@ -28,12 +29,14 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
               private appInitService: AppInitService,
               private messageService: MessageService) {
     super();
-    this.projectsList = Array<SharedProject>();
+    this.projectsList = Array<Project>();
     this.chartRelease = new ChartRelease();
   }
 
   ngOnInit(): void {
-    this.helmService.getProjects().subscribe((res: Array<SharedProject>) => this.projectsList = res);
+    this.helmService.getProjects().subscribe(
+      (res: Array<Project>) => this.projectsList = res || Array<Project>()
+    );
     this.helmService.getChartRelease(this.repoInfo.id, this.chartVersion.name, this.chartVersion.version).subscribe(
       (res: ChartRelease) => {
         this.chartRelease = res;
@@ -97,7 +100,7 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
     );
   }
 
-  changeSelectProject(project: SharedProject) {
+  changeSelectProject(project: Project) {
     this.selectProject = project;
   }
 
@@ -122,8 +125,8 @@ export class ChartReleaseComponent extends CsModalChildBase implements OnInit {
         name: this.releaseName,
         chartversion: this.chartVersion.version,
         repository_id: this.repoInfo.id,
-        project_id: this.selectProject.projectId,
-        owner_id: this.appInitService.currentUser.userId,
+        project_id: this.selectProject.project_id,
+        owner_id: this.appInitService.currentUser.user_id,
         chart: this.chartVersion.name,
         Answers: this.chartRelease.postAnswers,
         values: this.editor.getValue()

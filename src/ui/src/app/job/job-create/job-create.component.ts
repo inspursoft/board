@@ -5,13 +5,14 @@ import { catchError, map } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { JobContainer, JobDeployment } from '../job.type';
 import { JobService } from '../job.service';
+import { Project } from '../../project/project';
 import { SharedActionService } from '../../shared.service/shared-action.service';
 import { SharedService } from '../../shared.service/shared.service';
 import { CsModalParentBase } from '../../shared/cs-modal-base/cs-modal-parent-base';
 import { JobContainerCreateComponent } from '../job-container-create/job-container-create.component';
 import { JobContainerConfigComponent } from '../job-container-config/job-container-config.component';
 import { MessageService } from '../../shared.service/message.service';
-import { IDropdownTag, Message, RETURN_STATUS, SharedProject } from '../../shared/shared.types';
+import { IDropdownTag, Message, RETURN_STATUS } from '../../shared/shared.types';
 import { JobAffinityComponent } from '../job-affinity/job-affinity.component';
 
 @Component({
@@ -23,10 +24,11 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   @Output() afterDeployment: EventEmitter<boolean>;
   @Input() newJobDeployment: JobDeployment;
   patternServiceName: RegExp = /[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/;
-  projectList: Array<SharedProject>;
+  projectList: Array<Project>;
   isActionWip = false;
   projectDefaultIndex = -1;
   nodeSelectorDefaultIndex = -1;
+
   nodeSelectorList: Array<{ name: string, value: string, tag: IDropdownTag }>;
 
   constructor(private resolver: ComponentFactoryResolver,
@@ -37,15 +39,15 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
               private messageService: MessageService) {
     super(resolver, view);
     this.afterDeployment = new EventEmitter<boolean>();
-    this.projectList = Array<SharedProject>();
+    this.projectList = Array<Project>();
     this.nodeSelectorList = Array<{ name: string, value: string, tag: IDropdownTag }>();
   }
 
   ngOnInit(): void {
-    this.jobService.getProjectList().subscribe((res: Array<SharedProject>) => {
+    this.jobService.getProjectList().subscribe((res: Array<Project>) => {
       this.projectList = res;
       if (this.newJobDeployment.projectId > 0) {
-        const project = this.projectList.find(value => value.projectId === this.newJobDeployment.projectId);
+        const project = this.projectList.find(value => value.project_id === this.newJobDeployment.projectId);
         this.projectDefaultIndex = this.projectList.indexOf(project);
       }
     });
@@ -99,10 +101,10 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
   clickSelectProject() {
     this.sharedActionService.createProjectComponent(this.view).subscribe((projectName: string) => {
       if (projectName) {
-        this.jobService.getOneProject(projectName).subscribe((res: SharedProject) => {
+        this.jobService.getOneProject(projectName).subscribe((res: Project) => {
           if (res) {
-            this.newJobDeployment.projectName = res.projectName;
-            this.newJobDeployment.projectId = res.projectId;
+            this.newJobDeployment.projectName = res.project_name;
+            this.newJobDeployment.projectId = res.project_id;
             this.projectList.push(res);
           }
         });
@@ -126,9 +128,9 @@ export class JobCreateComponent extends CsModalParentBase implements OnInit {
     }
   }
 
-  changeSelectProject(project: SharedProject) {
-    this.newJobDeployment.projectId = project.projectId;
-    this.newJobDeployment.projectName = project.projectName;
+  changeSelectProject(project: Project) {
+    this.newJobDeployment.projectId = project.project_id;
+    this.newJobDeployment.projectName = project.project_name;
   }
 
   editContainer(container: JobContainer, isEditModel: boolean) {

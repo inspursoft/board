@@ -4,6 +4,7 @@ import (
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -328,7 +329,12 @@ func (u *SystemAdminController) DeleteUserAction() {
 		u.CustomAbortAudit(http.StatusBadRequest, "System admin user or current user cannot be deleted.")
 		return
 	}
-	err = service.CurrentDevOps().DeleteUser(user.Username)
+	adminUser, err := service.GetUserByID(1)
+	if err != nil {
+		u.InternalError(err)
+		return
+	}
+	err = gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(user.Username)
 	if err != nil {
 		if err == utils.ErrUnprocessableEntity {
 			u.CustomAbortAudit(http.StatusUnprocessableEntity, "User has own project or repo.")

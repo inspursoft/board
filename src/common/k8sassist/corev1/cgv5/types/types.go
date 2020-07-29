@@ -95,8 +95,6 @@ const (
 	nodePort             = "NodePort"
 	deploymentAPIVersion = "apps/v1"
 	deploymentKind       = "Deployment"
-	daemonsetAPIVersion  = "apps/v1"
-	daemonsetKind        = "DaemonSet"
 	namespaceKind        = "Namespace"
 	namespaceAPIVersion  = "v1"
 	podKind              = "Pod"

@@ -39,7 +39,7 @@
     <lib-input-array-ex [inputCategory]="'number'"
                         [inputArrayFixed]="fixedContainerPort.get(container)"
                         [inputMin]="1"
-                        [inputArrayDefault]="defaultContainerPorts"
+                        [inputArrayDefault]="container.containerPort"
                         [inputMax]="65535"
                         [inputPlaceholder]="'[1..65535]'"
                         [validatorFns]="[validContainerPortsFun]"
@@ -108,14 +108,14 @@
   </div>
 </clr-modal>
 
-<app-environment-value *ngIf="showEnvironmentValue"
-                       [isProvideBindConfigMap]="true"
-                       [projectName]="step2Data.projectName"
-                       [inputEnvsData]="getDefaultEnvsData()"
-                       [inputFixedKeyList]="getDefaultEnvsFixedData()"
-                       (closeNotification)="showEnvironmentValue = false"
-                       (confirm)="setEnvironment($event)">
-</app-environment-value>
+<environment-value *ngIf="showEnvironmentValue"
+                   [isProvideBindConfigMap]="true"
+                   [projectName]="step2Data.projectName"
+                   [inputEnvsData]="getDefaultEnvsData()"
+                   [inputFixedKeyList]="getDefaultEnvsFixedData()"
+                   (closeNotification)="showEnvironmentValue = false"
+                   (onConfirm)="setEnvironment($event)">
+</environment-value>
 
 
 

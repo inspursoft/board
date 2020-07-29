@@ -27,12 +27,10 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
 
   }
 
-  get showDeleteNodeTip(): boolean {
-    return !this.nodeDeletable &&
-      !this.isActionWip &&
-      !this.curNode.isEdge &&
-      !this.curNode.isMaster &&
-      this.tabServiceControlActive;
+  get deleteNodeDisable(): boolean {
+    return !this.nodeDeletable ||
+      this.isActionWip ||
+      this.tabServiceControlActive === false;
   }
 
   get btnDrainDisable(): boolean {
@@ -42,10 +40,10 @@ export class NodeControlComponent extends CsModalChildBase implements OnInit {
   }
 
   get adminServerDeleteNodeUrl(): string {
-    if (this.showDeleteNodeTip) {
+    if (this.deleteNodeDisable) {
       return `javascript:void(0)`;
     } else {
-      return `http://${this.appInitService.systemInfo.boardHost}:8082/resource/node-list`;
+      return `http://${this.appInitService.systemInfo.board_host}:8082/resource/node-list`;
     }
   }
 

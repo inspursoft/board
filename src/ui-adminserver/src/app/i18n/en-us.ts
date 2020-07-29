@@ -106,8 +106,6 @@ export const LANG_EN_US = {
     Node_List_Status_Unknown: 'Unknown node',
     Node_List_Status_Schedulable: 'Schedulable',
     Node_List_Status_Unschedulable: 'Unschedulable',
-    Node_List_Master_Node: 'Master node',
-    Node_List_Edge_Node: 'Edge node',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: 'Operation time',
     Node_Logs_PID: 'PID',
@@ -269,7 +267,18 @@ export const LANG_EN_US = {
       ADMIN_TOKEN: {
         LABEL: 'Access token',
         PLACEHOLDER: 'eg: 1234567901234567890',
-        HELPER: 'The admin access token for Gitlab as root user, please contact the Gitlab server administrator.',
+        HELPER: 'The admin access token for Gitlab as root user, please contact the Gitlab server administrator. PLEASE DO NOT EDIT THIS MANUNLLY.',
+      },
+      SSH_USERNAME: {
+        LABEL: 'Gitlab host username',
+        PLACEHOLDER: 'Gitlab host username',
+        HELPER: 'User name for logging in to the host which running for Gitlab service',
+      },
+      SSH_PASSWORD: {
+        LABEL: 'Gitlab host password',
+        PLACEHOLDER: 'password of Gitlab host mechine',
+        HELPER: 'The password for logging in to the host which running for Gitlab service',
+        PATTERN_ERROR: '',
       },
     },
     PROMETHEUS: {

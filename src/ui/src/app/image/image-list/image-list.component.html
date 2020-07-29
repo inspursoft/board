@@ -1,9 +1,9 @@
 <div *ngIf="!isBuildImageWIP" class="image-list-container">
-  <app-image-detail *ngIf="isShowDetail"
-                    [curImage]="curImage"
-                    [(isOpen)]="isShowDetail"
-                    (reload)="retrieve()">
-  </app-image-detail>
+  <image-detail *ngIf="isShowDetail"
+                [curImage]="curImage"
+                [(isOpen)]="isShowDetail"
+                (reload)="retrieve()">
+  </image-detail>
   <button class="btn btn-primary build-image" (click)="createImage()">
     {{ 'IMAGE.CREATE_IMAGE_BUILD_IMAGE' | translate }}
   </button>
@@ -14,9 +14,9 @@
     <clr-dg-column>{{ 'IMAGE.COL_UPDATE_TIME' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'IMAGE.COL_OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *clrDgItems="let image of imageList">
-      <clr-dg-cell>{{image.imageName}}</clr-dg-cell>
-      <clr-dg-cell>{{image.imageCreationTime | date: 'short'}}</clr-dg-cell>
-      <clr-dg-cell>{{image.imageUpdateTime | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_name}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{image.image_update_time | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell>
         <a href="javascript:void(0)" (click)="showImageDetail(image)">
           <clr-icon shape="info-standard"></clr-icon>
@@ -27,7 +27,7 @@
                       class="action"
                       clrTooltipTrigger
                       [ngClass]="{'disabled':!isSystemAdmin}"
-                      (click)="confirmToDeleteImage(image.imageName)">
+                      (click)="confirmToDeleteImage(image.image_name)">
             </clr-icon>
             <clr-tooltip-content [hidden]="isSystemAdmin" [clrSize]="'md'" [clrPosition]="'left'">
               {{"ERROR.INSUFFICIENT_PRIVILEGE" | translate}}
@@ -50,10 +50,10 @@
                    [dropdownTip]="'IMAGE.CREATE_IMAGE_SELECT_PROJECT' | translate"
                    [dropdownMinWidth]="200"
                    [dropdownItems]="projectsList"
-                   [dropdownKey]="'projectName'"
+                   [dropdownKey]="'project_name'"
                    (dropdownChangeItem)="changeSelectProject($event)"
-                   (dropdownEspecialClick)="clickSelectProject()">
-    <ng-template libEspecialTemp>
+                   (dropdownEspecialClick)="clickSelectProject($event)">
+    <ng-template libEspecialTemp >
       <span style="color: blue">{{'IMAGE.CREATE_IMAGE_CREATE_PROJECT' | translate}}</span>
     </ng-template>
   </lib-dropdown-ex>

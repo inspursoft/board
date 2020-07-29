@@ -1,40 +1,38 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ImageService } from '../image.service';
-import { MessageService } from '../../shared.service/message.service';
-import { Image, ImageDetail } from '../image.types';
+import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core"
+import { Image, ImageDetail } from "../image"
+import { ImageService } from "../image-service/image-service";
+import { MessageService } from "../../shared.service/message.service";
 
 @Component({
-  selector: 'app-image-detail',
-  templateUrl: './image-detail.component.html',
-  styleUrls: ['./image-detail.component.css']
+  selector: "image-detail",
+  templateUrl: "./image-detail.component.html",
+  styleUrls: ["./image-detail.component.css"]
 })
 
 export class ImageDetailComponent implements OnInit {
+  _isOpen: boolean;
   @Input() curImage: Image;
-  isOpenValue: boolean;
-  showDeleteAlert: Array<boolean>;
-  imageDetailPageSize = 10;
-  imageDetailList: Array<ImageDetail>;
+  showDeleteAlert: boolean[];
+  imageDetailPageSize: number = 10;
+  imageDetailList: ImageDetail[] = Array<ImageDetail>();
 
   loadingWIP: boolean;
   @Output() reload = new EventEmitter<boolean>();
 
   @Input()
   get isOpen() {
-    return this.isOpenValue;
+    return this._isOpen;
   }
 
   set isOpen(value: boolean) {
-    this.isOpenValue = value;
-    this.isOpenChange.emit(this.isOpenValue);
+    this._isOpen = value;
+    this.isOpenChange.emit(this._isOpen);
   }
 
   @Output() isOpenChange: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   constructor(private imageService: ImageService,
               private messageService: MessageService) {
-    this.showDeleteAlert = new Array<boolean>();
-    this.imageDetailList = new Array<ImageDetail>();
   }
 
   ngOnInit() {
@@ -42,26 +40,30 @@ export class ImageDetailComponent implements OnInit {
   }
 
   getImageDetailList() {
-    this.loadingWIP = true;
-    this.imageService.getImageDetailList(this.curImage.imageName).subscribe(
-      (res: Array<ImageDetail>) => {
-        this.imageDetailList = res;
-        this.loadingWIP = false;
-        for (const detail of res) {
-          detail.imageSizeNumber = Number.parseFloat((detail.imageSizeNumber / (1024 * 1024)).toFixed(2));
-          detail.imageSizeUnit = 'MB';
-        }
-        this.showDeleteAlert = new Array(this.imageDetailList.length);
-      }, () => this.loadingWIP = false
-    );
+    if (this.curImage && this.curImage.image_name) {
+      this.loadingWIP = true;
+      this.imageService.getImageDetailList(this.curImage.image_name).subscribe((res: ImageDetail[]) => {
+          this.loadingWIP = false;
+          for (let item of res) {
+            if (item['image_detail'] && item['image_detail'] != ''){
+              item['image_detail'] = JSON.parse(item['image_detail']);
+            }
+            item['image_size_number'] = Number.parseFloat((item['image_size_number'] / (1024 * 1024)).toFixed(2));
+            item['image_size_unit'] = 'MB';
+          }
+          this.showDeleteAlert = new Array(this.imageDetailList.length);
+          this.imageDetailList = res || [];
+        }, () => this.loadingWIP = false
+      );
+    }
   }
 
   deleteTag(tagName: string) {
-    this.imageService.deleteImageTag(this.curImage.imageName, tagName).subscribe(() => {
+    this.imageService.deleteImageTag(this.curImage.image_name, tagName).subscribe(() => {
         this.reload.emit(true);
         this.isOpen = false;
         this.messageService.showAlert('IMAGE.SUCCESSFUL_DELETED_TAG');
-      }, () => this.isOpen = false
-    );
+      },() => this.isOpen = false
+    )
   }
 }

@@ -1,47 +1,52 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { ScaleOption } from '../dashboard.types';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from "@angular/core"
 
+export interface scaleOption {
+  readonly description: string;
+  readonly value: string;
+  readonly valueOfSecond: number;
+  readonly id: number;
+}
 interface StandardKeyValue<T> {
-  [key: string]: T;
+  [key: string]: T
 }
 
 @Component({
-  selector: 'app-time-range-scale',
-  templateUrl: './time-range-scale.component.html',
-  styleUrls: ['./time-range-scale.component.css']
+  selector: "time-range-scale",
+  templateUrl: "./time-range-scale.component.html",
+  styleUrls: ["./time-range-scale.component.css"]
 })
-export class TimeRangeScaleComponent implements OnChanges {
-  @Input() options: Array<ScaleOption>;
-  @Input() curScale: ScaleOption;
+export class TimeRangeScale implements OnChanges {
+  @Input() options: Array<scaleOption>;
+  @Input() curScale: scaleOption;
   @Input() disabled = false;
-  @Output() scaleChange: EventEmitter<ScaleOption> = new EventEmitter<ScaleOption>();
-  activeIndex = 0;
+  @Output() scaleChange: EventEmitter<scaleOption> = new EventEmitter<scaleOption>();
+  _activeIndex: number = 0;
 
   ngOnChanges(changes: SimpleChanges) {
-    if (Reflect.has(changes, 'curScale')) {
+    if (changes["curScale"]) {
       for (let i = 0; i < this.options.length; i++) {
-        if (this.options[i].id === Reflect.get(Reflect.get(changes, 'curScale').currentValue, 'id')) {
-          this.activeIndex = i;
+        if (this.options[i].id == changes["curScale"].currentValue["id"]) {
+          this._activeIndex = i;
         }
       }
     }
   }
 
-  changeBlock(index: number, data: ScaleOption): void {
-    if (this.activeIndex !== index && !this.disabled) {
-      this.activeIndex = index;
+  changeBlock(index: number, data: scaleOption): void {
+    if (this._activeIndex != index && !this.disabled){
+      this._activeIndex = index;
       this.scaleChange.emit(data);
     }
   }
 
   getClassByIndex(index: number): StandardKeyValue<boolean> {
     return {
-      'normal-block': true,
-      'left-block': index === 0,
-      'right-block': index === this.options.length - 1,
-      'middle-block': index > 0 && index < this.options.length - 1,
-      active: this.activeIndex === index && !this.disabled,
-      disabled: this.disabled
-    };
+      "normal-block": true,
+      "left-block": index == 0,
+      "right-block": index == this.options.length - 1,
+      "middle-block": index > 0 && index < this.options.length - 1,
+      "active": this._activeIndex == index && !this.disabled,
+      "disabled": this.disabled
+    }
   }
 }

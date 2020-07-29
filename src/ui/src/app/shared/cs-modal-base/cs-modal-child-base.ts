@@ -1,12 +1,12 @@
-import { AfterViewInit, Directive, HostBinding, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Directive, HostBinding, Input, OnDestroy, Optional, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { CsComponentBase } from '../cs-components-library/cs-component-base';
 import { Observable, Subject } from 'rxjs';
 import { MessageService } from '../../shared.service/message.service';
 
 @Directive({
-  selector: '[appModalViewContainerSelector], .modal-body, .modal-title'
+  selector: 'div.modal-body, .modal-title'
 })
-export class CsModalViewContainerSelectorDirective {
+export class CsModalChildBaseSelector {
   @HostBinding('tabindex') tabIndex = '-1';
 
   constructor(public view: ViewContainerRef) {
@@ -17,7 +17,7 @@ export class CsModalViewContainerSelectorDirective {
 export class CsModalChildBase extends CsComponentBase implements OnDestroy {
   modalOpenedValue = false;
   @Output() closeNotification: Subject<any>;
-  @ViewChild(CsModalViewContainerSelectorDirective) alertViewSelector;
+  @ViewChild(CsModalChildBaseSelector) alertViewSelector;
 
   constructor() {
     super();

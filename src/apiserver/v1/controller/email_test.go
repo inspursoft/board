@@ -15,15 +15,15 @@ import (
 
 var emailReq = controller.EmailPingParam{
 	Username: "admin@myserver.com",
-	Password: AdminPassword,
+	Password: "123456a?",
 	Hostname: "smtp.myserver.com",
 	Port:     12225,
 }
 
 func TestEmailPing(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn(AdminUsername, AdminPassword)
-	defer signOut(AdminUsername)
+	token := signIn("admin", "123456a?")
+	defer signOut("admin")
 	assert.NotEmpty(token, "signIn error")
 
 	data, err := json.Marshal(emailReq)

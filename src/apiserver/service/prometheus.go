@@ -97,81 +97,100 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 	timeRange.Start = time.Unix(timeStampArray[0], 0)
 	timeRange.End = time.Unix(timeStampArray[request.TimeCount-1], 0)
 
-	//get service info
+	// if timestamp < timeStampArray[0] {
+	// 	para.IsOverMinLimit = true
+	// } else if timestamp > timeStampArray[request.TimeCount-1] {
+	// 	para.IsOverMaxLimit = true
+	// }
+
 	podInfo, err := para.GetServiceInfo(ctx, v1api, timeRange, timeStampArray)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
+
 	containerInfo, err := para.CountPod(ctx, v1api, timeRange, timeStampArray, podInfo)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
+
 	para.CountContainer(timeStampArray, containerInfo)
-	//filtering
+
 	for i := 0; i < len(para.ServiceListData); i++ {
 		if para.ServiceListData[i].Name != servicename {
 			para.ServiceListData[i].ServiceLogsData = []ServiceLogs{}
 		}
 	}
 
-	//init node info
-	kubeNodeQuery := `node_netstat_Ip_Forwarding`
-	kubeNodeResult, warnings, err := v1api.QueryRange(ctx, kubeNodeQuery, timeRange)
+	storageCapQuery := `kube_node_status_capacity{resource="ephemeral_storage"}`
+	storageCapResult, _, err := v1api.QueryRange(ctx, storageCapQuery, timeRange)
 	if err != nil {
 		return DashboardInfo{}, err
 	}
-	if len(warnings) > 0 {
-		logs.Info("Warnings: %v\n", warnings)
-	}
-	linesOfNode := strings.Split(kubeNodeResult.String(), "{")
-	para.NodeCount = len(linesOfNode) - 1
-	para.NodeListData = make([]NodeList, len(linesOfNode))
+	lineOfStorageCap := strings.Split(storageCapResult.String(), "kube_node_status_capacity")
+	para.NodeCount = len(lineOfStorageCap) - 1
+	para.NodeListData = make([]NodeList, len(lineOfStorageCap))
 	para.NodeListData[0].Name = "average"
 	para.NodeListData[0].NodeLogsData = make([]NodeLogs, request.TimeCount)
-	ipToNodeName := make(map[string]string)
-	for i, v := range linesOfNode[1:] {
-		nodeIP := grepContent(v, `instance="([^":]+)`)[0][1]
-		para.NodeListData[i+1].Name = nodeIP
-		nodeNameItem := grepContent(v, `kubernetes_node="([^"]+)`)
-		if len(nodeNameItem) > 0 {
-			ipToNodeName[nodeIP] = nodeNameItem[0][1]
-		}
+
+	for i, v := range lineOfStorageCap[1:] {
+		nodeName := grepString(v, "node=[^,}]+")
+		para.NodeListData[i+1].Name = strings.Trim(grepString(nodeName[0], `"[^"]+"`)[0], "\"")
 		para.NodeListData[i+1].NodeLogsData = make([]NodeLogs, request.TimeCount)
-		for j := 0; j < request.TimeCount; j++ {
+		data := grepString(v, "\n[0-9]+")
+		for j, w := range data {
 			para.NodeListData[i+1].NodeLogsData[j].TimeStamp = timeStampArray[j]
-		}
-	}
-
-	nodeInfoSelector := []string{"storageCap", "storageUsed", "memory", "CPU"}
-	nodeInfoQuery := []string{
-		`kube_node_status_capacity{resource="ephemeral_storage"}`,
-		`kube_node_status_capacity{resource="ephemeral_storage"} - kube_node_status_allocatable{resource="ephemeral_storage"}`,
-		`(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`,
-		`(1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total)) * 100`}
-
-	if nodename == "average" {
-		for i := 0; i < request.TimeCount; i++ {
-			para.NodeListData[0].NodeLogsData[i].TimeStamp = timeStampArray[i]
-		}
-		for i, q := range nodeInfoQuery {
-			avgQuery := fmt.Sprintf("avg(%s)", q)
-			err = para.GetAvgNodeData(avgQuery, nodeInfoSelector[i], v1api, ctx, timeRange)
+			digits, err := strconv.Atoi(strings.Trim(w, "\n"))
 			if err != nil {
 				return DashboardInfo{}, err
 			}
-		}
-	} else {
-		for i, q := range nodeInfoQuery {
-			err = para.GetNodeData(q, nodeInfoSelector[i], v1api, ctx, timeRange, ipToNodeName)
-			if err != nil {
-				return DashboardInfo{}, err
-			}
+			para.NodeListData[i+1].NodeLogsData[j].StorageTotal = digits
 		}
 	}
-	//filtering
+
+	storageUsedQuery := `kube_node_status_capacity{resource="ephemeral_storage"} - kube_node_status_allocatable{resource="ephemeral_storage"}`
+	err = para.GetData(storageUsedQuery, "storageUsed", v1api, ctx, timeRange)
+	if err != nil {
+		return DashboardInfo{}, err
+	}
+
+	memoUsageQuery := `(1 - kube_node_status_allocatable_memory_bytes / kube_node_status_capacity_memory_bytes) * 100`
+	err = para.GetData(memoUsageQuery, "memory", v1api, ctx, timeRange)
+	if err != nil {
+		return DashboardInfo{}, err
+	}
+
+	cpuUsageQuery := `100 * (1 - sum by (instance)(node_cpu_seconds_total{mode="idle"}) / sum by (instance)(node_cpu_seconds_total))`
+	err = para.GetData(cpuUsageQuery, "CPU", v1api, ctx, timeRange)
+	if err != nil {
+		return DashboardInfo{}, err
+	}
+
 	for i := 0; i < len(para.NodeListData); i++ {
 		if para.NodeListData[i].Name != nodename {
 			para.NodeListData[i].NodeLogsData = []NodeLogs{}
+		}
+	}
+
+	if nodename == "average" {
+		cpuUsageAvg := fmt.Sprintf("avg(%s)", cpuUsageQuery)
+		err = para.GetAvgData(cpuUsageAvg, "CPU", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		memoUsageAvg := fmt.Sprintf("avg(%s)", memoUsageQuery)
+		err = para.GetAvgData(memoUsageAvg, "memory", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		storageUsedAvg := fmt.Sprintf("avg(%s)", storageUsedQuery)
+		err = para.GetAvgData(storageUsedAvg, "storageUsed", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
+		}
+		storageCapAvg := fmt.Sprintf("avg(%s)", storageCapQuery)
+		err = para.GetAvgData(storageCapAvg, "storageCap", v1api, ctx, timeRange, timeStampArray)
+		if err != nil {
+			return DashboardInfo{}, err
 		}
 	}
 
@@ -179,91 +198,74 @@ func GetDashBoardData(request RequestPayload, nodename, servicename string) (Das
 }
 
 func grepString(src, reg string) []string {
-	regex, err := regexp.Compile(reg)
-	if err != nil {
-		return nil
-	}
-	return regex.FindAllString(src, -1)
+	re, _ := regexp.Compile(reg)
+	return re.FindAllString(src, -1)
 }
 
-func grepContent(src, reg string) [][]string {
-	regex, err := regexp.Compile(reg)
-	if err != nil {
-		return nil
-	}
-	return regex.FindAllStringSubmatch(src, -1)
-}
-
-func sliceToString(src []string) string {
+func sliceToPrometheusMetrics(src []string) string {
 	return strings.Join(src, ", ")
 }
 
-func nodeDataTypeConvert(data, which string) interface{} {
-	var num interface{}
-	var err error
-	switch which {
-	case "storageUsed", "storageCap":
-		num, err = strconv.Atoi(data)
-	case "CPU", "memory":
-		num, err = strconv.ParseFloat(data, 64)
-	}
-	if err != nil {
-		return nil
-	}
-	return num
-}
-
-func (d *DashboardInfo) GetAvgNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
+func (d *DashboardInfo) GetAvgData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, timeStampArray []int64) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
 	}
-	data := grepContent(result.String(), "\n([0-9.]+)")
+	data := grepString(result.String(), "\n[0-9.]+")
 	for j, w := range data {
+		var digitsInt int
+		var digitsFloat float64
+		switch which {
+		case "storageUsed", "storageCap":
+			digitsInt, err = strconv.Atoi(strings.Trim(w, "\n"))
+		case "CPU", "memory":
+			digitsFloat, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+		}
+		if err != nil {
+			return err
+		}
 		switch which {
 		case "CPU":
-			d.NodeListData[0].NodeLogsData[j].CPUUsage = nodeDataTypeConvert(w[1], which).(float64)
+			d.NodeListData[0].NodeLogsData[j].TimeStamp = timeStampArray[j]
+			d.NodeListData[0].NodeLogsData[j].CPUUsage = digitsFloat
 		case "memory":
-			d.NodeListData[0].NodeLogsData[j].MemoryUsage = nodeDataTypeConvert(w[1], which).(float64)
+			d.NodeListData[0].NodeLogsData[j].MemoryUsage = digitsFloat
 		case "storageCap":
-			d.NodeListData[0].NodeLogsData[j].StorageTotal = nodeDataTypeConvert(w[1], which).(int)
+			d.NodeListData[0].NodeLogsData[j].StorageTotal = digitsInt
 		case "storageUsed":
-			d.NodeListData[0].NodeLogsData[j].StorageUsed = nodeDataTypeConvert(w[1], which).(int)
+			d.NodeListData[0].NodeLogsData[j].StorageUsed = digitsInt
 		}
 	}
 	return nil
 }
 
-func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range, ipToNodeName map[string]string) error {
+func (d *DashboardInfo) GetData(query, which string, v1api v1.API, ctx context.Context, timeRange v1.Range) error {
 	result, _, err := v1api.QueryRange(ctx, query, timeRange)
 	if err != nil {
 		return err
 	}
-	lines := strings.Split(result.String(), "{")
-	for _, v := range lines[1:] {
-		var cur string
-		curArray := grepContent(v, `, node="([^"]+)`)
-		if len(curArray) > 0 {
-			cur = curArray[0][1]
-		} else {
-			cur = grepContent(v, `^instance="([^":]+)`)[0][1]
-		}
-		for j := 1; j <= d.NodeCount; j++ {
-			ip := d.NodeListData[j].Name
-			if cur == ip || cur == ipToNodeName[ip] {
-				data := grepContent(v, "\n([0-9.]+)")
-				for k, w := range data {
-					switch which {
-					case "CPU":
-						d.NodeListData[j].NodeLogsData[k].CPUUsage = nodeDataTypeConvert(w[1], which).(float64)
-					case "memory":
-						d.NodeListData[j].NodeLogsData[k].MemoryUsage = nodeDataTypeConvert(w[1], which).(float64)
-					case "storageUsed":
-						d.NodeListData[j].NodeLogsData[k].StorageUsed = nodeDataTypeConvert(w[1], which).(int)
-					case "storageCap":
-						d.NodeListData[j].NodeLogsData[k].StorageTotal = nodeDataTypeConvert(w[1], which).(int)
-					}
-				}
+	lines := strings.Split(result.String(), "=>")
+	for i, v := range lines[1:] {
+		data := grepString(v, "\n[0-9.]+")
+		for j, w := range data {
+			var digitsInt int
+			var digitsFloat float64
+			switch which {
+			case "storageUsed":
+				digitsInt, err = strconv.Atoi(strings.Trim(w, "\n"))
+			case "CPU", "memory":
+				digitsFloat, err = strconv.ParseFloat(strings.Trim(w, "\n"), 64)
+			}
+			if err != nil {
+				return err
+			}
+			switch which {
+			case "CPU":
+				d.NodeListData[i+1].NodeLogsData[j].CPUUsage = digitsFloat
+			case "memory":
+				d.NodeListData[i+1].NodeLogsData[j].MemoryUsage = digitsFloat
+			case "storageUsed":
+				d.NodeListData[i+1].NodeLogsData[j].StorageUsed = digitsInt
 			}
 		}
 	}
@@ -271,8 +273,7 @@ func (d *DashboardInfo) GetNodeData(query, which string, v1api v1.API, ctx conte
 }
 
 func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRange v1.Range, timeStampArray []int64) ([][]string, error) {
-	serviceQuery := `kube_service_spec_selector{namespace!~"cadvisor|istio-system|kube-public|kube-system", service!="kubernetes"}`
-	result, warnings, err := v1api.QueryRange(ctx, serviceQuery, timeRange)
+	result, warnings, err := v1api.QueryRange(ctx, "kube_service_spec_selector{service!=\"kubernetes\"}", timeRange)
 	if err != nil {
 		return [][]string{}, err
 	}
@@ -289,7 +290,8 @@ func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRa
 	podResults := make([][]string, len(lines))
 	for i, line := range lines {
 		d.ServiceCount++
-		d.ServiceListData[i+1].Name = grepContent(line, `service="([^"]+)"`)[0][1]
+		serviceName := grepString(line, "service=[^,}]+")
+		d.ServiceListData[i+1].Name = strings.Trim(grepString(serviceName[0], `"[^"]+"`)[0], "\"")
 		serviceSelectorLabels := grepString(line, "label_[^,}]+")
 		if len(serviceSelectorLabels) == 0 {
 			continue
@@ -298,7 +300,7 @@ func (d *DashboardInfo) GetServiceInfo(ctx context.Context, v1api v1.API, timeRa
 		for s, time := range timeStampArray {
 			d.ServiceListData[i+1].ServiceLogsData[s].TimeStamp = time
 		}
-		grepName := fmt.Sprintf("kube_pod_labels{%s}", sliceToString(serviceSelectorLabels))
+		grepName := "kube_pod_labels{" + sliceToPrometheusMetrics(serviceSelectorLabels) + "}"
 		pods, _, err := v1api.QueryRange(ctx, grepName, timeRange)
 		if err != nil {
 			return [][]string{}, err
@@ -323,7 +325,7 @@ func (d *DashboardInfo) CountPod(ctx context.Context, v1api v1.API, timeRange v1
 				}
 			}
 			podName := grepString(podline, "pod=[^,}]+")
-			containerGrepName := fmt.Sprintf("kube_pod_container_info{%s}", sliceToString(podName))
+			containerGrepName := "kube_pod_container_info{" + sliceToPrometheusMetrics(podName) + "}"
 			containers, _, err := v1api.QueryRange(ctx, containerGrepName, timeRange)
 			if err != nil {
 				return [][]string{}, err

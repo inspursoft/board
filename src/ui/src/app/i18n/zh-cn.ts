@@ -2,16 +2,6 @@ export const LANG_ZH_CN = {
   AdminServer: {
     Name: '管理服务器'
   },
-  InitializeInfo: {
-    Title: 'Board正在初始化，请稍等',
-    UpdateAdminPassword: '正在更新Admin密码',
-    InitProjectRepo: '正在初始化项目仓库',
-    PrepareKvmHost: '正在准备KVM的主机',
-    InitKubernetesInfo: '正在初始化Kubernetes',
-    SyncUpK8s: '正在同步Kubernetes数据',
-    Ready: '准备就绪',
-    InitBoardFailed: '初始化Board失败，请联系Board管理员'
-  },
   "BUTTON": {
     "OK": "确定",
     "YES": "是",
@@ -148,7 +138,6 @@ export const LANG_ZH_CN = {
     "CONFIG_MAP": "Config map",
     "STORAGE": "存储",
     "ADMIN_OPTIONS": "管理员选项",
-    "SYSTEM_SETTING": "系统设置",
     "USER_MANAGEMENT": "用户管理",
     "AUDIT": "操作审计",
     "KIBANA": "Kibana",
@@ -777,7 +766,6 @@ export const LANG_ZH_CN = {
     "PV_IMAGE":"镜像",
     "PV_FS_TYPE":"文件系统类型",
     "PV_SECRET":"密钥",
-    "PV_CREATE_SUCCESS":"创建pv成功",
     "PV_SECRET_NAMESPACE":"密钥命名空间",
     "PV_CONFIG_MONITORS":"配置监视器",
     "PV_CONFIG_MONITORS_ADD":"添加配置",
@@ -852,7 +840,6 @@ export const LANG_ZH_CN = {
     "AUDIT_RESET_PASSWORD": "重置密码",
     "AUDIT_FORGOT_PASSWORD": "忘记密码",
     "AUDIT_GET": "查询",
-    "AUDIT_K8S_PROXY":"Kubernetes代理设置",
     "AUDIT_CREATE": "创建",
     "AUDIT_DELETE": "删除",
     "AUDIT_UPDATE": "修改",
@@ -891,7 +878,6 @@ export const LANG_ZH_CN = {
     "NODE_TYPE_MASTER": "控制节点",
     "NODE_TYPE_EDGE": "边缘节点",
     "NODE_STATUS": "节点状态",
-    "NODE_TYPE_UNKNOWN": "未知",
     "OPERATION": "操作",
     "ITEMS": " 条记录。",
     "NODE_DETAILS": "节点明细",
@@ -958,9 +944,8 @@ export const LANG_ZH_CN = {
   NodeCreateNew: {
     Title: '添加节点',
     Name: '节点名称',
-    NamePatternMessage: '节点名称格式不正确:以数字或字母开头和结尾，中间支持\'-\'、\'.\'、\'_\'',
+    NamePatternMessage: '节点名称格式不正确',
     NameExists: '节点名称已经存在',
-    NameInputRequired: '节点名称不能为空',
     Ip: '节点IP',
     Password: '节点密码',
     IpPatternMessage: '节点IP格式不正确',
@@ -971,9 +956,7 @@ export const LANG_ZH_CN = {
     Commit: '提交',
     AddSuccessfully: '添加节点成功',
     Auto: '自动',
-    Manual: '手动',
-    ParamsErrorMessage: '输入参数错误',
-    TimeOutMessage: '添加超时'
+    Manual: '手动'
   },
 
   "GUIDE":{
@@ -987,12 +970,4 @@ export const LANG_ZH_CN = {
     "SUPPORT_TEAM":"支持",
     "PROCESSOR_TYPE":"处理器类型",
   },
-
-  SystemSetting: {
-    Title: 'Kubernetes代理设置',
-    Enable: '启用',
-    Disable: '停用',
-    SetSuccessfully: '设置成功',
-    SetFailed: '设置失败'
-  }
 };

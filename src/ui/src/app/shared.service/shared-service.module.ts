@@ -9,7 +9,7 @@ import { SharedService } from './shared.service';
 import { SharedActionService } from './shared-action.service';
 import { CoreModule } from '../core/core.module';
 import { AppInitService } from './app-init.service';
-import { AppGuardService, AppInitializeGuard, AppInitializePageGuard } from './app-guard.service';
+import { AppGuardService } from './app-guard.service';
 import { HttpInterceptorService } from './http-client-interceptor';
 
 @NgModule({
@@ -24,8 +24,6 @@ import { HttpInterceptorService } from './http-client-interceptor';
   providers: [
     AppInitService,
     AppGuardService,
-    AppInitializeGuard,
-    AppInitializePageGuard,
     AppTokenService,
     MessageService,
     WebsocketService,

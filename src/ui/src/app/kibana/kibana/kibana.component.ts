@@ -1,6 +1,6 @@
-import { Component, HostBinding, OnInit, ViewChild } from '@angular/core';
-import { KibanaService } from '../kibana.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Component, HostBinding, OnInit, ViewChild } from "@angular/core";
+import { KibanaService } from "../kibana.service";
+import { HttpErrorResponse } from "@angular/common/http";
 
 @Component({
   templateUrl: './kibana.component.html'
@@ -8,7 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class KibanaComponent implements OnInit {
   @ViewChild('frame') frame;
   errorMessage = '';
-  kibanaUrl = '';
+  kibanaUrl: string = '';
 
   constructor(private kibanaService: KibanaService) {
 
@@ -18,11 +18,10 @@ export class KibanaComponent implements OnInit {
     const url = '/kibana/';
     this.kibanaService.testKibana(url).subscribe(
       () => this.kibanaUrl = url,
-      (err: HttpErrorResponse) => this.errorMessage = err.message);
+      (err: HttpErrorResponse) => this.errorMessage = err.message)
   }
 
   @HostBinding('style.height') get height() {
     return '100%';
   }
 }
-

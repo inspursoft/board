@@ -29,22 +29,6 @@ export class ModelHttpClient extends HttpClient {
     }));
   }
 
-  postJson(url: string, returnType: Type<HttpBase>, body: any | null, options?: {
-    param?: { [param: string]: string },
-    header?: HttpHeaders
-  }): Observable<any> {
-    return super.post(url, body, {
-      observe: 'body',
-      responseType: 'json',
-      params: options && options.param ? options.param : null,
-      headers: options && options.header ? options.header : null
-    }).pipe(map((res: object) => {
-      const returnItem = new returnType(res);
-      returnItem.initFromRes();
-      return returnItem;
-    }));
-  }
-
   getPagination(url: string, paginationType: Type<ResponsePaginationBase<HttpBase>>, options?: {
     param?: { [param: string]: string },
     header?: HttpHeaders
@@ -68,13 +52,11 @@ export class ModelHttpClient extends HttpClient {
       headers: options && options.header ? options.header : null
     }).pipe(map((res: Array<object>) => {
       const result = Array<HttpBase>();
-      if (res && res.length > 0) {
-        res.forEach(item => {
-          const newItem = new itemType(item);
-          newItem.initFromRes();
-          result.push(newItem);
-        });
-      }
+      res.forEach(item => {
+        const newItem = new itemType(item);
+        newItem.initFromRes();
+        result.push(newItem);
+      });
       return result;
     }));
   }

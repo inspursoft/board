@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from '../../shared.service/message.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService } from '../account.service';
 import { RouteSignIn } from '../../shared/shared.const';
 import { AppInitService } from '../../shared.service/app-init.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CsComponentBase } from '../../shared/cs-components-library/cs-component-base';
 
 @Component({
+  selector: 'forgot-password',
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css']
 })
@@ -24,7 +25,7 @@ export class ForgotPasswordComponent extends CsComponentBase implements OnInit {
   }
 
   ngOnInit() {
-    if (this.appInitService.systemInfo.authMode !== 'db_auth') {
+    if (this.appInitService.systemInfo.auth_mode !== 'db_auth') {
       this.router.navigate([RouteSignIn]).then();
     }
   }

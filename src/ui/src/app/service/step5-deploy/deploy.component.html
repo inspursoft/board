@@ -8,7 +8,7 @@
     </div>
     <span *ngIf="isInDeployWIP" class="spinner spinner-md step5-spinner"></span>
   </div>
-  <app-cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></app-cs-highlight>
+  <cs-highlight *ngIf="deployConsole" [language]="'json'" [code]="deployConsole | json"></cs-highlight>
 </div>
 <div class="step5-button-container">
   <button class="btn btn-primary default-primary"

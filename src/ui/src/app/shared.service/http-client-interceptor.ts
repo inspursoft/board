@@ -26,7 +26,6 @@ export class HttpClientInterceptor implements HttpInterceptor {
     this.exceptUrls.push('/captcha');
     this.exceptUrls.push('/api/v1/systeminfo');
     this.exceptUrls.push('/api/v1/log-out');
-    this.exceptUrls.push('/api/v1/search');
     this.exceptUrls.push('/api/v1/sign-in');
     this.exceptUrls.push('/api/v1/user-exists');
     this.exceptUrls.push('/api/v1/sign-up');
@@ -62,7 +61,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
         tap((event: HttpEvent<any>) => {
           if (event instanceof HttpResponse) {
             const res = event as HttpResponse<object>;
-            if (res.ok && res.headers.has('Token') && res.headers.get('Token') !== '') {
+            if (res.ok && res.headers.has('token') && res.headers.get('token') !== '') {
               this.appTokenService.chainResponse(res);
             } else if (this.isNotExceptUrl(res)) {
               this.translateService.get('ERROR.INVALID_TOKEN').subscribe(value => {

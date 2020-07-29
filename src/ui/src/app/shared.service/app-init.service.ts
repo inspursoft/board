@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie';
 import { GUIDE_STEP } from '../shared/shared.const';
 import { SystemInfo, User } from '../shared/shared.types';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { AppTokenService } from './app-token.service';
-import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
 export interface IAuditOperationData {
   operation_id?: number;
@@ -36,7 +35,7 @@ export class AppInitService {
   systemInfo: SystemInfo;
 
   constructor(private cookieService: CookieService,
-              private http: ModelHttpClient,
+              private http: HttpClient,
               private tokenService: AppTokenService) {
     this.systemInfo = new SystemInfo();
     this.currentUser = new User();
@@ -57,17 +56,17 @@ export class AppInitService {
   }
 
   get isSystemAdmin(): boolean {
-    return this.currentUser && this.currentUser.userSystemAdmin === 1;
+    return this.currentUser && this.currentUser.user_system_admin === 1;
   }
 
   get isMipsSystem(): boolean {
-    return this.systemInfo.processorType &&
-      this.systemInfo.processorType.startsWith('mips64el');
+    return this.systemInfo.processor_type &&
+      this.systemInfo.processor_type.startsWith('mips64el');
   }
 
   get isArmSystem(): boolean {
-    return this.systemInfo.processorType &&
-      this.systemInfo.processorType.startsWith('aarch64');
+    return this.systemInfo.processor_type &&
+      this.systemInfo.processor_type.startsWith('aarch64');
   }
 
   get isNormalMode(): boolean {
@@ -78,27 +77,20 @@ export class AppInitService {
     return window.location.protocol === 'https:' ? 'wss' : 'ws';
   }
 
-  get getHttpProtocol(): string {
-    return window.location.protocol === 'https:' ? 'https' : 'http';
-  }
-
   getCurrentUser(tokenParam?: string): Observable<User> {
     const token = this.tokenService.token || tokenParam;
-    return this.http.getJson('/api/v1/users/current', User, {param: {token}})
-      .pipe(map((res: User) => {
-          this.currentUser = res;
-          return res;
-        })
-      );
+    return this.http.get<User>('/api/v1/users/current', {observe: 'response', params: {token}})
+      .pipe(map((res: HttpResponse<User>) => {
+        this.currentUser = res.body;
+        return res.body;
+      }));
   }
 
   getSystemInfo(): Observable<any> {
-    return this.http.getJson(`/api/v1/systeminfo`, SystemInfo)
-      .pipe(map((res: SystemInfo) => {
-          this.systemInfo = res;
-          return this.systemInfo;
-        })
-      );
+    return this.http.get(`/api/v1/systeminfo`).pipe(map((res: SystemInfo) => {
+      this.systemInfo = res;
+      return this.systemInfo;
+    }));
   }
 
   setAuditLog(auditData: IAuditOperationData): Observable<any> {

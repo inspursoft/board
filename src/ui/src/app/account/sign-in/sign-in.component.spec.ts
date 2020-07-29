@@ -17,7 +17,6 @@ import { AppComponent } from '../../app.component';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { HeaderComponent } from '../../shared/header/header.component';
 import { AccountModule } from '../account.module';
-import { SystemInfo } from '../../shared/shared.types';
 import Spy = jasmine.Spy;
 
 export function newEvent(eventName: string, bubbles = false, cancelable = false) {
@@ -38,21 +37,21 @@ export class RouterStub {
 }
 
 describe('SignInComponent', () => {
-  const fakeSystemInfo = new SystemInfo();
-  fakeSystemInfo.authMode = 'ldap_auth';
-  fakeSystemInfo.boardHost = '10.0.0.0';
-  fakeSystemInfo.boardVersion = 'dev';
-  fakeSystemInfo.initProjectRepo = 'created';
-  fakeSystemInfo.redirectionUrl = 'http://redirection.mydomain.com';
-  fakeSystemInfo.setAuthPassword = 'updated';
-  fakeSystemInfo.syncK8s = 'created';
-  fakeSystemInfo.dnsSuffix = '.cluster.local';
-  fakeSystemInfo.kubernetesVersion = 'v1.18.0';
-  fakeSystemInfo.processorType = 'x86_64';
   const fakeActivatedRoute = {
     snapshot: {
       data: {
-        systeminfo: fakeSystemInfo
+        systeminfo: {
+          auth_mode: 'ldap_auth',
+          board_host: '10.0.0.0',
+          board_version: 'dev',
+          init_project_repo: 'created',
+          redirection_url: 'http://redirection.mydomain.com',
+          set_auth_password: 'updated',
+          sync_k8s: 'created',
+          dns_suffix: '.cluster.local',
+          kubernetes_version: 'v1.18.0',
+          processor_type: 'x86_64'
+        }
       }
     }
   };

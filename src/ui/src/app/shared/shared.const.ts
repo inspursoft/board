@@ -23,7 +23,6 @@ export enum GUIDE_STEP {
 
 export const AUDIT_RECORD_HEADER_KEY = 'audit';
 export const AUDIT_RECORD_HEADER_VALUE = 'true';
-export const RouteInitialize = 'initialize-page';
 export const RouteSignIn = 'account/sign-in';
 export const RouteSignUp = 'account/sign-up';
 export const RouteForgotPassword = 'account/forgot-password';
@@ -39,8 +38,6 @@ export const RouteTrainingJob = 'training-job';
 export const RouteResource = 'resource';
 export const RouteConfigMap = 'config-map';
 export const RouteUserCenters = 'user-center';
-export const RouteAdmin = 'admin';
-export const RouteSystemSetting = 'system-setting';
 export const RouteAudit = 'audit';
 export const RouteKibana = 'kibana-url';
 export const RouteProfile = 'profile';
@@ -73,9 +70,8 @@ export const MAIN_MENU_DATA: Array<ICsMenuItemData> = [
       {caption: 'PVC', visible: true, icon: '', url: `/${RouteStorage}/${RoutePvc}`}]
   },
   {
-    caption: 'SIDE_NAV.ADMIN_OPTIONS', visible: true, icon: 'administrator', url: `/${RouteAdmin}`, children: [
-      {caption: 'SIDE_NAV.SYSTEM_SETTING', visible: true, icon: 'cog', url: `/${RouteAdmin}/${RouteSystemSetting}`},
-      {caption: 'SIDE_NAV.USER_MANAGEMENT', visible: true, icon: 'users', url: `/${RouteAdmin}/${RouteUserCenters}`},
+    caption: 'SIDE_NAV.ADMIN_OPTIONS', visible: true, icon: 'administrator', url: `/${RouteUserCenters}`, children: [
+      {caption: 'SIDE_NAV.USER_MANAGEMENT', visible: true, icon: 'users', url: `/${RouteUserCenters}`},
       {caption: '', visible: true, icon: '', url: '', isAdminServer: true}
     ]
   },

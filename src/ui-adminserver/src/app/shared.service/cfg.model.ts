@@ -105,8 +105,10 @@ export class Gogs extends ResponseBase implements RequestBase {
 export class Gitlab extends ResponseBase implements RequestBase {
   @HttpBind('gitlab_host_ip') hostIP: string;
   @HttpBind('gitlab_host_port') hostPort: string;
-  @HttpBind('gitlab_ssh_port') sshPort: string;
+  @HttpBind('gitlab_host_ssh_port') sshPort: string;
   @HttpBind('gitlab_admin_token') adminToken: string;
+  @HttpBind('gitlab_ssh_username') sshUsername: string;
+  @HttpBind('gitlab_ssh_password') sshPassword: string;
 
   constructor(res?: object) {
     if (res) {
@@ -116,6 +118,8 @@ export class Gitlab extends ResponseBase implements RequestBase {
       this.hostPort = '10088';
       this.sshPort = '10028';
       this.adminToken = '1234567901234567890';
+      this.sshUsername = 'root';
+      this.sshPassword = '123456a?';
     }
   }
 
@@ -123,8 +127,10 @@ export class Gitlab extends ResponseBase implements RequestBase {
     return {
       gitlab_host_ip: this.hostIP.toString(),
       gitlab_host_port: this.hostPort.toString(),
-      gitlab_ssh_port: this.sshPort.toString(),
+      gitlab_host_ssh_port: this.sshPort.toString(),
       gitlab_admin_token: this.adminToken.toString(),
+      gitlab_ssh_username: this.sshUsername.toString(),
+      gitlab_ssh_password: this.sshPassword.toString(),
     };
   }
 }

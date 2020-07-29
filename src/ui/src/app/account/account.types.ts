@@ -1,12 +1,3 @@
-export class SignUp {
-  username = '';
-  email = '';
-  password = '';
-  confirmPassword = '';
-  realname = '';
-  comment = '';
-}
-
 export class AccountTypes {
   username: string;
   password: string;

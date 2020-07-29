@@ -65,7 +65,7 @@ export abstract class DashboardComponentParent {
         if ((params as Array<any>).length > 1) {
           this.onToolTipEvent(params, lineType);
           const xDate: Date = new Date(params[0].value[0]);
-          const sDate = this.datePipe.transform(xDate, 'yyyy-MM-dd HH:mm:ss');
+          const sDate = this.datePipe.transform(xDate, 'short');
           return sDate + DashboardComponentParent.getHoverValue(params, hint1, hint2);
         }
       },

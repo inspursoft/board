@@ -106,8 +106,6 @@ export const LANG_ZH_CN = {
     Node_List_Status_Unknown: '未知节点',
     Node_List_Status_Schedulable: '可调度',
     Node_List_Status_Unschedulable: '不可调度',
-    Node_List_Master_Node: '控制节点',
-    Node_List_Edge_Node: '边缘节点',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: '操作时间',
     Node_Logs_PID: 'PID',
@@ -269,7 +267,18 @@ export const LANG_ZH_CN = {
       ADMIN_TOKEN: {
         LABEL: '管理员token',
         PLACEHOLDER: '如：1234567901234567890',
-        HELPER: '管理员token用于作为root用户登录Gitlab进行操作，请联系Gitlab服务器管理员获取此token',
+        HELPER: '管理员token用于作为root用户登录Gitlab进行操作，请联系Gitlab服务器管理员获取此token，不能随意手动填入！',
+      },
+      SSH_USERNAME: {
+        LABEL: 'Gitlab主机用户名',
+        PLACEHOLDER: 'Gitlab主机用户名',
+        HELPER: '用户名用于SSH登录Gitlab服务所在主机',
+      },
+      SSH_PASSWORD: {
+        LABEL: 'Gitlab主机密码',
+        PLACEHOLDER: 'Gitlab主机密码',
+        HELPER: '密码用于SSH登录Gitlab服务所在主机',
+        PATTERN_ERROR: '',
       },
     },
     PROMETHEUS: {

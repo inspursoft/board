@@ -30,7 +30,6 @@ type NodeCli struct {
 	NodeIP   string            `json:"node_ip"`
 	Password string            `json:"node_password"`
 	Labels   map[string]string `json:"labels,omitempty"`
-	Taints   []Taint           `json:"taints,omitempty"`
 }
 
 type NodeControlStatus struct {

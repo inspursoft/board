@@ -1,12 +1,12 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalClosable]="!isActionWip">
-  <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.projectName }}</h3>
+  <h3 class="modal-title">{{ 'PROJECT.ADD_MEMBER_FOR' | translate }}&nbsp;{{ project.project_name }}</h3>
   <div class="modal-body">
     <div class="list-container">
       <div class="left-list-container">
         <span>{{ 'PROJECT.AVAILABLE_MEMBERS' | translate }}:</span>
-        <select title="" id="selSelected" multiple class="member">
+        <select  title="" id="selSelected" multiple class="member">
           <option *ngFor="let m of availableMembers" (click)='pickUpAvailableMember(m)'>
-            {{ m.userName }}
+            {{ m.project_member_username }}
           </option>
         </select>
       </div>
@@ -22,7 +22,7 @@
         <span>{{ 'PROJECT.ASSIGNED_MEMBERS' | translate }}:</span>
         <select title="" id="selDeselected" class="member" multiple>
           <option *ngFor="let m of assignedMembers" (click)="pickUpAssignedMember(m)">
-            {{ m.userName }}
+            {{ m.project_member_username }}
           </option>
         </select>
       </div>

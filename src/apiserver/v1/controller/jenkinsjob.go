@@ -42,7 +42,7 @@ func (j *JenkinsJobCallbackController) BuildNumberCallback() {
 }
 
 func (j JenkinsJobCallbackController) CustomPushEventPayload() {
-	nodeSelection := utils.GetConfig("NODE_SELECTION", "slave")
+	nodeSelection := utils.GetConfig("NODE_SELECTION", "slave1")
 	data, err := ioutil.ReadAll(j.Ctx.Request.Body)
 	if err != nil {
 		j.InternalError(err)

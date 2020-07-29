@@ -33,10 +33,6 @@ func (t *TokenServiceController) ServeStatus(status int, message string) {
 }
 
 func (t *TokenServiceController) Post() {
-	if t.Ctx.Request.Body == nil {
-		t.ServeStatus(http.StatusBadRequest, "Posting token request body is nil.")
-		return
-	}
 	var err error
 	reqData, err := ioutil.ReadAll(t.Ctx.Request.Body)
 	if err != nil {

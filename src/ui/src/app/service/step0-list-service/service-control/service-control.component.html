@@ -1,11 +1,11 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isActionInWIP">
   <div class="modal-title">
     <span>{{ "SERVICE.SERVICE_CONTROL" | translate }}</span>
-    <app-cs-progress [progressData]="uploadProgressValue"></app-cs-progress>
+    <cs-progress [progressData]="uploadProgressValue"></cs-progress>
   </div>
   <div class="modal-body">
     <clr-tabs>
-      <clr-tab *ngIf="service.isNotEdgeNode">
+      <clr-tab>
         <button clrTabLink (click)="actionMethod = 0">
           {{"SERVICE.SERVICE_CONTROL_SCALE" | translate}}
         </button>
@@ -45,7 +45,7 @@
           </app-locate>
         </clr-tab-content>
       </clr-tab>
-      <clr-tab *ngIf="service.isNotEdgeNode">
+      <clr-tab>
         <button clrTabLink (click)="actionMethod = 3">
           {{"SERVICE.SERVICE_CONTROL_LOAD_BALANCE" | translate}}
         </button>
@@ -58,7 +58,7 @@
           </app-load-balance>
         </clr-tab-content>
       </clr-tab>
-      <clr-tab *ngIf="service.isNotEdgeNode">
+      <clr-tab>
         <button clrTabLink (click)="actionMethod = 4">
           {{"ServiceControlConsole.Name" | translate}}
         </button>

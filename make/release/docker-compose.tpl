@@ -223,8 +223,6 @@ services:
     volumes:
       - ../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - /etc/localtime:/etc/localtime:ro
-    depends_on:
-      - log
     logging:
       driver: "syslog"
       options:

@@ -11,8 +11,8 @@ import {
   IChartReleasePost,
   ChartRelease
 } from './helm.type';
+import { Project } from '../project/project';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
-import { SharedProject } from '../shared/shared.types';
 
 @Injectable()
 export class HelmService {
@@ -77,10 +77,11 @@ export class HelmService {
     });
   }
 
-  getProjects(): Observable<Array<SharedProject>> {
-    return this.http.getArray('/api/v1/projects', SharedProject, {
-      param: {member_only: '1'}
-    });
+  getProjects(): Observable<Array<Project>> {
+    return this.http.get<Array<Project>>('/api/v1/projects', {
+      observe: 'response',
+      params: {member_only: '1'}
+    }).pipe(map((res: HttpResponse<Array<Project>>) => res.body));
   }
 
   checkChartReleaseName(chartReleaseName: string): Observable<object> {

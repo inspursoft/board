@@ -1,8 +1,8 @@
-<app-header-content [isSignIn]="false" [hasSignedIn]="false"></app-header-content>
+<header-content [isSignIn]="false" [hasSignedIn]="false"></header-content>
 <div class="content-container background">
   <div class="input-container">
-    <lib-input-ex appLibCheckItemExistingEx="username"
-                  appLibCheckPatternEx="username"
+    <lib-input-ex libCheckItemExistingEx="username"
+                  libCheckPatternEx="username"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.USERNAME' | translate "
                   [inputDefaultValue]="signUpModel.username"
@@ -13,8 +13,8 @@
                   [inputMinlength]="4"
                   (commitEvent)="signUpModel.username = $event">
     </lib-input-ex>
-    <lib-input-ex appLibCheckItemExistingEx="email"
-                  appLibCheckPatternEx="email"
+    <lib-input-ex libCheckItemExistingEx="email"
+                  libCheckPatternEx="email"
                   [inputIsRequired]="true"
                   [inputLabel]="'ACCOUNT.EMAIL' | translate "
                   [inputDefaultValue]="signUpModel.email"
@@ -24,7 +24,7 @@
                   [validatorMessage]="[{key: 'required', message: 'ACCOUNT.EMAIL_IS_REQUIRED' | translate}]"
                   (commitEvent)="signUpModel.email = $event">
     </lib-input-ex>
-    <lib-input-ex appLibCheckPatternEx="password"
+    <lib-input-ex libCheckPatternEx="password"
                   [inputIsRequired]="true"
                   [inputLabel]="'USER_CENTER.PASSWORD' | translate "
                   [inputDefaultValue]="signUpModel.password"

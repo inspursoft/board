@@ -4,7 +4,7 @@
     <span *ngIf="isLoading" class="spinner spinner-sm"></span>
   </div>
   <div class="modal-body">
-    <app-cs-highlight *ngIf="jobDetail" [language]="'json'" [code]="jobDetail | json"></app-cs-highlight>
+    <cs-highlight *ngIf="jobDetail" [language]="'json'" [code]="jobDetail | json"></cs-highlight>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-primary" (click)="modalOpened = false">

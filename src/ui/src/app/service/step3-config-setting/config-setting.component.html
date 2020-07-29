@@ -211,7 +211,7 @@
                        [dropdpwnPosition]="'top-left'"
                        [dropdownTip]="'SERVICE.STEP_3_NODE_DEFAULT' | translate "
                        [dropdownActiveItem]="curNodeSelector"
-                       (dropdownChangeItem)="setNodeSelectorValue($event)">
+                       (dropdownChangeItem)="serviceStep3Data.nodeSelector = $event['value']">
         <ng-template libItemTemp let-name="name" let-tag="tag">
           <div class="temp-container">
             {{name | translate}}

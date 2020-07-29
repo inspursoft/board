@@ -7,10 +7,10 @@
     </div>
     <span class="dns"><b>DNS:</b>{{dns}}</span>
     <clr-tabs>
-      <clr-tab *ngIf="curService.isNormalNode">
+      <clr-tab>
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
-          <app-cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></app-cs-highlight>
+          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -18,19 +18,19 @@
           {{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE" | translate}}
         </button>
         <clr-tab-content  *clrIfActive>
-          <app-cs-highlight
+          <cs-highlight
              *ngIf="deploymentYamlFile.length > 0"
              [language]="'yaml'"
              [code]="deploymentYamlFile">
-          </app-cs-highlight>
+          </cs-highlight>
         </clr-tab-content>
       </clr-tab>
-      <clr-tab *ngIf="curService.isNotEdgeNode">
+      <clr-tab *ngIf="curService.serviceType !== 7">
         <button clrTabLink (click)="getServiceYamlFile()">
           {{"SERVICE.SERVICE_DETAIL_SERVICE_FILE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <app-cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></app-cs-highlight>
+          <cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>

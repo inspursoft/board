@@ -18,7 +18,7 @@ import (
 
 const (
 	AdminUsername = "admin"
-	AdminPassword = "MTIzNDU2YT8="
+	AdminPassword = "123456a?"
 )
 
 func loginTest(t *testing.T, username, password string) string {
@@ -95,10 +95,10 @@ func signOut(name string) error {
 
 func TestSignInOutAction(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn(AdminUsername, AdminPassword)
+	token := signIn("admin", "123456a?")
 	assert.NotEmpty(token, "signIn error")
 
-	err := signOut(AdminUsername)
+	err := signOut("admin")
 	assert.Nil(err, "signOut error")
 }
 
@@ -106,8 +106,8 @@ func TestCurrentUserAction(t *testing.T) {
 	var user model.User
 
 	assert := assert.New(t)
-	token := signIn(AdminUsername, AdminPassword)
-	defer signOut(AdminUsername)
+	token := signIn("admin", "123456a?")
+	defer signOut("admin")
 	assert.NotEmpty(token, "signIn error")
 
 	reqURL := "/api/v1/users/current?token=" + token
@@ -124,8 +124,8 @@ func TestCurrentUserAction(t *testing.T) {
 
 func TestUserExists(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn(AdminUsername, AdminPassword)
-	defer signOut(AdminUsername)
+	token := signIn("admin", "123456a?")
+	defer signOut("admin")
 	assert.NotEmpty(token, "signIn error")
 
 	reqURL := "/api/v1/user-exists?token=" + token + "&target=username&value=admin"
@@ -147,7 +147,7 @@ func TestSignUpAction(t *testing.T) {
 	var user model.User
 	user.Username = "testuser1"
 	user.Email = "testuser1@inspur.com"
-	user.Password = `MTIjJHF3RVI=`
+	user.Password = `12#$qwER`
 	assert := assert.New(t)
 	req, err := json.Marshal(user)
 	assert.Nil(err, "user marshal fail")

@@ -103,7 +103,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get wsUrl(): string {
-    const host = `${this.appInitService.getWebsocketPrefix}://${this.appInitService.systemInfo.boardHost}`;
+    const host = `${this.appInitService.getWebsocketPrefix}://${this.appInitService.systemInfo.board_host}`;
     const path = `/api/v1/pods/${this.service.serviceProjectId}/${this.curPodName}/shell`;
     const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;

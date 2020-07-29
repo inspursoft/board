@@ -2,7 +2,7 @@
 	"name": "Prometheus",
 	"type": "prometheus",
 	"typeLogoUrl": "",
-	"url": "http://prometheus:9090",
+	"url": "$prometheus_url",
 	"access": "proxy",
 	"password": "",
 	"user": "",
