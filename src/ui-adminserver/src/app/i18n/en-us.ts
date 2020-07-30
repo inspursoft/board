@@ -106,6 +106,8 @@ export const LANG_EN_US = {
     Node_List_Status_Unknown: 'Unknown node',
     Node_List_Status_Schedulable: 'Schedulable',
     Node_List_Status_Unschedulable: 'Unschedulable',
+    Node_List_Master_Node: 'Master node',
+    Node_List_Edge_Node: 'Edge node',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: 'Operation time',
     Node_Logs_PID: 'PID',

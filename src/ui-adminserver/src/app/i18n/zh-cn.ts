@@ -106,6 +106,8 @@ export const LANG_ZH_CN = {
     Node_List_Status_Unknown: '未知节点',
     Node_List_Status_Schedulable: '可调度',
     Node_List_Status_Unschedulable: '不可调度',
+    Node_List_Master_Node: '控制节点',
+    Node_List_Edge_Node: '边缘节点',
     Node_Logs_Ip: 'IP',
     Node_Logs_Operation_Time: '操作时间',
     Node_Logs_PID: 'PID',
