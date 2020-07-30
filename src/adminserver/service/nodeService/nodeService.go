@@ -10,7 +10,7 @@ import (
 	"git/inspursoft/board/src/adminserver/service"
 	"git/inspursoft/board/src/adminserver/tools/secureShell"
 	"git/inspursoft/board/src/common/model"
-	common "git/inspursoft/board/src/common/token"
+	"git/inspursoft/board/src/common/token"
 	"git/inspursoft/board/src/common/utils"
 	"io"
 	"io/ioutil"
@@ -124,7 +124,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 		"-v %s:/tmp/log \\\n "+
 		"-v %s:/tmp/hosts_dir \\\n"+
 		"-v %s:/ansible_k8s/pre-env \\\n "+
-		"%s \\\n k8s_install:1",
+		"%s \\\n k8s_install:1.18",
 		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
 	if err := secure.ExecuteCommand(cmdStr); err != nil {
@@ -259,6 +259,7 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				Status:       item.Status,
 				NodeName:     item.NodeName,
 				IsMaster:     isMaster,
+				IsEdge:       item.NodeType == "edge",
 				LogTime:      logTime,
 				Origin:       origin})
 		}

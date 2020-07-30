@@ -173,10 +173,6 @@ func (b *BaseController) GetCurrentUser() *model.User {
 	if token == "" {
 		token = b.GetString("token")
 	}
-	if isTokenExists := MemoryCache.IsExist(token); !isTokenExists {
-		logs.Info("Token stored in cache has expired.")
-		return nil
-	}
 	var hasResignedToken bool
 	payload, err := t.VerifyToken(TokenServerURL(), token)
 	if err != nil {
@@ -188,8 +184,6 @@ func (b *BaseController) GetCurrentUser() *model.User {
 					return nil
 				}
 				hasResignedToken = true
-				logs.Info("Deleting old token...")
-				MemoryCache.Delete(token)
 				token = newToken.TokenString
 				payload = lastPayload
 				logs.Info("Token has been re-signed due to timeout.")
@@ -218,8 +212,12 @@ func (b *BaseController) GetCurrentUser() *model.User {
 				MemoryCache.Delete(token)
 				return nil
 			}
-			MemoryCache.Put(user.Username, currentToken, DefaultCacheDuration)
-			b.Ctx.ResponseWriter.Header().Set("token", currentToken)
+			MemoryCache.Put(user.Username, token, DefaultCacheDuration)
+			b.Ctx.ResponseWriter.Header().Set("token", token)
+			if hasResignedToken && MemoryCache.IsExist(currentToken) {
+				logs.Info("Deleting stale token stored in cache...")
+				MemoryCache.Delete(currentToken)
+			}
 		}
 		user.Password = ""
 		return user
@@ -427,6 +425,19 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 		logs.Error("Failed to remove items to repo: %s, error: %+v", b.RepoPath, err)
 		b.InternalError(err)
 	}
+}
+
+func (b *BaseController) MergeCollaborativePullRequest() {
+	if b.CurrentUser.Username == b.Project.OwnerName {
+		logs.Info("User %s is the owner to the current repo: %s", b.CurrentUser.Username, b.Project.Name)
+		return
+	}
+	projectOwner, err := service.GetUserByName(b.Project.OwnerName)
+	if err != nil {
+		logs.Error("Failed to get project owner by user ID: %d, error: %+v", b.Project.OwnerID, err)
+		b.InternalError(err)
+	}
+	service.CurrentDevOps().MergePullRequest(b.Project.Name, projectOwner.RepoToken)
 }
 
 func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {

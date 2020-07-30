@@ -3,20 +3,20 @@
  */
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AppInitService } from '../../shared.service/app-init.service';
-import { UserService } from '../../user-center/user-service/user-service';
-import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MessageService } from "../../shared.service/message.service";
+import { AppInitService } from '../../shared.service/app-init.service';
+import { UserService } from '../../admin/user-center/user-service/user-service';
+import { CsModalChildBase } from '../cs-modal-base/cs-modal-child-base';
+import { MessageService } from '../../shared.service/message.service';
 
 @Component({
-  selector: 'change-password',
+  selector: 'app-change-password',
   styleUrls: ['./change-password.component.css'],
   templateUrl: './change-password.component.html',
   providers: [UserService]
 })
 export class ChangePasswordComponent extends CsModalChildBase {
-  _isOpen = false;
+  isOpenValue = false;
   curPassword = '';
   newPassword = '';
   newPasswordConfirm = '';
@@ -31,20 +31,20 @@ export class ChangePasswordComponent extends CsModalChildBase {
 
   @Input()
   get isOpen() {
-    return this._isOpen;
+    return this.isOpenValue;
   }
 
   set isOpen(open: boolean) {
-    this._isOpen = open;
-    this.isOpenChange.emit(this._isOpen);
+    this.isOpenValue = open;
+    this.isOpenChange.emit(this.isOpenValue);
   }
 
   submitChangePassword(): void {
     if (this.verifyInputExValid()) {
       const curUser = this.appInitService.currentUser;
-      if (curUser.user_id > 0) {
+      if (curUser.userId > 0) {
         this.isWorkWip = true;
-        this.userService.changeUserPassword(curUser.user_id, this.curPassword, this.newPassword).subscribe(() => {
+        this.userService.changeUserPassword(curUser.userId, this.curPassword, this.newPassword).subscribe(() => {
             this.isOpen = false;
             this.messageService.showAlert('HEAD_NAV.CHANGE_PASSWORD_SUCCESS');
           },

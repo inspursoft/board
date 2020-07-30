@@ -8,9 +8,9 @@ import { CsModalChildMessage } from '../../../shared/cs-modal-base/cs-modal-chil
 import { MessageService } from '../../../shared.service/message.service';
 import { Container, ContainerType, EnvStruct, ServiceStep2Data, Volume } from '../../service-step.component';
 import { VolumeMountsComponent } from '../volume-mounts/volume-mounts.component';
-import { EnvType } from '../../../shared/environment-value/environment-value.component';
-import { NodeAvailableResources } from '../../../shared/shared.types';
+import { SharedEnvType } from '../../../shared/shared.types';
 import { K8sService } from '../../service.k8s';
+import { NodeAvailableResources } from '../../service.types';
 
 @Component({
   selector: 'app-config-params',
@@ -26,7 +26,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
   patternMemLimit: RegExp = /^[0-9]*Mi$/;
   container: Container;
   showEnvironmentValue = false;
-  fixedContainerEnv: Map<string, Array<EnvStruct>>;
+  fixedContainerEnv: Map<Container, Array<EnvStruct>>;
   fixedContainerPort: Map<Container, Array<number>>;
   step2Data: ServiceStep2Data;
   curContainerType: ContainerType = ContainerType.runContainer;
@@ -112,10 +112,21 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     this.showEnvironmentValue = true;
   }
 
+  get defaultContainerPorts(): Array<number> {
+    if (this.fixedContainerPort.has(this.container)) {
+      const fixedPorts = this.fixedContainerPort.get(this.container);
+      return this.container.containerPort.filter(value => fixedPorts.indexOf(value) === -1);
+    } else {
+      return this.container.containerPort;
+    }
+  }
+
   getDefaultEnvsData() {
-    const result = Array<EnvType>();
+    const result = Array<SharedEnvType>();
     this.container.env.forEach((value: EnvStruct) => {
-      const env = new EnvType(value.dockerFileEnvName, value.dockerFileEnvValue);
+      const env = new SharedEnvType();
+      env.envName = value.dockerFileEnvName;
+      env.envValue = value.dockerFileEnvValue;
       env.envConfigMapKey = value.configMapKey;
       env.envConfigMapName = value.configMapName;
       result.push(env);
@@ -125,16 +136,16 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
 
   getDefaultEnvsFixedData(): Array<string> {
     const result = Array<string>();
-    if (this.fixedContainerEnv.has(this.container.image.imageName)) {
-      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container.image.imageName);
+    if (this.fixedContainerEnv.has(this.container)) {
+      const fixedEnvs: Array<EnvStruct> = this.fixedContainerEnv.get(this.container);
       fixedEnvs.forEach(value => result.push(value.dockerFileEnvName));
     }
     return result;
   }
 
-  setEnvironment(envsData: Array<EnvType>) {
+  setEnvironment(envsData: Array<SharedEnvType>) {
     this.container.env.splice(0, this.container.env.length);
-    envsData.forEach((value: EnvType) => {
+    envsData.forEach((value: SharedEnvType) => {
       const env = new EnvStruct();
       env.dockerFileEnvName = value.envName;
       env.dockerFileEnvValue = value.envValue;
@@ -151,13 +162,17 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
         this.container.containerPort.push(value);
       }
     });
+    if (this.fixedContainerPort.has(this.container)) {
+      const fixedPorts = this.fixedContainerPort.get(this.container);
+      fixedPorts.forEach(value => this.container.containerPort.push(value));
+    }
   }
 
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
-          Number.parseInt(control.value, 0) > Number.parseInt(value.cpu_available, 0) * 1000);
+          Number.parseInt(control.value, 0) > Number.parseInt(value.cpuAvailable, 0) * 1000);
         if (isInValid) {
           return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
         } else {
@@ -171,7 +186,7 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return this.isAfterViewInit ? this.k8sService.getNodesAvailableSources().pipe(
       map((res: Array<NodeAvailableResources>) => {
         const isInValid = res.every(value =>
-          Number.parseInt(control.value, 0) > Number.parseInt(value.mem_available, 0) / (1024 * 1024));
+          Number.parseInt(control.value, 0) > Number.parseInt(value.memAvailable, 0) / (1024 * 1024));
         if (isInValid) {
           return {beyondMaxLimit: 'SERVICE.STEP_2_BEYOND_MAX_VALUE'};
         } else {

@@ -174,33 +174,55 @@ func GetNodeList() (res []NodeListResult) {
 
 	for _, v := range Node.Items {
 		nodetype := getNodeType(v)
-		res = append(res, NodeListResult{
-			NodeName:   getNodeAddress(v, "Hostname"),
-			NodeIP:     getNodeAddress(v, "InternalIP"),
-			CreateTime: v.CreationTimestamp.Unix(),
-			Labels:     v.ObjectMeta.Labels,
-			Status: func() NodeStatus {
-				if v.Unschedulable {
-					return Unschedulable
-				}
-				for _, cond := range v.Status.Conditions {
-					if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
-						return Running
+		if nodetype != NodeTypeEdge {
+			res = append(res, NodeListResult{
+				NodeName:   getNodeAddress(v, "Hostname"),
+				NodeIP:     getNodeAddress(v, "InternalIP"),
+				CreateTime: v.CreationTimestamp.Unix(),
+				Labels:     v.ObjectMeta.Labels,
+				Status: func() NodeStatus {
+					if v.Unschedulable {
+						return Unschedulable
 					}
-				}
-				if nodetype == NodeTypeEdge {
-					//TODO Ping the edgenode is not the only condition for AutonomousOffline
-					status, err := utils.PingIPAddr(v.NodeIP)
-					if err != nil {
-						logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
-					} else if !status {
-						logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
-						return AutonomousOffline
+					for _, cond := range v.Status.Conditions {
+						if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+							return Running
+						}
 					}
+					return Unknown
+				}(),
+				NodeType: nodetype})
+		} else {
+			var nodeitem NodeListResult
+			if name, ok := v.Labels["kubernetes.io/hostname"]; ok {
+				nodeitem.NodeName = name
+			} else {
+				nodeitem.NodeName = v.NodeIP
+			}
+			nodeitem.NodeIP = getNodeAddress(v, "InternalIP")
+			nodeitem.CreateTime = v.CreationTimestamp.Unix()
+			nodeitem.Labels = v.ObjectMeta.Labels
+			nodeitem.Status = Unknown
+			nodeitem.NodeType = nodetype
+
+			// update status
+			for _, cond := range v.Status.Conditions {
+				if strings.EqualFold(string(cond.Type), "Ready") && cond.Status == model.ConditionTrue {
+					nodeitem.Status = Running
 				}
-				return Unknown
-			}(),
-			NodeType: nodetype})
+			}
+			if nodeitem.Status != Running {
+				//TODO Ping the edgenode is not the only condition for AutonomousOffline
+				status, err := utils.PingIPAddr(v.NodeIP)
+				if err != nil {
+					logs.Error("Failed to ping IPAddr: %s, error: %+v", v.NodeIP, err)
+				} else if !status {
+					logs.Debug("The edge node %s is in AutonomousOffline", v.NodeIP)
+					nodeitem.Status = AutonomousOffline
+				}
+			}
+			res = append(res, nodeitem)
+		}
 	}
 	return
 }
@@ -543,6 +565,7 @@ func CreateNode(node model.NodeCli) (*model.Node, error) {
 	var nodek8s model.Node
 	nodek8s.ObjectMeta.Name = node.NodeName
 	nodek8s.ObjectMeta.Labels = node.Labels
+	nodek8s.Taints = node.Taints
 
 	newnode, err := n.Create(&nodek8s)
 	if err != nil {
@@ -734,6 +757,8 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	node.Labels = make(map[string]string)
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
+	node.Labels["kubernetes.io/hostname"] = edgenode.NodeName
+	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoSchedule})
 	if edgenode.RegistryMode == "auto" {
 		node.Labels["edge"] = "true"
 	}
@@ -742,36 +767,76 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 
 // check the edge node hostname config
 func CheckEdgeHostname(edgenode model.EdgeNodeCli) (bool, error) {
-	var sshUser = "root"
-	var sshPort = 22
+	// var sshUser = "root"
+	// var sshPort = 22
 
-	sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	// sshHandler, err := NewSecureShell(edgenode.NodeIP, sshPort, sshUser, edgenode.Password)
+	// if err != nil {
+	// 	logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// defer sshHandler.client.Close()
+
+	// session, err := sshHandler.client.NewSession()
+	// if err != nil {
+	// 	logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// defer session.Close()
+
+	// combo, err := session.CombinedOutput("hostname")
+	// if err != nil {
+	// 	logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
+	// 	return false, err
+	// }
+	// sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	// logs.Debug("Edge hostname:", sshhostname)
+
+	sshhostname, err := GetEdgeHostname(edgenode.NodeIP, edgenode.Password)
 	if err != nil {
-		logs.Debug("Failed to dail edgenode %s %v", edgenode.NodeIP, err)
+		logs.Debug("Failed to get Edge hostname %s", edgenode.NodeIP)
 		return false, err
 	}
-	defer sshHandler.client.Close()
-
-	session, err := sshHandler.client.NewSession()
-	if err != nil {
-		logs.Debug("Failed to get session edgenode %s %v", edgenode.NodeIP, err)
-		return false, err
-	}
-	defer session.Close()
-
-	combo, err := session.CombinedOutput("hostname")
-	if err != nil {
-		logs.Debug("Failed to get hostname edgenode %s %v", edgenode.NodeIP, err)
-		return false, err
-	}
-	sshhostname := strings.Replace(string(combo), "\n", "", -1)
-	logs.Debug("Edge hostname:", sshhostname)
 
 	//TODO Check the hostname config in edge yaml
 
 	if edgenode.NodeName != sshhostname {
 		logs.Debug("Failed config %s edgenode %s", edgenode.NodeName, sshhostname)
-		return false, nil
+		return false, errors.New("edge node hostname mismatched")
 	}
 	return true, nil
+}
+
+//Get the edge hostname by IP
+func GetEdgeHostname(edgeIP string, edgePassword string) (string, error) {
+	var sshUser = "root"
+	var sshPort = 22
+
+	if edgeIP == "" || edgePassword == "" {
+		logs.Debug("IP address or Password invalid")
+		return "", errors.New("IP address or Password invalid")
+	}
+
+	sshHandler, err := NewSecureShell(edgeIP, sshPort, sshUser, edgePassword)
+	if err != nil {
+		logs.Debug("Failed to dail edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	defer sshHandler.client.Close()
+
+	session, err := sshHandler.client.NewSession()
+	if err != nil {
+		logs.Debug("Failed to get session edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	defer session.Close()
+
+	combo, err := session.CombinedOutput("hostname")
+	if err != nil {
+		logs.Debug("Failed to get hostname edgenode %s %v", edgeIP, err)
+		return "", err
+	}
+	sshhostname := strings.Replace(string(combo), "\n", "", -1)
+	logs.Debug("Edge node %s hostname: %s", edgeIP, sshhostname)
+	return sshhostname, nil
 }

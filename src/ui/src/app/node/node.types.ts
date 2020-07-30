@@ -8,12 +8,12 @@ export enum AddNodeType {
   normal, edge
 }
 
-export class  NodeStatus extends HttpBase {
+export class NodeStatus extends HttpBase {
   readonly masterKey = 'node-role.kubernetes.io/master';
-  @HttpBind('node_name') nodeName: string;
-  @HttpBind('node_ip') nodeIp: string;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
   @HttpBind('node_type') nodeType = '';
-  @HttpBind('create_time') createTime: number;
+  @HttpBind('create_time') createTime = 0;
   @HttpBind('status') status: NodeStatusType;
   @HttpBind('labels') labels: { [p: string]: string };
 
@@ -21,26 +21,32 @@ export class  NodeStatus extends HttpBase {
     return Reflect.has(this.labels, this.masterKey);
   }
 
+  get isEdge(): boolean {
+    return this.nodeType === 'edge';
+  }
+
   get nodeTypeDescribe(): string {
     if (this.nodeType === 'node') {
       return 'NODE.NODE_TYPE_NODE';
     } else if (this.nodeType === 'master') {
       return 'NODE.NODE_TYPE_MASTER';
-    } else {
+    } else if (this.nodeType === 'edge') {
       return 'NODE.NODE_TYPE_EDGE';
+    } else {
+      return 'NODE.NODE_TYPE_UNKNOWN';
     }
   }
 }
 
 export class NodeGroupStatus extends HttpBase {
   projectName = '';
-  @HttpBind('nodegroup_id') id: number;
-  @HttpBind('nodegroup_name') name: string;
-  @HttpBind('nodegroup_comment') comment: string;
-  @HttpBind('nodegroup_owner_id') ownerId: number;
-  @HttpBind('nodegroup_creation_time') creationTime: string;
-  @HttpBind('nodegroup_update_time') updateTime: string;
-  @HttpBind('nodegroup_deleted') deleted: number;
+  @HttpBind('nodegroup_id') id = 0;
+  @HttpBind('nodegroup_name') name = '';
+  @HttpBind('nodegroup_comment') comment = '';
+  @HttpBind('nodegroup_owner_id') ownerId = 0;
+  @HttpBind('nodegroup_creation_time') creationTime = '';
+  @HttpBind('nodegroup_update_time') updateTime = '';
+  @HttpBind('nodegroup_deleted') deleted = 0;
 
   postBody(): { [p: string]: string } {
     return {
@@ -57,11 +63,11 @@ export class ServiceInstance extends HttpBase {
 }
 
 export class NodeControlStatus extends HttpBase {
-  @HttpBind('node_name') nodeName: string;
-  @HttpBind('node_ip') nodeIp: string;
-  @HttpBind('node_phase') nodePhase: string;
-  @HttpBind('node_deletable') deletable: boolean;
-  @HttpBind('node_unschedulable') nodeUnschedulable: boolean;
+  @HttpBind('node_name') nodeName = '';
+  @HttpBind('node_ip') nodeIp = '';
+  @HttpBind('node_phase') nodePhase = '';
+  @HttpBind('node_deletable') deletable = false;
+  @HttpBind('node_unschedulable') nodeUnschedulable = false;
   @HttpBindArray('service_instances', ServiceInstance) serviceInstances: Array<ServiceInstance>;
 
   prepareInit() {

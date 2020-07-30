@@ -28,7 +28,7 @@ export class AppMenuItemUrlDirective {
 }
 
 @Component({
-  selector: 'cs-vertical-nav',
+  selector: 'app-cs-vertical-nav',
   templateUrl: './cs-vertical-nav.component.html',
   styleUrls: ['./cs-vertical-nav.component.css']
 })
@@ -63,7 +63,7 @@ export class CsVerticalNavComponent implements AfterViewInit {
   }
 
   get adminServerUrl(): string {
-    return `http://${this.appInitService.systemInfo.board_host}:8082/account/login`;
+    return `http://${this.appInitService.systemInfo.boardHost}:8082/account/login`;
   }
 
   setIsShowAdminServer() {

@@ -2,6 +2,16 @@ export const LANG_EN_US = {
   AdminServer: {
     Name: 'Admin server'
   },
+  InitializeInfo: {
+    Title: 'Board is initializing, please wait',
+    UpdateAdminPassword: 'Updating admin password',
+    InitProjectRepo: 'Initializing repositories of project',
+    PrepareKvmHost: 'Preparing the HOST for KVM',
+    InitKubernetesInfo: 'Initializing Kubernetes',
+    SyncUpK8s: 'Syncing up the data from Kubernetes',
+    Ready: 'Ready',
+    InitBoardFailed: 'Failed to initialize Board, please contact with administrator of Board'
+  },
   "BUTTON": {
     "OK": "OK",
     "YES": "Yes",
@@ -139,6 +149,7 @@ export const LANG_EN_US = {
     "STORAGE": "Storage",
     "ADMIN_OPTIONS": "Admin Options",
     "USER_MANAGEMENT": "User management",
+    "SYSTEM_SETTING": "System setting",
     "AUDIT": "Operation Audit",
     "KIBANA": "Kibana",
     "GRAFANA": "Grafana",
@@ -765,14 +776,15 @@ export const LANG_EN_US = {
     "PV_POOL":"Pool",
     "PV_IMAGE":"Image",
     "PV_SECRET":"Secret name",
+    "PV_CREATE_SUCCESS":"Created pv successfully",
     "PV_SECRET_NAMESPACE":"Secret namespace",
     "PV_FS_TYPE":"Filesystem type",
     "PV_CONFIG_MONITORS":"Config monitors",
     "PV_CONFIG_MONITORS_ADD":"Add config",
     "PV_CONFIG_MONITORS_IP":"The IP already used",
     "PV_DELETE_CONFIRM":"Confirm to delete: {{0}}?",
-    "PV_DELETE_SUCCESS":"Delete success",
-    "PV_DELETE_FAILED":"Delete failed",
+    "PV_DELETE_SUCCESS":"Deleted pv successfully",
+    "PV_DELETE_FAILED":"Failed to delete pv",
     "PV_NAME_EXIST":"PV name already exist.",
     "PV_WARNING_READ_ONLY_MANY":"Warning: please check the directory carefully to avoid directory conflict and data loss",
     "PV_WARNING_READ_WRITE_MANY":"Warning: please check the directory carefully to avoid data leakage",
@@ -801,12 +813,12 @@ export const LANG_EN_US = {
     "PVC_CREATE_SELECT_DESIGNATED_PV":"Select designate pv ...",
     "PVC_CREATE_SELECT_PROJECT":"Select project ...",
     "PVC_CREATE_SELECT_ACCESS_MODE":"Select access mode ...",
-    "PVC_CREATE_SUCCESS":"Create PVC success.",
+    "PVC_CREATE_SUCCESS":"Create PVC successfully.",
     "PVC_CREATE_NAME_EXIST":"PVC name already exist.",
     "PVC_CREATE_NAME_PATTERN":"Made of numbers or lowercase letter with '.' character supported in the middle.",
     "PVC_DELETE_CONFIRM":"Confirm to delete: {{0}}?",
     "PVC_DELETE_SUCCESS":"Delete success",
-    "PVC_DELETE_FAILED":"Delete failed"
+    "PVC_DELETE_FAILED":"Failed to delete pvc "
   },
   "AUDIT":{
     "ALL":"All",
@@ -839,6 +851,7 @@ export const LANG_EN_US = {
     "AUDIT_SYSTEM": "system",
     "AUDIT_RESET_PASSWORD": "Reset password",
     "AUDIT_FORGOT_PASSWORD": "Forgot password",
+    "AUDIT_K8S_PROXY":"Kubernetes proxy setting",
     "AUDIT_CREATE": "Create",
     "AUDIT_GET": "Get",
     "AUDIT_DELETE": "Delete",
@@ -878,6 +891,7 @@ export const LANG_EN_US = {
     "NODE_TYPE_NODE": "Local node",
     "NODE_TYPE_MASTER": "Master",
     "NODE_TYPE_EDGE": "Edge node",
+    "NODE_TYPE_UNKNOWN": "Unknown",
     "OPERATION": "Operation",
     "ITEMS": " record(s) found.",
     "NODE_DETAILS": "Node Details",
@@ -944,8 +958,9 @@ export const LANG_EN_US = {
   NodeCreateNew: {
     Title: 'Add node',
     Name: 'Node name',
-    NamePatternMessage: 'The node name is invalid',
+    NamePatternMessage: 'The node name is invalid:start or end with number or letters，the content middle supports \'-\'、\'.\'、\'_\'',
     NameExists: 'The node name already exists',
+    NameInputRequired: 'The node name is can not empty',
     Ip: 'Node ip',
     Password: 'Node password',
     IpPatternMessage: 'The node ip is invalid',
@@ -956,7 +971,9 @@ export const LANG_EN_US = {
     Commit: 'Commit',
     AddSuccessfully: 'Added node successfully',
     Auto: 'Auto',
-    Manual: 'Manual'
+    Manual: 'Manual',
+    ParamsErrorMessage: 'Input params error',
+    TimeOutMessage: 'Timeout has occurred'
   },
 
   "GUIDE":{
@@ -970,4 +987,12 @@ export const LANG_EN_US = {
     "GET_HELP":"Get Help",
     "SUPPORT_TEAM":"Support team"
   },
+
+  SystemSetting: {
+    Title: 'Kubernetes proxy setting',
+    Enable: 'Enable',
+    Disable: 'Disable',
+    SetSuccessfully: 'Set successfully',
+    SetFailed: 'Failed to set'
+  }
 };

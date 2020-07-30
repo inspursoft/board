@@ -1,11 +1,10 @@
-import { Component, EventEmitter, OnInit, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ValidationErrors } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Project } from '../../project/project';
 import { CsModalChildMessage } from '../cs-modal-base/cs-modal-child-base';
-import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode } from '../shared.types';
+import { PersistentVolume, PersistentVolumeClaim, PvcAccessMode, SharedProject } from '../shared.types';
 import { SharedService } from '../../shared.service/shared.service';
 import { MessageService } from '../../shared.service/message.service';
 
@@ -15,7 +14,7 @@ import { MessageService } from '../../shared.service/message.service';
 })
 export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
   onAfterCommit: EventEmitter<PersistentVolumeClaim>;
-  projectsList: Array<Project>;
+  projectsList: Array<SharedProject>;
   accessModeList: Array<PvcAccessMode>;
   pvList: Array<PersistentVolume>;
   newPersistentVolumeClaim: PersistentVolumeClaim;
@@ -27,7 +26,7 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
     super(messageService);
     this.newPersistentVolumeClaim = new PersistentVolumeClaim();
     this.onAfterCommit = new EventEmitter<PersistentVolumeClaim>();
-    this.projectsList = Array<Project>();
+    this.projectsList = Array<SharedProject>();
     this.accessModeList = Array<PvcAccessMode>();
     this.pvList = Array<PersistentVolume>();
   }
@@ -36,8 +35,8 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
     this.accessModeList.push(PvcAccessMode.ReadWriteOnce);
     this.accessModeList.push(PvcAccessMode.ReadWriteMany);
     this.accessModeList.push(PvcAccessMode.ReadOnlyMany);
-    this.sharedService.getAllProjects().subscribe((res: Array<Project>) => this.projectsList = res);
-    this.sharedService.getAllPvList().subscribe((res: Array<PersistentVolume>) => {
+    this.sharedService.getAllProjects().subscribe((res: Array<SharedProject>) => this.projectsList = res);
+    this.sharedService.getPVList().subscribe((res: Array<PersistentVolume>) => {
       this.pvList = res;
       if (this.pvList.length > 0) {
         const pvNone = new PersistentVolume();
@@ -57,7 +56,7 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
         map(() => null),
         catchError((err: HttpErrorResponse) => {
           this.messageService.cleanNotification();
-          if (err.status == 409) {
+          if (err.status === 409) {
             return of({pvNameExists: 'STORAGE.PVC_CREATE_NAME_EXIST'});
           }
           return of(null);
@@ -65,27 +64,27 @@ export class CreatePvcComponent extends CsModalChildMessage implements OnInit {
       );
   }
 
-  changeSelectProject(project: Project) {
-    this.newPersistentVolumeClaim.projectId = project.project_id;
-    this.newPersistentVolumeClaim.projectName = project.project_name;
+  changeSelectProject(project: SharedProject) {
+    this.newPersistentVolumeClaim.projectId = project.projectId;
+    this.newPersistentVolumeClaim.projectName = project.projectName;
   }
 
   changeDesignatePv(pv: PersistentVolume) {
-    this.newPersistentVolumeClaim.designatedPv = pv.name == 'None' ? '' : pv.name;
+    this.newPersistentVolumeClaim.designatedPv = pv.name === 'None' ? '' : pv.name;
   }
 
   createNewPvc() {
     if (this.verifyDropdownExValid() && this.verifyInputExValid()) {
       this.isCreateWip = true;
       this.sharedService.createNewPvc(this.newPersistentVolumeClaim).subscribe(
-        () => this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS'),
+        () => {
+          this.modalOpened = false;
+          this.onAfterCommit.emit(this.newPersistentVolumeClaim);
+          this.messageService.showAlert('STORAGE.PVC_CREATE_SUCCESS');
+        },
         (error: HttpErrorResponse) => {
           this.messageService.showAlert(error.message, {alertType: 'warning', view: this.alertView});
           this.isCreateWip = false;
-        },
-        () => {
-          this.onAfterCommit.emit(this.newPersistentVolumeClaim);
-          this.modalOpened = false;
         }
       );
     }

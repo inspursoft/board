@@ -86,7 +86,7 @@ export abstract class HttpBase {
   }
 
   initFromRes() {
-    if (!this.res) {
+    if (!this.res || typeof this.res !== 'object') {
       return;
     }
     const metadataKeys: Array<string> = Reflect.getMetadataKeys(this);
@@ -144,7 +144,7 @@ export abstract class ResponsePaginationBase<T extends HttpBase> {
 
   abstract CreateOneItem(res: object): T;
 
-  constructor(public res: object) {
+  constructor(public res?: object) {
     this.list = Array<T>();
     this.pagination = new Pagination(this.getObject('pagination'));
     this.pagination.initFromRes();
@@ -174,7 +174,7 @@ export abstract class ResponsePaginationBase<T extends HttpBase> {
   }
 
   getObject(key: string): object {
-    if (Reflect.has(this.res, key)) {
+    if (this.res && Reflect.has(this.res, key)) {
       return Reflect.get(this.res, key);
     } else {
       return {};

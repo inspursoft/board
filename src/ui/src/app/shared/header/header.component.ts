@@ -2,34 +2,33 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { CookieService } from "ngx-cookie";
-import { User } from "../shared.types";
-import { MessageService } from "../../shared.service/message.service";
-import { SharedService } from "../../shared.service/shared.service";
+import { CookieService } from 'ngx-cookie';
+import { User } from '../shared.types';
+import { MessageService } from '../../shared.service/message.service';
+import { SharedService } from '../../shared.service/shared.service';
 
 @Component({
-  selector: 'header-content',
+  selector: 'app-header-content',
   templateUrl: 'header.component.html',
-  styleUrls: [ 'header.component.css' ]
+  styleUrls: ['header.component.css']
 })
 export class HeaderComponent implements OnInit {
-  currentLang: string;
   @Input() isSignIn: boolean;
   @Input() hasSignedIn: boolean;
   @Input() searchContent: string;
-
+  currentLang: string;
   currentUser: User;
-  showChangePassword:boolean = false;
-  showAccountSetting:boolean = false;
-  authMode: string = '';
-  redirectionURL: string = '';
+  showChangePassword = false;
+  showAccountSetting = false;
+  authMode = '';
+  redirectionURL = '';
 
   get brandLogoUrl(): string {
-    return this.isSignIn ? '../../images/board-blue.jpg': '../../../images/board.png';
+    return this.isSignIn ? '../../images/board-blue.jpg' : '../../../images/board.png';
   }
 
   get mipsLogoUrl(): string {
-    return this.isSignIn ? '../../images/mips-logo.png': '../../images/mips-logo.png';
+    return this.isSignIn ? '../../images/mips-logo.png' : '../../images/mips-logo.png';
   }
 
   get isMipsEnv(): boolean {
@@ -50,27 +49,27 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.hasSignedIn){
+    if (this.hasSignedIn) {
       this.currentUser = this.appInitService.currentUser;
-      this.authMode = this.appInitService.systemInfo.auth_mode;
-      this.redirectionURL = this.appInitService.systemInfo.redirection_url;
+      this.authMode = this.appInitService.systemInfo.authMode;
+      this.redirectionURL = this.appInitService.systemInfo.redirectionUrl;
     }
   }
 
   _assertLanguage(lang: string) {
     lang = lang.toLowerCase();
-    switch(lang) {
-    case 'en':
-    case 'en-us':
-      lang = 'en-us';
-      this.currentLang = 'HEAD_NAV.LANG_EN_US';
-      break;
+    switch (lang) {
+      case 'en':
+      case 'en-us':
+        lang = 'en-us';
+        this.currentLang = 'HEAD_NAV.LANG_EN_US';
+        break;
 
-    case 'zh':
-    case 'zh-cn':
-      lang = 'zh-cn';
-      this.currentLang = 'HEAD_NAV.LANG_ZH_CN';
-      break;
+      case 'zh':
+      case 'zh-cn':
+        lang = 'zh-cn';
+        this.currentLang = 'HEAD_NAV.LANG_ZH_CN';
+        break;
     }
     this.translateService.use(lang);
   }
@@ -81,21 +80,18 @@ export class HeaderComponent implements OnInit {
 
   doSearch(event) {
     this.searchContent = event.target.value;
-    if(this.hasSignedIn) {
-      this.router.navigate(['/search' ], { queryParams: { q: this.searchContent, token: this.appInitService.token }});
-    } else {
-      this.router.navigate(['/search' ], { queryParams: { q: this.searchContent }});
-    }
+    this.router.navigate(['/search'], {queryParams: {q: this.searchContent}})
+      .then(() => this.messageService.cleanNotification());
   }
 
   clickLogoAction() {
-    if(!this.hasSignedIn) {
+    if (!this.hasSignedIn) {
       this.router.navigate(['/account/sign-in']);
     }
   }
 
   logOut() {
-    this.sharedService.signOut(this.appInitService.currentUser.user_name).subscribe(() => {
+    this.sharedService.signOut(this.appInitService.currentUser.userName).subscribe(() => {
       localStorage.removeItem('token');
       this.appInitService.token = '';
       this.appInitService.currentUser = new User();

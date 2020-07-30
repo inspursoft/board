@@ -1,19 +1,21 @@
 import { Injectable, Type } from '@angular/core';
-import { HttpHeaders, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpHeaders, HttpParams, HttpRequest, HttpResponse, HttpClient } from '@angular/common/http';
 import { Observable, Subject, zip } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ServiceStepDataBase, ServiceStepPhase } from './service-step.component';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
-import { INode, INodeGroup, NodeAvailableResources, PersistentVolumeClaim } from '../shared/shared.types';
+import { PersistentVolumeClaim } from '../shared/shared.types';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 import { HttpBase } from '../shared/ui-model/model-types';
 import {
+  NodeAvailableResources,
   PaginationService,
-  Service, ServiceDetailInfo,
+  Service,
+  ServiceDetailInfo,
   ServiceDockerfileData,
   ServiceHPA,
   ServiceImage,
-  ServiceImageDetail, ServiceNode,
+  ServiceImageDetail, ServiceNode, ServiceNodeGroup,
   ServiceProject
 } from './service.types';
 
@@ -256,21 +258,20 @@ export class K8sService {
   }
 
   getNodeSelectors(): Observable<Array<{ name: string, status: number }>> {
-    const obsNodeList = this.httpModel
-      .get(`/api/v1/nodes`, {observe: 'response'})
+    const obsNodeList = this.httpModel.getArray(`/api/v1/nodes`, ServiceNode)
       .pipe(
-        map((res: HttpResponse<Array<INode>>) => {
+        map((res: Array<ServiceNode>) => {
           const result = Array<{ name: string, status: number }>();
-          res.body.forEach((iNode: INode) => result.push({name: String(iNode.node_name).trim(), status: iNode.status}));
+          res.forEach((node: ServiceNode) => result.push({name: String(node.nodeName).trim(), status: node.status}));
           return result;
         }));
     const obsNodeGroupList = this.httpModel
-      .get(`/api/v1/nodegroup`, {observe: 'response', params: {is_valid_node_group: '1'}})
+      .getArray(`/api/v1/nodegroup`, ServiceNodeGroup, {param: {is_valid_node_group: '1'}})
       .pipe(
-        map((res: HttpResponse<Array<INodeGroup>>) => {
+        map((res: Array<ServiceNodeGroup>) => {
           const result = Array<{ name: string, status: number }>();
-          res.body.forEach((iNodeGroup: INodeGroup) => result.push({
-            name: String(iNodeGroup.nodegroup_name).trim(),
+          res.forEach((group: ServiceNodeGroup) => result.push({
+            name: String(group.name).trim(),
             status: 1
           }));
           return result;
@@ -297,9 +298,7 @@ export class K8sService {
   }
 
   getNodesAvailableSources(): Observable<Array<NodeAvailableResources>> {
-    return this.httpModel.get(`/api/v1/nodes/availableresources`, {
-      observe: 'response'
-    }).pipe(map((res: HttpResponse<Array<NodeAvailableResources>>) => res.body));
+    return this.httpModel.getArray(`/api/v1/nodes/availableresources`, NodeAvailableResources);
   }
 
   setAutoScaleConfig(serviceId: number, hpa: ServiceHPA): Observable<any> {
@@ -400,18 +399,20 @@ export class K8sService {
     return this.httpModel.get(`/api/v1/edgenodes`).pipe(
       map((res: Array<string>) => {
         const result = new Array<{ description: string }>();
-        res.forEach(value => result.push({description: value}));
+        if (res && res.length > 0) {
+          res.forEach(value => result.push({description: value}));
+        }
         return result;
       })
     );
   }
 
   getNodeGroups(): Observable<Array<{ description: string }>> {
-    return this.httpModel.get(`/api/v1/nodegroup`,
-      {params: {is_valid_node_group: '1'}}
-    ).pipe(map((res: Array<INodeGroup>) => {
+    return this.httpModel.getArray(`/api/v1/nodegroup`, ServiceNodeGroup,
+      {param: {is_valid_node_group: '1'}}
+    ).pipe(map((res: Array<ServiceNodeGroup>) => {
         const result = new Array<{ description: string }>();
-        res.forEach(nodeGroup => result.push({description: nodeGroup.nodegroup_name}));
+        res.forEach(group => result.push({description: group.name}));
         return result;
       })
     );

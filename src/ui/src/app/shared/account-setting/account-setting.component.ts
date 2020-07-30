@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { UserService } from '../../user-center/user-service/user-service';
+import { UserService } from '../../admin/user-center/user-service/user-service';
 import { User } from '../shared.types';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { MessageService } from '../../shared.service/message.service';
 
 @Component({
-  selector: 'user-setting',
+  selector: 'app-user-setting',
   templateUrl: './account-setting.component.html',
   styleUrls: ['./account-setting.component.css'],
   providers: [UserService]
@@ -19,14 +19,14 @@ export class AccountSettingComponent implements OnInit {
 
   @Input()
   get isOpen() {
-    return this._isOpen;
+    return this.isOpenValue;
   }
 
   set isOpen(open: boolean) {
-    this._isOpen = open;
-    this.isOpenChange.emit(this._isOpen);
+    this.isOpenValue = open;
+    this.isOpenChange.emit(this.isOpenValue);
   }
-  _isOpen = false;
+  isOpenValue = false;
   isWorkWip = false;
   curUser: User = new User();
 

@@ -9,7 +9,6 @@ import (
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"golang.org/x/net/context"
@@ -132,74 +131,76 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Gogits creation: %+v", err)
-				return
+	done := make(chan bool)
+
+	handle := func() <-chan error {
+		e := make(chan error)
+		go func() {
+			defer close(e)
+			ctx = context.WithValue(ctx, storeItem, "Gitlab")
+			gitlabHandler := gitlab.NewGitlabHandler(accessToken)
+			if gitlabHandler == nil {
+				logs.Error("failed to create Gitlab handler")
+				cancel()
 			}
-			logs.Info("Successful create Gogits repo.")
-		}
-		gitlabHandler := gitlab.NewGitlabHandler(accessToken)
-		if gitlabHandler == nil {
-			logs.Error("failed to create Gitlab handler")
-			cancel()
-		}
-		userInfo := model.User{Username: user.Username, Email: user.Email, RepoToken: user.RepoToken}
+			userInfo := model.User{Username: user.Username, Email: user.Email, RepoToken: user.RepoToken}
 
-		projectInfo := model.Project{Name: repoName}
-		projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
-		if err != nil {
-			logs.Error("Failed to create repo via Gitlab API, error %+v", err)
-			cancel()
-		}
-		logs.Debug("Successful created Gitlab project: %+v", projectCreation)
-		projectInfo.ID = int64(projectCreation.ID)
-
-		hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-		hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
-		if err != nil {
-			logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
-		}
-		logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
-
-		fileInfo := gitlab.FileInfo{
-			Name:    "README.md",
-			Path:    "README.md",
-			Content: "README file created by Board.",
-		}
-
-		fileCreation, err := gitlabHandler.ManipulateFile("create", userInfo, projectInfo, "master", fileInfo)
-		if err != nil {
-			logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)
-			cancel()
-		}
-		logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				logs.Error("Failed to execute Jenkins job creation: %+v", err)
-				return
+			projectInfo := model.Project{Name: repoName}
+			projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
+			if err != nil {
+				logs.Error("Failed to create repo via Gitlab API, error %+v", err)
+				cancel()
 			}
-			logs.Info("Successful create Jenkins job.")
-		}
+			logs.Debug("Successful created Gitlab project: %+v", projectCreation)
+			projectInfo.ID = int64(projectCreation.ID)
 
-		jenkinsHandler := jenkins.NewJenkinsHandler()
-		err = jenkinsHandler.CreateJobWithParameter(repoName)
-		if err != nil {
-			logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-			cancel()
-		}
-	}()
-	return nil
+			hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
+			hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+			if err != nil {
+				logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
+				cancel()
+			}
+			logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
+
+			fileInfo := gitlab.FileInfo{
+				Name:    "README.md",
+				Path:    "README.md",
+				Content: "README file created by Board.",
+			}
+
+			fileCreation, err := gitlabHandler.ManipulateFile("create", userInfo, projectInfo, "master", fileInfo)
+			if err != nil {
+				logs.Error("Failed to create file: %+v to the repo: %s, error: %+v", fileInfo, projectInfo.Name, err)
+				cancel()
+			}
+			logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
+
+			ctx = context.WithValue(ctx, storeItem, "Jenkins")
+			jenkinsHandler := jenkins.NewJenkinsHandler()
+			err = jenkinsHandler.CreateJobWithParameter(repoName)
+			if err != nil {
+				logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
+				cancel()
+			}
+			logs.Info("Finished executing both Gitlab with Jenkins process...")
+			for {
+				select {
+				case <-ctx.Done():
+					if err := ctx.Err(); err != nil {
+						logs.Error("Canceled context in creation %s, error: %+v", ctx.Value(storeItem), err)
+						e <- err
+					}
+					logs.Debug("Execution for %s in context has done.", ctx.Value(storeItem))
+				case <-done:
+					logs.Debug("Finished executing both Gitlab with Jenkins process.")
+					e <- nil
+				}
+			}
+		}()
+		return e
+	}
+	close(done)
+	return <-handle()
 }
 
 func (g GitlabDevOps) GetRepo(token string, repoName string) (project model.Project, err error) {
@@ -320,6 +321,27 @@ func (g GitlabDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	return nil
 }
 
+func (g GitlabDevOps) MergePullRequest(repoName, repoToken string) error {
+	sourceProject, err := g.GetRepo(repoToken, repoName)
+	if err != nil {
+		return fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+	}
+	foundMRList, err := gitlab.NewGitlabHandler(repoToken).ListMR(sourceProject)
+	if err != nil {
+		return fmt.Errorf("failed to list merge request by name: %s, error: %+v", repoName, err)
+	}
+	if len(foundMRList) == 0 {
+		return fmt.Errorf("repo: %s has no merge request", repoName)
+	}
+	mrIID := foundMRList[0].IID
+	mrAcceptance, err := gitlab.NewGitlabHandler(repoToken).AcceptMR(sourceProject, mrIID)
+	if err != nil {
+		return fmt.Errorf("failed to accept MR by repo name: %s, error: %+v", repoName, err)
+	}
+	logs.Debug("Successful accepted MR with detail: %+v", mrAcceptance)
+	return nil
+}
+
 func (g GitlabDevOps) DeleteRepo(username string, repoName string) error {
 	user, err := GetUserByName(username)
 	if err != nil {
@@ -354,4 +376,33 @@ func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 		"X-Gitlab-Event": []string{"Push Hook"},
 	}
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
+}
+
+func (g GitlabDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
+	user, err := GetUserByName(username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user by name: %s, error: %+v", username, err)
+	}
+	gitlabHandler := gitlab.NewGitlabHandler(user.RepoToken)
+	if gitlabHandler == nil {
+		return nil, fmt.Errorf("failed to create Gitlab handler")
+	}
+	project, err := g.GetRepo(user.RepoToken, repoName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+	}
+	content, err := gitlabHandler.GetFileRawContent(project, branch, filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get file: %s from branch: %s in repo: %s", filePath, branch, repoName)
+	}
+	logs.Debug("Got file: %s with content: %s", filePath, string(content))
+	return content, nil
+}
+
+func (g GitlabDevOps) DeleteUser(username string) error {
+	user, err := g.GetUser(gitlabAdminToken(), username)
+	if err != nil {
+		return fmt.Errorf("failed to get repo user: %s, error: %+v", user.Username, err)
+	}
+	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
 }

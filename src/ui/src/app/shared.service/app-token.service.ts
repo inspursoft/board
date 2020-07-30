@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { CookieService } from 'ngx-cookie';
 import { HttpResponse } from '@angular/common/http';
 
 @Injectable()
@@ -22,7 +21,7 @@ export class AppTokenService {
   }
 
   chainResponse(r: HttpResponse<object>): HttpResponse<object> {
-    this.token = r.headers.get('token');
+    this.token = r.headers.get('Token');
     localStorage.setItem('token', this.token);
     return r;
   }

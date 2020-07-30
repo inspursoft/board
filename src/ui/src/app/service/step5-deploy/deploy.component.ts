@@ -25,7 +25,7 @@ export class DeployComponent extends ServiceStepComponentBase implements OnInit 
 
   constructor(protected injector: Injector) {
     super(injector);
-    this.boardHost = this.appInitService.systemInfo.board_host;
+    this.boardHost = this.appInitService.systemInfo.boardHost;
   }
 
   ngOnInit(): void {

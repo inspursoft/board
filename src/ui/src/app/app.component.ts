@@ -7,7 +7,7 @@ import { registerLocaleData } from '@angular/common';
 import localeZhHans from '@angular/common/locales/zh-Hans';
 
 @Component({
-  selector: 'board-app',
+  selector: 'app-board',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

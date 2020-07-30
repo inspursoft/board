@@ -40,10 +40,10 @@ var configServiceStep = model.ConfigServiceStep{
 
 func TestSetConfigServiceStepAction(t *testing.T) {
 	assert := assert.New(t)
-	token := signIn("admin", "123456a?")
+	token := signIn(AdminUsername, AdminPassword)
 	assert.NotEmpty(token, "Error occurred while sign in Board")
 	defer func() {
-		err := signOut("admin")
+		err := signOut(AdminUsername)
 		assert.Nil(err, "Error occurred while sign out Board")
 	}()
 

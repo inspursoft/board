@@ -28,8 +28,8 @@
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                                {key:'imageNameExists', message:'IMAGE.CREATE_IMAGE_NAME_EXIST' | translate}]"
                           [inputDisabled]="isBuildImageWIP"
-                          [inputDefaultValue]="customerNewImage.image_name"
-                          (commitEvent)="customerNewImage.image_name = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageName"
+                          (commitEvent)="customerNewImage.imageName = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <lib-input-ex [inputIsRequired]="true"
                           [inputPattern]="patternNewImageTag"
@@ -38,8 +38,8 @@
                           [inputDisabled]="isBuildImageWIP"
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                            {key:'imageTagExists', message:'IMAGE.CREATE_IMAGE_TAG_EXIST' | translate}]"
-                          [inputDefaultValue]="customerNewImage.image_tag"
-                          (commitEvent)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageTag"
+                          (commitEvent)="customerNewImage.imageTag = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <div class="base-image-container base-margin-top">
               <div class="base-image-source-container">
@@ -72,8 +72,8 @@
                             [inputPattern]="patternBaseImage"
                             [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_BASE_IMAGE_PATTERN' | translate}]"
                             [inputDisabled]="isBuildImageWIP"
-                            [inputDefaultValue]="customerNewImage.image_dockerfile.image_base"
-                            (commitEvent)="customerNewImage.image_dockerfile.image_base = $event;getDockerFilePreviewInfo()">
+                            [inputDefaultValue]="customerNewImage.imageDockerFile.imageBase"
+                            (commitEvent)="customerNewImage.imageDockerFile.imageBase = $event;getDockerFilePreviewInfo()">
               </lib-input-ex>
               <div *ngIf="baseImageSource == 2" class="board-registry-container">
                 <lib-dropdown-ex [dropdownMinWidth]="260"
@@ -81,7 +81,7 @@
                                  [dropdownItems]="imageList"
                                  [dropdownDisabled]="isBuildImageWIP"
                                  [dropdownTip]="'IMAGE.CREATE_IMAGE_BASE_IMAGE_SELECT' | translate"
-                                 [dropdownKey]="'image_name'"
+                                 [dropdownKey]="'imageName'"
                                  (dropdownChangeItem)="setBaseImage($event)">
                 </lib-dropdown-ex>
                 <span *ngIf="isGetImageDetailListWip" class="spinner spinner-sm"></span>
@@ -90,8 +90,8 @@
                                  [dropdownMinWidth]="140"
                                  [dropdownDisabled]="isBuildImageWIP"
                                  [dropdownItems]="imageDetailList"
-                                 [dropdownTip]="imageDetailList[0]?.image_tag"
-                                 [dropdownKey]="'image_tag'"
+                                 [dropdownTip]="imageDetailList[0]?.imageTag"
+                                 [dropdownKey]="'imageTag'"
                                  (dropdownChangeItem)="setBaseImageDetail($event)">
                 </lib-dropdown-ex>
               </div>
@@ -99,14 +99,14 @@
             <lib-input-ex [inputPattern]="patternEntryPoint"
                           [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_ENTRYPOINT'|translate"
                           [inputDisabled]="isBuildImageWIP"
-                          [inputDefaultValue]="customerNewImage.image_dockerfile.image_entrypoint"
-                          (commitEvent)="customerNewImage.image_dockerfile.image_entrypoint = $event;getDockerFilePreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageDockerFile.imageEntryPoint"
+                          (commitEvent)="customerNewImage.imageDockerFile.imageEntryPoint = $event;getDockerFilePreviewInfo()">
             </lib-input-ex>
             <lib-input-ex [inputType]="2"
                           [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_ENV'|translate"
                           [inputDisabled]="isBuildImageWIP"
                           [inputDefaultValue]="envsDescription"
-                          (commitEvent)="isOpenEnvironment = true">
+                          (click)="isOpenEnvironment = true">
             </lib-input-ex>
             <lib-input-array-ex [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME' | translate"
                                 [inputDisabled]="isBuildImageWIP"
@@ -122,7 +122,7 @@
                                 [inputMaxlength]="1023"
                                 [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
                                 [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME' | translate"
-                                (commitEvent)="imageRun= $event; getDockerFilePreviewInfo()">
+                                (commitEvent)="imageRun = $event; getDockerFilePreviewInfo()">
             </lib-input-array-ex>
             <lib-input-array-ex [inputArrayDefault]="imageExpose"
                                 [inputArrayPattern]="patternExpose"
@@ -149,18 +149,18 @@
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
             <div class="file-list"
-                 *ngFor="let file of filesList.get(customerNewImage.image_name)">
+                 *ngFor="let file of filesList.get(customerNewImage.imageName)">
               <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
                         (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
             <lib-input-ex [inputLabel]="'IMAGE.CREATE_IMAGE_COMMAND'|translate"
                           [inputDisabled]="isBuildImageWIP"
-                          [inputDefaultValue]="customerNewImage.image_dockerfile.image_cmd"
-                          (commitEvent)="customerNewImage.image_dockerfile.image_cmd = $event;getDockerFilePreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageDockerFile.imageCmd"
+                          (commitEvent)="customerNewImage.imageDockerFile.imageCmd = $event;getDockerFilePreviewInfo()">
             </lib-input-ex>
           </div>
         </ng-template>
@@ -173,8 +173,8 @@
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                                {key:'imageNameExists', message:'IMAGE.CREATE_IMAGE_NAME_EXIST' | translate}]"
                           [inputDisabled]="nameAndTagDisabledDockerFile"
-                          [inputDefaultValue]="customerNewImage.image_name"
-                          (commitEvent)="customerNewImage.image_name = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageName"
+                          (commitEvent)="customerNewImage.imageName = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <lib-input-ex [inputIsRequired]="true"
                           [inputPattern]="patternNewImageTag"
@@ -183,8 +183,8 @@
                           [inputDisabled]="nameAndTagDisabledDockerFile"
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                            {key:'imageTagExists', message:'IMAGE.CREATE_IMAGE_TAG_EXIST' | translate}]"
-                          [inputDefaultValue]="customerNewImage.image_tag"
-                          (commitEvent)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageTag"
+                          (commitEvent)="customerNewImage.imageTag = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <div *ngIf="!isSelectedDockerFile" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE" | translate}}:</label>
@@ -205,7 +205,7 @@
                 </tr>
                 <tr>
                   <th><span class="file-title">{{"IMAGE.CREATE_IMAGE_FILE_LAST_MODIFY" | translate}}:</span></th>
-                  <td>{{selectedDockerFile?.lastModifiedDate | date:'short'}}</td>
+                  <td>{{selectedDockerFile?.lastModified | date:'short'}}</td>
                 </tr>
                 </tbody>
               </table>
@@ -216,14 +216,14 @@
                       (change)="uploadFile($event)" accept="*.*">
               <span *ngIf="isUploadFileWIP" class="spinner spinner-sm"></span>
             </div>
-            <div class="file-list" *ngFor="let file of filesList.get(customerNewImage.image_name)">
+            <div class="file-list" *ngFor="let file of filesList.get(customerNewImage.imageName)">
               <clr-icon *ngIf="!isBuildImageWIP" class="dynamic-icon" shape="minus"
                         (click)="removeFile(file)"></clr-icon>
               {{file.file_name}}
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
           </div>
         </ng-template>
@@ -236,8 +236,8 @@
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                                {key:'imageNameExists', message:'IMAGE.CREATE_IMAGE_NAME_EXIST' | translate}]"
                           [inputDisabled]="isBuildImageWIP"
-                          [inputDefaultValue]="customerNewImage.image_name"
-                          (commitEvent)="customerNewImage.image_name = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageName"
+                          (commitEvent)="customerNewImage.imageName = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <lib-input-ex [inputIsRequired]="true"
                           [inputPattern]="patternNewImageTag"
@@ -246,8 +246,8 @@
                           [inputDisabled]="isBuildImageWIP"
                           [validatorMessage]="[{key: 'pattern', message: 'IMAGE.CREATE_IMAGE_NAME_TAG_PATTERN' | translate},
                                            {key:'imageTagExists', message:'IMAGE.CREATE_IMAGE_TAG_EXIST' | translate}]"
-                          [inputDefaultValue]="customerNewImage.image_tag"
-                          (commitEvent)="customerNewImage.image_tag = $event;updateFileListAndPreviewInfo()">
+                          [inputDefaultValue]="customerNewImage.imageTag"
+                          (commitEvent)="customerNewImage.imageTag = $event;updateFileListAndPreviewInfo()">
             </lib-input-ex>
             <div *ngIf="uploadTarPackageName == ''" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
@@ -260,7 +260,7 @@
             </div>
             <div *ngIf="isUploadFileWIP" class="line-container base-margin-top">
               <label class="base-text"></label>
-              <cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></cs-progress>
+              <app-cs-progress class="base-margin-left" [progressData]="uploadProgressValue"></app-cs-progress>
             </div>
             <div *ngIf="uploadTarPackageName != ''" class="line-container base-margin-top">
               <label class="base-text">{{"IMAGE.CREATE_IMAGE_UPLOAD_TAR" | translate}}:</label>
@@ -288,11 +288,11 @@
         </div>
       </div>
     </div>
-    <environment-value *ngIf="isOpenEnvironment"
+    <app-environment-value *ngIf="isOpenEnvironment"
                        [inputEnvsData]="defaultEnvsData"
                        (closeNotification)="isOpenEnvironment = false"
-                       (onConfirm)="setEnvironment($event)">
-    </environment-value>
+                       (confirm)="setEnvironment($event)">
+    </app-environment-value>
     <clr-modal [(clrModalOpen)]="cancelInfo.isShow" [clrModalClosable]="false">
       <h3 class="modal-title">{{ cancelInfo.title | translate }}</h3>
       <div class="modal-body">
