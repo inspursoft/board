@@ -269,7 +269,18 @@ export const LANG_ZH_CN = {
       ADMIN_TOKEN: {
         LABEL: '管理员token',
         PLACEHOLDER: '如：1234567901234567890',
-        HELPER: '管理员token用于作为root用户登录Gitlab进行操作，请联系Gitlab服务器管理员获取此token',
+        HELPER: '管理员token用于作为root用户登录Gitlab进行操作，请联系Gitlab服务器管理员获取此token，不能随意手动填入！',
+      },
+      SSH_USERNAME: {
+        LABEL: 'Gitlab主机用户名',
+        PLACEHOLDER: 'Gitlab主机用户名',
+        HELPER: '用户名用于SSH登录Gitlab服务所在主机',
+      },
+      SSH_PASSWORD: {
+        LABEL: 'Gitlab主机密码',
+        PLACEHOLDER: 'Gitlab主机密码',
+        HELPER: '密码用于SSH登录Gitlab服务所在主机',
+        PATTERN_ERROR: '',
       },
     },
     PROMETHEUS: {

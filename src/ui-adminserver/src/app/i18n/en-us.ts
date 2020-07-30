@@ -269,7 +269,18 @@ export const LANG_EN_US = {
       ADMIN_TOKEN: {
         LABEL: 'Access token',
         PLACEHOLDER: 'eg: 1234567901234567890',
-        HELPER: 'The admin access token for Gitlab as root user, please contact the Gitlab server administrator.',
+        HELPER: 'The admin access token for Gitlab as root user, please contact the Gitlab server administrator. PLEASE DO NOT EDIT THIS MANUNLLY.',
+      },
+      SSH_USERNAME: {
+        LABEL: 'Gitlab host username',
+        PLACEHOLDER: 'Gitlab host username',
+        HELPER: 'User name for logging in to the host which running for Gitlab service',
+      },
+      SSH_PASSWORD: {
+        LABEL: 'Gitlab host password',
+        PLACEHOLDER: 'password of Gitlab host mechine',
+        HELPER: 'The password for logging in to the host which running for Gitlab service',
+        PATTERN_ERROR: '',
       },
     },
     PROMETHEUS: {

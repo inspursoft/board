@@ -358,6 +358,25 @@
                         [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                         (commitEvent)="config.gitlab.adminToken = $event">
         </variable-input>
+        <variable-input [label]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.LABEL' | translate"
+                        [type]="'text'"
+                        [required]="true"
+                        [defaultValue]="config.gitlab.sshUsername"
+                        [placeholder]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.PLACEHOLDER' | translate"
+                        [helper]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.HELPER' | translate"
+                        [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                        (commitEvent)="config.gitlab.sshUsername = $event">
+        </variable-input>
+        <variable-input [disabled]="!isEditable"
+                        [label]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.LABEL' | translate"
+                        [type]="'password'"
+                        [required]="true"
+                        [defaultValue]="config.gitlab.sshPassword"
+                        [placeholder]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.PLACEHOLDER' | translate"
+                        [helper]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.HELPER' | translate"
+                        [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                        (commitEvent)="config.gitlab.sshPassword = $event">
+        </variable-input>
       </div>
 
       <hr>
@@ -555,6 +574,8 @@
                         (commitEvent)="config.kvm.toolkitsPath = $event">
         </variable-input>
       </div>
+
+      <hr *ngIf="false">
 
       <div *ngIf="false">
         <div class="card-title">
