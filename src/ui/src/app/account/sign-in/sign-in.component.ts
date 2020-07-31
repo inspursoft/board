@@ -43,7 +43,7 @@ export class SignInComponent extends CsComponentBase implements OnInit {
   }
 
   get verifyPictureUrl() {
-    return `http://${this.appInitService.systemInfo.boardHost}/captcha/${this.signInUser.captchaId}.png`;
+    return `${this.appInitService.getHttpProtocol}://${this.appInitService.systemInfo.boardHost}/captcha/${this.signInUser.captchaId}.png`;
   }
 
   refreshVerifyPicture() {
