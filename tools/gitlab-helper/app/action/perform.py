@@ -40,7 +40,7 @@ def update_access_token(token):
     log.debug("Config file path: %s", config_file_path)
     with open(config_file_path, "r") as f:
       content = f.read()
-      content_updates = re.sub(r"^(gitlab_admin_token\s=\s)(.*)$", r"\g<1>{}".format(token), content, flags=re.M)
+      content_updates = re.sub(r"^(gitlab_admin_token\s*=\s*)(.*)$", r"\g<1>{}".format(token), content, flags=re.M)
     with open(config_file_path, "w") as f:
       f.write(content_updates)
     log.info("Successful updated root access token to board.cfg.")
