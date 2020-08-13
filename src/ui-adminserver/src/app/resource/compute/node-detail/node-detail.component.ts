@@ -159,9 +159,17 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
       this.actionStatus = ActionStatus.Preparing;
       this.resourceService.removeNode(this.postData).subscribe(
         (res: NodeLog) => this.logInfo = res,
-        () => {
-          this.messageService.cleanNotification();
-          this.messageService.showGlobalMessage('Node.Node_Detail_Error_Invalid_Password', {view: this.view});
+        (err: HttpErrorResponse) => {
+          if (err.status === 406) {
+            this.messageService.cleanNotification();
+            this.messageService.showAlert('Node.Node_Detail_Error_Node_Locked',
+              {view: this.view, alertType: 'warning'}
+            );
+          } else {
+            this.messageService.cleanNotification();
+            this.messageService.showGlobalMessage('Node.Node_Detail_Error_Invalid_Password', {view: this.view});
+          }
+          this.actionStatus = ActionStatus.Preparing;
         },
         () => this.actionStatus = ActionStatus.Executing
       );
@@ -173,9 +181,17 @@ export class NodeDetailComponent extends ModalChildBase implements OnInit, OnDes
       this.actionStatus = ActionStatus.Preparing;
       this.resourceService.addNode(this.postData).subscribe(
         (res) => this.logInfo = res,
-        () => {
-          this.messageService.cleanNotification();
-          this.messageService.showGlobalMessage('Node.Node_Detail_Error_Bad_Input', {view: this.view});
+        (err: HttpErrorResponse) => {
+          if (err.status === 406) {
+            this.messageService.cleanNotification();
+            this.messageService.showAlert('Node.Node_Detail_Error_Node_Locked',
+              {view: this.view, alertType: 'warning'}
+            );
+          } else {
+            this.messageService.cleanNotification();
+            this.messageService.showGlobalMessage('Node.Node_Detail_Error_Bad_Input', {view: this.view});
+          }
+          this.actionStatus = ActionStatus.Preparing;
         },
         () => this.actionStatus = ActionStatus.Executing
       );

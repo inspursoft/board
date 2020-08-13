@@ -123,7 +123,7 @@ export const LANG_ZH_CN = {
     Node_Logs_Stop: '停止',
     Node_Logs_Removing: '正在移除...',
     Node_Logs_Adding: '正在添加...',
-    Node_Logs_Can_Not_Remove: '此节点目前不能删除',
+    Node_Logs_Can_Not_Remove: '此节点目前不能删除，请先在Board中排除其服务。',
     Node_Detail_Add: '添加',
     Node_Detail_Remove: '移除',
     Node_Detail_Refresh: '刷新日志',
@@ -146,6 +146,7 @@ export const LANG_ZH_CN = {
     Node_Detail_Node_Password_Hint: '请输入节点密码',
     Node_Detail_Error_Invalid_Password: '无效密码',
     Node_Detail_Error_Bad_Input: '输入信息错误',
+    Node_Detail_Error_Node_Locked: '节点被锁定，请在节点列表中查看状态',
     Node_Detail_Error_Failed_Request: '获取数据错误'
   },
   CONFIGURATIONS: {

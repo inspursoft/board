@@ -252,17 +252,15 @@ func GetNodeResponseList(nodeListResponse *[]nodeModel.NodeListResponse) error {
 				logTime = adminItem.CreationTime
 			}
 		}
-		if CheckExistsInCache(item.NodeIP) == false {
-			*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
-				Ip:           item.NodeIP,
-				CreationTime: item.CreateTime,
-				Status:       item.Status,
-				NodeName:     item.NodeName,
-				IsMaster:     isMaster,
-				IsEdge:       item.NodeType == "edge",
-				LogTime:      logTime,
-				Origin:       origin})
-		}
+		*nodeListResponse = append(*nodeListResponse, nodeModel.NodeListResponse{
+			Ip:           item.NodeIP,
+			CreationTime: item.CreateTime,
+			Status:       item.Status,
+			NodeName:     item.NodeName,
+			IsMaster:     isMaster,
+			IsEdge:       item.NodeType == "edge",
+			LogTime:      logTime,
+			Origin:       origin})
 	}
 
 	return nil

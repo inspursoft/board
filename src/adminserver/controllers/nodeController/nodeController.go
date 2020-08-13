@@ -244,8 +244,7 @@ func (controller *NodeController) ControlStatusAction() {
 func (controller *NodeController) AddRemoveNode(nodePostData *nodeModel.AddNodePostData,
 	actionType nodeModel.ActionType, yamlFile string) {
 	if nodeService.CheckExistsInCache(nodePostData.NodeIp) {
-		controller.Data["json"] = *nodeService.GetLogInfoInCache(nodePostData.NodeIp)
-		controller.ServeJSON()
+		controller.CustomAbort(http.StatusNotAcceptable, "node was locked.")
 		return
 	}
 

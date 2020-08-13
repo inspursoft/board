@@ -123,7 +123,7 @@ export const LANG_EN_US = {
     Node_Logs_Stop: 'Stop',
     Node_Logs_Removing: 'Removing...',
     Node_Logs_Adding: 'Adding...',
-    Node_Logs_Can_Not_Remove: 'The node can not be remove at present.',
+    Node_Logs_Can_Not_Remove: 'The node can not be removed at present, please to drain its services in the Board first.',
     Node_Detail_Add: 'Add',
     Node_Detail_Remove: 'Remove',
     Node_Detail_Refresh: 'Refresh log',
@@ -146,6 +146,7 @@ export const LANG_EN_US = {
     Node_Detail_Node_Password_Hint: 'Please input the password of the node.',
     Node_Detail_Error_Invalid_Password: 'Invalid password',
     Node_Detail_Error_Bad_Input: 'Wrong input',
+    Node_Detail_Error_Node_Locked: 'The node was locked, please to check its status in node list.',
     Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
   },
   CONFIGURATIONS: {
