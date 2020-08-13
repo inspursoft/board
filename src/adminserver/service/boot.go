@@ -19,7 +19,7 @@ func StartBoard(host *models.Account) error {
 		return err
 	}
 
-	cmdGitlabHelper := fmt.Sprintf("docker run --rm -v %s/board.cfg:/app/instance/board.cfg gitlab-helper:1.0", models.MakePath)
+	cmdGitlabHelper := fmt.Sprintf("docker run --rm -v %s/board.cfg.tmp:/app/instance/board.cfg gitlab-helper:1.0", models.MakePath)
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
 	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
