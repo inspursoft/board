@@ -14,7 +14,8 @@ import (
 )
 
 func StartBoard(host *models.Account) error {
-	shell, err := SSHtoHost(host)
+	cmdList := []string{}
+	devopsOpt, err := common.ReadCfgItem("devops_opt", "tmp")
 	if err != nil {
 		return err
 	}
@@ -23,7 +24,17 @@ func StartBoard(host *models.Account) error {
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
 	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
-	cmdList := []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
+
+	if devopsOpt == "legacy" {
+		cmdList = []string{cmdPrepare, cmdComposeDown, cmdComposeUp}
+	} else {
+		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
+	}
+
+	shell, err := SSHtoHost(host)
+	if err != nil {
+		return err
+	}
 	for _, cmd := range cmdList {
 		err = shell.ExecuteCommand(cmd)
 		if err != nil {
