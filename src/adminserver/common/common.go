@@ -12,14 +12,11 @@ var ErrWrongPassword = errors.New("Wrong password")
 var ErrTokenServer = errors.New("tokenserver is down")
 var ErrNoData = errors.New("Board already uninstalled")
 
-func ReadCfgItem(items ...string) (string, error) {
-	var cfgPath string
-	if len(items) == 1 {
-		cfgPath = "/go/cfgfile/board.cfg"
-	} else {
-		cfgPath = "/go/cfgfile/board.cfg.tmp"
+func ReadCfgItem(item, path string) (string, error) {
+	cfgPath := "/go/cfgfile/board.cfg"
+	if path == "tmp" {
+		cfgPath += ".tmp"
 	}
-
 	config, err := configparser.Read(cfgPath)
 	if err != nil {
 		return "", err
@@ -29,5 +26,5 @@ func ReadCfgItem(items ...string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return section.ValueOf(items[0]), nil
+	return section.ValueOf(item), nil
 }
