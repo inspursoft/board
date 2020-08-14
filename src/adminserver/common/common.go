@@ -12,11 +12,7 @@ var ErrWrongPassword = errors.New("Wrong password")
 var ErrTokenServer = errors.New("tokenserver is down")
 var ErrNoData = errors.New("Board already uninstalled")
 
-func ReadCfgItem(item, path string) (string, error) {
-	cfgPath := "/go/cfgfile/board.cfg"
-	if path == "tmp" {
-		cfgPath += ".tmp"
-	}
+func ReadCfgItem(item, cfgPath string) (string, error) {
 	config, err := configparser.Read(cfgPath)
 	if err != nil {
 		return "", err

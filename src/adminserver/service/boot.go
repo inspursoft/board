@@ -15,7 +15,7 @@ import (
 
 func StartBoard(host *models.Account) error {
 	cmdList := []string{}
-	devopsOpt, err := common.ReadCfgItem("devops_opt", "tmp")
+	devopsOpt, err := common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
 	if err != nil {
 		return err
 	}
