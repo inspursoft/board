@@ -105,7 +105,7 @@ func RemoveUUIDToken() error {
 }
 
 func RegisterDB() error {
-	DBpassword, err := common.ReadCfgItem("db_password")
+	DBpassword, err := common.ReadCfgItem("db_password", "cfg")
 	if err != nil {
 		return err
 	}
