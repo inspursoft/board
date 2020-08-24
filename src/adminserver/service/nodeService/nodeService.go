@@ -106,7 +106,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 			"--env ADMIN_SERVER_PORT=\"%d\" \\\n"+
 			"--env INSTALL_FILE=\"%s\" \\\n"+
 			"--env LOG_TIMESTAMP=\"%d\" \\\n"+
-			"--env HOSTS_FILE=\"%s\"\\\n"+
+			"--env HOSTS_FILE=\"%s\" \\\n"+
 			"--env TOKEN=\"%s\" ",
 			env.MasterPassword,
 			env.MasterIp,
