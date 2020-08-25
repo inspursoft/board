@@ -97,16 +97,16 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
 		envStr := fmt.Sprintf(`
-			--env MASTER_PASS=%s \n
-			--env MASTER_IP=%s \n
-			--env NODE_IP=%s \n
-			--env NODE_PASS=%s \n
-			--env LOG_ID=%d \n
-			--env ADMIN_SERVER_IP=%s \n
-			--env ADMIN_SERVER_PORT=%d \n
-			--env INSTALL_FILE=%s \n
-			--env LOG_TIMESTAMP=%d \n
-			--env HOSTS_FILE=%s \n
+			--env MASTER_PASS=%s 
+			--env MASTER_IP=%s 
+			--env NODE_IP=%s 
+			--env NODE_PASS=%s 
+			--env LOG_ID=%d 
+			--env ADMIN_SERVER_IP=%s 
+			--env ADMIN_SERVER_PORT=%d 
+			--env INSTALL_FILE=%s 
+			--env LOG_TIMESTAMP=%d 
+			--env HOSTS_FILE=%s 
 			--env TOKEN=%s `,
 			env.MasterPassword,
 			env.MasterIp,
@@ -122,11 +122,12 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 
 		LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 		HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-		cmdStr := fmt.Sprintf(`docker run --rm \n 
-			-v %s:/tmp/log \n 
-			-v %s:/tmp/hosts_dir \n
-			-v %s:/ansible_k8s/pre-env \n 
-			%s \n k8s_install:1.18 `,
+		cmdStr := fmt.Sprintf(`docker run --rm 
+			-v %s:/tmp/log  
+			-v %s:/tmp/hosts_dir 
+			-v %s:/ansible_k8s/pre-env  
+			%s 
+            k8s_install:1.18 `,
 			LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
 		logs.Info(cmdStr)
