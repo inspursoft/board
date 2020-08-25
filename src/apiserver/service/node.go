@@ -758,7 +758,7 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
 	node.Labels["kubernetes.io/hostname"] = edgenode.NodeName
-	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoSchedule})
+	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoExecute})
 	if edgenode.RegistryMode == "auto" {
 		node.Labels["edge"] = "true"
 	}
