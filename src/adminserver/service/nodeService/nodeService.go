@@ -96,27 +96,37 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
-		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \n`, env.MasterPassword)
-		envStr = envStr + fmt.Sprintf(`--env MASTER_IP=%s \n`, env.MasterIp)
-		envStr = envStr + fmt.Sprintf(`--env NODE_IP=%s \n`, env.NodeIp)
-		envStr = envStr + fmt.Sprintf(`--env NODE_PASS=%s \n`, env.NodePassword)
-		envStr = envStr + fmt.Sprintf(`--env LOG_ID=%d \n`, env.LogId)
-		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_IP=%s \n`, env.HostIp)
-		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_PORT=%d \n`, 8081)
-		envStr = envStr + fmt.Sprintf(`--env INSTALL_FILE=%s \n`, env.InstallFile)
-		envStr = envStr + fmt.Sprintf(`--env LOG_TIMESTAMP=%d \n`, env.LogTimestamp)
-		envStr = envStr + fmt.Sprintf(`--env HOSTS_FILE=%s \n`, env.HostFile)
-		envStr = envStr + fmt.Sprintf(`--env TOKEN=%s \n`, currentToken)
+		envStr := fmt.Sprintf(`--env MASTER_PASS=%s 
+--env MASTER_IP=%s 
+--env NODE_IP=%s 
+--env NODE_PASS=%s 
+--env LOG_ID=%d
+--env ADMIN_SERVER_IP=%s 
+--env ADMIN_SERVER_PORT=%d 
+--env INSTALL_FILE=%s 
+--env LOG_TIMESTAMP=%d 
+--env HOSTS_FILE=%s 
+--env TOKEN=%s `,
+			env.MasterPassword,
+			env.MasterIp,
+			env.NodeIp,
+			env.NodePassword,
+			env.LogId,
+			env.HostIp,
+			8081,
+			env.InstallFile,
+			env.LogTimestamp,
+			env.HostFile,
+			currentToken)
 
 		LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 		HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-		cmdStr := fmt.Sprintf(`docker run --rm \n`);
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/log \n`, LogFilePath)
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/hosts_dir \n`, HostDirPath)
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/ansible_k8s/pre-env \n`, nodeModel.PreEnvDir)
-		cmdStr = cmdStr + fmt.Sprintf(`%s k8s_install:1.18 `, envStr)
+		cmdStr := fmt.Sprintf(`docker run -rm 
+-v %s:/tmp/log 
+-v %s:/tmp/hosts_dir 
+-v %s:/ansible_k8s/pre-env 
+%s k8s_install:1.18 `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
-		logs.Info(cmdStr)
 		if err := secure.ExecuteCommand(cmdStr); err != nil {
 			return err
 		}
