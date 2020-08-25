@@ -262,7 +262,12 @@ export class K8sService {
       .pipe(
         map((res: Array<ServiceNode>) => {
           const result = Array<{ name: string, status: number }>();
-          res.forEach((node: ServiceNode) => result.push({name: String(node.nodeName).trim(), status: node.status}));
+          res.forEach((node: ServiceNode) => {
+            if (node.isNormalNode) {
+              result.push({name: String(node.nodeName).trim(), status: node.status});
+            }
+          }
+          );
           return result;
         }));
     const obsNodeGroupList = this.httpModel

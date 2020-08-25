@@ -95,43 +95,46 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 }
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
+	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \
+--env MASTER_IP=%s \
+--env NODE_IP=%s \
+--env NODE_PASS=%s \
+--env LOG_ID=%d \
+--env ADMIN_SERVER_IP=%s \
+--env ADMIN_SERVER_PORT=%d \
+--env INSTALL_FILE=%s \
+--env LOG_TIMESTAMP=%d \
+--env HOSTS_FILE=%s \
+--env TOKEN=%s`,
+			env.MasterPassword,
+			env.MasterIp,
+			env.NodeIp,
+			env.NodePassword,
+			env.LogId,
+			env.HostIp,
+			8081,
+			env.InstallFile,
+			env.LogTimestamp,
+			env.HostFile,
+			currentToken)
 
-	envStr := fmt.Sprintf(""+
-		"--env MASTER_PASS=\"%s\" \\\n"+
-		"--env MASTER_IP=\"%s\" \\\n"+
-		"--env NODE_IP=\"%s\" \\\n"+
-		"--env NODE_PASS=\"%s\" \\\n"+
-		"--env LOG_ID=\"%d\" \\\n"+
-		"--env ADMIN_SERVER_IP=\"%s\" \\\n"+
-		"--env ADMIN_SERVER_PORT=\"%d\" \\\n"+
-		"--env INSTALL_FILE=\"%s\" \\\n"+
-		"--env LOG_TIMESTAMP=\"%d\" \\\n"+
-		"--env HOSTS_FILE=\"%s\" ",
-		env.MasterPassword,
-		env.MasterIp,
-		env.NodeIp,
-		env.NodePassword,
-		env.LogId,
-		env.HostIp,
-		8081,
-		env.InstallFile,
-		env.LogTimestamp,
-		env.HostFile)
+		LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
+		HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
+		cmdStr := fmt.Sprintf(`docker run --rm -d \
+-v %s:/tmp/log \
+-v %s:/tmp/hosts_dir \
+-v %s:/ansible_k8s/pre-env \
+%s k8s_install:1.18 `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
-	LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
-	HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-	cmdStr := fmt.Sprintf("docker run -td \\\n "+
-		"-v %s:/tmp/log \\\n "+
-		"-v %s:/tmp/hosts_dir \\\n"+
-		"-v %s:/ansible_k8s/pre-env \\\n "+
-		"%s \\\n k8s_install:1.18",
-		LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
+		if err := secure.ExecuteCommand(cmdStr); err != nil {
+			return err
+		}
 
-	if err := secure.ExecuteCommand(cmdStr); err != nil {
-		return err
+		return nil
+	} else {
+		return common.ErrInvalidToken
 	}
-
-	return nil
 }
 
 func UpdateLog(putLogData *nodeModel.UpdateNodeLog) error {
