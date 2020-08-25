@@ -121,7 +121,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 
 		LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 		HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-		cmdStr := fmt.Sprintf(`docker run --rm \
+		cmdStr := fmt.Sprintf(`docker run --rm -d \
 -v %s:/tmp/log \
 -v %s:/tmp/hosts_dir \
 -v %s:/ansible_k8s/pre-env \
