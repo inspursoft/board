@@ -96,24 +96,24 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
 	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
-		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \`, env.MasterPassword)
-		envStr = envStr + fmt.Sprintf(`--env MASTER_IP=%s \`, env.MasterIp)
-		envStr = envStr + fmt.Sprintf(`--env NODE_IP=%s \`, env.NodeIp)
-		envStr = envStr + fmt.Sprintf(`--env NODE_PASS=%s \`, env.NodePassword)
-		envStr = envStr + fmt.Sprintf(`--env LOG_ID=%s \`, env.LogId)
-		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_IP=%s \`, env.HostIp)
-		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_PORT=%s \`, 8081)
-		envStr = envStr + fmt.Sprintf(`--env INSTALL_FILE=%s \`, env.InstallFile)
-		envStr = envStr + fmt.Sprintf(`--env LOG_TIMESTAMP=%s \`, env.LogTimestamp)
-		envStr = envStr + fmt.Sprintf(`--env HOSTS_FILE=%s \`, env.HostFile)
-		envStr = envStr + fmt.Sprintf(`--env TOKEN=%s \`, currentToken)
+		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \n`, env.MasterPassword)
+		envStr = envStr + fmt.Sprintf(`--env MASTER_IP=%s \n`, env.MasterIp)
+		envStr = envStr + fmt.Sprintf(`--env NODE_IP=%s \n`, env.NodeIp)
+		envStr = envStr + fmt.Sprintf(`--env NODE_PASS=%s \n`, env.NodePassword)
+		envStr = envStr + fmt.Sprintf(`--env LOG_ID=%d \n`, env.LogId)
+		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_IP=%s \n`, env.HostIp)
+		envStr = envStr + fmt.Sprintf(`--env ADMIN_SERVER_PORT=%d \n`, 8081)
+		envStr = envStr + fmt.Sprintf(`--env INSTALL_FILE=%s \n`, env.InstallFile)
+		envStr = envStr + fmt.Sprintf(`--env LOG_TIMESTAMP=%d \n`, env.LogTimestamp)
+		envStr = envStr + fmt.Sprintf(`--env HOSTS_FILE=%s \n`, env.HostFile)
+		envStr = envStr + fmt.Sprintf(`--env TOKEN=%s \n`, currentToken)
 
 		LogFilePath := path.Join(nodeModel.BasePath, nodeModel.LogFileDir)
 		HostDirPath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
-		cmdStr := fmt.Sprintf(`docker run --rm \`);
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/log \`, LogFilePath)
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/hosts_dir \`, HostDirPath)
-		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/ansible_k8s/pre-env \`, nodeModel.PreEnvDir)
+		cmdStr := fmt.Sprintf(`docker run --rm \n`);
+		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/log \n`, LogFilePath)
+		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/tmp/hosts_dir \n`, HostDirPath)
+		cmdStr = cmdStr + fmt.Sprintf(`-v %s:/ansible_k8s/pre-env \n`, nodeModel.PreEnvDir)
 		cmdStr = cmdStr + fmt.Sprintf(`%s k8s_install:1.18 `, envStr)
 
 		logs.Info(cmdStr)
