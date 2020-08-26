@@ -479,7 +479,7 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 }
 
 func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
-	yamlName = ".gitlab-ci.yaml"
+	yamlName = gitlabci.GitlabCIFilename
 	switch action {
 	case BuildDockerImageCIYAML:
 		err = generateBuildingImageGitlabCIYAML(configurations)

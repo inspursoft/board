@@ -348,7 +348,7 @@ func generatePushingImageTravisYAML(configurations map[string]string) error {
 }
 
 func (g LegacyDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
-	yamlName = ".travis.yml"
+	yamlName = travis.TravisFilename
 	switch action {
 	case BuildDockerImageCIYAML:
 		err = generateBuildingImageTravisYAML(configurations)

@@ -3,6 +3,7 @@ package gitlabci
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -14,6 +15,8 @@ type Job struct {
 	Tags   []string `json:"tags"`
 	Script []string `json:"script"`
 }
+
+var GitlabCIFilename = ".gitlab-ci.yml"
 
 func marshalToBytes(g *map[string]Job) ([]byte, error) {
 	return yaml.Marshal(g)
@@ -38,5 +41,5 @@ func (g GitlabCI) GenerateGitlabCI(ci map[string]Job, targetPath string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(targetPath, datay, 0755)
+	return ioutil.WriteFile(filepath.Join(targetPath, GitlabCIFilename), datay, 0755)
 }
