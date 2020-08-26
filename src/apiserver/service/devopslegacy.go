@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -293,6 +294,68 @@ func (l LegacyDevOps) DeleteUser(username string) error {
 		return fmt.Errorf("failed to get admin user with error: %+v", err)
 	}
 	return gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(username)
+}
+
+func generateBuildingImageTravisYAML(configurations map[string]string) error {
+	userID, _ := strconv.Atoi(configurations["user_id"])
+	token := configurations["token"]
+	imageURI := configurations["image_uri"]
+	dockerfileName := configurations["dockerfile"]
+	repoPath := configurations["repo_path"]
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
+	}
+	return travisCommand.GenerateCustomTravis(repoPath)
+}
+
+func generatePushingImageTravisYAML(configurations map[string]string) error {
+	userID, _ := strconv.Atoi(configurations["user_id"])
+	token := configurations["token"]
+	imagePackageName := configurations["image_package_name"]
+	imageURI := configurations["image_uri"]
+	repoPath := configurations["repo_path"]
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+		fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
+		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
+		fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+	}
+	return travisCommand.GenerateCustomTravis(repoPath)
+}
+
+func (g LegacyDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
+	yamlName = ".travis.yml"
+	switch action {
+	case BuildDockerImageCIYAML:
+		err = generateBuildingImageTravisYAML(configurations)
+	case PushDockerImageCIYAML:
+		err = generatePushingImageTravisYAML(configurations)
+	}
+	return
 }
 
 func PrepareKVMHost() error {

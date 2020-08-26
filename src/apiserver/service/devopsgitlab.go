@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
+	"git/inspursoft/board/src/apiserver/service/devops/gitlabci"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -405,4 +407,84 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 		return fmt.Errorf("failed to get repo user: %s, error: %+v", user.Username, err)
 	}
 	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
+}
+
+func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
+	userID, _ := strconv.Atoi(configurations["user_id"])
+	token := configurations["token"]
+	imageURI := configurations["image_uri"]
+	dockerfileName := configurations["dockerfile"]
+	repoPath := configurations["repo_path"]
+	ciJobs := make(map[string]gitlabci.Job)
+	ciJobs["preparation"] = gitlabci.Job{
+		Stage: []string{"build-image"},
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			"if [ -d 'upload' ]; then rm -rf upload; fi",
+			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+			fmt.Sprintf("token=%s", token),
+			fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+		},
+	}
+	ciJobs["execution"] = gitlabci.Job{
+		Stage: []string{"build-image"},
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+			fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
+			fmt.Sprintf("docker push %s", imageURI),
+			fmt.Sprintf("docker rmi %s", imageURI),
+		},
+	}
+	var ci gitlabci.GitlabCI
+	return ci.GenerateGitlabCI(ciJobs, repoPath)
+}
+
+func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
+	userID, _ := strconv.Atoi(configurations["user_id"])
+	token := configurations["token"]
+	imagePackageName := configurations["image_package_name"]
+	imageURI := configurations["image_uri"]
+	repoPath := configurations["repo_path"]
+	ciJobs := make(map[string]gitlabci.Job)
+	ciJobs["preparation"] = gitlabci.Job{
+		Stage: []string{"push-image"},
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			"if [ -d 'upload' ]; then rm -rf upload; fi",
+			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+			fmt.Sprintf("token=%s", token),
+			fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+		},
+	}
+	ciJobs["execution"] = gitlabci.Job{
+		Stage: []string{"push-image"},
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+			fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+			fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
+			fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
+			fmt.Sprintf("docker push %s", imageURI),
+			fmt.Sprintf("docker rmi %s", imageURI),
+			fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+		},
+	}
+	var ci gitlabci.GitlabCI
+	return ci.GenerateGitlabCI(ciJobs, repoPath)
+}
+
+func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
+	yamlName = ".gitlab-ci.yaml"
+	switch action {
+	case BuildDockerImageCIYAML:
+		err = generateBuildingImageGitlabCIYAML(configurations)
+	case PushDockerImageCIYAML:
+		err = generatePushingImageGitlabCIYAML(configurations)
+	}
+	return
 }

@@ -7,8 +7,12 @@ import (
 
 type key int
 
+type yamlAction int
+
 const (
-	storeItem key = iota
+	storeItem              key        = iota
+	BuildDockerImageCIYAML yamlAction = iota
+	PushDockerImageCIYAML
 )
 
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
@@ -33,6 +37,7 @@ type DevOps interface {
 	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
 	GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error)
 	DeleteUser(username string) error
+	CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error)
 }
 
 func CurrentDevOps() DevOps {
