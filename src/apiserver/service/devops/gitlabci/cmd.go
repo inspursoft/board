@@ -11,7 +11,7 @@ import (
 type GitlabCI int
 
 type Job struct {
-	Stage  []string `json:"stage"`
+	Stage  string   `json:"stage"`
 	Tags   []string `json:"tags"`
 	Script []string `json:"script"`
 }
@@ -41,5 +41,9 @@ func (g GitlabCI) GenerateGitlabCI(ci map[string]Job, targetPath string) error {
 	if err != nil {
 		return err
 	}
+	for _, job := range *gy {
+		datay = append([]byte("- "+job.Stage+"\n"), datay...)
+	}
+	datay = append([]byte("stages:\n"), datay...)
 	return ioutil.WriteFile(filepath.Join(targetPath, GitlabCIFilename), datay, 0755)
 }

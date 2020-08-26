@@ -10,12 +10,13 @@ import (
 
 func TestGenerateGitlabCI(t *testing.T) {
 	job1 := gitlabci.Job{
-		Stage:  []string{"test1"},
+		Stage:  "test1",
 		Script: []string{"echo hello"},
 		Tags:   []string{"board-test-vm"},
 	}
+
 	job2 := gitlabci.Job{
-		Stage:  []string{"test2"},
+		Stage:  "test2",
 		Script: []string{"echo world"},
 		Tags:   []string{"board-test-vm"},
 	}
@@ -23,7 +24,7 @@ func TestGenerateGitlabCI(t *testing.T) {
 	ci["job1"] = job1
 	ci["job2"] = job2
 	var gc gitlabci.GitlabCI
-	err := gc.GenerateGitlabCI(ci, "output.yaml")
+	err := gc.GenerateGitlabCI(ci, ".")
 	assert := assert.New(t)
 	assert.Nil(err, "Failed to create Gitlab CI yaml file")
 	os.Remove("output.yaml")
