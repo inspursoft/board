@@ -417,7 +417,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
 	ciJobs["preparation"] = gitlabci.Job{
-		Stage: []string{"build-image"},
+		Stage: "build-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
@@ -429,7 +429,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 		},
 	}
 	ciJobs["execution"] = gitlabci.Job{
-		Stage: []string{"build-image"},
+		Stage: "build-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -450,7 +450,7 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
 	ciJobs["preparation"] = gitlabci.Job{
-		Stage: []string{"push-image"},
+		Stage: "push-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
@@ -462,7 +462,7 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 		},
 	}
 	ciJobs["execution"] = gitlabci.Job{
-		Stage: []string{"push-image"},
+		Stage: "push-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
