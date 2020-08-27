@@ -297,14 +297,14 @@ func (l LegacyDevOps) DeleteUser(username string) error {
 }
 
 func generateBuildingImageTravisYAML(configurations map[string]string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
+	userID := configurations["user_id"]
 	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
 	repoPath := configurations["repo_path"]
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		fmt.Sprintf("curl \"%s/jenkins-job/%s/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", token),
@@ -321,14 +321,14 @@ func generateBuildingImageTravisYAML(configurations map[string]string) error {
 }
 
 func generatePushingImageTravisYAML(configurations map[string]string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
+	userID := configurations["user_id"]
 	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
 	repoPath := configurations["repo_path"]
 	var travisCommand travis.TravisCommand
 	travisCommand.BeforeDeploy.Commands = []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		fmt.Sprintf("curl \"%s/jenkins-job/%s/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 		"if [ -d 'upload' ]; then rm -rf upload; fi",
 		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 		fmt.Sprintf("token=%s", token),
