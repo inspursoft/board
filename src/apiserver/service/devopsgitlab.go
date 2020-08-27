@@ -418,16 +418,17 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string, jobName
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
 	sort.Strings(jobNames)
+	var ci gitlabci.GitlabCI
 	ciJobs[jobNames[0]] = gitlabci.Job{
 		Stage: jobNames[0],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-			fmt.Sprintf("token=%s", token),
-			fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
-			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+			ci.WriteMultiLine("token=%s", token),
+			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 		},
 	}
 	ciJobs[jobNames[1]] = gitlabci.Job{
@@ -435,12 +436,12 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string, jobName
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-			fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
-			fmt.Sprintf("docker push %s", imageURI),
-			fmt.Sprintf("docker rmi %s", imageURI),
+			ci.WriteMultiLine("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
+			ci.WriteMultiLine("docker push %s", imageURI),
+			ci.WriteMultiLine("docker rmi %s", imageURI),
 		},
 	}
-	var ci gitlabci.GitlabCI
+
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
@@ -452,16 +453,17 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string, jobNames
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
 	sort.Strings(jobNames)
+	var ci gitlabci.GitlabCI
 	ciJobs[jobNames[0]] = gitlabci.Job{
 		Stage: jobNames[0],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-			fmt.Sprintf("token=%s", token),
-			fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
-			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+			ci.WriteMultiLine("token=%s", token),
+			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 		},
 	}
 	ciJobs[jobNames[1]] = gitlabci.Job{
@@ -469,15 +471,15 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string, jobNames
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-			fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
-			fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
-			fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
-			fmt.Sprintf("docker push %s", imageURI),
-			fmt.Sprintf("docker rmi %s", imageURI),
-			fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+			ci.WriteMultiLine("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+			ci.WriteMultiLine("image_name_tag=${image_name_tag#sha256:}"),
+			ci.WriteMultiLine("docker tag $image_name_tag %s", imageURI),
+			ci.WriteMultiLine("docker push %s", imageURI),
+			ci.WriteMultiLine("docker rmi %s", imageURI),
+			ci.WriteMultiLine("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
 		},
 	}
-	var ci gitlabci.GitlabCI
+
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 

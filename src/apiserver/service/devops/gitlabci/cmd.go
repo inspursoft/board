@@ -2,6 +2,7 @@ package gitlabci
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -26,6 +27,11 @@ func unmarshalToObject(data []byte) (*map[string]Job, error) {
 	var gy map[string]Job
 	err := yaml.Unmarshal(data, &gy)
 	return &gy, err
+}
+
+func (g GitlabCI) WriteMultiLine(formatter string, params ...interface{}) string {
+	appendCR := fmt.Sprintf("%s\n", formatter)
+	return fmt.Sprintf(appendCR, params...)
 }
 
 func (g GitlabCI) GenerateGitlabCI(ci map[string]Job, targetPath string) error {

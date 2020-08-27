@@ -9,23 +9,29 @@ import (
 )
 
 func TestGenerateGitlabCI(t *testing.T) {
+	var gc gitlabci.GitlabCI
+	tagName := "abc:v1.0"
 	job1 := gitlabci.Job{
 		Stage:  "test1",
 		Script: []string{"echo hello"},
 		Tags:   []string{"board-test-vm"},
 	}
-
 	job2 := gitlabci.Job{
-		Stage:  "test2",
-		Script: []string{"echo world"},
-		Tags:   []string{"board-test-vm"},
+		Stage: "test2",
+		Script: []string{
+			"echo world",
+			gc.WriteMultiLine("docker build  -f toolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolong -t %s .", tagName),
+			gc.WriteMultiLine("docker build  -f toolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolong -t %s .", tagName),
+			gc.WriteMultiLine("docker build  -f toolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolongtoolong -t %s .", tagName),
+		},
+		Tags: []string{"board-test-vm"},
 	}
 	ci := make(map[string]gitlabci.Job)
 	ci["job1"] = job1
 	ci["job2"] = job2
-	var gc gitlabci.GitlabCI
+
 	err := gc.GenerateGitlabCI(ci, ".")
 	assert := assert.New(t)
 	assert.Nil(err, "Failed to create Gitlab CI yaml file")
-	os.Remove("output.yaml")
+	os.Remove(gitlabci.GitlabCIFilename)
 }
