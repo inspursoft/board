@@ -9,8 +9,6 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -410,31 +408,24 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
 }
 
-func generateBuildingImageGitlabCIYAML(configurations map[string]string, jobNames ...string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
+func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
+	// userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
-	sort.Strings(jobNames)
 	var ci gitlabci.GitlabCI
-	ciJobs[jobNames[0]] = gitlabci.Job{
-		Stage: jobNames[0],
+	ciJobs["build-image"] = gitlabci.Job{
+		Stage: "build-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			// ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
-		},
-	}
-	ciJobs[jobNames[1]] = gitlabci.Job{
-		Stage: jobNames[1],
-		Tags:  []string{"board-ci-vm"},
-		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 			ci.WriteMultiLine("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
 			ci.WriteMultiLine("docker push %s", imageURI),
@@ -445,31 +436,24 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string, jobName
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
-func generatePushingImageGitlabCIYAML(configurations map[string]string, jobNames ...string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
+func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
+	// userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
-	sort.Strings(jobNames)
 	var ci gitlabci.GitlabCI
-	ciJobs[jobNames[0]] = gitlabci.Job{
-		Stage: jobNames[0],
+	ciJobs["push-image"] = gitlabci.Job{
+		Stage: "push-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			// ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
-		},
-	}
-	ciJobs[jobNames[1]] = gitlabci.Job{
-		Stage: jobNames[1],
-		Tags:  []string{"board-ci-vm"},
-		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 			ci.WriteMultiLine("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
 			ci.WriteMultiLine("image_name_tag=${image_name_tag#sha256:}"),
@@ -487,9 +471,9 @@ func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 	yamlName = gitlabci.GitlabCIFilename
 	switch action {
 	case BuildDockerImageCIYAML:
-		err = generateBuildingImageGitlabCIYAML(configurations, "preparation", "execution")
+		err = generateBuildingImageGitlabCIYAML(configurations)
 	case PushDockerImageCIYAML:
-		err = generatePushingImageGitlabCIYAML(configurations, "preparation", "execution")
+		err = generatePushingImageGitlabCIYAML(configurations)
 	}
 	return
 }
