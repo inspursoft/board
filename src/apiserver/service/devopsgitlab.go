@@ -9,6 +9,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -409,15 +410,16 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
 }
 
-func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
+func generateBuildingImageGitlabCIYAML(configurations map[string]string, jobNames ...string) error {
 	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
-	ciJobs["preparation"] = gitlabci.Job{
-		Stage: "build-image",
+	sort.Strings(jobNames)
+	ciJobs[jobNames[0]] = gitlabci.Job{
+		Stage: jobNames[0],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
@@ -428,8 +430,8 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 		},
 	}
-	ciJobs["execution"] = gitlabci.Job{
-		Stage: "build-image",
+	ciJobs[jobNames[1]] = gitlabci.Job{
+		Stage: jobNames[1],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -442,15 +444,16 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
-func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
+func generatePushingImageGitlabCIYAML(configurations map[string]string, jobNames ...string) error {
 	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
 	repoPath := configurations["repo_path"]
 	ciJobs := make(map[string]gitlabci.Job)
-	ciJobs["preparation"] = gitlabci.Job{
-		Stage: "push-image",
+	sort.Strings(jobNames)
+	ciJobs[jobNames[0]] = gitlabci.Job{
+		Stage: jobNames[0],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
@@ -461,8 +464,8 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 			fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 		},
 	}
-	ciJobs["execution"] = gitlabci.Job{
-		Stage: "push-image",
+	ciJobs[jobNames[1]] = gitlabci.Job{
+		Stage: jobNames[1],
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -482,9 +485,9 @@ func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 	yamlName = gitlabci.GitlabCIFilename
 	switch action {
 	case BuildDockerImageCIYAML:
-		err = generateBuildingImageGitlabCIYAML(configurations)
+		err = generateBuildingImageGitlabCIYAML(configurations, "preparation", "execution")
 	case PushDockerImageCIYAML:
-		err = generatePushingImageGitlabCIYAML(configurations)
+		err = generatePushingImageGitlabCIYAML(configurations, "preparation", "execution")
 	}
 	return
 }
