@@ -32,6 +32,11 @@ var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
 
+const (
+	jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+	jenkinsStopBuildTemplateURL    = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
+)
+
 type gogsJenkinsPushRepositoryPayload struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -355,6 +360,15 @@ func (g LegacyDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 	case PushDockerImageCIYAML:
 		err = generatePushingImageTravisYAML(configurations)
 	}
+	return
+}
+
+func (g LegacyDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
+	jobName := configurations["job_name"]
+	buildSerialID := configurations["build_serial_id"]
+	query := CIConsole{JobName: jobName, BuildSerialID: buildSerialID}
+	consoleURL, err = utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, JenkinsBaseURL()), query)
+	stopURL, err = utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, JenkinsBaseURL()), query)
 	return
 }
 
