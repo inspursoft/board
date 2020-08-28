@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"time"
 
 	"strings"
@@ -179,7 +180,7 @@ func (p *ImageController) GetImageDetailAction() {
 
 func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
-	configurations["user_id"] = string(p.CurrentUser.ID)
+	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["dockerfile"] = dockerfileName
@@ -189,7 +190,7 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 
 func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
-	configurations["user_id"] = string(p.CurrentUser.ID)
+	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["image_package_name"] = imagePackageName

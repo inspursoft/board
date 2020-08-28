@@ -477,3 +477,7 @@ func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 	}
 	return
 }
+
+func (g GitlabDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
+	return
+}

@@ -15,33 +15,26 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
-const jenkinsStopBuildTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
 const maxRetryCount = 300
 const buildNumberCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 const toggleBuildingCacheExpireSecond = time.Duration(maxRetryCount * time.Second)
 
-type jobConsole struct {
-	JobName       string `json:"job_name"`
-	BuildSerialID string `json:"build_serial_id"`
-}
-
-type JenkinsJobCallbackController struct {
+type CIJobCallbackController struct {
 	c.BaseController
 }
 
-func (j *JenkinsJobCallbackController) Prepare() {
+func (j *CIJobCallbackController) Prepare() {
 	j.EnableXSRF = false
 }
 
-func (j *JenkinsJobCallbackController) BuildNumberCallback() {
+func (j *CIJobCallbackController) BuildNumberCallback() {
 	userID := j.Ctx.Input.Param(":userID")
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
-	logs.Info("Get build number from Jenkins job callback: %d", buildNumber)
+	logs.Info("Get build number from CI job callback: %d", buildNumber)
 	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
 }
 
-func (j JenkinsJobCallbackController) CustomPushEventPayload() {
+func (j CIJobCallbackController) CustomPushEventPayload() {
 	nodeSelection := utils.GetConfig("NODE_SELECTION", "slave")
 	data, err := ioutil.ReadAll(j.Ctx.Request.Body)
 	if err != nil {
@@ -51,11 +44,11 @@ func (j JenkinsJobCallbackController) CustomPushEventPayload() {
 	service.CurrentDevOps().CustomHookPushPayload(data, nodeSelection())
 }
 
-type JenkinsJobController struct {
+type CIJobController struct {
 	c.BaseController
 }
 
-func (j *JenkinsJobController) getBuildNumber() (int, error) {
+func (j *CIJobController) getBuildNumber() (int, error) {
 	if buildNumber, ok := c.MemoryCache.Get(strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber").(int); ok {
 		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.CurrentUser.ID))+"_lastBuildNumber", buildNumber)
 		return buildNumber, nil
@@ -63,7 +56,7 @@ func (j *JenkinsJobController) getBuildNumber() (int, error) {
 	return 0, fmt.Errorf("cannot get build number from cache currently")
 }
 
-func (j *JenkinsJobController) clearBuildNumber() {
+func (j *CIJobController) clearBuildNumber() {
 	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber"
 	if c.MemoryCache.IsExist(key) {
 		c.MemoryCache.Delete(key)
@@ -71,12 +64,12 @@ func (j *JenkinsJobController) clearBuildNumber() {
 	}
 }
 
-func (j *JenkinsJobController) toggleBuild(status bool) {
+func (j *CIJobController) toggleBuild(status bool) {
 	logs.Info("Set building signal as %+v currently.", status)
 	c.MemoryCache.Put(strconv.Itoa(int(j.CurrentUser.ID))+"_buildSignal", status, toggleBuildingCacheExpireSecond)
 }
 
-func (j *JenkinsJobController) getBuildSignal() bool {
+func (j *CIJobController) getBuildSignal() bool {
 	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildSignal"
 	if buildingSignal, ok := c.MemoryCache.Get(key).(bool); ok {
 		return buildingSignal
@@ -84,7 +77,7 @@ func (j *JenkinsJobController) getBuildSignal() bool {
 	return false
 }
 
-func (j *JenkinsJobController) Console() {
+func (j *CIJobController) Console() {
 	j.clearBuildNumber()
 	j.toggleBuild(true)
 	getBuildNumberRetryCount := 0
@@ -116,10 +109,10 @@ func (j *JenkinsJobController) Console() {
 		j.InternalError(err)
 		return
 	}
-
-	query := jobConsole{JobName: repoName}
-	query.BuildSerialID = strconv.Itoa(buildNumber)
-	buildConsoleURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, c.JenkinsBaseURL()), query)
+	configurations := make(map[string]string)
+	configurations["job_name"] = repoName
+	configurations["build_serial_id"] = strconv.Itoa(buildNumber)
+	buildConsoleURL, _, _ := service.CurrentDevOps().ResolveHandleURL(configurations)
 	if err != nil {
 		j.InternalError(err)
 		return
@@ -159,7 +152,7 @@ func (j *JenkinsJobController) Console() {
 				} else {
 					retryCount++
 					if retryCount%50 == 0 {
-						logs.Debug("Jenkins console is not ready at this moment, will retry for next %d request...", retryCount)
+						logs.Debug("CI console is not ready at this moment, will retry for next %d request...", retryCount)
 					}
 					continue
 				}
@@ -203,7 +196,7 @@ func (j *JenkinsJobController) Console() {
 	}
 }
 
-func (j *JenkinsJobController) Stop() {
+func (j *CIJobController) Stop() {
 	lastBuildNumber, err := j.getBuildNumber()
 	if err != nil {
 		logs.Error("Failed to get job number: %+v", err)
@@ -223,14 +216,15 @@ func (j *JenkinsJobController) Stop() {
 		return
 	}
 
-	query := jobConsole{JobName: repoName}
-	query.BuildSerialID = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
-	stopBuildURL, err := utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, c.JenkinsBaseURL()), query)
+	configurations := make(map[string]string)
+	configurations["job_name"] = repoName
+	configurations["build_serial_id"] = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
+	_, stopBuildURL, err := service.CurrentDevOps().ResolveHandleURL(configurations)
 	if err != nil {
 		j.InternalError(err)
 		return
 	}
-	logs.Debug("Requested stop Jenkins build URL: %s", stopBuildURL)
+	logs.Debug("Requested stop CI build URL: %s", stopBuildURL)
 	resp, err := http.PostForm(stopBuildURL, nil)
 	if err != nil {
 		j.InternalError(err)
@@ -244,6 +238,6 @@ func (j *JenkinsJobController) Stop() {
 		resp.Body.Close()
 		j.clearBuildNumber()
 	}()
-	logs.Debug("Response status of stopping Jenkins jobs: %d", resp.StatusCode)
+	logs.Debug("Response status of stopping CI jobs: %d", resp.StatusCode)
 	j.ServeStatus(resp.StatusCode, "")
 }
