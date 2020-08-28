@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"strings"
+	"time"
 
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
@@ -199,7 +200,7 @@ func MarshalJob(jobConfig *model.JobConfig, registryURI string) *model.Job {
 		Spec: model.PodSpec{
 			Volumes:       setDeploymentVolumes(jobConfig.ContainerList),
 			Containers:    setDeploymentContainers(jobConfig.ContainerList, registryURI),
-			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector),
+			NodeSelector:  setDeploymentNodeSelector(jobConfig.NodeSelector, model.ServiceTypeJob),
 			Affinity:      setJobAffinity(jobConfig.AffinityList),
 			RestartPolicy: model.RestartPolicyNever,
 		},
@@ -249,6 +250,28 @@ func setJobAffinity(affinityList []model.JobAffinity) model.K8sAffinity {
 	return k8sAffinity
 }
 
+// Get JobAffinity from k8s
+func GetJobAffinity(affinityK8s model.K8sAffinity) []model.JobAffinity {
+	var affinityList []model.JobAffinity
+
+	for _, affinity := range affinityK8s.PodAffinity {
+		var jobAffinity model.JobAffinity
+		jobAffinity.AntiFlag = 0
+		jobAffinity.JobNames = affinity.LabelSelector.MatchExpressions[0].Values
+		affinityList = append(affinityList, jobAffinity)
+
+	}
+	for _, affinity := range affinityK8s.PodAntiAffinity {
+		var jobAffinity model.JobAffinity
+		jobAffinity.AntiFlag = 1
+		jobAffinity.JobNames = affinity.LabelSelector.MatchExpressions[0].Values
+		affinityList = append(affinityList, jobAffinity)
+
+	}
+
+	return affinityList
+}
+
 func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
 	logs.Debug("Get Job pods %s/%s", job.ProjectName, job.Name)
 
@@ -291,13 +314,13 @@ func GetK8sJobPods(job *model.JobStatusMO) ([]model.PodMO, error) {
 	return pods, nil
 }
 
-func GetK8sJobLogs(job *model.JobStatusMO, podName string, opt *model.PodLogOptions) (io.ReadCloser, error) {
-	logs.Debug("Get Job logs %s/%s/%s", job.ProjectName, job.Name, podName)
+func GetK8sPodLogs(projectName, podName string, opt *model.PodLogOptions) (io.ReadCloser, error) {
+	logs.Debug("Get pod logs %s/%s", projectName, podName)
 
 	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
 		KubeConfigPath: kubeConfigPath(),
 	})
-	return k8sclient.AppV1().Pod(job.ProjectName).GetLogs(podName, opt)
+	return k8sclient.AppV1().Pod(projectName).GetLogs(podName, opt)
 }
 
 func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
@@ -313,7 +336,10 @@ func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
 			reason = "The job is not established in cluster system"
 			status = model.Uncompleted
 		} else if job.Status.CompletionTime == nil {
-			if job.Status.Active > 0 {
+			if job.Status.Failed >= *job.Spec.BackoffLimit {
+				logs.Info("The job has reached the specified backoff limit")
+				status = model.Failed
+			} else if job.Status.Active > 0 {
 				logs.Info("The job is running")
 				status = model.Running
 			} else {
@@ -354,4 +380,52 @@ func SyncJobK8sStatus(jobList []*model.JobStatusMO) error {
 		}
 	}
 	return err
+}
+
+func SyncJobWithK8s(pName string) error {
+	logs.Debug("Sync Job Status of namespace %s", pName)
+	//obtain jobList data of
+	k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+		KubeConfigPath: kubeConfigPath(),
+	})
+
+	jobList, err := k8sclient.AppV1().Job(pName).List()
+	if err != nil {
+		logs.Error("Failed to get job list with project name: %s", pName)
+		return err
+	}
+
+	//handle the jobList data
+	var jobQuery model.JobStatusMO
+	for _, item := range jobList.Items {
+		project, err := GetProjectByName(item.Namespace)
+		if err != nil {
+			logs.Error("Failed to check project in DB %s", item.Namespace)
+			return err
+		}
+		if project == nil {
+			logs.Error("not found project in DB: %s", item.Namespace)
+			continue
+		}
+		if item.ObjectMeta.Name == k8sService {
+			continue
+		}
+		jobQuery.Name = item.ObjectMeta.Name
+		jobQuery.OwnerID = int64(project.OwnerID) //owner or admin TBD
+		jobQuery.OwnerName = project.OwnerName
+		jobQuery.ProjectName = project.Name
+		jobQuery.ProjectID = project.ID
+		jobQuery.Comment = defaultComment
+		jobQuery.Deleted = defaultDeleted
+		jobQuery.Status = defaultStatus
+		jobQuery.Source = k8s
+		jobQuery.CreationTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		jobQuery.UpdateTime, _ = time.Parse(time.RFC3339, item.CreationTimestamp.Format(time.RFC3339))
+		_, err = dao.SyncJobData(jobQuery)
+		if err != nil {
+			logs.Error("Sync job %s failed.", jobQuery.Name)
+		}
+	}
+
+	return nil
 }

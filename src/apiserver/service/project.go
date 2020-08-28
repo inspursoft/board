@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
+
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -28,6 +28,8 @@ const (
 	istioNamespace = "istio-system"
 	istioLabel     = "istio-injection"
 )
+
+var undeletableNamespaces = []string{kubeNamespace, istioNamespace, "kube-node-lease", "kube-public", "default", "library", "kubeedge", "cadvisor"}
 
 func CreateProject(project model.Project) (bool, error) {
 
@@ -56,6 +58,7 @@ func GetProject(project model.Project, selectedFields ...string) (*model.Project
 	if err != nil {
 		return nil, err
 	}
+	setDeletable(p)
 	return p, nil
 }
 
@@ -101,15 +104,38 @@ func ToggleProjectPublic(projectID int64, public int) (bool, error) {
 }
 
 func GetProjectsByUser(query model.Project, userID int64) ([]*model.Project, error) {
-	return dao.GetProjectsByUser(query, userID)
+	projects, err := dao.GetProjectsByUser(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	for i := range projects {
+		setDeletable(projects[i])
+	}
+	return projects, nil
 }
 
 func GetPaginatedProjectsByUser(query model.Project, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedProjects, error) {
-	return dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
+	paged, err := dao.GetPaginatedProjectsByUser(query, userID, pageIndex, pageSize, orderField, orderAsc)
+	if err != nil {
+		return nil, err
+	}
+	if paged != nil {
+		for i := range paged.ProjectList {
+			setDeletable(paged.ProjectList[i])
+		}
+	}
+	return paged, nil
 }
 
 func GetProjectsByMember(query model.Project, userID int64) ([]*model.Project, error) {
-	return dao.GetProjectsByMember(query, userID)
+	projects, err := dao.GetProjectsByMember(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	for i := range projects {
+		setDeletable(projects[i])
+	}
+	return projects, nil
 }
 
 func DeleteProject(userID, projectID int64) (bool, error) {
@@ -117,6 +143,10 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 	if err != nil {
 		logs.Error("Failed to delete project with ID: %d, error: %+v", projectID, err)
 		return false, err
+	}
+	if !project.Deletable {
+		logs.Error("Project %s is a builtin project that cannot be deleted.", project.Name)
+		return false, utils.ErrUnprocessableEntity
 	}
 	members, err := GetProjectMembers(project.ID)
 	if err != nil {
@@ -146,7 +176,7 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 		logs.Error("Failed to resolve repo name with project name: %s, username: %s, error: %+v", project.Name, user.Username, err)
 		return false, err
 	}
-	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = CurrentDevOps().DeleteRepo(user.Username, repoName)
 	if err != nil {
 		logs.Error("Failed to delete repo with repo name: %s, error: %+v", repoName, err)
 		if err == utils.ErrUnprocessableEntity {
@@ -298,7 +328,7 @@ func SyncProjectsWithK8s() error {
 				// Still can work
 				continue
 			}
-			err = CreateRepoAndJob(adminUserID, reqProject.Name)
+			err = CurrentDevOps().CreateRepoAndJob(adminUserID, reqProject.Name)
 			if err != nil {
 				logs.Error("Failed create repo and job with project name: %s, error: %+v", reqProject.Name, err)
 			}
@@ -321,6 +351,13 @@ func SyncProjectsWithK8s() error {
 		err = SyncAutoScaleWithK8s(namespace.Name)
 		if err != nil {
 			logs.Error("Failed to sync autoscale rule with project name: %s, error: %+v", namespace.Name, err)
+			// Still can work
+		}
+
+		// Sync the services in this project namespace
+		err = SyncJobWithK8s(namespace.Name)
+		if err != nil {
+			logs.Error("Failed to sync job with project name: %s, error: %+v", namespace.Name, err)
 			// Still can work
 		}
 	}
@@ -348,4 +385,17 @@ func DeleteNamespace(nameSpace string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func setDeletable(p *model.Project) {
+	if p == nil {
+		return
+	}
+	for _, name := range undeletableNamespaces {
+		if name == p.Name {
+			p.Deletable = false
+			return
+		}
+	}
+	p.Deletable = true
 }

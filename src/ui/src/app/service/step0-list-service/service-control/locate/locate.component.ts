@@ -1,50 +1,57 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Service } from "../../../service";
-import { K8sService } from "../../../service.k8s";
+import { K8sService } from '../../../service.k8s';
+import { Service, ServiceType } from '../../../service.types';
 
 @Component({
-  selector: 'locate',
+  selector: 'app-locate',
   templateUrl: './locate.component.html',
   styleUrls: ['./locate.component.css']
 })
 export class LocateComponent implements OnInit {
-  @Input('isActionInWIP') isActionInWIP: boolean;
-  @Input('service') service: Service;
-  @Output("onMessage") onMessage: EventEmitter<string>;
-  @Output("onError") onError: EventEmitter<any>;
-  @Output("onActionIsEnabled") onActionIsEnabled: EventEmitter<boolean>;
-  dropdownDefaultText: string = "SERVICE.SERVICE_CONTROL_LOCATE_SELECT";
+  @Input() isActionInWIP: boolean;
+  @Input() service: Service;
+  @Output() messageEvent: EventEmitter<string>;
+  @Output() errorEvent: EventEmitter<any>;
+  @Output() actionIsEnabledEvent: EventEmitter<boolean>;
+  dropdownDefaultText = 'SERVICE.SERVICE_CONTROL_LOCATE_SELECT';
   nodeSelectorList: Array<string>;
-  nodeSelector: string = "";
+  nodeSelector = '';
 
   constructor(private k8sService: K8sService) {
-    this.onMessage = new EventEmitter<string>();
-    this.onError = new EventEmitter<any>();
+    this.messageEvent = new EventEmitter<string>();
+    this.errorEvent = new EventEmitter<any>();
     this.nodeSelectorList = Array<string>();
-    this.onActionIsEnabled = new EventEmitter<boolean>();
+    this.actionIsEnabledEvent = new EventEmitter<boolean>();
   }
 
   ngOnInit() {
-    this.onActionIsEnabled.emit(false);
-    this.k8sService.getNodeSelectors().subscribe((res: Array<{name: string, status: number}>) =>
-      res.forEach(value => this.nodeSelectorList.push(value.name))
-    );
-    this.k8sService.getLocate(this.service.service_project_name, this.service.service_name)
-      .subscribe(res => {
-        if (res && res != ""){
-          this.dropdownDefaultText = res
+    this.actionIsEnabledEvent.emit(false);
+    if (this.service.serviceType === ServiceType.ServiceTypeEdgeComputing) {
+      this.k8sService.getEdgeNodes().subscribe(
+        (res: Array<{ description: string }>) => res.forEach(node => this.nodeSelectorList.push(node.description))
+      );
+    } else {
+      this.k8sService.getNodeSelectors().subscribe(
+        (res: Array<{ name: string, status: number }>) =>
+          res.forEach(value => this.nodeSelectorList.push(value.name))
+      );
+    }
+    this.k8sService.getLocate(this.service.serviceProjectName, this.service.serviceName).subscribe(
+      res => {
+        if (res && res !== '') {
+          this.dropdownDefaultText = res;
         }
       });
   }
 
   actionExecute() {
-    this.k8sService.setLocate(this.nodeSelector, this.service.service_project_name, this.service.service_name).subscribe(
-      () => this.onMessage.emit('SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL'),
-      (err) => this.onError.emit(err));
+    this.k8sService.setLocate(this.nodeSelector, this.service.serviceProjectName, this.service.serviceName).subscribe(
+      () => this.messageEvent.emit('SERVICE.SERVICE_CONTROL_LOCATE_SUCCESSFUL'),
+      (err) => this.errorEvent.emit(err));
   }
 
-  setNodeSelector(selector: string){
+  setNodeSelector(selector: string) {
     this.nodeSelector = selector;
-    this.onActionIsEnabled.emit(this.nodeSelector != "" && this.nodeSelector != this.dropdownDefaultText);
+    this.actionIsEnabledEvent.emit(this.nodeSelector !== '' && this.nodeSelector !== this.dropdownDefaultText);
   }
 }

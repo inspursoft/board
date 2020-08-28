@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
-import { CookieService } from 'ngx-cookie';
 import { HttpResponse } from '@angular/common/http';
 
 @Injectable()
 export class AppTokenService {
   tokenOrigin: string | null = '';
 
-  constructor(private cookieService: CookieService) {
+  constructor() {
 
   }
 
   get token(): string | null {
     if (this.tokenOrigin === '') {
-      this.token = this.cookieService.get('token');
+      this.token = localStorage.getItem('token');
     }
     return this.tokenOrigin;
   }
@@ -22,8 +21,8 @@ export class AppTokenService {
   }
 
   chainResponse(r: HttpResponse<object>): HttpResponse<object> {
-    this.token = r.headers.get('token');
-    this.cookieService.put('token', this.token);
+    this.token = r.headers.get('Token');
+    localStorage.setItem('token', this.token);
     return r;
   }
 }

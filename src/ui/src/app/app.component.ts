@@ -7,29 +7,31 @@ import { registerLocaleData } from '@angular/common';
 import localeZhHans from '@angular/common/locales/zh-Hans';
 
 @Component({
-  selector: 'board-app',
+  selector: 'app-board',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements AfterViewInit {
   @ViewChild('messageContainer', {read: ViewContainerRef}) messageContainer;
-  cookieExpiry: Date = new Date(Date.now() + 60 * 60 * 24 * 365 * 1000);
 
   constructor(private appInitService: AppInitService,
               private cookieService: CookieService,
               private messageService: MessageService,
               private resolver: ComponentFactoryResolver,
               private translateService: TranslateService) {
-    if (!cookieService.get('currentLang')) {
+    let currentLang = localStorage.getItem('currentLang');
+    if (!currentLang) {
       console.log('No found cookie for current lang, will use the default browser language.');
-      cookieService.put('currentLang', this.translateService.getBrowserCultureLang(), {expires: this.cookieExpiry});
+      currentLang = this.translateService.getBrowserCultureLang();
+      localStorage.setItem('currentLang', currentLang || 'en-us');
     }
-    this.appInitService.currentLang = cookieService.get('currentLang') || 'en-us';
-    translateService.use(this.appInitService.currentLang);
+    this.appInitService.currentLang = currentLang || 'en-us';
+    translateService.use(currentLang || 'en-us');
     this.translateService.onLangChange.subscribe((res: LangChangeEvent) => {
       const oldLang = this.appInitService.currentLang;
-      this.appInitService.currentLang = this.translateService.currentLang;
-      cookieService.put('currentLang', this.appInitService.currentLang, {expires: this.cookieExpiry});
+      currentLang = this.translateService.currentLang;
+      this.appInitService.currentLang = currentLang;
+      localStorage.setItem('currentLang', currentLang);
       if (res.lang.toLocaleLowerCase() !== oldLang.toLocaleLowerCase()) {
         window.location.reload(true);
       }

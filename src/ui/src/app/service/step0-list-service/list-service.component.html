@@ -1,16 +1,15 @@
-<service-create-yaml
-  *ngIf="isShowServiceCreateYaml"
-  (onCancelEvent)="cancelCreateService()">
-</service-create-yaml>
+<app-service-create-yaml *ngIf="isShowServiceCreateYaml"
+                         (cancelEvent)="cancelCreateService()">
+</app-service-create-yaml>
 <div *ngIf="isNormalStatus">
   <div class="clr-row flex-items-xs-right">
-    <cs-guide *ngIf="isFirstLogin && guideStep == 4"
-              [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
-              [show]="isFirstLogin && guideStep == 4"
-              [position]="'left-middle'"
-              (onClose)="setGuideNoneStep()"
-              (onNextStep)="guideNextStep(4)">
-    </cs-guide>
+    <app-cs-guide *ngIf="isFirstLogin && guideStep == 4"
+                  [description]="'SERVICE.GUIDE_CREATE_SERVICE'"
+                  [show]="isFirstLogin && guideStep == 4"
+                  [position]="'left-middle'"
+                  (closeGuide)="setGuideNoneStep()"
+                  (nextStep)="guideNextStep(4)">
+    </app-cs-guide>
     <button class="btn btn-primary"
             (click)="isBuildServiceWIP = true">
       {{ 'SERVICE.CREATE_SERVICE' | translate }}
@@ -33,15 +32,15 @@
     <clr-dg-column>{{ 'SERVICE.STATUS' | translate }}</clr-dg-column>
     <clr-dg-column>{{ 'SERVICE.OPERATION' | translate }}</clr-dg-column>
     <clr-dg-row *ngFor="let service of services">
-      <clr-dg-cell>{{service.service_name}}</clr-dg-cell>
-      <clr-dg-cell>{{service.service_project_name}}</clr-dg-cell>
-      <clr-dg-cell>{{service.service_owner_name}}</clr-dg-cell>
-      <clr-dg-cell>{{service.service_creation_time | date: 'short'}}</clr-dg-cell>
+      <clr-dg-cell>{{service.serviceName}}</clr-dg-cell>
+      <clr-dg-cell>{{service.serviceProjectName}}</clr-dg-cell>
+      <clr-dg-cell>{{service.serviceOwnerName}}</clr-dg-cell>
+      <clr-dg-cell>{{service.serviceCreationTime | date: 'short'}}</clr-dg-cell>
       <clr-dg-cell>
         <div class="tooltip tooltip-right">
           <input type="checkbox"
                  title=""
-                 [checked]="service.service_public === 1"
+                 [checked]="service.servicePublic === 1"
                  [disabled]="!isSystemAdminOrOwner(service)"
                  (click)="toggleServicePublic(service, $event)">
           <span [hidden]="isSystemAdminOrOwner(service)" class="tooltip-content">
@@ -50,12 +49,12 @@
         </div>
       </clr-dg-cell>
       <clr-dg-cell>
-          <span [ngClass]="getStatusClass(service.service_status)">
-            {{ getServiceStatus(service.service_status) | translate }}
+          <span [ngClass]="getStatusClass(service.serviceStatus)">
+            {{ getServiceStatus(service.serviceStatus) | translate }}
           </span>
       </clr-dg-cell>
       <clr-dg-cell>
-        <span *ngIf="isActionWIP.get(service.service_id)" class="spinner spinner-sm"></span>
+        <span *ngIf="isActionWIP.get(service.serviceId)" class="spinner spinner-sm"></span>
         <a href="javascript:void(0)">
           <clr-tooltip>
             <clr-icon *ngIf="isServiceCanPlay(service)"
@@ -95,7 +94,7 @@
         <a href="javascript:void(0)" (click)="openServiceDetail(service)">
           <clr-icon shape="info-standard"
                     class="action"
-                    [ngClass]="{'disabled':service.service_status == 2}">
+                    [ngClass]="{'disabled':service.serviceStatus == 2}">
           </clr-icon>
         </a>
         <a href="javascript:void(0)">

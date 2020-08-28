@@ -51,11 +51,11 @@ func GetBoolValue(name string) bool {
 }
 
 func GetStringValue(name string, defaultValue ...string) string {
-	if defaultValue != nil && len(defaultValue) > 0 {
-		return defaultValue[0]
-	}
 	if s, ok := configStorage[name].(string); ok {
 		return s
+	}
+	if defaultValue != nil && len(defaultValue) > 0 {
+		return defaultValue[0]
 	}
 	panic(fmt.Sprintf("Failed to get value for key: %s", name))
 }
@@ -95,6 +95,7 @@ func InitializeDefaultConfig() {
 
 	Initialize()
 
+	AddEnv("MODE")
 	AddEnv("BOARD_HOST_IP")
 	AddEnv("API_SERVER_PORT")
 	AddEnv("DB_IP")
@@ -173,6 +174,15 @@ func InitializeDefaultConfig() {
 	AddEnv("DNS_SUFFIX")
 
 	AddEnv("TILLER_PORT")
+
+	AddEnv("DEVOPS_OPT")
+
+	AddEnv("GITLAB_HOST_IP")
+	AddEnv("GITLAB_HOST_PORT")
+	AddEnv("GITLAB_HOST_SSH_PORT")
+	AddEnv("GITLAB_ADMIN_TOKEN")
+
+	SetConfig("GITLAB_BASE_URL", "http://%s:%s", "GITLAB_HOST_IP", "GITLAB_HOST_PORT")
 
 	ShowAllConfigs()
 }

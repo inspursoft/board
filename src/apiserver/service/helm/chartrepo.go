@@ -34,6 +34,8 @@ const (
 	DefaultType = 0
 )
 
+var supportedFiles = []string{"questions.yml", "questions.yaml"}
+
 type ReleaseList struct {
 	Next     string    `json:"Next,omitempty"`
 	Releases []Release `json:"Releases,omitempty"`
@@ -212,6 +214,23 @@ func (r *ChartRepository) FetchTgz(url string) (*model.Chart, error) {
 	return &chart, nil
 }
 
+func fillChartQuestions(chart *model.Chart) error {
+	// generate the questions
+	for _, file := range chart.Files {
+		for _, f := range supportedFiles {
+			if strings.EqualFold(f, file.Name) {
+				var value model.Questions
+				if err := yaml.Unmarshal([]byte(file.Contents), &value); err != nil {
+					return err
+				}
+				chart.Questions = value.Questions
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
 func (r *ChartRepository) formatChartURL(chartName, chartVersion string) (string, error) {
 	errMsg := fmt.Sprintf("chart %q", chartName)
 	if chartVersion != "" {
@@ -241,6 +260,11 @@ func (r *ChartRepository) FetchChart(chartName, chartVersion string) (*model.Cha
 		return nil, err
 	}
 	c, err := r.FetchTgz(absoluteChartURL)
+	if err != nil {
+		return nil, err
+	}
+	//fill the questions
+	err = fillChartQuestions(c)
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +399,7 @@ func (r *ChartRepository) Icon(versions ChartVersions) (string, string, error) {
 	return iconData, iconFilename, nil
 }
 
-func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values, helmhost string) error {
+func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, namespace, values string, answers map[string]string, helmhost string) error {
 	if helmhost == "" {
 		return fmt.Errorf("You must specify the HELM_HOST environment when the apiserver starts")
 	}
@@ -397,8 +421,15 @@ func (r *ChartRepository) InstallChart(chartName, chartVersion, releasename, nam
 		}
 	}
 
+	setValues := []string{}
+	if answers != nil {
+		for k, v := range answers {
+			setValues = append(setValues, "--set", fmt.Sprintf("%s=%s", k, strings.Replace(v, ",", "\v", -1)))
+		}
+	}
+
 	//create the release
-	err = installChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost)
+	err = installChart(releasename, namespace, filepath.Join(targetdir, chartName), helmhost, setValues...)
 	if err != nil {
 		return err
 	}
@@ -529,8 +560,11 @@ func loadIndex(data []byte) (*IndexFile, error) {
 	return i, nil
 }
 
-func installChart(name, namespace, rootDir, helmhost string) error {
-	_, err := execHelmCommand(helmhost, "upgrade", "--install", "--namespace", namespace, name, rootDir)
+func installChart(name, namespace, rootDir, helmhost string, setValues ...string) error {
+	commands := make([]string, 0)
+	commands = append([]string{"upgrade", "--install", "--namespace", namespace, name}, setValues...)
+	commands = append(commands, rootDir)
+	_, err := execHelmCommand(helmhost, commands...)
 	return err
 }
 

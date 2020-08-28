@@ -1,5 +1,8 @@
 div.modal-body{
   min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  line-height: 32px;
 }
 
 div.volume-info-container {

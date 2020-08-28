@@ -1,0 +1,43 @@
+<h3 *ngIf="nodeLogs.pagination.totalCount === 0">{{"Node.Node_Logs_Empty" | translate}}</h3>
+<clr-datagrid (clrDgRefresh)="retrieve()">
+  <clr-dg-column>{{ 'Node.Node_Logs_Ip' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Operation_Time' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Type' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Success' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'Node.Node_Logs_Operation' | translate }}</clr-dg-column>
+  <clr-dg-row *ngFor="let nodeLog of nodeLogs.list">
+    <clr-dg-cell>{{nodeLog.ip}}</clr-dg-cell>
+    <clr-dg-cell>{{nodeLog.creationTime * 1000 | date: "short"}}</clr-dg-cell>
+    <clr-dg-cell>
+      <span *ngIf="nodeLog.type === 0">{{'Node.Node_Detail_Add' | translate}}</span>
+      <span *ngIf="nodeLog.type === 1">{{'Node.Node_Detail_Remove' | translate}}</span>
+    </clr-dg-cell>
+    <clr-dg-cell [style.background-color]="nodeLog.success ? 'lightgreen' : 'transparent'">
+      {{nodeLog.success}}
+    </clr-dg-cell>
+    <clr-dg-cell>
+      <div class="normal-container">
+        <a href="javascript:void(0)">
+          <clr-icon shape="info" class="is-solid" (click)="showLogDetail(nodeLog)"></clr-icon>
+        </a>
+        <div *ngIf="!nodeLog.completed" class="normal-container">
+          <a hidden href="javascript:void(0)">
+            <clr-icon shape="pause" (click)="stopExecuting(nodeLog)"></clr-icon>
+          </a>
+          <span class="spinner spinner-sm"></span>
+          <span *ngIf="nodeLog.type === 0">{{'Node.Node_Logs_Adding' | translate}}</span>
+          <span *ngIf="nodeLog.type === 1">{{'Node.Node_Logs_Removing' | translate}}</span>
+        </div>
+      </div>
+    </clr-dg-cell>
+  </clr-dg-row>
+  <clr-dg-footer>
+    {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+    {{"DATAGRID.TOTAL" | translate}}{{pagination.totalItems}}{{"DATAGRID.ITEMS" | translate}}
+    <clr-dg-pagination #pagination
+                       [clrDgTotalItems]="nodeLogs.pagination.totalCount"
+                       [(clrDgPage)]="curPageIndex"
+                       [clrDgPageSize]="curPageSize">
+    </clr-dg-pagination>
+  </clr-dg-footer>
+</clr-datagrid>

@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit } from "@angular/core";
-import { CsModalChildBase } from "../../../shared/cs-modal-base/cs-modal-child-base";
-import { ConfigMap } from "../../resource.types";
-import { ResourceService } from "../../resource.service";
-import { MessageService } from "../../../shared.service/message.service";
-import { SharedService } from "../../../shared.service/shared.service";
-import { Project } from "../../../project/project";
+import { ChangeDetectorRef, Component, EventEmitter, OnInit } from '@angular/core';
+import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-base';
+import { ResourceService } from '../../resource.service';
+import { MessageService } from '../../../shared.service/message.service';
+import { SharedService } from '../../../shared.service/shared.service';
+import { SharedConfigMap } from '../../../shared/shared.types';
+import { ConfigMapProject } from '../../resource.types';
 
 @Component({
   templateUrl: './create-config-map.component.html',
@@ -12,9 +12,9 @@ import { Project } from "../../../project/project";
 })
 export class CreateConfigMapComponent extends CsModalChildBase implements OnInit {
   isCreateWip = false;
-  onAfterCommit: EventEmitter<ConfigMap>;
-  newConfigMap: ConfigMap;
-  projectList: Array<Project>;
+  onAfterCommit: EventEmitter<SharedConfigMap>;
+  newConfigMap: SharedConfigMap;
+  projectList: Array<ConfigMapProject>;
   isLoadWip = false;
   configMapNamePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
 
@@ -23,22 +23,22 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
               private resourceService: ResourceService,
               private messageService: MessageService) {
     super();
-    this.onAfterCommit = new EventEmitter<ConfigMap>();
-    this.newConfigMap = new ConfigMap();
-    this.projectList = Array<Project>();
+    this.onAfterCommit = new EventEmitter<SharedConfigMap>();
+    this.newConfigMap = new SharedConfigMap();
+    this.projectList = Array<ConfigMapProject>();
   }
 
   ngOnInit(): void {
     this.isLoadWip = true;
-    this.sharedService.getAllProjects().subscribe(
-      (res: Array<Project>) => this.projectList = res,
+    this.resourceService.getAllProjects().subscribe(
+      (res: Array<ConfigMapProject>) => this.projectList = res,
       () => this.isLoadWip = false,
       () => this.isLoadWip = false
     );
   }
 
-  changeSelectProject(project: Project) {
-    this.newConfigMap.namespace = project.project_name;
+  changeSelectProject(project: ConfigMapProject) {
+    this.newConfigMap.namespace = project.projectName;
   }
 
   createConfigMap() {
@@ -51,7 +51,7 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
         },
         () => this.modalOpened = false,
         () => this.modalOpened = false
-      )
+      );
     }
   }
 

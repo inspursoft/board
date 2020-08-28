@@ -1,14 +1,19 @@
-<clr-tabs>
+<clr-tabs *ngIf="isCreatingNode === false">
   <clr-tab>
     <button clrTabLink>{{"NODE.NODE_LIST" | translate}}</button>
-      <clr-tab-content *clrIfActive>
-        <node-list></node-list>
-      </clr-tab-content>
+    <clr-tab-content *clrIfActive>
+      <app-node-list (creatingNode)="setCreatingNode($event)"></app-node-list>
+    </clr-tab-content>
   </clr-tab>
   <clr-tab>
     <button clrTabLink>{{"NODE.NODE_GROUP" | translate}}</button>
-      <clr-tab-content *clrIfActive>
-        <node-group></node-group>
-      </clr-tab-content>
+    <clr-tab-content *clrIfActive>
+      <app-node-group></app-node-group>
+    </clr-tab-content>
   </clr-tab>
 </clr-tabs>
+
+<app-node-create-new-guide *ngIf="isCreatingNode"
+                           [nodeList]="nodeList"
+                           (createNodeFinished)="isCreatingNode = false">
+</app-node-create-new-guide>

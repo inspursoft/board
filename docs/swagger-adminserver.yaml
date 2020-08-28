@@ -1,0 +1,715 @@
+swagger: "2.0"
+info:
+  title: Admin server API
+  description: Admin server API
+  version: 1.0.0
+  termsOfService: http://beego.me/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+basePath: /v1/admin
+paths:
+  /account/createUUID:
+    post:
+      tags:
+      - account
+      description: create UUID
+      operationId: AccController.CreateUUID
+      responses:
+        "200":
+          description: success
+        "202":
+          description: accepted
+        "500":
+          description: Internal Server Error
+  /account/login:
+    post:
+      tags:
+      - account
+      description: Logs user into the system
+      operationId: AccController.Login
+      parameters:
+      - in: body
+        name: body
+        description: body for user account
+        required: true
+        schema:
+          $ref: '#/definitions/models.Account'
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/models.TokenString'
+        "403":
+          description: forbidden
+        "500":
+          description: Internal Server Error
+  /board/applycfg:
+    post:
+      tags:
+      - board
+      description: apply cfg and restart Board
+      operationId: BoardController.Applycfg
+      parameters:
+      - in: query
+        name: token
+        description: token
+        type: string
+      - in: body
+        name: body
+        description: body for host acc info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Account'
+      responses:
+        "200":
+          description: success
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+  /board/shutdown:
+    post:
+      tags:
+      - board
+      description: shutdown board
+      operationId: BoardController.Shutdown
+      parameters:
+      - in: query
+        name: token
+        description: token
+        type: string
+      - in: query
+        name: uninstall
+        description: uninstall flag
+        required: true
+        type: boolean
+      - in: body
+        name: body
+        description: body for host acc info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Account'
+      responses:
+        "200":
+          description: success
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+        "503":
+          description: Service Unavailable
+  /board/start:
+    post:
+      tags:
+      - board
+      description: start Board
+      operationId: BoardController.Start
+      parameters:
+      - in: query
+        name: token
+        description: token
+        type: string
+      - in: body
+        name: body
+        description: body for host acc info
+        required: true
+        schema:
+          $ref: '#/definitions/models.Account'
+      responses:
+        "200":
+          description: success
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+  /boot/checksysstatus:
+    get:
+      tags:
+      - boot
+      description: return the current system status.
+      operationId: BootController.CheckSysStatus
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/models.InitSysStatus'
+        "500":
+          description: Internal Server Error
+  /configuration/:
+    get:
+      tags:
+      - configuration
+      description: return all cfg parameters
+      operationId: CfgController.GetAll
+      parameters:
+      - in: query
+        name: which
+        description: which file to get
+        type: string
+      - in: query
+        name: token
+        description: token
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/models.Configuration'
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+    put:
+      tags:
+      - configuration
+      description: update cfg
+      operationId: CfgController.Put
+      parameters:
+      - in: body
+        name: body
+        description: parameters
+        required: true
+        schema:
+          $ref: '#/definitions/models.Configuration'
+      - in: query
+        name: token
+        description: token
+        type: string
+      responses:
+        "200":
+          description: success
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+  /monitor/:
+    get:
+      tags:
+      - monitor
+      description: monitor Board module containers
+      operationId: MonitorController.Get
+      parameters:
+      - in: query
+        name: token
+        description: token
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.Boardinfo'
+        "401":
+          description: 'unauthorized: token invalid/session timeout'
+        "500":
+          description: Internal Server Error
+  /node/:
+    get:
+      tags:
+      - node
+      description: Get node list
+      operationId: Controller.Get node list
+      responses:
+        "200":
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/nodeModel.NodeStatus'
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+    post:
+      tags:
+      - node
+      description: Get add nodeModel
+      operationId: Controller.add nodeModel
+      parameters:
+      - in: body
+        name: body
+        description: "true"
+        schema:
+          $ref: '#/definitions/nodeModel.AddNodePostData'
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+      - node
+      description: remove node
+      operationId: Controller.remove node
+      parameters:
+      - in: query
+        name: node_ip
+        description: "true"
+        type: string
+      - in: query
+        name: node_password
+        description: "true"
+        type: string
+      - in: query
+        name: host_password
+        description: "true"
+        type: string
+      - in: query
+        name: host_username
+        description: root
+        required: true
+        type: string
+      - in: query
+        name: master_password
+        description: "true"
+        type: string
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/{node_name}:
+    get:
+      tags:
+      - node
+      description: Get node control status
+      operationId: Controller.Get node control status
+      parameters:
+      - in: path
+        name: node_name
+        description: "true"
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.NodeControlStatus'
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/callback:
+    put:
+      tags:
+      - node
+      description: Update node log
+      operationId: Controller.Update node log
+      parameters:
+      - in: body
+        name: body
+        description: "true"
+        schema:
+          $ref: '#/definitions/nodeModel.UpdateNodeLog'
+      responses:
+        "200":
+          description: ""
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/log:
+    get:
+      tags:
+      - node
+      description: Get detail of history log info
+      operationId: Controller.Get detail of history log info
+      parameters:
+      - in: query
+        name: node_ip
+        description: "true"
+        type: string
+      - in: query
+        name: creation_time
+        description: "true"
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/nodeModel.NodeLogDetail'
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+    delete:
+      tags:
+      - node
+      description: Delete node log info from node_log table and node_log_detail_info
+        table
+      operationId: Controller.Delete node log
+      parameters:
+      - in: query
+        name: creation_time
+        description: "true"
+        type: string
+      responses:
+        "200":
+          description: success
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/logs:
+    get:
+      tags:
+      - node
+      description: Get node log list
+      operationId: Controller.Get node log list
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/nodeModel.PaginatedNodeLogList'
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+  /node/preparation:
+    get:
+      tags:
+      - node
+      description: get preparation data
+      operationId: Controller.get preparation data
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/nodeModel.PreparationData'
+        "400":
+          description: bad request
+        "500":
+          description: Internal Server Error
+definitions:
+  3526.<nil>.NodeLog:
+    title: NodeLog
+    type: object
+  model.NodeControlStatus:
+    title: NodeControlStatus
+    type: object
+  models.Account:
+    title: Account
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      password:
+        type: string
+      username:
+        type: string
+  models.Apiserver:
+    title: Apiserver
+    type: object
+    properties:
+      api_server_port:
+        type: string
+      hostname:
+        type: string
+      image_baseline_time:
+        type: string
+      kube_http_scheme:
+        type: string
+      kube_master_ip:
+        type: string
+      kube_master_port:
+        type: string
+      registry_ip:
+        type: string
+      registry_port:
+        type: string
+  models.Boardinfo:
+    title: Boardinfo
+    type: object
+    properties:
+      block_io:
+        type: string
+      cpu_perc:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      mem_perc:
+        type: string
+      mem_usage:
+        type: string
+      name:
+        type: string
+      net_io:
+        type: string
+      pids:
+        type: string
+      ports:
+        type: string
+      status:
+        type: string
+  models.Configuration:
+    title: Configuration
+    type: object
+    properties:
+      Apiserver:
+        $ref: '#/definitions/models.Apiserver'
+      Email:
+        $ref: '#/definitions/models.Email'
+      Gogitserver:
+        $ref: '#/definitions/models.Gogitserver'
+      Jenkinsserver:
+        $ref: '#/definitions/models.Jenkinsserver'
+      Kvm:
+        $ref: '#/definitions/models.Kvm'
+      Ldap:
+        $ref: '#/definitions/models.Ldap'
+      Other:
+        $ref: '#/definitions/models.Other'
+      current:
+        type: string
+      first_time_post:
+        type: boolean
+      tmp_exist:
+        type: boolean
+  models.Email:
+    title: Email
+    type: object
+    properties:
+      email_from:
+        type: string
+      email_identity:
+        type: string
+      email_password:
+        type: string
+      email_server:
+        type: string
+      email_server_port:
+        type: string
+      email_ssl:
+        type: string
+      email_username:
+        type: string
+  models.Gogitserver:
+    title: Gogitserver
+    type: object
+    properties:
+      gogits_host_ip:
+        type: string
+      gogits_host_port:
+        type: string
+      gogits_ssh_port:
+        type: string
+  models.InitStatus:
+    title: InitStatus
+    format: int64
+    type: integer
+    enum:
+    - InitStatusFirst = 1
+    - InitStatusSecond = 2
+    - InitStatusThird = 3
+    example: 1
+  models.InitSysStatus:
+    title: InitSysStatus
+    type: object
+    properties:
+      status:
+        $ref: '#/definitions/models.InitStatus'
+  models.Jenkinsserver:
+    title: Jenkinsserver
+    type: object
+    properties:
+      jenkins_execution_mode:
+        type: string
+      jenkins_host_ip:
+        type: string
+      jenkins_host_port:
+        type: string
+      jenkins_node_ip:
+        type: string
+      jenkins_node_password:
+        type: string
+      jenkins_node_ssh_port:
+        type: string
+      jenkins_node_username:
+        type: string
+      jenkins_node_volume:
+        type: string
+  models.Kvm:
+    title: Kvm
+    type: object
+    properties:
+      kvm_registry_port:
+        type: string
+      kvm_registry_size:
+        type: string
+      kvm_toolkits_path:
+        type: string
+  models.Ldap:
+    title: Ldap
+    type: object
+    properties:
+      ldap_basedn:
+        type: string
+      ldap_scope:
+        type: string
+      ldap_timeout:
+        type: string
+      ldap_uid:
+        type: string
+      ldap_url:
+        type: string
+  models.Other:
+    title: Other
+    type: object
+    properties:
+      arch_type:
+        type: string
+      audit_debug:
+        type: string
+      auth_mode:
+        type: string
+      board_admin_password:
+        type: string
+      db_max_connections:
+        type: string
+      db_password:
+        type: string
+      dns_suffix:
+        type: string
+      elaseticsearch_memory_in_megabytes:
+        type: string
+      mode:
+        type: string
+      redirection_url:
+        type: string
+      tiller_port:
+        type: string
+      token_cache_expire_seconds:
+        type: string
+      token_expire_seconds:
+        type: string
+      verification_url:
+        type: string
+  models.TokenString:
+    title: TokenString
+    type: object
+    properties:
+      token:
+        type: string
+  nodeModel.AddNodePostData:
+    title: AddNodePostData
+    type: object
+    properties:
+      host_password:
+        type: string
+      host_username:
+        type: string
+      master_password:
+        type: string
+      node_ip:
+        type: string
+      node_password:
+        type: string
+  nodeModel.NodeLogDetail:
+    title: NodeLogDetail
+    type: object
+    properties:
+      message:
+        type: string
+      status:
+        $ref: '#/definitions/nodeModel.NodeLogResponseStatus'
+  nodeModel.NodeLogResponseStatus:
+    title: NodeLogResponseStatus
+    format: int64
+    type: integer
+    enum:
+    - NodeLogResponseUnKnown = 0
+    - NodeLogResponseStart = 1
+    - NodeLogResponseNormal = 2
+    - NodeLogResponseError = 3
+    - NodeLogResponseWarning = 4
+    - NodeLogResponseSuccess = 5
+    - NodeLogResponseFailed = 6
+    example: 0
+  nodeModel.NodeStatus:
+    title: NodeStatus
+    type: object
+    properties:
+      creation_time:
+        type: integer
+        format: int64
+      id:
+        type: integer
+        format: int64
+      ip:
+        type: string
+  nodeModel.PaginatedNodeLogList:
+    title: PaginatedNodeLogList
+    type: object
+    properties:
+      log_list:
+        $ref: '#/definitions/3526.<nil>.NodeLog'
+      pagination:
+        $ref: '#/definitions/nodeModel.Pagination'
+  nodeModel.Pagination:
+    title: Pagination
+    type: object
+    properties:
+      page_count:
+        type: integer
+        format: int64
+      page_index:
+        type: integer
+        format: int64
+      page_size:
+        type: integer
+        format: int64
+      total_count:
+        type: integer
+        format: int64
+  nodeModel.PreparationData:
+    title: PreparationData
+    type: object
+    properties:
+      host_ip:
+        type: string
+      master_ip:
+        type: string
+  nodeModel.UpdateNodeLog:
+    title: UpdateNodeLog
+    type: object
+    properties:
+      install_file:
+        type: string
+      ip:
+        type: string
+      log_file:
+        type: string
+      log_id:
+        type: integer
+        format: int64
+      success:
+        type: integer
+        format: int64
+tags:
+- name: configuration
+  description: |
+    CfgController includes operations about cfg
+- name: account
+  description: |
+    AccController includes operations about account.
+- name: board
+  description: |
+    BoardController controlls Board up and down.
+- name: monitor
+  description: |
+    MonitorController includes operations about monitoring.
+- name: boot
+  description: |
+    BootController includes operations about booting config.

@@ -1,20 +1,23 @@
-import { AfterViewInit, Directive, HostBinding, Input, OnDestroy, Optional, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Directive, HostBinding, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { CsComponentBase } from '../cs-components-library/cs-component-base';
 import { Observable, Subject } from 'rxjs';
-import { MessageService } from "../../shared.service/message.service";
+import { MessageService } from '../../shared.service/message.service';
 
-@Directive({selector: 'div.modal-body, .modal-title'})
-export class CsModalChildBaseSelector {
+@Directive({
+  selector: '[appModalViewContainerSelector], .modal-body, .modal-title'
+})
+export class CsModalViewContainerSelectorDirective {
   @HostBinding('tabindex') tabIndex = '-1';
+
   constructor(public view: ViewContainerRef) {
 
   }
 }
 
-export class CsModalChildBase extends CsComponentBase implements OnDestroy{
-  _modalOpened: boolean = false;
+export class CsModalChildBase extends CsComponentBase implements OnDestroy {
+  modalOpenedValue = false;
   @Output() closeNotification: Subject<any>;
-  @ViewChild(CsModalChildBaseSelector) alertViewSelector;
+  @ViewChild(CsModalViewContainerSelectorDirective) alertViewSelector;
 
   constructor() {
     super();
@@ -30,14 +33,14 @@ export class CsModalChildBase extends CsComponentBase implements OnDestroy{
   }
 
   set modalOpened(value: boolean) {
-    this._modalOpened = value;
+    this.modalOpenedValue = value;
     if (!value) {
-      this.closeNotification.next()
+      this.closeNotification.next();
     }
   }
 
   get modalOpened(): boolean {
-    return this._modalOpened;
+    return this.modalOpenedValue;
   }
 
   openModal(): Observable<any> {
@@ -52,7 +55,7 @@ export class CsModalChildMessage extends CsModalChildBase implements OnDestroy, 
   }
 
   ngAfterViewInit(): void {
-    this.messageService.registerModalDialogHandle(this.alertView)
+    this.messageService.registerModalDialogHandle(this.alertView);
   }
 
   ngOnDestroy() {

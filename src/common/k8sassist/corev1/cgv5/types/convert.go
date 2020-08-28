@@ -7,16 +7,18 @@ import (
 
 	"strconv"
 
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalev1 "k8s.io/api/autoscaling/v1"
+	autoscalingapi "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 // generate k8s objectmeta from model objectmeta
@@ -36,7 +38,7 @@ func ToK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
 }
 
 // generate k8s deployment from model deployment
-func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
+func ToK8sDeployment(deployment *model.Deployment) *appsv1.Deployment {
 	if deployment == nil {
 		return nil
 	}
@@ -45,13 +47,13 @@ func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 		templ = *t
 	}
 	rep := deployment.Spec.Replicas
-	return &appsv1beta2.Deployment{
+	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
-			APIVersion: "apps/v1beta2",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(deployment.ObjectMeta),
-		Spec: appsv1beta2.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: &rep,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: deployment.Spec.Selector,
@@ -59,7 +61,7 @@ func ToK8sDeployment(deployment *model.Deployment) *appsv1beta2.Deployment {
 			Template: templ,
 			Paused:   deployment.Spec.Paused,
 		},
-		Status: appsv1beta2.DeploymentStatus{
+		Status: appsv1.DeploymentStatus{
 			Replicas:            deployment.Status.Replicas,
 			UpdatedReplicas:     deployment.Status.UpdatedReplicas,
 			UnavailableReplicas: deployment.Status.UnavailableReplicas,
@@ -84,32 +86,32 @@ func ToK8sPodTemplateSpec(template *model.PodTemplateSpec) *v1.PodTemplateSpec {
 }
 
 // generate k8s replicaset from model replicaset
-func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
+func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
-	var spec appsv1beta2.ReplicaSetSpec
+	var spec appsv1.ReplicaSetSpec
 	if s := ToK8sReplicaSetSpec(&rs.Spec); s != nil {
 		spec = *s
 	}
-	conds := make([]appsv1beta2.ReplicaSetCondition, len(rs.Status.Conditions))
+	conds := make([]appsv1.ReplicaSetCondition, len(rs.Status.Conditions))
 	for i := range rs.Status.Conditions {
-		conds[i] = appsv1beta2.ReplicaSetCondition{
-			Type:               appsv1beta2.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
+		conds[i] = appsv1.ReplicaSetCondition{
+			Type:               appsv1.ReplicaSetConditionType(string(rs.Status.Conditions[i].Type)),
 			Status:             v1.ConditionStatus(string(rs.Status.Conditions[i].Status)),
 			LastTransitionTime: metav1.NewTime(rs.Status.Conditions[i].LastTransitionTime),
 			Reason:             rs.Status.Conditions[i].Reason,
 			Message:            rs.Status.Conditions[i].Message,
 		}
 	}
-	return &appsv1beta2.ReplicaSet{
+	return &appsv1.ReplicaSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ReplicaSet",
-			APIVersion: "apps/v1beta2",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(rs.ObjectMeta),
 		Spec:       spec,
-		Status: appsv1beta2.ReplicaSetStatus{
+		Status: appsv1.ReplicaSetStatus{
 			Replicas:             rs.Status.Replicas,
 			FullyLabeledReplicas: rs.Status.FullyLabeledReplicas,
 			ReadyReplicas:        rs.Status.ReadyReplicas,
@@ -120,7 +122,7 @@ func ToK8sReplicaSet(rs *model.ReplicaSet) *appsv1beta2.ReplicaSet {
 	}
 }
 
-func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec {
+func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
@@ -134,7 +136,7 @@ func ToK8sReplicaSetSpec(spec *model.ReplicaSetSpec) *appsv1beta2.ReplicaSetSpec
 	if t := ToK8sPodTemplateSpec(&spec.Template); t != nil {
 		template = *t
 	}
-	return &appsv1beta2.ReplicaSetSpec{
+	return &appsv1.ReplicaSetSpec{
 		Replicas:        spec.Replicas,
 		MinReadySeconds: spec.MinReadySeconds,
 		Selector:        selector,
@@ -199,26 +201,31 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		}
 	}
 
-	var affinity *v1.Affinity
-	if spec.Affinity.PodAffinity != nil || spec.Affinity.PodAntiAffinity != nil {
-		affinity = &v1.Affinity{}
-		if spec.Affinity.PodAffinity != nil {
-			affinity.PodAffinity = &v1.PodAffinity{}
-			for _, term := range spec.Affinity.PodAffinity {
-				affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-					affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-				)
-			}
-		}
-		if spec.Affinity.PodAntiAffinity != nil {
-			affinity.PodAntiAffinity = &v1.PodAntiAffinity{}
-			for _, term := range spec.Affinity.PodAntiAffinity {
-				affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
-					affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
-				)
-			}
+	affinity := &v1.Affinity{}
+	if spec.Affinity.PodAffinity != nil {
+		affinity.PodAffinity = &v1.PodAffinity{}
+		for _, term := range spec.Affinity.PodAffinity {
+			affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+				affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+			)
 		}
 	}
+	if spec.Affinity.PodAntiAffinity != nil {
+		affinity.PodAntiAffinity = &v1.PodAntiAffinity{}
+		for _, term := range spec.Affinity.PodAntiAffinity {
+			affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(
+				affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution, ToK8sAffinityTerm(term),
+			)
+		}
+	}
+	if spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution != nil {
+		affinity.NodeAffinity = &v1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &v1.NodeSelector{
+				NodeSelectorTerms: ToK8sNodeSelectorTerms(spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms),
+			},
+		}
+	}
+
 	return &v1.PodSpec{
 		Volumes:        volumes,
 		InitContainers: initContainers,
@@ -228,7 +235,50 @@ func ToK8sPodSpec(spec *model.PodSpec) *v1.PodSpec {
 		HostNetwork:    spec.HostNetwork,
 		Affinity:       affinity,
 		RestartPolicy:  v1.RestartPolicy(string(spec.RestartPolicy)),
+		Tolerations:    ToK8sTolerations(spec.Tolerations),
 	}
+}
+
+func ToK8sTolerations(modeltols []model.Toleration) []v1.Toleration {
+	var tols []v1.Toleration
+	if modeltols != nil {
+		for _, tol := range modeltols {
+			tols = append(tols, ToK8sToleration(tol))
+		}
+	}
+	return tols
+}
+
+func ToK8sToleration(tol model.Toleration) v1.Toleration {
+	return v1.Toleration{
+		Key:               tol.Key,
+		Operator:          v1.TolerationOperator(string(tol.Operator)),
+		Value:             tol.Value,
+		Effect:            v1.TaintEffect(string(tol.Effect)),
+		TolerationSeconds: tol.TolerationSeconds,
+	}
+}
+
+func ToK8sNodeSelectorTerms(terms []model.NodeSelectorTerm) []v1.NodeSelectorTerm {
+	var nodeSelectorTerms []v1.NodeSelectorTerm
+	for _, term := range terms {
+		nodeSelectorTerms = append(nodeSelectorTerms, v1.NodeSelectorTerm{
+			MatchExpressions: ToK8sNodeSelectorRequirements(term.MatchExpressions),
+		})
+	}
+	return nodeSelectorTerms
+}
+
+func ToK8sNodeSelectorRequirements(NodeSelectorRequirements []model.NodeSelectorRequirement) []v1.NodeSelectorRequirement {
+	var K8sNodeSelectorRequirements []v1.NodeSelectorRequirement
+	for _, NodeSelectorRequirement := range NodeSelectorRequirements {
+		K8sNodeSelectorRequirements = append(K8sNodeSelectorRequirements, v1.NodeSelectorRequirement{
+			Key:      NodeSelectorRequirement.Key,
+			Operator: v1.NodeSelectorOperator(NodeSelectorRequirement.Operator),
+			Values:   NodeSelectorRequirement.Values,
+		})
+	}
+	return K8sNodeSelectorRequirements
 }
 
 func ToK8sAffinityTerm(term model.PodAffinityTerm) v1.PodAffinityTerm {
@@ -297,8 +347,8 @@ func ToK8sVolumeSource(volumeSource *model.VolumeSource) *v1.VolumeSource {
 	}
 
 	return &v1.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -397,6 +447,109 @@ func ToK8sVolumeMount(mount model.VolumeMount) v1.VolumeMount {
 	}
 }
 
+func ToK8sGroupResource(gr model.GroupResource) schema.GroupResource {
+	return schema.GroupResource{
+		Group:    gr.Group,
+		Resource: gr.Resource,
+	}
+}
+
+func ToK8sTerminalSizeQueue(tsq model.TerminalSizeQueue) remotecommand.TerminalSizeQueue {
+	return TerminalSizeQueueFunc(func() *remotecommand.TerminalSize {
+		size := tsq.Next()
+		return &remotecommand.TerminalSize{
+			Width:  size.Width,
+			Height: size.Height,
+		}
+	})
+}
+
+func ToK8sDaemonSet(daemonset *model.DaemonSet) *appsv1.DaemonSet {
+	if daemonset == nil {
+		return nil
+	}
+	return &appsv1.DaemonSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       daemonsetKind,
+			APIVersion: daemonsetAPIVersion,
+		},
+		ObjectMeta: ToK8sObjectMeta(daemonset.ObjectMeta),
+		Spec:       ToK8sDaemonSetSpec(daemonset.Spec),
+		Status:     ToK8sDaemonSetStatus(daemonset.Status),
+	}
+}
+
+func ToK8sDaemonSetSpec(spec model.DaemonSetSpec) appsv1.DaemonSetSpec {
+	var templ v1.PodTemplateSpec
+	if t := ToK8sPodTemplateSpec(&spec.Template); t != nil {
+		templ = *t
+	}
+	return appsv1.DaemonSetSpec{
+		Selector:             ToK8sLabelSelector(spec.Selector),
+		Template:             templ,
+		UpdateStrategy:       ToK8sDaemonSetUpdateStrategy(spec.UpdateStrategy),
+		MinReadySeconds:      spec.MinReadySeconds,
+		RevisionHistoryLimit: spec.RevisionHistoryLimit,
+	}
+}
+
+func ToK8sDaemonSetUpdateStrategy(strategy model.DaemonSetUpdateStrategy) appsv1.DaemonSetUpdateStrategy {
+	return appsv1.DaemonSetUpdateStrategy{
+		Type:          appsv1.DaemonSetUpdateStrategyType(string(strategy.Type)),
+		RollingUpdate: ToK8sRollingUpdateDaemonSet(strategy.RollingUpdate),
+	}
+}
+
+func ToK8sRollingUpdateDaemonSet(rollingupdate *model.RollingUpdateDaemonSet) *appsv1.RollingUpdateDaemonSet {
+	if rollingupdate == nil {
+		return nil
+	}
+	var max *intstr.IntOrString
+	if modelmax := rollingupdate.MaxUnavailable; modelmax != nil {
+		m := intstr.Parse(modelmax.String())
+		max = &m
+	}
+	return &appsv1.RollingUpdateDaemonSet{
+		MaxUnavailable: max,
+	}
+}
+
+func ToK8sDaemonSetStatus(status model.DaemonSetStatus) appsv1.DaemonSetStatus {
+	return appsv1.DaemonSetStatus{
+		CurrentNumberScheduled: status.CurrentNumberScheduled,
+		NumberMisscheduled:     status.NumberMisscheduled,
+		DesiredNumberScheduled: status.DesiredNumberScheduled,
+		NumberReady:            status.NumberReady,
+		ObservedGeneration:     status.ObservedGeneration,
+		UpdatedNumberScheduled: status.UpdatedNumberScheduled,
+		NumberAvailable:        status.NumberAvailable,
+		NumberUnavailable:      status.NumberUnavailable,
+		CollisionCount:         status.CollisionCount,
+		Conditions:             ToK8sDaemonSetConditions(status.Conditions),
+	}
+}
+
+func ToK8sDaemonSetConditions(list []model.DaemonSetCondition) []appsv1.DaemonSetCondition {
+	if list == nil {
+		return nil
+	}
+	conds := make([]appsv1.DaemonSetCondition, 0, len(list))
+	for _, cond := range list {
+		conds = append(conds, ToK8sDaemonSetCondition(cond))
+	}
+	return conds
+}
+
+func ToK8sDaemonSetCondition(cond model.DaemonSetCondition) appsv1.DaemonSetCondition {
+	return appsv1.DaemonSetCondition{
+		Type:               appsv1.DaemonSetConditionType(string(cond.Type)),
+		Status:             v1.ConditionStatus(cond.Status),
+		LastTransitionTime: metav1.NewTime(cond.LastTransitionTime),
+		Reason:             cond.Reason,
+		Message:            cond.Message,
+	}
+}
+
 func FromK8sInfo(info *version.Info) *model.KubernetesInfo {
 	return &model.KubernetesInfo{
 		Major:        info.Major,
@@ -426,7 +579,7 @@ func FromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
 }
 
 // generate model deployment list from k8s deployment list
-func FromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.DeploymentList {
+func FromK8sDeploymentList(deploymentList *appsv1.DeploymentList) *model.DeploymentList {
 	if deploymentList == nil {
 		return nil
 	}
@@ -441,7 +594,7 @@ func FromK8sDeploymentList(deploymentList *appsv1beta2.DeploymentList) *model.De
 }
 
 // generate model deployment from k8s deployment
-func FromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
+func FromK8sDeployment(deployment *appsv1.Deployment) *model.Deployment {
 	if deployment == nil {
 		return nil
 	}
@@ -461,7 +614,7 @@ func FromK8sDeployment(deployment *appsv1beta2.Deployment) *model.Deployment {
 	}
 }
 
-func FromK8sDeploymentSpec(spec *appsv1beta2.DeploymentSpec) *model.DeploymentSpec {
+func FromK8sDeploymentSpec(spec *appsv1.DeploymentSpec) *model.DeploymentSpec {
 	if spec == nil {
 		return nil
 	}
@@ -503,7 +656,7 @@ func FromK8sPodTemplateSpec(template *v1.PodTemplateSpec) *model.PodTemplateSpec
 }
 
 // generate model replicaset list from k8s replicaset list
-func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetList {
+func FromK8sReplicaSetList(list *appsv1.ReplicaSetList) *model.ReplicaSetList {
 	if list == nil {
 		return nil
 	}
@@ -519,7 +672,7 @@ func FromK8sReplicaSetList(list *appsv1beta2.ReplicaSetList) *model.ReplicaSetLi
 }
 
 // generate model replicaset from k8s replicaset
-func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
+func FromK8sReplicaSet(rs *appsv1.ReplicaSet) *model.ReplicaSet {
 	if rs == nil {
 		return nil
 	}
@@ -551,7 +704,7 @@ func FromK8sReplicaSet(rs *appsv1beta2.ReplicaSet) *model.ReplicaSet {
 	}
 }
 
-func FromK8sReplicSetSpec(spec *appsv1beta2.ReplicaSetSpec) *model.ReplicaSetSpec {
+func FromK8sReplicSetSpec(spec *appsv1.ReplicaSetSpec) *model.ReplicaSetSpec {
 	if spec == nil {
 		return nil
 	}
@@ -646,6 +799,27 @@ func FromK8sPodSpec(spec *v1.PodSpec) *model.PodSpec {
 		NodeName:       spec.NodeName,
 		HostNetwork:    spec.HostNetwork,
 		RestartPolicy:  model.RestartPolicy(string(spec.RestartPolicy)),
+		Tolerations:    FromK8sTolerations(spec.Tolerations),
+	}
+}
+
+func FromK8sTolerations(tols []v1.Toleration) []model.Toleration {
+	var k8stols []model.Toleration
+	if tols != nil {
+		for _, tol := range tols {
+			k8stols = append(k8stols, FromK8sToleration(tol))
+		}
+	}
+	return k8stols
+}
+
+func FromK8sToleration(tol v1.Toleration) model.Toleration {
+	return model.Toleration{
+		Key:               tol.Key,
+		Operator:          model.TolerationOperator(string(tol.Operator)),
+		Value:             tol.Value,
+		Effect:            model.TaintEffect(string(tol.Effect)),
+		TolerationSeconds: tol.TolerationSeconds,
 	}
 }
 
@@ -689,8 +863,8 @@ func FromK8sVolumeSource(volumeSource v1.VolumeSource) model.VolumeSource {
 	}
 
 	return model.VolumeSource{
-		HostPath: hp,
-		NFS:      nfs,
+		HostPath:              hp,
+		NFS:                   nfs,
 		PersistentVolumeClaim: pvc,
 		ConfigMap:             configmap,
 	}
@@ -731,15 +905,16 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	}
 
 	return &model.K8sContainer{
-		Name:         container.Name,
-		Image:        container.Image,
-		Command:      container.Command,
-		Args:         container.Args,
-		WorkingDir:   container.WorkingDir,
-		Ports:        ports,
-		Env:          envs,
-		Resources:    resources,
-		VolumeMounts: mounts,
+		Name:            container.Name,
+		Image:           container.Image,
+		Command:         container.Command,
+		Args:            container.Args,
+		WorkingDir:      container.WorkingDir,
+		Ports:           ports,
+		Env:             envs,
+		Resources:       resources,
+		VolumeMounts:    mounts,
+		SecurityContext: FromK8sSecurityContext(container.SecurityContext),
 	}
 }
 
@@ -780,6 +955,16 @@ func FromK8sVolumeMount(mount v1.VolumeMount) model.VolumeMount {
 		Name:      mount.Name,
 		MountPath: mount.MountPath,
 		SubPath:   mount.SubPath,
+	}
+}
+
+func FromK8sSecurityContext(context *v1.SecurityContext) *model.SecurityContext {
+	var privileged *bool
+	if context != nil && context.Privileged != nil {
+		privileged = context.Privileged
+	}
+	return &model.SecurityContext{
+		Privileged: privileged,
 	}
 }
 
@@ -907,6 +1092,31 @@ func FromK8sServiceList(typesServiceList *ServiceList) *model.ServiceList {
 	return modelServiceList
 }
 
+func ToK8sNodeTaints(taints []model.Taint) []v1.Taint {
+	var k8staints []v1.Taint
+	if taints != nil {
+		for _, t := range taints {
+			k8staints = append(k8staints, ToK8sNodeTaint(t))
+		}
+	}
+	return k8staints
+}
+
+func ToK8sNodeTaint(taint model.Taint) v1.Taint {
+	var added *metav1.Time
+	if taint.TimeAdded != nil {
+		added = &metav1.Time{
+			*taint.TimeAdded,
+		}
+	}
+	return v1.Taint{
+		Key:       taint.Key,
+		Value:     taint.Value,
+		Effect:    v1.TaintEffect(string(taint.Effect)),
+		TimeAdded: added,
+	}
+}
+
 // generate k8s node status from model node status
 func ToK8sNodeStatus(nodestatus model.NodeStatus) v1.NodeStatus {
 	capacity := make(map[v1.ResourceName]resource.Quantity)
@@ -1029,6 +1239,7 @@ func ToK8sNode(node *model.Node) *v1.Node {
 		ObjectMeta: ToK8sObjectMeta(node.ObjectMeta),
 		Spec: v1.NodeSpec{
 			Unschedulable: node.Unschedulable,
+			Taints:        ToK8sNodeTaints(node.Taints),
 		},
 		Status: ToK8sNodeStatus(node.Status),
 	}
@@ -1052,8 +1263,32 @@ func UpdateK8sNode(k8sNode *v1.Node, node *model.Node) {
 	k8sNode.Labels = node.Labels
 
 	k8sNode.Spec.Unschedulable = node.Unschedulable
+	k8sNode.Spec.Taints = ToK8sNodeTaints(node.Taints)
 
 	UpdateK8sNodeStatus(&k8sNode.Status, &node.Status)
+}
+
+func FromK8sNodeTaints(taints []v1.Taint) []model.Taint {
+	var ts []model.Taint
+	if taints != nil {
+		for _, t := range taints {
+			ts = append(ts, FromK8sNodeTaint(t))
+		}
+	}
+	return ts
+}
+
+func FromK8sNodeTaint(taint v1.Taint) model.Taint {
+	var t *time.Time
+	if taint.TimeAdded != nil {
+		t = &taint.TimeAdded.Time
+	}
+	return model.Taint{
+		Key:       taint.Key,
+		Value:     taint.Value,
+		Effect:    model.TaintEffect(string(taint.Effect)),
+		TimeAdded: t,
+	}
 }
 
 // adapt model node.Status from k8s node.Status
@@ -1109,6 +1344,7 @@ func FromK8sNode(node *v1.Node) *model.Node {
 		ObjectMeta:    FromK8sObjectMeta(node.ObjectMeta),
 		NodeIP:        node.ObjectMeta.Name,
 		Unschedulable: node.Spec.Unschedulable,
+		Taints:        FromK8sNodeTaints(node.Spec.Taints),
 		Status:        FromK8sNodeStatus(node.Status),
 	}
 }
@@ -1129,7 +1365,7 @@ func FromK8sNodeList(nodeList *v1.NodeList) *model.NodeList {
 	}
 }
 
-func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
+func FromK8sScale(scale *autoscalingapi.Scale) *model.Scale {
 	return &model.Scale{
 		ObjectMeta: FromK8sObjectMeta(scale.ObjectMeta),
 		Spec:       model.ScaleSpec(scale.Spec),
@@ -1137,19 +1373,19 @@ func FromK8sScale(scale *v1beta1.Scale) *model.Scale {
 	}
 }
 
-func ToK8sScale(scale *model.Scale) *v1beta1.Scale {
-	return &v1beta1.Scale{
+func ToK8sScale(scale *model.Scale) *autoscalingapi.Scale {
+	return &autoscalingapi.Scale{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Scale",
-			APIVersion: "v1beta1",
+			APIVersion: "v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(scale.ObjectMeta),
-		Spec:       v1beta1.ScaleSpec(scale.Spec),
-		Status:     v1beta1.ScaleStatus(scale.Status),
+		Spec:       autoscalingapi.ScaleSpec(scale.Spec),
+		Status:     autoscalingapi.ScaleStatus(scale.Status),
 	}
 }
 
-func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.Deployment {
+func GenerateDeploymentConfig(deployment *appsv1.Deployment) *appsv1.Deployment {
 	containersConfig := []v1.Container{}
 	for _, container := range deployment.Spec.Template.Spec.Containers {
 		containersConfig = append(containersConfig, v1.Container{
@@ -1167,7 +1403,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			ReadinessProbe: container.ReadinessProbe,
 		})
 	}
-	return &appsv1beta2.Deployment{
+	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       deploymentKind,
 			APIVersion: deploymentAPIVersion,
@@ -1177,7 +1413,7 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 			Name:      deployment.ObjectMeta.Name,
 			Namespace: deployment.ObjectMeta.Namespace,
 		},
-		Spec: appsv1beta2.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Replicas: deployment.Spec.Replicas,
 			Selector: deployment.Spec.Selector,
 			Template: v1.PodTemplateSpec{
@@ -1193,6 +1429,8 @@ func GenerateDeploymentConfig(deployment *appsv1beta2.Deployment) *appsv1beta2.D
 					ImagePullSecrets:   deployment.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     deployment.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					HostNetwork:        deployment.Spec.Template.Spec.HostNetwork,
+					Tolerations:        deployment.Spec.Template.Spec.Tolerations,
 				},
 			},
 		},
@@ -1320,18 +1558,18 @@ func IsAlreadyExistError(err error) bool {
 	return errors.IsAlreadyExists(err)
 }
 
-func FromK8sRBD(rbd *v1.RBDVolumeSource) *model.RBDVolumeSource {
+func FromK8sRBD(rbd *v1.RBDPersistentVolumeSource) *model.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
 	}
-	return &model.RBDVolumeSource{
+	return &model.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
 		RBDImage:     rbd.RBDImage,
 		FSType:       rbd.FSType,
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    (*model.LocalObjectReference)(rbd.SecretRef),
+		SecretRef:    (*model.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }
@@ -1408,18 +1646,18 @@ func FromK8sPVList(pvList *v1.PersistentVolumeList) *model.PersistentVolumeList 
 	}
 }
 
-func ToK8sRBD(rbd *model.RBDVolumeSource) *v1.RBDVolumeSource {
+func ToK8sRBD(rbd *model.RBDPersistentVolumeSource) *v1.RBDPersistentVolumeSource {
 	if rbd == nil {
 		return nil
 	}
-	return &v1.RBDVolumeSource{
+	return &v1.RBDPersistentVolumeSource{
 		CephMonitors: rbd.CephMonitors,
 		RBDImage:     rbd.RBDImage,
 		FSType:       rbd.FSType,
 		RBDPool:      rbd.RBDPool,
 		RadosUser:    rbd.RadosUser,
 		Keyring:      rbd.Keyring,
-		SecretRef:    (*v1.LocalObjectReference)(rbd.SecretRef),
+		SecretRef:    (*v1.SecretReference)(rbd.SecretRef),
 		ReadOnly:     rbd.ReadOnly,
 	}
 }
@@ -1654,7 +1892,7 @@ func UpdateK8sConfigMap(k8sCM *v1.ConfigMap, cm *model.ConfigMap) {
 }
 
 // ToK8sStatefulSet is to generate k8s statefulset from model statefulset
-func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
+func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1.StatefulSet {
 	if statefulset == nil {
 		return nil
 	}
@@ -1664,13 +1902,13 @@ func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
 	}
 	//rep := deployment.Spec.Replicas
 
-	return &appsv1beta1.StatefulSet{
+	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: ToK8sObjectMeta(statefulset.ObjectMeta),
-		Spec: appsv1beta1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: statefulset.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: statefulset.Spec.Selector.MatchLabels,
@@ -1682,7 +1920,7 @@ func ToK8sStatefulSet(statefulset *model.StatefulSet) *appsv1beta1.StatefulSet {
 			//UpdateStrategy:  statefulset.Spec.UpdateStrategy,
 			//RevisionHistoryLimit:  statefulset.Spec.RevisionHistoryLimit,
 		},
-		Status: appsv1beta1.StatefulSetStatus{
+		Status: appsv1.StatefulSetStatus{
 			Replicas:        statefulset.Status.Replicas,
 			ReadyReplicas:   statefulset.Status.ReadyReplicas,
 			CurrentReplicas: statefulset.Status.CurrentReplicas,
@@ -1944,7 +2182,7 @@ func LabelSelectorToString(selector *model.LabelSelector) string {
 }
 
 // FromK8sStatefulSet is to generate model StatefulSet from k8s StatefulSet
-func FromK8sStatefulSet(statefulset *appsv1beta1.StatefulSet) *model.StatefulSet {
+func FromK8sStatefulSet(statefulset *appsv1.StatefulSet) *model.StatefulSet {
 	if statefulset == nil {
 		return nil
 	}
@@ -1981,7 +2219,7 @@ func FromK8sStatefulSet(statefulset *appsv1beta1.StatefulSet) *model.StatefulSet
 }
 
 // FromK8sStatefulSetList is to generate model StatefulSetList from k8s StatefulSetList
-func FromK8sStatefulSetList(statefulsetList *appsv1beta1.StatefulSetList) *model.StatefulSetList {
+func FromK8sStatefulSetList(statefulsetList *appsv1.StatefulSetList) *model.StatefulSetList {
 	if statefulsetList == nil {
 		return nil
 	}
@@ -1997,7 +2235,7 @@ func FromK8sStatefulSetList(statefulsetList *appsv1beta1.StatefulSetList) *model
 }
 
 // GenerateStatefulSetConfig is to generate stateful config
-func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta1.StatefulSet {
+func GenerateStatefulSetConfig(statefulset *appsv1.StatefulSet) *appsv1.StatefulSet {
 	containersConfig := []v1.Container{}
 	for _, container := range statefulset.Spec.Template.Spec.Containers {
 		containersConfig = append(containersConfig, v1.Container{
@@ -2015,17 +2253,17 @@ func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta
 			ReadinessProbe: container.ReadinessProbe,
 		})
 	}
-	return &appsv1beta1.StatefulSet{
+	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
-			APIVersion: "apps/v1beta1",
+			APIVersion: "apps/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:    statefulset.ObjectMeta.Labels,
 			Name:      statefulset.ObjectMeta.Name,
 			Namespace: statefulset.ObjectMeta.Namespace,
 		},
-		Spec: appsv1beta1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: statefulset.Spec.Replicas,
 			Selector: statefulset.Spec.Selector,
 			Template: v1.PodTemplateSpec{
@@ -2041,9 +2279,160 @@ func GenerateStatefulSetConfig(statefulset *appsv1beta1.StatefulSet) *appsv1beta
 					ImagePullSecrets:   statefulset.Spec.Template.Spec.ImagePullSecrets,
 					InitContainers:     statefulset.Spec.Template.Spec.InitContainers,
 					Containers:         containersConfig,
+					Tolerations:        statefulset.Spec.Template.Spec.Tolerations,
 				},
 			},
 			ServiceName: statefulset.Spec.ServiceName,
+		},
+	}
+}
+
+// generate model daemonset list from k8s daemonset list
+func FromK8sDaemonSetList(daemonsetList *appsv1.DaemonSetList) *model.DaemonSetList {
+	if daemonsetList == nil {
+		return nil
+	}
+	items := make([]model.DaemonSet, 0)
+	for i := range daemonsetList.Items {
+		ds := FromK8sDaemonSet(&daemonsetList.Items[i])
+		items = append(items, *ds)
+	}
+	return &model.DaemonSetList{
+		Items: items,
+	}
+}
+
+func FromK8sDaemonSet(daemonset *appsv1.DaemonSet) *model.DaemonSet {
+	if daemonset == nil {
+		return nil
+	}
+	return &model.DaemonSet{
+		ObjectMeta: FromK8sObjectMeta(daemonset.ObjectMeta),
+		Spec:       FromK8sDaemonSetSpec(daemonset.Spec),
+		Status:     FromK8sDaemonSetStatus(daemonset.Status),
+	}
+}
+
+func FromK8sDaemonSetSpec(spec appsv1.DaemonSetSpec) model.DaemonSetSpec {
+	var template model.PodTemplateSpec
+	if t := FromK8sPodTemplateSpec(&spec.Template); t != nil {
+		template = *t
+	}
+	return model.DaemonSetSpec{
+		Selector:             FromK8sLabelSelector(spec.Selector),
+		Template:             template,
+		UpdateStrategy:       FromK8sDaemonSetUpdateStrategy(spec.UpdateStrategy),
+		MinReadySeconds:      spec.MinReadySeconds,
+		RevisionHistoryLimit: spec.RevisionHistoryLimit,
+	}
+}
+
+func FromK8sDaemonSetUpdateStrategy(strategy appsv1.DaemonSetUpdateStrategy) model.DaemonSetUpdateStrategy {
+	return model.DaemonSetUpdateStrategy{
+		Type:          model.DaemonSetUpdateStrategyType(string(strategy.Type)),
+		RollingUpdate: FromK8sRollingUpdateDaemonSet(strategy.RollingUpdate),
+	}
+}
+
+func FromK8sRollingUpdateDaemonSet(rollingupdate *appsv1.RollingUpdateDaemonSet) *model.RollingUpdateDaemonSet {
+	if rollingupdate == nil {
+		return nil
+	}
+	var max *model.IntOrString
+	if k8smax := rollingupdate.MaxUnavailable; k8smax != nil {
+		m := model.Parse(k8smax.String())
+		max = &m
+	}
+	return &model.RollingUpdateDaemonSet{
+		MaxUnavailable: max,
+	}
+}
+
+func FromK8sDaemonSetStatus(status appsv1.DaemonSetStatus) model.DaemonSetStatus {
+	return model.DaemonSetStatus{
+		CurrentNumberScheduled: status.CurrentNumberScheduled,
+		NumberMisscheduled:     status.NumberMisscheduled,
+		DesiredNumberScheduled: status.DesiredNumberScheduled,
+		NumberReady:            status.NumberReady,
+		ObservedGeneration:     status.ObservedGeneration,
+		UpdatedNumberScheduled: status.UpdatedNumberScheduled,
+		NumberAvailable:        status.NumberAvailable,
+		NumberUnavailable:      status.NumberUnavailable,
+		CollisionCount:         status.CollisionCount,
+		Conditions:             FromK8sDaemonSetConditions(status.Conditions),
+	}
+}
+
+func FromK8sDaemonSetConditions(list []appsv1.DaemonSetCondition) []model.DaemonSetCondition {
+	if list == nil {
+		return nil
+	}
+	conds := make([]model.DaemonSetCondition, 0, len(list))
+	for _, cond := range list {
+		conds = append(conds, FromK8sDaemonSetCondition(cond))
+	}
+	return conds
+}
+
+func FromK8sDaemonSetCondition(cond appsv1.DaemonSetCondition) model.DaemonSetCondition {
+	return model.DaemonSetCondition{
+		Type:               model.DaemonSetConditionType(string(cond.Type)),
+		Status:             model.ConditionStatus(cond.Status),
+		LastTransitionTime: cond.LastTransitionTime.Time,
+		Reason:             cond.Reason,
+		Message:            cond.Message,
+	}
+}
+
+func GenerateDaemonSetConfig(daemonset *appsv1.DaemonSet) *appsv1.DaemonSet {
+	containersConfig := []v1.Container{}
+	for _, container := range daemonset.Spec.Template.Spec.Containers {
+		containersConfig = append(containersConfig, v1.Container{
+			Name:           container.Name,
+			Image:          container.Image,
+			Command:        container.Command,
+			Args:           container.Args,
+			WorkingDir:     container.WorkingDir,
+			Ports:          container.Ports,
+			EnvFrom:        container.EnvFrom,
+			Env:            container.Env,
+			Resources:      container.Resources,
+			VolumeMounts:   container.VolumeMounts,
+			LivenessProbe:  container.LivenessProbe,
+			ReadinessProbe: container.ReadinessProbe,
+		})
+	}
+	return &appsv1.DaemonSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       daemonsetKind,
+			APIVersion: daemonsetAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Labels:    daemonset.ObjectMeta.Labels,
+			Name:      daemonset.ObjectMeta.Name,
+			Namespace: daemonset.ObjectMeta.Namespace,
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: daemonset.Spec.Selector,
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: daemonset.Spec.Template.ObjectMeta.Labels,
+					Name:   daemonset.Spec.Template.ObjectMeta.Name,
+				},
+				Spec: v1.PodSpec{
+					Affinity:           daemonset.Spec.Template.Spec.Affinity,
+					Volumes:            daemonset.Spec.Template.Spec.Volumes,
+					NodeSelector:       daemonset.Spec.Template.Spec.NodeSelector,
+					ServiceAccountName: daemonset.Spec.Template.Spec.ServiceAccountName,
+					ImagePullSecrets:   daemonset.Spec.Template.Spec.ImagePullSecrets,
+					InitContainers:     daemonset.Spec.Template.Spec.InitContainers,
+					Containers:         containersConfig,
+					Tolerations:        daemonset.Spec.Template.Spec.Tolerations,
+				},
+			},
+			UpdateStrategy:       daemonset.Spec.UpdateStrategy,
+			MinReadySeconds:      daemonset.Spec.MinReadySeconds,
+			RevisionHistoryLimit: daemonset.Spec.RevisionHistoryLimit,
 		},
 	}
 }

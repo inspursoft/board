@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
+	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/model/yaml"
 	"path/filepath"
@@ -28,9 +29,10 @@ const (
 	defaultDeleted     = 0
 	defaultStatus      = 1
 	serviceNamespace   = "default" //TODO create namespace in project post
-	scaleKind          = "Deployment"
 	k8sService         = "kubernetes"
 )
+
+var scaleKind = model.GroupResource{Group: "apps", Resource: "deployments"}
 
 const (
 	board = iota
@@ -477,13 +479,14 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	var spectype = "ClusterIP"
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
-		ports = append(ports, model.ServicePort{
-			Name:     "port" + strconv.Itoa(index),
-			Port:     int32(port.NodeConfig.TargetPort),
-			NodePort: int32(port.NodeConfig.NodePort),
-		})
-		if port.NodeConfig.NodePort != 0 {
+		// NodePort 0 is for auto nodeport
+		if port.NodeConfig != (model.NodeType{}) {
 			spectype = "NodePort"
+			ports = append(ports, model.ServicePort{
+				Name:     "port" + strconv.Itoa(index),
+				Port:     int32(port.NodeConfig.TargetPort),
+				NodePort: int32(port.NodeConfig.NodePort),
+			})
 		}
 	}
 
@@ -498,7 +501,7 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	}
 }
 
-func setDeploymentNodeSelector(nodeOrNodeGroupName string) map[string]string {
+func setDeploymentNodeSelector(nodeOrNodeGroupName string, serviceType int) map[string]string {
 	if nodeOrNodeGroupName == "" {
 		return nil
 	}
@@ -506,6 +509,11 @@ func setDeploymentNodeSelector(nodeOrNodeGroupName string) map[string]string {
 	if nodegroup != nil && nodegroup.ID != 0 {
 		return map[string]string{nodeOrNodeGroupName: "true"}
 	} else {
+		if serviceType == model.ServiceTypeEdgeComputing {
+			//return map[string]string{"name": nodeOrNodeGroupName}
+			// TODO need unify the label pattern for edge node for verion 1.2 1.3+
+			return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
+		}
 		return map[string]string{"kubernetes.io/hostname": nodeOrNodeGroupName}
 	}
 }
@@ -610,6 +618,101 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 		k8sContainerList = append(k8sContainerList, container)
 	}
 	return k8sContainerList
+}
+
+//Get view mode container from k8s container list
+func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []model.Volume) []model.Container {
+	if containerList == nil {
+		return nil
+	}
+	viewContainerList := make([]model.Container, 0)
+	for _, cont := range containerList {
+		container := model.Container{}
+		container.Name = cont.Name
+
+		if cont.WorkingDir != "" {
+			container.WorkingDir = cont.WorkingDir
+		}
+
+		// Just for fixed mode by wizard set
+		if len(cont.Command) > 0 && cont.Command[0] != "" {
+			container.Command = cont.Args[1]
+		}
+
+		// Fix me, assume the index is the same
+		for i, v := range cont.VolumeMounts {
+			if v.Name != "" {
+				volumeMount := model.VolumeMountStruct{
+					VolumeName:    v.Name,
+					ContainerPath: v.MountPath,
+				}
+				if v.SubPath != "" {
+					volumeMount.ContainerFile = v.SubPath
+					volumeMount.TargetFile = v.SubPath
+					volumeMount.ContainerPathFlag = 1
+				}
+				// skip over the step to travel volumes, only support the fixed mode by wizard
+				if volumeList[i].VolumeSource.HostPath != nil {
+					volumeMount.VolumeType = "hostpath"
+					volumeMount.TargetPath = volumeList[i].VolumeSource.HostPath.Path
+				} else if volumeList[i].VolumeSource.NFS != nil {
+					volumeMount.VolumeType = "nfs"
+					volumeMount.TargetStorageService = volumeList[i].VolumeSource.NFS.Server
+					volumeMount.TargetPath = volumeList[i].VolumeSource.NFS.Path
+				} else if volumeList[i].VolumeSource.PersistentVolumeClaim != nil {
+					volumeMount.VolumeType = "pvc"
+					volumeMount.TargetPVC = volumeList[i].VolumeSource.PersistentVolumeClaim.ClaimName
+				} else if volumeList[i].VolumeSource.ConfigMap != nil {
+					volumeMount.VolumeType = "configmap"
+					volumeMount.TargetConfigMap = volumeList[i].VolumeSource.ConfigMap.Name
+				}
+
+				container.VolumeMounts = append(container.VolumeMounts, volumeMount)
+			}
+		}
+
+		if len(cont.Env) > 0 {
+			for _, enviroment := range cont.Env {
+				if enviroment.Name != "" {
+					var envStruct model.EnvStructCont
+					envStruct.EnvName = enviroment.Name
+					if enviroment.ValueFrom == nil {
+						envStruct.EnvValue = enviroment.Value
+					} else {
+						envStruct.EnvValue = ""
+						envStruct.EnvConfigMapKey = enviroment.ValueFrom.ConfigMapKeyRef.Key
+						envStruct.EnvConfigMapName = enviroment.ValueFrom.ConfigMapKeyRef.Name
+					}
+					container.Env = append(container.Env, envStruct)
+				}
+			}
+		}
+
+		for _, port := range cont.Ports {
+			container.ContainerPort = append(container.ContainerPort, int(port.ContainerPort))
+		}
+
+		// Get image
+		colon := strings.LastIndex(cont.Image, ":")
+		slash := strings.Index(cont.Image, "/")
+		container.Image.ImageTag = cont.Image[colon+1:]
+		container.Image.ImageName = cont.Image[slash+1 : colon]
+
+		if _, ok := cont.Resources.Requests["cpu"]; ok {
+			container.CPURequest = string(cont.Resources.Requests["cpu"])
+		}
+		if _, ok := cont.Resources.Requests["memory"]; ok {
+			container.MemRequest = string(cont.Resources.Requests["memory"])
+		}
+		if _, ok := cont.Resources.Limits["cpu"]; ok {
+			container.CPULimit = string(cont.Resources.Limits["cpu"])
+		}
+		if _, ok := cont.Resources.Limits["memory"]; ok {
+			container.MemLimit = string(cont.Resources.Limits["memory"])
+		}
+		viewContainerList = append(viewContainerList, container)
+	}
+	return viewContainerList
 }
 
 func setDeploymentVolumes(containerList []model.Container) []model.Volume {
@@ -771,6 +874,12 @@ func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 	return k8sAffinity
 }
 
+// Create a torleration for Edge Service
+func addDeploymentEdgeToleration(nodeselector map[string]string) model.Toleration {
+	logs.Debug("Create a torleration for %v", nodeselector)
+	return model.Toleration{Key: "edge", Operator: model.TolerationOpExists}
+}
+
 func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI string) *model.Deployment {
 	if serviceConfig == nil {
 		return nil
@@ -784,11 +893,15 @@ func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI strin
 			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
 			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
 			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
-			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector, serviceConfig.ServiceType),
 			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
 
+	// Add a torleration for the Edge service
+	if serviceConfig.ServiceType == model.ServiceTypeEdgeComputing {
+		podTemplate.Spec.Tolerations = append(podTemplate.Spec.Tolerations, addDeploymentEdgeToleration(podTemplate.Spec.NodeSelector))
+	}
 	//TODO need to redesign the volume config step and unite container volumes
 	if podTemplate.Spec.InitContainers != nil {
 		podTemplate.Spec.Volumes = addInitContainerVolumes(serviceConfig.InitContainerList, podTemplate.Spec.Volumes)
@@ -821,7 +934,7 @@ func MarshalStatefulSet(serviceConfig *model.ConfigServiceStep, registryURI stri
 			Volumes:        setDeploymentVolumes(serviceConfig.ContainerList),
 			Containers:     setDeploymentContainers(serviceConfig.ContainerList, registryURI),
 			InitContainers: setDeploymentContainers(serviceConfig.InitContainerList, registryURI),
-			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector),
+			NodeSelector:   setDeploymentNodeSelector(serviceConfig.NodeSelector, serviceConfig.ServiceType),
 			Affinity:       setDeploymentAffinity(serviceConfig.AffinityList),
 		},
 	}
@@ -1005,4 +1118,87 @@ func CheckServiceDeletable(svc *model.ServiceStatus) error {
 		return fmt.Errorf("you must delete the service %s from helm release page.", svc.Name)
 	}
 	return nil
+}
+
+func GetServiceType(svcType string) int {
+	if svcType == "NodePort" {
+		return model.ServiceTypeNormalNodePort
+	} else if svcType == "ClusterIP" || svcType == "" {
+		return model.ServiceTypeClusterIP
+	} else {
+		return model.ServiceTypeUnknown
+	}
+}
+
+func GetServiceContainers(s *model.ServiceStatus) ([]model.ServiceContainer, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+
+	var opts model.ListOptions
+	if s.Type != model.ServiceTypeEdgeComputing {
+		svc, _, err := k8sclient.AppV1().Service(s.ProjectName).Get(s.Name)
+		if err != nil {
+			return nil, err
+		}
+		if svc.Selector == nil {
+			return nil, nil
+		}
+		opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: svc.Selector})
+	} else {
+		deployment, _, err := k8sclient.AppV1().Deployment(s.ProjectName).Get(s.Name)
+		if err != nil {
+			return nil, err
+		}
+		if deployment.Spec.Selector == nil {
+			return nil, nil
+		}
+		opts.LabelSelector = types.LabelSelectorToString(&model.LabelSelector{MatchLabels: deployment.Spec.Selector})
+	}
+
+	var serviceContainer model.ServiceContainer
+	var sContainers []model.ServiceContainer
+	podList, err := k8sclient.AppV1().Pod(s.ProjectName).List(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range podList.Items {
+		for j := range podList.Items[i].Spec.InitContainers {
+			serviceContainer.ContainerName = podList.Items[i].Spec.InitContainers[j].Name
+			serviceContainer.PodName = podList.Items[i].Name
+			serviceContainer.ServiceName = s.Name
+			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
+			var privileged bool
+			if podList.Items[i].Spec.InitContainers[j].SecurityContext != nil && podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged != nil {
+				privileged = *podList.Items[i].Spec.InitContainers[j].SecurityContext.Privileged
+			}
+			serviceContainer.SecurityContext = privileged
+			serviceContainer.InitContainer = true
+			sContainers = append(sContainers, serviceContainer)
+		}
+		for j := range podList.Items[i].Spec.Containers {
+			serviceContainer.ContainerName = podList.Items[i].Spec.Containers[j].Name
+			serviceContainer.PodName = podList.Items[i].Name
+			serviceContainer.ServiceName = s.Name
+			if podList.Items[i].Status.HostIP == "" {
+				hostName := podList.Items[i].Spec.NodeSelector["kubernetes.io/hostname"]
+				nodeInfo, err := GetNode(hostName)
+				if err != nil {
+					logs.Warning("Failed to get node inforation by node's hostname. error: ", err)
+				} else {
+					podList.Items[i].Status.HostIP = nodeInfo.NodeIP
+				}
+			}
+			serviceContainer.NodeIP = podList.Items[i].Status.HostIP
+			var privileged bool
+			if podList.Items[i].Spec.Containers[j].SecurityContext != nil && podList.Items[i].Spec.Containers[j].SecurityContext.Privileged != nil {
+				privileged = *podList.Items[i].Spec.Containers[j].SecurityContext.Privileged
+			}
+			serviceContainer.SecurityContext = privileged
+			serviceContainer.InitContainer = false
+			sContainers = append(sContainers, serviceContainer)
+		}
+	}
+	return sContainers, nil
 }

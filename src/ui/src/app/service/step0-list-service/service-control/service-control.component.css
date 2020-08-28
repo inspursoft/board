@@ -1,5 +1,9 @@
-div.modal-body{
-  min-height: 400px;
+div.modal-body {
+  height: 500px;
+}
+
+.modal-header {
+  padding: 0 !important;
 }
 
 div.scale-line {
@@ -13,7 +17,7 @@ label.margin-left-10 {
   margin-left: 10px;
 }
 
-label.disabled{
+label.disabled {
   color: silver;
 }
 

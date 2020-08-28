@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/k8sassist"
 	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
 	"git/inspursoft/board/src/common/model"
+
 	//"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -107,6 +108,7 @@ func GetConfigMapK8s(configname string, projectname string) (*model.ConfigMap, e
 	if err != nil {
 		if types.IsNotFoundError(err) {
 			logs.Debug("Not found ConfigMap %s", configname)
+			return nil, nil
 		} else {
 			return nil, err
 		}

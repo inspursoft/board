@@ -1,0 +1,35 @@
+<clr-vertical-nav [clrVerticalNavCollapsible]="false">
+  <clr-vertical-nav-group [clrVerticalNavGroupExpanded]="computeNavGroupExpanded">
+    <clr-icon shape="cog" clrVerticalNavIcon></clr-icon>
+    {{"Resource.Nav_Compute" | translate}}
+    <clr-vertical-nav-group-children>
+      <a clrVerticalNavLink
+         routerLink="node-list"
+         routerLinkActive="active">
+        {{"Resource.Nav_Node_List" | translate}}
+      </a>
+      <a clrVerticalNavLink
+         routerLink="node-logs"
+         routerLinkActive="active">
+        {{"Resource.Nav_Node_Log_List" | translate}}
+      </a>
+    </clr-vertical-nav-group-children>
+  </clr-vertical-nav-group>
+  <clr-vertical-nav-group *ngIf="false" [clrVerticalNavGroupExpanded]="storageNavGroupExpanded">
+    <clr-icon shape="flame" clrVerticalNavIcon></clr-icon>
+    {{"Resource.Nav_Storage" | translate}}
+    <clr-vertical-nav-group-children>
+
+    </clr-vertical-nav-group-children>
+  </clr-vertical-nav-group>
+  <clr-vertical-nav-group *ngIf="false">
+    <clr-icon shape="bolt" clrVerticalNavIcon></clr-icon>
+    {{"Resource.Nav_Network" | translate}}
+    <clr-vertical-nav-group-children>
+
+    </clr-vertical-nav-group-children>
+  </clr-vertical-nav-group>
+</clr-vertical-nav>
+<div style="flex-basis: 100%;padding: 10px;">
+  <router-outlet></router-outlet>
+</div>

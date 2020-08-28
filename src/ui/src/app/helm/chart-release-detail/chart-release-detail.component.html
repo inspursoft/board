@@ -8,20 +8,19 @@
             <clr-tab>
                 <button clrTabLink>{{"HELM.RELEASE_CHART_LIST_NOTES" | translate}}</button>
                 <clr-tab-content *clrIfActive>
-                    <cs-highlight [language]="'yaml'" [code]="detail.notes"></cs-highlight>
+                    <app-cs-highlight [language]="'yaml'" [code]="detail.notes"></app-cs-highlight>
                 </clr-tab-content>
             </clr-tab>
             <clr-tab>
                 <button clrTabLink>{{"HELM.RELEASE_CHART_LIST_WORKLOADS" | translate}}</button>
                 <clr-tab-content  *clrIfActive>
-                    <cs-highlight [language]="'yaml'" [code]="detail.workloads">
-                    </cs-highlight>
+                    <app-cs-highlight [language]="'yaml'" [code]="detail.workloads"></app-cs-highlight>
                 </clr-tab-content>
             </clr-tab>
             <clr-tab>
                 <button clrTabLink >{{"HELM.RELEASE_CHART_LIST_WORKLOADS_STATUS" | translate}}</button>
                 <clr-tab-content *clrIfActive>
-                    <cs-highlight [language]="'yaml'" [code]="detail.workloadstatus"></cs-highlight>
+                    <app-cs-highlight [language]="'yaml'" [code]="detail.workloadstatus"></app-cs-highlight>
                 </clr-tab-content>
             </clr-tab>
         </clr-tabs>

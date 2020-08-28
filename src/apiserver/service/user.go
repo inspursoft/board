@@ -2,9 +2,9 @@ package service
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -41,23 +41,23 @@ func ConfigSSHAccess(username string, accessToken string) error {
 		return err
 	}
 	publicKey := bytes.NewBuffer(data).String()
-	return gogs.NewGogsHandler(username, accessToken).CreatePublicKey(fmt.Sprintf("%s's access public key", username), publicKey)
+	return CurrentDevOps().ConfigSSHAccess(username, accessToken, publicKey)
 }
 
 func SignUp(user model.User) (bool, error) {
-	err := gogs.SignUp(user)
+	err := CurrentDevOps().SignUp(user)
 	if err != nil {
-		return false, fmt.Errorf("Failed to create Gogs account for DevOps: %+v", err)
+		return false, fmt.Errorf("Failed to create account for DevOps Git repository: %+v", err)
 	}
-	accessToken, err := gogs.CreateAccessToken(user.Username, user.Password)
-	if err != nil {
-		return false, err
-	}
-	err = ConfigSSHAccess(user.Username, accessToken.Sha1)
+	accessToken, err := CurrentDevOps().CreateAccessToken(user.Username, user.Password)
 	if err != nil {
 		return false, err
 	}
-	user.RepoToken = accessToken.Sha1
+	err = ConfigSSHAccess(user.Username, accessToken)
+	if err != nil {
+		return false, err
+	}
+	user.RepoToken = accessToken
 	user.Salt = utils.GenerateRandomString()
 	user.Password = utils.Encrypt(user.Password, user.Salt)
 	userID, err := dao.AddUser(user)
@@ -152,4 +152,14 @@ func IsSysAdmin(userID int64) (bool, error) {
 		return false, err
 	}
 	return (user != nil && user.ID != 0 && user.SystemAdmin == 1), nil
+}
+
+//Use the Base64 Encode, to support others later
+func DecodeUserPassword(password string) (string, error) {
+	pwdBytes, err := base64.StdEncoding.DecodeString(password)
+	if err != nil {
+		logs.Error("Decode failed %s", password)
+		return "", err
+	}
+	return string(pwdBytes), nil
 }

@@ -1,6 +1,6 @@
 <div class="select-project-container">
   <span class="filed-text">{{"SERVICE.STEP_TITLE_1"|translate}}:</span>
-  <lib-dropdown-ex [dropdownKey]="'project_name'"
+  <lib-dropdown-ex [dropdownKey]="'projectName'"
                    [dropdownTip]="'SERVICE.STEP_TITLE_1' | translate"
                    [dropdownItems]="projectsList"
                    [dropdownMinWidth]="300"
@@ -16,6 +16,6 @@
 <button class="btn btn-default" (click)="cancelBuildService()">
   {{"BUTTON.CANCEL"|translate}}
 </button>
-<button class="btn btn-default" [disabled]="!(uiData.projectId > 0)" (click)="forward()">
+<button class="btn btn-default" [disabled]="!(stepData.projectId > 0)" (click)="forward()">
   {{"BUTTON.NEXT"|translate}}
 </button>

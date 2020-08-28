@@ -2,6 +2,7 @@ package collect
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"git/inspursoft/board/src/collector/dao"
 	"git/inspursoft/board/src/collector/model/collect"
@@ -103,6 +104,7 @@ func (resource SourceMap) GainNodes() error {
 	NodeList = *l
 	for _, v := range NodeList.Items {
 		var nodes = resource.nodes
+		var nodeIP string
 		nodes.NodeName = v.Name
 		nodes.CreateTime = v.CreationTimestamp.Format("2006-01-02 15:04:05")
 		var cpuCores int = 1
@@ -120,8 +122,18 @@ func (resource SourceMap) GainNodes() error {
 			}
 		}
 
+		for _, addr := range v.Status.Addresses {
+			if addr.Type == "InternalIP" {
+				nodeIP = addr.Address
+				break
+			}
+		}
+		if nodeIP == "" {
+			return errors.New("get nodeIP failed")
+		}
+
 		nodes.TimeListId = (*serviceDashboardID)[*minuteCounterI]
-		nodes.InternalIp = v.Status.Addresses[1].Address
+		nodes.InternalIp = nodeIP
 		if func(nodeCondition []model.NodeCondition) bool {
 			for _, cond := range nodeCondition {
 				if strings.EqualFold(string(cond.Type), "Ready") {
@@ -132,11 +144,11 @@ func (resource SourceMap) GainNodes() error {
 			}
 			return true
 		}(v.Status.Conditions) {
-			cpu, mem, err := getNodePs(v.Status.Addresses[1].Address, cpuCores)
+			cpu, mem, err := getNodePs(nodeIP, cpuCores)
 			if err != nil {
 				return err
 			}
-			s := GetNodeMachine(v.Status.Addresses[1].Address)
+			s := GetNodeMachine(nodeIP)
 			a, _ := s.(struct {
 				outCapacity int64
 				outUse      int64
@@ -150,7 +162,7 @@ func (resource SourceMap) GainNodes() error {
 			nodes.StorageUse = 0
 			nodes.CpuUsage = float32(0)
 			nodes.MemUsage = float32(0)
-			util.Logger.SetWarn("this node status is unkown", v.Status.Addresses[1].Address)
+			util.Logger.SetWarn("this node status is unkown", nodeIP)
 		}
 		nodeCollect = append(nodeCollect, nodes)
 		dao.InsertDb(&nodes)
@@ -206,7 +218,8 @@ func getNodePs(ip string, cpuCores int) (cpu float32, mem float32, err error) {
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	util.Logger.SetFatal(ip)
 	var resp *http.Response
-	resp, err = http.DefaultClient.Do(request)
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err = client.Do(request)
 	if err != nil {
 		util.Logger.SetError("Request node ps info error: %+v", err)
 		return

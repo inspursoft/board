@@ -74,7 +74,7 @@ type TagDetail struct {
 	ImageCreationTime string `json:"image_creationtime"`
 	ImageSize         int    `json:"image_size_number"`
 	ImageSizeUnit     string `json:"image_size_unit"`
-	ImageDetail       string `json:"image_detail"`
+	ImageDetail       string `json:"-"`
 	ImageTagDeleted   int    `json:"image_tag_deleted"`
 }
 
@@ -109,6 +109,7 @@ type ImageConfig struct {
 	ImageDockerfile     Dockerfile `json:"image_dockerfile"`
 	ImageDockerfilePath string     `json:"-"`
 	RepoPath            string     `json:"-"`
+	NodeSelection       string     `json:"node_selection"`
 }
 
 type ImageIndex struct {

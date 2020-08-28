@@ -1,0 +1,15 @@
+{
+	"name": "board-cluster",
+	"type": "devopsprodidy-kubegraf-datasource",
+	"url": "$kube_http_scheme://$kube_master_ip:$kube_master_port",
+	"withCredentials": false,
+	"access": "proxy",
+	"jsonData": {
+		"refresh_pods_rate": "60",
+		"access_via_token": false,
+		"prom_name": "Prometheus",
+		"cluster_url": "$kube_http_scheme://$kube_master_ip:$kube_master_port",
+		"tlsAuthWithCACert": false,
+		"tlsAuth": false
+	}
+}

@@ -1,50 +1,64 @@
-import { Component } from '@angular/core';
-import { GlobalAlertMessage } from '../../shared/shared.types';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { Router } from '@angular/router';
+import { GlobalAlertMessage } from '../../shared/shared.types';
 import { RouteSignIn } from '../../shared/shared.const';
-import { HttpErrorResponse } from '@angular/common/http';
-import { AppInitService } from "../app-init.service";
+import { AppInitService } from '../app-init.service';
 
 @Component({
   templateUrl: './cs-global-alert.component.html',
   styleUrls: ['./cs-global-alert.component.css']
 })
-export class CsGlobalAlertComponent {
-  _isOpen: boolean = false;
+export class CsGlobalAlertComponent implements OnInit {
+  isOpenValue = false;
   curMessage: GlobalAlertMessage;
   onCloseEvent: Subject<any>;
-  detailModalOpen: boolean = false;
+  detailModalOpen = false;
+  curErrorDetailMsg = '';
+
 
   constructor(private route: Router,
+              private changeRef: ChangeDetectorRef,
               private appInitService: AppInitService) {
     this.onCloseEvent = new Subject<any>();
   }
 
+  ngOnInit(): void {
+    this.getErrorDetailMsg();
+  }
+
   get isOpen(): boolean {
-    return this._isOpen;
+    return this.isOpenValue;
   }
 
   set isOpen(value: boolean) {
-    this._isOpen = value;
+    this.isOpenValue = value;
     if (!value) {
       this.onCloseEvent.next();
     }
   }
 
-  get errorDetailMsg(): string {
-    let result: string = '';
+  getErrorDetailMsg() {
     if (this.curMessage.errorObject && this.curMessage.errorObject instanceof HttpErrorResponse) {
-      let err = (this.curMessage.errorObject as HttpErrorResponse).error;
-      if (typeof err == "object"){
-        result = (this.curMessage.errorObject as HttpErrorResponse).error.message;
+      const err = (this.curMessage.errorObject as HttpErrorResponse).error;
+      if (typeof err === 'object') {
+        if (err instanceof Blob) {
+          const reader = new FileReader();
+          reader.addEventListener('loadend', () => {
+            this.curErrorDetailMsg = reader.result as string;
+            this.changeRef.detectChanges();
+          });
+          reader.readAsText(err);
+        } else {
+          this.curErrorDetailMsg = err ? err.message : (this.curMessage.errorObject as HttpErrorResponse).message;
+        }
       } else {
-        result = err;
+        this.curErrorDetailMsg = err;
       }
     } else if (this.curMessage.errorObject) {
-      result = (this.curMessage.errorObject as Error).message;
+      this.curErrorDetailMsg = (this.curMessage.errorObject as Error).message;
     }
-    return result;
   }
 
   public openAlert(message: GlobalAlertMessage): Observable<any> {
@@ -54,9 +68,9 @@ export class CsGlobalAlertComponent {
   }
 
   loginClick() {
-    let authMode = this.appInitService.systemInfo.auth_mode;
-    let redirectionURL = this.appInitService.systemInfo.redirection_url;
-    if(authMode === 'indata_auth') {
+    const authMode = this.appInitService.systemInfo.authMode;
+    const redirectionURL = this.appInitService.systemInfo.redirectionUrl;
+    if (authMode === 'indata_auth') {
       window.location.href = redirectionURL;
       this.isOpen = false;
       return;

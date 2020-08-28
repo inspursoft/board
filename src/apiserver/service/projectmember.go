@@ -2,13 +2,13 @@ package service
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 
 	"errors"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"
 )
 
@@ -23,6 +23,10 @@ func AddOrUpdateProjectMember(projectID int64, userID int64, roleID int64) (bool
 
 func GetProjectMembers(projectID int64) ([]*model.ProjectMember, error) {
 	return dao.GetProjectMembers(model.Project{ID: projectID})
+}
+
+func GetProjectAvailableMembers(projectID int64) ([]*model.User, error) {
+	return dao.GetProjectAvailableMembers(model.Project{ID: projectID})
 }
 
 func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
@@ -42,9 +46,9 @@ func DeleteProjectMember(projectID int64, userID int64) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to resolve repo name with project: %s, username: %s, error: %+v", project.Name, user.Username, err)
 	}
-	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = CurrentDevOps().DeleteRepo(user.Username, repoName)
 	if err != nil {
-		return false, fmt.Errorf("failed to delete repo with name: %s, error: %+v", repoName, err)
+		logs.Warning("failed to delete repo with name: %s, error: %+v", repoName, err)
 	}
 	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
 	if err != nil {

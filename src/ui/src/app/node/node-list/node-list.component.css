@@ -1,0 +1,5 @@
+div.button-container {
+  display: flex;
+  flex-flow: row-reverse;
+  margin-top: 10px;
+}

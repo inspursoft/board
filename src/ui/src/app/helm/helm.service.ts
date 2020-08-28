@@ -1,16 +1,25 @@
-import { Injectable } from "@angular/core";
-import { HttpClient, HttpEvent, HttpRequest, HttpResponse } from "@angular/common/http";
-import { Observable, Subject } from "rxjs";
-import { HelmViewData, IChartReleaseDetail, IChartRelease, IHelmRepo, HelmRepoDetail } from "./helm.type";
-import { Project } from "../project/project";
-import { map } from "rxjs/operators";
+import { Injectable } from '@angular/core';
+import { HttpEvent, HttpRequest, HttpResponse } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import {
+  HelmViewData,
+  IChartReleaseDetail,
+  IChartRelease,
+  IHelmRepo,
+  HelmRepoDetail,
+  IChartReleasePost,
+  ChartRelease
+} from './helm.type';
+import { ModelHttpClient } from '../shared/ui-model/model-http-client';
+import { SharedProject } from '../shared/shared.types';
 
 @Injectable()
 export class HelmService {
   viewDataList: Array<HelmViewData>;
   viewSubject: Subject<HelmViewData>;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: ModelHttpClient) {
     this.viewSubject = new Subject<HelmViewData>();
     this.viewDataList = Array<HelmViewData>();
   }
@@ -25,10 +34,10 @@ export class HelmService {
   }
 
   popToView(helmViewData: HelmViewData) {
-    let len = this.viewDataList.length - 1;
+    const len = this.viewDataList.length - 1;
     for (let i = len; i >= 0; i--) {
-      let data = this.viewDataList[i];
-      if (data.type == helmViewData.type) {
+      const data = this.viewDataList[i];
+      if (data.type === helmViewData.type) {
         this.viewSubject.next(helmViewData);
         return;
       } else {
@@ -39,74 +48,64 @@ export class HelmService {
 
   getRepoList(): Observable<Array<IHelmRepo>> {
     return this.http.get<Array<IHelmRepo>>('/api/v1/helm/repositories', {
-      observe: "response"
+      observe: 'response'
     }).pipe(map((res: HttpResponse<Array<IHelmRepo>>) => res.body || Array<IHelmRepo>()));
   }
 
   getRepoDetail(repoId: number, pageIndex: number = 1, pageSize: number = 1): Observable<HelmRepoDetail> {
-    return this.http.get<HelmRepoDetail>(`/api/v1/helm/repositories/${repoId}`, {
-      params: {page_index: pageIndex.toString(), page_size: pageSize.toString()},
-      observe: "response"
-    }).pipe(map((res: HttpResponse<HelmRepoDetail>) => HelmRepoDetail.newFromServe(res.body)));
+    return this.http.getJson(`/api/v1/helm/repositories/${repoId}`, HelmRepoDetail, {
+      param: {page_index: pageIndex.toString(), page_size: pageSize.toString()}
+    });
   }
 
-  uploadChart(repoId: number, formData: FormData): Observable<HttpEvent<Object>> {
+  uploadChart(repoId: number, formData: FormData): Observable<HttpEvent<object>> {
     const req = new HttpRequest('POST', `/api/v1/helm/repositories/${repoId}/chartupload`, formData, {
       reportProgress: true,
     });
-    return this.http.request<Object>(req)
+    return this.http.request<object>(req);
   }
 
   deleteChartVersion(repoId: number, chartName, chartVersion: string): Observable<any> {
     return this.http.delete(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, {
       observe: 'response'
-    })
+    });
   }
 
   deleteChartRelease(releaseId: number): Observable<any> {
     return this.http.delete(`/api/v1/helm/release/${releaseId}`, {
       observe: 'response'
-    })
+    });
   }
 
-  getProjects(): Observable<Array<Project>> {
-    return this.http.get<Array<Project>>('/api/v1/projects', {
-      observe: "response",
-      params: {'member_only': "1"}
-    }).pipe(map((res: HttpResponse<Array<Project>>) => res.body));
+  getProjects(): Observable<Array<SharedProject>> {
+    return this.http.getArray('/api/v1/projects', SharedProject, {
+      param: {member_only: '1'}
+    });
   }
 
-  checkChartReleaseName(chartReleaseName: string): Observable<Object> {
-    return this.http.get<Object>(`/api/v1/helm/release/existing`, {
-      observe: "response", params: {
+  checkChartReleaseName(chartReleaseName: string): Observable<object> {
+    return this.http.get<object>(`/api/v1/helm/release/existing`, {
+      observe: 'response', params: {
         release_name: chartReleaseName
       }
-    }).pipe(map((res: HttpResponse<Object>) => res.body));
+    }).pipe(map((res: HttpResponse<object>) => res.body));
   }
 
-  releaseChartVersion(postBody: {name, chart, chartVersion: string, repoId, projectId, ownerId: number}): Observable<any> {
-    return this.http.post(`/api/v1/helm/release`, {
-      name: postBody.name,
-      project_id: postBody.projectId,
-      repository_id: postBody.repoId,
-      chart: postBody.chart,
-      owner_id: postBody.ownerId,
-      chartversion: postBody.chartVersion
-    }, {observe: "response"})
+  releaseChartVersion(postBody: IChartReleasePost): Observable<any> {
+    return this.http.post(`/api/v1/helm/release`, postBody, {observe: 'response'});
   }
 
   getChartReleaseList(): Observable<Array<IChartRelease>> {
-    return this.http.get<Object>(`/api/v1/helm/release`, {observe: "response"})
+    return this.http.get<object>(`/api/v1/helm/release`, {observe: 'response'})
       .pipe(map((res: HttpResponse<Array<IChartRelease>>) => res.body || Array<IChartRelease>()));
   }
 
   getChartReleaseDetail(chartReleaseId: number): Observable<IChartReleaseDetail> {
-    return this.http.get<Object>(`/api/v1/helm/release/${chartReleaseId}`, {observe: "response"})
+    return this.http.get<object>(`/api/v1/helm/release/${chartReleaseId}`, {observe: 'response'})
       .pipe(map((res: HttpResponse<IChartReleaseDetail>) => res.body));
   }
 
-  getChartRelease(repoId: number, chartName, chartVersion: string): Observable<Object> {
-    return this.http.get(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<Object>) => res.body));
+  getChartRelease(repoId: number, chartName, chartVersion: string): Observable<ChartRelease> {
+    return this.http.getJson(`/api/v1/helm/repositories/${repoId}/charts/${chartName}/${chartVersion}`, ChartRelease);
   }
 }

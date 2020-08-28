@@ -1,17 +1,25 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { Member, Project } from '../project/project';
-import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
-import { PersistentVolume, PersistentVolumeClaim } from '../shared/shared.types';
+import { HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
-import { AppInitService } from "./app-init.service";
+import { map } from 'rxjs/operators';
+import { AppInitService } from './app-init.service';
+import { ModelHttpClient } from '../shared/ui-model/model-http-client';
+import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
+import {
+  PersistentVolume,
+  PersistentVolumeClaim,
+  SharedConfigMap,
+  SharedConfigMapDetail,
+  SharedCreateProject,
+  SharedMember,
+  SharedProject, User
+} from '../shared/shared.types';
 
 @Injectable()
 export class SharedService {
   public showMaxGrafanaWindow = false;
 
-  constructor(private http: HttpClient,
+  constructor(private http: ModelHttpClient,
               private appInitService: AppInitService) {
 
   }
@@ -19,73 +27,46 @@ export class SharedService {
   signOut(username: string): Observable<any> {
     return this.http.get('/api/v1/log-out', {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
-        params: {
-          'username': username
-        }
+        params: {username}
       }
     );
   }
 
-  search(content: string): Observable<any>{
-    return this.http.get("/api/v1/search", {
-      observe:"response",
-      params: {
-        q: content,
-        token: this.appInitService.token
-      }
-    }).pipe(map(res=> res.body));
+  getAssignedMembers(projectId: number): Observable<Array<SharedMember>> {
+    return this.http.getArray(`/api/v1/projects/${projectId}/members`, SharedMember);
   }
 
-  getProjectMembers(projectId: number): Observable<Array<Member>> {
-    return this.http
-      .get<Array<Member>>(`/api/v1/projects/${projectId}/members`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<Array<Member>>) => res.body || []));
-  }
-
-  getOneProject(projectName: string): Observable<Array<Project>> {
-    return this.http.get<Array<Project>>('/api/v1/projects', {
-      observe: 'response',
-      params: {project_name: projectName}
-    }).pipe(map(res => res.body));
-  }
-
-  getAllProjects(): Observable<Array<Project>> {
-    return this.http.get<Array<Project>>('/api/v1/projects', {observe: 'response'}).pipe(map(res => res.body));
-  }
-
-  getAllPvList(): Observable<Array<PersistentVolume>> {
-    return this.http.get(`/api/v1/pvolumes`, {observe: 'response'})
-      .pipe(map((res: HttpResponse<Array<object>>) => {
-        const result: Array<PersistentVolume> = Array<PersistentVolume>();
-        res.body.forEach(resObject => {
-          const persistentVolume = new PersistentVolume();
-          persistentVolume.initFromRes(resObject);
-          result.push(persistentVolume);
-        });
-        return result;
-      }));
-  }
-
-  createNewPvc(pvc: PersistentVolumeClaim): Observable<any> {
-    return this.http.post(`/api/v1/pvclaims`, pvc.postObject(), {observe: 'response'});
-  }
-
-  getAvailableMembers(): Observable<Array<Member>> {
-    return this.http.get('/api/v1/users', {observe: 'response'})
-      .pipe(map((res: HttpResponse<object>) => {
-        const members = Array<Member>();
-        const users = res.body as Array<any>;
-        users.forEach(u => {
-          if (u.user_deleted === 0) {
-            const m = new Member();
-            m.project_member_username = u.user_name;
-            m.project_member_user_id = u.user_id;
-            m.project_member_role_id = 1;
+  getAvailableMembers(projectId: number): Observable<Array<SharedMember>> {
+    return this.http.getArray(`/api/v1/projects/${projectId}/members`, User, {
+      param: {type: 'available'}
+    }).pipe(map((res: Array<User>) => {
+      const members = Array<SharedMember>();
+      if (res && res.length > 0) {
+        res.forEach(u => {
+          if (u.userDeleted === 0) {
+            const m = new SharedMember();
+            m.userName = u.userName;
+            m.userId = u.userId;
+            m.roleId = 1;
+            m.isMember = false;
             members.push(m);
           }
         });
-        return members;
-      }));
+      }
+      return members;
+    }));
+  }
+
+  getAllProjects(): Observable<Array<SharedProject>> {
+    return this.http.getArray('/api/v1/projects', SharedProject);
+  }
+
+  getPVList(): Observable<Array<PersistentVolume>> {
+    return this.http.getArray(`/api/v1/pvolumes`, PersistentVolume);
+  }
+
+  createNewPvc(pvc: PersistentVolumeClaim): Observable<any> {
+    return this.http.post(`/api/v1/pvclaims`, pvc.getPostBody());
   }
 
   addOrUpdateProjectMember(projectId: number, userId: number, roleId: number): Observable<any> {
@@ -105,15 +86,37 @@ export class SharedService {
     });
   }
 
-  createProject(project: Project): Observable<any> {
+  createProject(project: SharedCreateProject): Observable<any> {
     return this.http
-      .post('/api/v1/projects', project, {
+      .post('/api/v1/projects', project.getPostBody(), {
         headers: new HttpHeaders().set(AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE),
         observe: 'response'
       });
   }
 
   checkPvcNameExist(projectName: string, pvcName: string): Observable<any> {
-    return this.http.get(`/api/v1/pvclaims/existing`, {observe: 'response', params: {project_name: projectName, pvc_name: pvcName}});
+    return this.http.get(`/api/v1/pvclaims/existing`, {
+      observe: 'response',
+      params: {project_name: projectName, pvc_name: pvcName}
+    });
+  }
+
+  getConfigMapList(projectName: string, pageIndex, pageSize: number): Observable<Array<SharedConfigMap>> {
+    return this.http.getArray(`/api/v1/configmaps`, SharedConfigMap, {
+      param: {
+        project_name: projectName,
+        configmap_list_page: pageIndex.toString(),
+        configmap_list_page_size: pageSize.toString()
+      }
+    });
+  }
+
+  getConfigMapDetail(configMapName, projectName: string): Observable<SharedConfigMapDetail> {
+    return this.http.getJson(`/api/v1/configmaps`, SharedConfigMapDetail, {
+      param: {
+        project_name: projectName,
+        configmap_name: configMapName,
+      }
+    });
   }
 }

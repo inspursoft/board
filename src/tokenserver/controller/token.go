@@ -23,7 +23,7 @@ func (t *TokenServiceController) Render() error {
 	return nil
 }
 
-func (t *TokenServiceController) serveStatus(status int, message string) {
+func (t *TokenServiceController) ServeStatus(status int, message string) {
 	ms := make(map[string]interface{})
 	ms["status"] = status
 	ms["message"] = message
@@ -33,21 +33,25 @@ func (t *TokenServiceController) serveStatus(status int, message string) {
 }
 
 func (t *TokenServiceController) Post() {
+	if t.Ctx.Request.Body == nil {
+		t.ServeStatus(http.StatusBadRequest, "Posting token request body is nil.")
+		return
+	}
 	var err error
 	reqData, err := ioutil.ReadAll(t.Ctx.Request.Body)
 	if err != nil {
-		t.serveStatus(http.StatusInternalServerError, "Failed to get data from request.")
+		t.ServeStatus(http.StatusInternalServerError, "Failed to get data from request.")
 		return
 	}
 	var tokenPayload map[string]interface{}
 	err = json.Unmarshal(reqData, &tokenPayload)
 	if err != nil {
-		t.serveStatus(http.StatusInternalServerError, "Failed to unmarshal JSON.")
+		t.ServeStatus(http.StatusInternalServerError, "Failed to unmarshal JSON.")
 		return
 	}
 	tokenString, err := service.Sign(tokenPayload)
 	if err != nil {
-		t.serveStatus(http.StatusInternalServerError, "Failed to sign token.")
+		t.ServeStatus(http.StatusInternalServerError, "Failed to sign token.")
 		return
 	}
 	t.Data["json"] = model.Token{TokenString: tokenString}
@@ -58,7 +62,7 @@ func (t *TokenServiceController) Get() {
 	token := t.GetString("token")
 	payload, err := service.Verify(token)
 	if err != nil {
-		t.serveStatus(http.StatusUnauthorized, fmt.Sprintf("Failed to verify token: %+v", err))
+		t.ServeStatus(http.StatusUnauthorized, fmt.Sprintf("Failed to verify token: %+v", err))
 		return
 	}
 	t.Data["json"] = payload

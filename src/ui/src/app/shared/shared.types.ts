@@ -1,20 +1,16 @@
-import { HttpErrorResponse } from "@angular/common/http";
-import { Type } from "@angular/core";
-import { TimeoutError } from "rxjs";
-
-export interface IPagination {
-  page_index: number;
-  page_size: number;
-  total_count: number;
-  page_count: number;
-}
+import { HttpErrorResponse } from '@angular/common/http';
+import { Type } from '@angular/core';
+import { TimeoutError } from 'rxjs';
+import { HttpBase, HttpBind, HttpBindBoolean, HttpBindObject } from './ui-model/model-types';
+import { ConfigMapDetailMetadata } from '../resource/resource.types';
 
 export interface ICsMenuItemData {
-  caption: string,
-  icon: string,
-  url: string,
-  visible: boolean,
-  children?: Array<ICsMenuItemData>
+  caption: string;
+  icon: string;
+  url: string;
+  visible: boolean;
+  children?: Array<ICsMenuItemData>;
+  isAdminServer?: boolean;
 }
 
 export enum RETURN_STATUS {
@@ -30,8 +26,8 @@ export enum BUTTON_STYLE {
 }
 
 export class Message {
-  title: string = '';
-  message: string = '';
+  title = '';
+  message = '';
   data: any;
   buttonStyle: BUTTON_STYLE = BUTTON_STYLE.CONFIRMATION;
   returnStatus: RETURN_STATUS = RETURN_STATUS.rsNone;
@@ -41,12 +37,12 @@ export type AlertType = 'success' | 'danger' | 'info' | 'warning';
 export type DropdownMenuPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
 
 export interface IDropdownTag {
-  type: AlertType,
-  description: string
+  type: AlertType;
+  description: string;
 }
 
 export class AlertMessage {
-  message: string = '';
+  message = '';
   alertType: AlertType = 'success';
 }
 
@@ -56,109 +52,138 @@ export enum GlobalAlertType {
 
 export class GlobalAlertMessage {
   type: GlobalAlertType = GlobalAlertType.gatNormal;
-  message: string = '';
+  message = '';
   alertType: AlertType = 'danger';
   errorObject: HttpErrorResponse | Type<Error> | TimeoutError;
-  endMessage: string = '';
+  endMessage = '';
 }
 
-export class SignUp {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  realname: string;
-  comment: string;
+export class SharedProject extends HttpBase {
+  @HttpBind('project_id') projectId = 0;
+  @HttpBind('project_name') projectName = '';
+  @HttpBind('project_public') projectPublic = 0;
+  @HttpBind('project_creation_time') creationTime: Date;
+  @HttpBind('project_update_time') updateTime: Date;
+  @HttpBind('project_comment') projectComment = '';
+  @HttpBind('project_owner_id') projectOwnerId = 0;
+  @HttpBind('project_owner_name') projectOwnerName = '';
+  @HttpBind('project_current_user_role_id') currentUserRoleId = 0;
+  @HttpBind('project_deletable') projectDeletable = false;
+  @HttpBind('project_deleted') projectDeleted = 0;
+  @HttpBind('project_istio_support') istioSupport = false;
+  @HttpBind('project_service_count') serviceCount = 0;
+  @HttpBind('project_toggleable') toggleable = false;
 }
 
-export interface INode {
-  node_name: string;
-  node_ip: string;
-  status: number;
+export class SharedCreateProject extends HttpBase {
+  @HttpBind('project_name') projectName = '';
+  @HttpBind('project_comment') comment = '';
+  @HttpBindBoolean('project_public', 1, 0) publicity = false;
 }
 
-export interface INodeGroup {
-  nodegroup_id: number,
-  nodegroup_project: string,
-  nodegroup_name: string,
-  nodegroup_comment: string;
+export class SharedMember extends HttpBase {
+  @HttpBind('project_member_id') id = 0;
+  @HttpBind('project_member_user_id') userId = 0;
+  @HttpBind('project_member_username') userName = '';
+  @HttpBind('project_member_role_id') roleId = 0;
+  isMember?: boolean;
 }
 
-export class NodeAvailableResources {
-  node_id: number = 0;
-  node_name: string = '';
-  cpu_available: string = '';
-  mem_available: string = '';
-  storage_available: string = '';
+export class SharedRole extends HttpBase {
+  @HttpBind('role_id') roleId = 0;
+  @HttpBind('role_name') roleName = '';
 }
 
-export class ServiceHPA {
-  hpa_id: number;     //The hpa ID of this autoscale. ,
-  hpa_name: string = '';   //The hpa name of this autoscale. ,
-  hpa_status: number = 0;
-  service_id: number; //The service ID of this hpa to control. ,
-  min_pod: number = 1;     //The minimum pod number. ,
-  max_pod: number = 1;     //The maximum pod number. ,
-  cpu_percent: number = 0;//The target CPU percentage.
-  isEdit: boolean = false;
+export class SharedEnvType {
+  envName = '';
+  envValue = '';
+  envConfigMapName = '';
+  envConfigMapKey = '';
 }
 
-export class SystemInfo {
-  board_host = '';
-  auth_mode = '';
-  set_auth_password = '';
-  init_project_repo = '';
-  sync_k8s = '';
-  redirection_url = '';
-  board_version = '';
-  kubernetes_version = '';
-  processor_type = '';
-  dns_suffix = '';
-  constructor() {
+export class SharedConfigMap extends HttpBase {
+  @HttpBind('namespace') namespace = '';
+  @HttpBind('name') name = '';
+  @HttpBind('datalist') data: object;
+  dataList: Array<{ key: string, value: string }>;
+
+  protected prepareInit() {
+    this.dataList = Array<{ key: string, value: string }>();
+  }
+
+  protected afterInit() {
+    if (this.data) {
+      Reflect.ownKeys(this.data).forEach((key: string) =>
+        this.dataList.push({key, value: Reflect.get(this.data, key)})
+      );
+    }
+  }
+
+  getPostBody(): { [p: string]: any } {
+    const obj = Object.create({});
+    this.dataList.forEach(value =>
+      Object.defineProperties(obj, {[value.key]: {enumerable: true, value: value.value}})
+    );
+    return {
+      namespace: this.namespace,
+      name: this.name,
+      datalist: obj
+    };
   }
 }
 
-export class User {
-  public user_id = 0;
-  public user_name = '';
-  public user_email = '';
-  public user_password = '';
-  public user_confirm_password = '';
-  public user_realname = '';
-  public user_comment = '';
-  public user_deleted = 0;
-  public user_system_admin = 0;
-  public user_reset_uuid = '';
-  public user_salt: string = '';
-  public user_creation_time: Date;
-  public user_update_time: Date;
+export class SharedConfigMapDetail extends HttpBase {
+  @HttpBindObject('metadata', ConfigMapDetailMetadata) metadata: ConfigMapDetailMetadata;
+  @HttpBind('data') data: object;
+  dataList: Array<{ key: string, value: string }>;
 
-  constructor() {
-    this.user_creation_time = new Date();
-    this.user_update_time = new Date();
+  protected prepareInit() {
+    this.metadata = new ConfigMapDetailMetadata();
+    this.dataList = Array<{ key: string, value: string }>();
   }
+
+  protected afterInit() {
+    if (this.data) {
+      Reflect.ownKeys(this.data).forEach((key: string) =>
+        this.dataList.push({key, value: Reflect.get(this.data, key)})
+      );
+    }
+  }
+}
+
+export class SystemInfo extends HttpBase {
+  @HttpBind('board_host') boardHost = '';
+  @HttpBind('auth_mode') authMode = '';
+  @HttpBind('set_auth_password') setAuthPassword = '';
+  @HttpBind('init_project_repo') initProjectRepo = '';
+  @HttpBind('sync_k8s') syncK8s = '';
+  @HttpBind('redirection_url') redirectionUrl = '';
+  @HttpBind('board_version') boardVersion = '';
+  @HttpBind('devops_opt') devOpsOpt = '';
+  @HttpBind('kubernetes_version') kubernetesVersion = '';
+  @HttpBind('processor_type') processorType = '';
+  @HttpBind('dns_suffix') dnsSuffix = '';
+  @HttpBind('mode') mode = '';
+}
+
+export class User extends HttpBase {
+  @HttpBind('user_id') userId = 0;
+  @HttpBind('user_name') userName = '';
+  @HttpBind('user_email') userEmail = '';
+  @HttpBind('user_password') userPassword = '';
+  @HttpBind('user_confirm_password') userConfirmPassword = '';
+  @HttpBind('user_realname') userRealName = '';
+  @HttpBind('user_comment') userComment = '';
+  @HttpBind('user_deleted') userDeleted = 0;
+  @HttpBind('user_system_admin') userSystemAdmin = 0;
+  @HttpBind('user_reset_uuid') userResetUuid = '';
+  @HttpBind('user_salt') userSalt = '';
+  @HttpBind('user_creation_time') userCreationTime = '';
+  @HttpBind('user_update_time') userUpdateTime = '';
 }
 
 export enum DragStatus {
   dsReady = 'ready', dsStart = 'start', dsDragIng = 'drag', dsEnd = 'end'
-}
-
-export enum CreateImageMethod {None, Template, DockerFile, ImagePackage}
-
-export class PersistentVolumeOptions {
-  public path = '';
-  public server = '';
-}
-
-export class PersistentVolumeOptionsRBD {
-  public user = '';
-  public keyring = '';
-  public pool = 'rbd';
-  public image = '';
-  public fstype = '';
-  public secretname = '';
-  public secretnamespace = '';
-  public monitors = '';
 }
 
 export enum PvAccessMode {
@@ -179,114 +204,49 @@ export enum PvReclaimMode {
   Delete = 'Delete'
 }
 
-export class PersistentVolume {
-  public id = 0;
-  public name = '';
-  public type = 0;
-  public state = 0;
-  public capacity = 0;
-  public accessMode: PvAccessMode;
-  public reclaim: PvReclaimMode;
+export class PersistentVolume extends HttpBase {
+  @HttpBind('pv_id') id = 0;
+  @HttpBind('pv_name') name = '';
+  @HttpBind('pv_type') type = 0;
+  @HttpBind('pv_state') state = 0;
+  @HttpBind('pv_accessmode') accessMode: PvAccessMode;
+  @HttpBind('pv_reclaim') reclaim: PvReclaimMode;
+  capacity = 0;
 
-  initFromRes(res: Object) {
-    if (res) {
-      this.id = Reflect.get(res, 'pv_id');
-      this.name = Reflect.get(res, 'pv_name');
-      this.type = Reflect.get(res, 'pv_type');
-      this.state = Reflect.get(res, 'pv_state');
-      this.capacity = Number.parseFloat(Reflect.get(res, 'pv_capacity'));
-      this.accessMode = Reflect.get(res, 'pv_accessmode');
-      this.reclaim = Reflect.get(res, 'pv_reclaim');
-    }
+  protected afterInit() {
+    this.capacity = Number.parseFloat(Reflect.get(this.res, 'pv_capacity'));
   }
 
-  get typeDescription(): string {
-    return ['Unknown', 'NFS', 'RBD'][this.type];
-  }
-
-  get statusDescription(): string{
-    return [
-      'STORAGE.STATE_UNKNOWN',
-      'STORAGE.STATE_PENDING',
-      'STORAGE.STATE_AVAILABLE',
-      'STORAGE.STATE_BOUND',
-      'STORAGE.STATE_RELEASED',
-      'STORAGE.STATE_FAILED',
-      'STORAGE.STATE_INVALID'][this.state];
-  }
-
-  postObject(): Object {
+  getPostBody(): object {
     return {
       pv_name: this.name,
       pv_capacity: `${this.capacity}Gi`,
       pv_type: this.type,
       pv_accessmode: this.accessMode,
       pv_reclaim: this.reclaim
-    }
+    };
   }
 }
 
-export class NFSPersistentVolume extends PersistentVolume {
-  public options: PersistentVolumeOptions;
+export class PersistentVolumeClaim extends HttpBase {
+  @HttpBind('pvc_id') id = 0;
+  @HttpBind('pvc_name') name = '';
+  @HttpBind('pvc_projectid') projectId = 0;
+  @HttpBind('pvc_projectname') projectName = '';
+  @HttpBind('pvc_state') state = 0;
+  @HttpBind('pvc_accessmode') accessMode: PvcAccessMode;
+  @HttpBind('pvc_class') class = '';
+  @HttpBind('pvc_designatedpv') designatedPv = '';
+  volume = '';
+  events: Array<string>;
+  capacity = 0;
 
-  constructor() {
-    super();
-    this.type = 1;
-    this.options = new PersistentVolumeOptions();
+  protected afterInit() {
+    this.capacity = Number.parseFloat(Reflect.get(this.res, 'pvc_capacity'));
   }
 
-  postObject(): Object {
-    let result = super.postObject();
-    Reflect.set(result, 'pv_options', this.options);
-    return result;
-  }
-}
-
-export class RBDPersistentVolume extends PersistentVolume {
-  public options: PersistentVolumeOptionsRBD;
-
-  constructor() {
-    super();
-    this.type = 2;
-    this.options = new PersistentVolumeOptionsRBD();
-  }
-
-  postObject(): Object {
-    let result = super.postObject();
-    Reflect.set(result, 'pv_options', this.options);
-    return result;
-  }
-}
-
-export class PersistentVolumeClaim {
-  public id = 0;
-  public name = '';
-  public projectId = 0;
-  public projectName = '';
-  public capacity = 0;
-  public state = 0;
-  public accessMode: PvcAccessMode;
-  public class = '';
-  public designatedPv = '';
-  public volume = '';
-  public events: Array<string>;
-
-  constructor() {
+  protected prepareInit() {
     this.events = Array<string>();
-  }
-
-  initFromRes(res: Object) {
-    if (res) {
-      this.id = Reflect.get(res, 'pvc_id');
-      this.name = Reflect.get(res, 'pvc_name');
-      this.projectId = Reflect.get(res, 'pvc_projectid');
-      this.projectName = Reflect.get(res, 'pvc_projectname');
-      this.capacity = Number.parseFloat(Reflect.get(res, 'pvc_capacity'));
-      this.state = Reflect.get(res, 'pvc_state');
-      this.accessMode = Reflect.get(res, 'pvc_accessmode');
-      this.class = Reflect.get(res, 'pvc_class');
-      this.designatedPv = Reflect.get(res, 'pvc_designatedpv');
-    }
   }
 
   get statusDescription(): string {
@@ -298,7 +258,7 @@ export class PersistentVolumeClaim {
       'STORAGE.STATE_INVALID'][this.state];
   }
 
-  postObject(): object {
+  getPostBody(): object {
     return {
       pvc_name: this.name,
       pvc_projectid: this.projectId,
@@ -306,16 +266,16 @@ export class PersistentVolumeClaim {
       pvc_accessmode: this.accessMode,
       pvc_class: this.class,
       pvc_designatedpv: this.designatedPv
-    }
+    };
   }
 }
 
 export class Tools {
   static isValidString(str: string, reg?: RegExp): boolean {
-    if (str == undefined || str == null || str.trim() == '') {
+    if (str === undefined || str == null || str.trim() === '') {
       return false;
     } else if (reg) {
-      return reg.test(str)
+      return reg.test(str);
     }
     return true;
   }
@@ -325,7 +285,7 @@ export class Tools {
   }
 
   static isValidObject(obj: any): boolean {
-    return obj != null && obj != undefined && typeof obj == 'object';
+    return obj !== null && obj !== undefined && typeof obj === 'object';
   }
 
   static isInvalidObject(obj: any): boolean {

@@ -6,7 +6,7 @@
                        [dropdownMinWidth]="280"
                        [dropdownLabelWidth]="220"
                        [dropdownItems]="projectsList"
-                       [dropdownKey]="'project_name'"
+                       [dropdownKey]="'projectName'"
                        (dropdownChangeItem)="changeSelectProject($event)"
                        (dropdownEspecialClick)="clickSelectProject()">
         <ng-template libEspecialTemp>
@@ -18,7 +18,7 @@
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_DEPLOYMENT_YAML" | translate}}:</label>
       <input type="file"
              class="upload-file-input"
-             [disabled]="selectedProjectId == 0 || uploadFileStatus == 'Executing'"
+             [disabled]="uploadFileBtnDisabled"
              (change)="uploadFile($event,true)"
              accept="*.*">
       <div *ngIf="uploadFileStatus == 'Executing'" class="custom-margin spinner-container">
@@ -32,7 +32,7 @@
       <label class="base-text">{{"SERVICE.SERVICE_YAML_SELECT_SERVICE_YAML" | translate}}:</label>
       <input type="file"
              class="upload-file-input"
-             [disabled]="selectedProjectId == 0 || uploadFileStatus == 'Executing'"
+             [disabled]="uploadFileBtnDisabled"
              (change)="uploadFile($event,false)"
              accept="*.*">
       <div *ngIf="uploadFileStatus == 'Executing'" class="custom-margin spinner-container">
@@ -54,7 +54,7 @@
               [class.btn-danger]="createServiceStatus=='Failed'"
               [disabled]="createServiceStatus=='Executing' || uploadFileStatus == 'Executing'"
               (click)="btnCancelClick($event)">
-        {{createServiceStatus == 'Failed' ? ("BUTTON.DELETE" | translate) : ("BUTTON.CANCEL" | translate)}}
+        {{cancelBtnCaption | translate}}
       </button>
       <button class="btn btn-primary"
               [disabled]="isBtnUploadDisabled"
@@ -62,7 +62,7 @@
         {{"SERVICE.SERVICE_YAML_UPLOAD" | translate}}
       </button>
       <button class="btn btn-primary"
-              [disabled]="uploadFileStatus != 'Success'"
+              [disabled]="createBtnDisabled"
               (click)="btnCreateClick($event)">
         {{"BUTTON.CREATE"|translate}}
       </button>

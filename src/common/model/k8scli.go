@@ -1,6 +1,7 @@
 package model
 
 import (
+	"io"
 	"time"
 )
 
@@ -24,11 +25,28 @@ const (
 type PodPhase string
 
 const (
-	PodPending   PodPhase = "Pending"
-	PodRunning   PodPhase = "Running"
+	//The Pod has been accepted by the Kubernetes system, but one or more of the
+	//Container images has not been created. This includes time before being
+	//scheduled as well as time spent downloading images over the network, which
+	//could take a while.
+	PodPending PodPhase = "Pending"
+
+	//The Pod has been bound to a node, and all of the Containers have been
+	//created. At least one Container is still running, or is in the process of
+	//starting or restarting.
+	PodRunning PodPhase = "Running"
+
+	//All Containers in the Pod have terminated in success, and will not be restarted.
 	PodSucceeded PodPhase = "Succeeded"
-	PodFailed    PodPhase = "Failed"
-	PodUnknown   PodPhase = "Unknown"
+
+	//All Containers in the Pod have terminated, and at least one Container has
+	//terminated in failure. That is, the Container either exited with non-zero status
+	//or was terminated by the system.
+	PodFailed PodPhase = "Failed"
+
+	//For some reason the state of the Pod could not be obtained, typically due to an
+	//error in communicating with the host of the Pod.
+	PodUnknown PodPhase = "Unknown"
 )
 
 type ResourceName string
@@ -96,18 +114,31 @@ type PodLogOptions struct {
 }
 
 type ObjectMeta struct {
-	Name              string
-	Namespace         string
-	CreationTimestamp time.Time
-	DeletionTimestamp *time.Time
-	Labels            map[string]string
+	Name              string            `json:"name"`
+	Namespace         string            `json:"namespace"`
+	CreationTimestamp time.Time         `json:"creation_time,omitempty"`
+	DeletionTimestamp *time.Time        `json:"deletion_time,omitempty"`
+	Labels            map[string]string `json:"labels,omitempty"`
+}
+
+type GroupResource struct {
+	Group    string
+	Resource string
 }
 
 type Node struct {
 	ObjectMeta
 	NodeIP        string
 	Unschedulable bool
+	Taints        []Taint
 	Status        NodeStatus
+}
+
+type Taint struct {
+	Key       string
+	Value     string
+	Effect    TaintEffect
+	TimeAdded *time.Time
 }
 
 type NodeStatus struct {
@@ -230,6 +261,7 @@ type PodSpec struct {
 	HostNetwork    bool
 	Affinity       K8sAffinity
 	RestartPolicy  RestartPolicy
+	Tolerations    []Toleration
 }
 
 type PodStatus struct {
@@ -244,6 +276,30 @@ type PodTemplateSpec struct {
 	ObjectMeta
 	Spec PodSpec
 }
+
+type Toleration struct {
+	Key               string
+	Operator          TolerationOperator
+	Value             string
+	Effect            TaintEffect
+	TolerationSeconds *int64
+}
+
+// A toleration operator is the set of operators that can be used in a toleration.
+type TolerationOperator string
+
+const (
+	TolerationOpExists TolerationOperator = "Exists"
+	TolerationOpEqual  TolerationOperator = "Equal"
+)
+
+type TaintEffect string
+
+const (
+	TaintEffectNoSchedule       TaintEffect = "NoSchedule"
+	TaintEffectPreferNoSchedule TaintEffect = "PreferNoSchedule"
+	TaintEffectNoExecute        TaintEffect = "NoExecute"
+)
 
 type Volume struct {
 	Name string
@@ -347,6 +403,11 @@ type K8sContainer struct {
 	Resources ResourceRequirements `json:"resources,omitempty" protobuf:"bytes,8,opt,name=resources"`
 	// Pod volumes to mount into the container's filesystem.
 	VolumeMounts []VolumeMount
+	// Security options the pod should run with.
+	// More info: https://kubernetes.io/docs/concepts/policy/security-context/
+	// More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+	// +optional
+	SecurityContext *SecurityContext `json:"securityContext,omitempty" protobuf:"bytes,15,opt,name=securityContext"`
 }
 
 // Protocol defines network protocols supported for things like container ports.
@@ -592,18 +653,12 @@ type ScaleStatusK8s struct {
 	// actual number of observed instances of the scaled object.
 	Replicas int32 `json:"replicas" protobuf:"varint,1,opt,name=replicas"`
 
-	// label query over pods that should match the replicas count. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors
+	// label query over pods that should match the replicas count. This is same
+	// as the label selector but in the string format to avoid introspection
+	// by clients. The string will be in the same format as the query-param syntax.
+	// More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors
 	// +optional
-	Selector map[string]string `json:"selector,omitempty" protobuf:"bytes,2,rep,name=selector"`
-
-	// label selector for pods that should match the replicas count. This is a serializated
-	// version of both map-based and more expressive set-based selectors. This is done to
-	// avoid introspection in the clients. The string will be in the same format as the
-	// query-param syntax. If the target type only supports map-based selectors, both this
-	// field and map-based selector field are populated.
-	// More info: http://kubernetes.io/docs/user-guide/labels#label-selectors
-	// +optional
-	TargetSelector string `json:"targetSelector,omitempty" protobuf:"bytes,3,opt,name=targetSelector"`
+	Selector string `json:"selector,omitempty" protobuf:"bytes,2,opt,name=selector"`
 }
 
 // +genclient=true
@@ -693,6 +748,9 @@ type AutoScaleList struct {
 
 // Affinity is a group of affinity scheduling rules.
 type K8sAffinity struct {
+	// Describes node affinity scheduling rules for the pod.
+	// +optional
+	NodeAffinity NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
 	// Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
 	// +optional
 	PodAffinity []PodAffinityTerm
@@ -700,6 +758,90 @@ type K8sAffinity struct {
 	// +optional
 	PodAntiAffinity []PodAffinityTerm
 }
+
+// Node affinity is a group of node affinity scheduling rules.
+type NodeAffinity struct {
+	// NOT YET IMPLEMENTED. TODO: Uncomment field once it is implemented.
+	// If the affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to an update), the system
+	// will try to eventually evict the pod from its node.
+	// +optional
+	// RequiredDuringSchedulingRequiredDuringExecution *NodeSelector `json:"requiredDuringSchedulingRequiredDuringExecution,omitempty"`
+
+	// If the affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to an update), the system
+	// may or may not try to eventually evict the pod from its node.
+	// +optional
+	RequiredDuringSchedulingIgnoredDuringExecution *NodeSelector `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,1,opt,name=requiredDuringSchedulingIgnoredDuringExecution"`
+	// The scheduler will prefer to schedule pods to nodes that satisfy
+	// the affinity expressions specified by this field, but it may choose
+	// a node that violates one or more of the expressions. The node that is
+	// most preferred is the one with the greatest sum of weights, i.e.
+	// for each node that meets all of the scheduling requirements (resource
+	// request, requiredDuringScheduling affinity expressions, etc.),
+	// compute a sum by iterating through the elements of this field and adding
+	// "weight" to the sum if the node matches the corresponding matchExpressions; the
+	// node(s) with the highest sum are the most preferred.
+	// +optional
+	PreferredDuringSchedulingIgnoredDuringExecution []PreferredSchedulingTerm `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,2,rep,name=preferredDuringSchedulingIgnoredDuringExecution"`
+}
+
+type NodeSelector struct {
+	//Required. A list of node selector terms. The terms are ORed.
+	NodeSelectorTerms []NodeSelectorTerm `json:"nodeSelectorTerms" protobuf:"bytes,1,rep,name=nodeSelectorTerms"`
+}
+
+type NodeSelectorTerm struct {
+	// A list of node selector requirements by node's labels.
+	// +optional
+	MatchExpressions []NodeSelectorRequirement `json:"matchExpressions,omitempty" protobuf:"bytes,1,rep,name=matchExpressions"`
+	// A list of node selector requirements by node's fields.
+	// +optional
+	MatchFields []NodeSelectorRequirement `json:"matchFields,omitempty" protobuf:"bytes,2,rep,name=matchFields"`
+}
+
+// A node selector requirement is a selector that contains values, a key, and an operator
+// that relates the key and values.
+type NodeSelectorRequirement struct {
+	// The label key that the selector applies to.
+	Key string `json:"key" protobuf:"bytes,1,opt,name=key"`
+	// Represents a key's relationship to a set of values.
+	// Valid operators are In, NotIn, Exists, DoesNotExist. Gt, and Lt.
+	Operator NodeSelectorOperator `json:"operator" protobuf:"bytes,2,opt,name=operator,casttype=NodeSelectorOperator"`
+	// An array of string values. If the operator is In or NotIn,
+	// the values array must be non-empty. If the operator is Exists or DoesNotExist,
+	// the values array must be empty. If the operator is Gt or Lt, the values
+	// array must have a single element, which will be interpreted as an integer.
+	// This array is replaced during a strategic merge patch.
+	// +optional
+	Values []string `json:"values,omitempty" protobuf:"bytes,3,rep,name=values"`
+}
+
+// An empty preferred scheduling term matches all objects with implicit weight 0
+// (i.e. it's a no-op). A null preferred scheduling term matches no objects (i.e. is also a no-op).
+type PreferredSchedulingTerm struct {
+	// Weight associated with matching the corresponding nodeSelectorTerm, in the range 1-100.
+	Weight int32 `json:"weight" protobuf:"varint,1,opt,name=weight"`
+	// A node selector term, associated with the corresponding weight.
+	Preference NodeSelectorTerm `json:"preference" protobuf:"bytes,2,opt,name=preference"`
+}
+
+// A node selector operator is the set of operators that can be used in
+// a node selector requirement.
+type NodeSelectorOperator string
+
+const (
+	NodeSelectorOpIn           NodeSelectorOperator = "In"
+	NodeSelectorOpNotIn        NodeSelectorOperator = "NotIn"
+	NodeSelectorOpExists       NodeSelectorOperator = "Exists"
+	NodeSelectorOpDoesNotExist NodeSelectorOperator = "DoesNotExist"
+	NodeSelectorOpGt           NodeSelectorOperator = "Gt"
+	NodeSelectorOpLt           NodeSelectorOperator = "Lt"
+)
 
 type PodAffinityTerm struct {
 	// A label query over a set of resources, in this case pods.
@@ -765,7 +907,7 @@ type PersistentVolumeSource struct {
 	// RBD represents a Rados Block Device mount on the host that shares a pod's lifetime.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md
 	// +optional
-	RBD *RBDVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
+	RBD *RBDPersistentVolumeSource `json:"rbd,omitempty" protobuf:"bytes,6,opt,name=rbd"`
 	// ISCSI represents an ISCSI Disk resource that is attached to a
 	// kubelet's host machine and then exposed to the pod. Provisioned by an admin.
 	// +optional
@@ -958,7 +1100,7 @@ type NFSVolumeSource struct {
 
 // Represents a Rados Block Device mount that lasts the lifetime of a pod.
 // RBD volumes support ownership management and SELinux relabeling.
-type RBDVolumeSource struct {
+type RBDPersistentVolumeSource struct {
 	// A collection of Ceph monitors.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	CephMonitors []string `json:"monitors" protobuf:"bytes,1,rep,name=monitors"`
@@ -992,12 +1134,23 @@ type RBDVolumeSource struct {
 	// Default is nil.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
-	SecretRef *LocalObjectReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
+	SecretRef *SecretReference `json:"secretRef,omitempty" protobuf:"bytes,7,opt,name=secretRef"`
 	// ReadOnly here will force the ReadOnly setting in VolumeMounts.
 	// Defaults to false.
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md#how-to-use-it
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,8,opt,name=readOnly"`
+}
+
+// SecretReference represents a Secret Reference. It has enough information to retrieve secret
+// in any namespace
+type SecretReference struct {
+	// Name is unique within a namespace to reference a secret resource.
+	// +optional
+	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	// Namespace defines the space within which the secret name must be unique.
+	// +optional
+	Namespace string `json:"namespace,omitempty" protobuf:"bytes,2,opt,name=namespace"`
 }
 
 // LocalObjectReference contains enough information to let you locate the
@@ -1298,7 +1451,7 @@ type StatefulSetStatus struct {
 	// observedGeneration is the most recent generation observed for this StatefulSet. It corresponds to the
 	// StatefulSet's generation, which is updated on mutation by the API Server.
 	// +optional
-	ObservedGeneration *int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,1,opt,name=observedGeneration"`
 
 	// replicas is the number of Pods created by the StatefulSet controller.
 	Replicas int32 `json:"replicas" protobuf:"varint,2,opt,name=replicas"`
@@ -1484,4 +1637,215 @@ type JobCondition struct {
 	Reason string `json:"reason,omitempty" protobuf:"bytes,5,opt,name=reason"`
 	// Human readable message indicating details about last transition.
 	Message string `json:"message,omitempty" protobuf:"bytes,6,opt,name=message"`
+}
+
+type ServiceContainer struct {
+	ContainerName   string
+	PodName         string
+	ServiceName     string
+	NodeIP          string
+	SecurityContext bool
+	InitContainer   bool
+}
+
+// TerminalSize and TerminalSizeQueue was a part of k8s.io/kubernetes/pkg/util/term
+// and were moved in order to decouple client from other term dependencies
+
+// TerminalSize represents the width and height of a terminal.
+type TerminalSize struct {
+	Width  uint16
+	Height uint16
+}
+
+// TerminalSizeQueue is capable of returning terminal resize events as they occur.
+type TerminalSizeQueue interface {
+	// Next returns the new terminal size after the terminal has been resized. It returns nil when
+	// monitoring has been stopped.
+	Next() *TerminalSize
+}
+
+// PtyHandler is what remotecommand expects from a pty
+type PtyHandler interface {
+	io.Reader
+	io.Writer
+	TerminalSizeQueue
+}
+
+const (
+	// NamespaceDefault means the object is in the default namespace which is applied when not specified by clients
+	NamespaceDefault string = "default"
+	// NamespaceAll is the default argument to specify on a context when you want to list or filter resources across all namespaces
+	NamespaceAll string = ""
+	// NamespaceNone is the argument for a context when there is no namespace.
+	NamespaceNone string = ""
+	// NamespaceSystem is the system namespace where we place system components.
+	NamespaceSystem string = "kube-system"
+	// NamespacePublic is the namespace where we place public info (ConfigMaps)
+	NamespacePublic string = "kube-public"
+)
+
+// SecurityContext holds security configuration that will be applied to a container.
+// Some fields are present in both SecurityContext and PodSecurityContext.  When both
+// are set, the values in SecurityContext take precedence.
+type SecurityContext struct {
+	// Run container in privileged mode.
+	// Processes in privileged containers are essentially equivalent to root on the host.
+	// Defaults to false.
+	// +optional
+	Privileged *bool `json:"privileged,omitempty" protobuf:"varint,2,opt,name=privileged"`
+}
+
+type DaemonSetList struct {
+	Items []DaemonSet `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// DaemonSet represents the configuration of a daemon set.
+type DaemonSet struct {
+	ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec       DaemonSetSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status     DaemonSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// DaemonSetSpec is the specification of a daemon set.
+type DaemonSetSpec struct {
+	Selector *LabelSelector `json:"selector" protobuf:"bytes,1,opt,name=selector"`
+
+	Template PodTemplateSpec `json:"template" protobuf:"bytes,2,opt,name=template"`
+
+	// An update strategy to replace existing DaemonSet pods with new pods.
+	// +optional
+	UpdateStrategy DaemonSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,3,opt,name=updateStrategy"`
+
+	// The minimum number of seconds for which a newly created DaemonSet pod should
+	// be ready without any of its container crashing, for it to be considered
+	// available. Defaults to 0 (pod will be considered available as soon as it
+	// is ready).
+	// +optional
+	MinReadySeconds int32 `json:"minReadySeconds,omitempty" protobuf:"varint,4,opt,name=minReadySeconds"`
+
+	// The number of old history to retain to allow rollback.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	// Defaults to 10.
+	// +optional
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty" protobuf:"varint,6,opt,name=revisionHistoryLimit"`
+}
+
+// DaemonSetStatus represents the current status of a daemon set.
+type DaemonSetStatus struct {
+	// The number of nodes that are running at least 1
+	// daemon pod and are supposed to run the daemon pod.
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	CurrentNumberScheduled int32 `json:"currentNumberScheduled" protobuf:"varint,1,opt,name=currentNumberScheduled"`
+
+	// The number of nodes that are running the daemon pod, but are
+	// not supposed to run the daemon pod.
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	NumberMisscheduled int32 `json:"numberMisscheduled" protobuf:"varint,2,opt,name=numberMisscheduled"`
+
+	// The total number of nodes that should be running the daemon
+	// pod (including nodes correctly running the daemon pod).
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+	DesiredNumberScheduled int32 `json:"desiredNumberScheduled" protobuf:"varint,3,opt,name=desiredNumberScheduled"`
+
+	// The number of nodes that should be running the daemon pod and have one
+	// or more of the daemon pod running and ready.
+	NumberReady int32 `json:"numberReady" protobuf:"varint,4,opt,name=numberReady"`
+
+	// The most recent generation observed by the daemon set controller.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,5,opt,name=observedGeneration"`
+
+	// The total number of nodes that are running updated daemon pod
+	// +optional
+	UpdatedNumberScheduled int32 `json:"updatedNumberScheduled,omitempty" protobuf:"varint,6,opt,name=updatedNumberScheduled"`
+
+	// The number of nodes that should be running the
+	// daemon pod and have one or more of the daemon pod running and
+	// available (ready for at least spec.minReadySeconds)
+	// +optional
+	NumberAvailable int32 `json:"numberAvailable,omitempty" protobuf:"varint,7,opt,name=numberAvailable"`
+
+	// The number of nodes that should be running the
+	// daemon pod and have none of the daemon pod running and available
+	// (ready for at least spec.minReadySeconds)
+	// +optional
+	NumberUnavailable int32 `json:"numberUnavailable,omitempty" protobuf:"varint,8,opt,name=numberUnavailable"`
+
+	// Count of hash collisions for the DaemonSet. The DaemonSet controller
+	// uses this field as a collision avoidance mechanism when it needs to
+	// create the name for the newest ControllerRevision.
+	// +optional
+	CollisionCount *int32 `json:"collisionCount,omitempty" protobuf:"varint,9,opt,name=collisionCount"`
+
+	// Represents the latest available observations of a DaemonSet's current state.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []DaemonSetCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,10,rep,name=conditions"`
+}
+
+// DaemonSetUpdateStrategy is a struct used to control the update strategy for a DaemonSet.
+type DaemonSetUpdateStrategy struct {
+	// Type of daemon set update. Can be "RollingUpdate" or "OnDelete". Default is RollingUpdate.
+	// +optional
+	Type DaemonSetUpdateStrategyType `json:"type,omitempty" protobuf:"bytes,1,opt,name=type"`
+
+	// Rolling update config params. Present only if type = "RollingUpdate".
+	//---
+	// TODO: Update this to follow our convention for oneOf, whatever we decide it
+	// to be. Same as Deployment `strategy.rollingUpdate`.
+	// See https://github.com/kubernetes/kubernetes/issues/35345
+	// +optional
+	RollingUpdate *RollingUpdateDaemonSet `json:"rollingUpdate,omitempty" protobuf:"bytes,2,opt,name=rollingUpdate"`
+}
+
+type DaemonSetUpdateStrategyType string
+
+const (
+	// Replace the old daemons by new ones using rolling update i.e replace them on each node one after the other.
+	RollingUpdateDaemonSetStrategyType DaemonSetUpdateStrategyType = "RollingUpdate"
+
+	// Replace the old daemons only when it's killed
+	OnDeleteDaemonSetStrategyType DaemonSetUpdateStrategyType = "OnDelete"
+)
+
+// Spec to control the desired behavior of daemon set rolling update.
+type RollingUpdateDaemonSet struct {
+	// The maximum number of DaemonSet pods that can be unavailable during the
+	// update. Value can be an absolute number (ex: 5) or a percentage of total
+	// number of DaemonSet pods at the start of the update (ex: 10%). Absolute
+	// number is calculated from percentage by rounding up.
+	// This cannot be 0.
+	// Default value is 1.
+	// Example: when this is set to 30%, at most 30% of the total number of nodes
+	// that should be running the daemon pod (i.e. status.desiredNumberScheduled)
+	// can have their pods stopped for an update at any given
+	// time. The update starts by stopping at most 30% of those DaemonSet pods
+	// and then brings up new DaemonSet pods in their place. Once the new pods
+	// are available, it then proceeds onto other DaemonSet pods, thus ensuring
+	// that at least 70% of original number of DaemonSet pods are available at
+	// all times during the update.
+	// +optional
+	MaxUnavailable *IntOrString `json:"maxUnavailable,omitempty" protobuf:"bytes,1,opt,name=maxUnavailable"`
+}
+
+type DaemonSetConditionType string
+
+// TODO: Add valid condition types of a DaemonSet.
+
+// DaemonSetCondition describes the state of a DaemonSet at a certain point.
+type DaemonSetCondition struct {
+	// Type of DaemonSet condition.
+	Type DaemonSetConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=DaemonSetConditionType"`
+	// Status of the condition, one of True, False, Unknown.
+	Status ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	// Last time the condition transitioned from one status to another.
+	// +optional
+	LastTransitionTime time.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
+	// The reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+	// A human readable message indicating details about the transition.
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
 }

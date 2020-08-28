@@ -7,6 +7,14 @@ div.config-container {
   width: 520px;
 }
 
+div.config-container lib-input-ex {
+  margin-top: 3px;
+}
+
+div.config-container lib-dropdown-ex {
+  margin-top: 3px;
+}
+
 div.config-service-info-line {
   display: flex;
   margin-top: 10px;
@@ -55,18 +63,6 @@ div.line-container {
   margin-top: 3px;
 }
 
-div.line-container lib-input-ex {
-  width: 100%;
-}
-
-div.line-container cs-input-dropdown {
-  margin-left: 10px;
-}
-
-div.line-container lib-input-dropdown-number {
-  margin-left: 10px;
-}
-
 div.temp-container {
   display: flex;
   justify-content: space-between;
@@ -93,12 +89,25 @@ clr-icon.advanced-item-icon {
 
 label.public {
   width: 210px;
+  margin-top: 3px;
   text-align: right;
 }
 
 div.external-container {
   display: flex;
   flex-direction: column;
+}
+
+div.external-container lib-input-ex{
+  margin-top: 3px;
+}
+
+div.external-container lib-dropdown-ex{
+  margin-top: 3px;
+}
+
+div.external-container lib-input-dropdown-number{
+  margin-top: 3px;
 }
 
 div.node-selector-close {
@@ -114,7 +123,7 @@ div.advanced-open {
   transition-duration: 0.5s;
 }
 
-div.advanced-open:hover{
+div.advanced-open:hover {
   cursor: pointer;
 }
 
@@ -124,11 +133,29 @@ div.advanced-close {
 }
 
 div.advanced-close:hover {
- cursor: pointer;
+  cursor: pointer;
 }
 
 div.button-container {
   display: flex;
   align-items: center;
   margin-top: 20px;
+}
+
+div.edge-item-container {
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+}
+
+div.edge-item-container.first {
+  margin-top: 20px;
+}
+
+div.edge-item-container label {
+  height: 15px;
+}
+
+div.edge-item-container label:hover {
+  cursor: pointer;
 }

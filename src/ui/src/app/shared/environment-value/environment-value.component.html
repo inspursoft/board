@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="false"
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false"
            [clrModalPreventClose]="true">
   <h3 class="modal-title">{{"SERVICE.ENV_TITLE" | translate }}</h3>
   <div class="modal-body">
@@ -18,41 +18,42 @@
     <div *ngFor="let envInfo of envsData;let iEnv = index">
       <div class="line-container">
         <span class="env-item-title-no">{{iEnv + 1}}.</span>
-        <clr-icon class="env-icon" shape="minus"
-                  *ngIf="!inputFixedKeyList || inputFixedKeyList.indexOf(envInfo.envName) == -1"
-                  (click)="envMinusClick(iEnv)">
+        <clr-icon class="env-icon" shape="minus" *ngIf="!isFixed(envInfo)" (click)="envMinusClick(iEnv)">
         </clr-icon>
         <lib-input-ex [inputIsRequired]="true"
                       [inputPattern]="patternEnv"
+                      [inputDisabled]="isFixed(envInfo)"
                       [validatorMessage]="[{key: 'required', message: 'SERVICE.ENV_REQUIRED' | translate}]"
                       [inputDefaultValue]="envInfo.envName"
                       (commitEvent)="envInfo.envName = $event">
         </lib-input-ex>
-        <lib-input-ex [inputDisabled]="bindConfigMap.get(iEnv)"
+        <lib-input-ex [inputDisabled]="bindConfigMap.get(iEnv) || isFixed(envInfo)"
                       [inputIsRequired]="true"
                       [validatorMessage]="[{key: 'required', message: 'SERVICE.ENV_REQUIRED' | translate}]"
                       [inputDefaultValue]="envInfo.envValue"
                       (commitEvent)="envInfo.envValue = $event">
         </lib-input-ex>
       </div>
-      <div class="line-container" *ngIf="isProvideBindConfigMap">
+      <div class="line-container" *ngIf="isProvideBindConfigMap && !isFixed(envInfo)">
         <input clrCheckbox
                [id]="iEnv"
                type="checkbox"
                (click)="changeBindConfigMap(iEnv, envInfo, $event)"
                [checked]="bindConfigMap.get(iEnv)">
         <label [for]="iEnv">{{"SERVICE.ENV_BIND_CONFIG_MAP" | translate}}</label>
+      </div>
+      <div class="line-container" *ngIf="isProvideBindConfigMap && !isFixed(envInfo)">
         <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv)"
                          [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_DEFAULT_TEXT' |translate"
-                         [dropdownMinWidth]="300"
+                         [dropdownMinWidth]="250"
                          [dropdownItems]="configMapList"
-                         [dropdownIsRequired]="envsData[iEnv].envConfigMapName == ''"
+                         [dropdownIsRequired]="envInfo.envConfigMapName == ''"
                          [dropdownKey]="'name'"
                          (dropdownChangeItem)="changeConfigMap(iEnv,envInfo, $event)">
         </lib-dropdown-ex>
         <lib-dropdown-ex *ngIf="bindConfigMap.get(iEnv) && configMapDetail.get(iEnv) !== undefined"
                          [dropdownTip]="'SERVICE.ENV_CONFIG_MAP_KEY_DEFAULT_TEXT' |translate"
-                         [dropdownMinWidth]="300"
+                         [dropdownMinWidth]="250"
                          [dropdownIsRequired]="envsData[iEnv].envConfigMapKey == ''"
                          [dropdownItems]="configMapDetail.get(iEnv).dataList"
                          [dropdownKey]="'key'"

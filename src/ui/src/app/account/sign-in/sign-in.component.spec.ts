@@ -1,26 +1,27 @@
 /**
- @fileName: sign-in.component.spec
- @author: liyanq
- @dateTime: 25/01/2018 13:16
- @desc:
+ * @fileName: sign-in.component.spec
+ * @author: liyanqing
+ * @dateTime: 25/01/2018 13:16
+ * @desc:
  */
 import { By } from '@angular/platform-browser';
-import { DebugElement, Injectable } from "@angular/core";
-import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { SignInComponent } from "./sign-in.component"
-import { AccountService } from "../account.service";
-import { AppModule } from "../../app.module";
-import { AppComponent } from "../../app.component";
-import { AppInitService } from "../../shared.service/app-init.service";
-import { HttpErrorResponse } from "@angular/common/http";
-import { HeaderComponent } from "../../shared/header/header.component";
+import { DebugElement, Injectable } from '@angular/core';
+import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
+import { defer } from 'rxjs';
+import { SignInComponent } from './sign-in.component';
+import { AccountService } from '../account.service';
+import { AppModule } from '../../app.module';
+import { AppComponent } from '../../app.component';
+import { AppInitService } from '../../shared.service/app-init.service';
+import { HeaderComponent } from '../../shared/header/header.component';
+import { AccountModule } from '../account.module';
+import { SystemInfo } from '../../shared/shared.types';
 import Spy = jasmine.Spy;
-import { defer } from "rxjs";
-import { AccountModule } from "../account.module";
 
 export function newEvent(eventName: string, bubbles = false, cancelable = false) {
-  let evt = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
+  const evt = document.createEvent('CustomEvent');  // MUST be 'CustomEvent'
   evt.initCustomEvent(eventName, bubbles, cancelable, null);
   return evt;
 }
@@ -36,19 +37,22 @@ export class RouterStub {
   }
 }
 
-describe("SignInComponent", () => {
+describe('SignInComponent', () => {
+  const fakeSystemInfo = new SystemInfo();
+  fakeSystemInfo.authMode = 'ldap_auth';
+  fakeSystemInfo.boardHost = '10.0.0.0';
+  fakeSystemInfo.boardVersion = 'dev';
+  fakeSystemInfo.initProjectRepo = 'created';
+  fakeSystemInfo.redirectionUrl = 'http://redirection.mydomain.com';
+  fakeSystemInfo.setAuthPassword = 'updated';
+  fakeSystemInfo.syncK8s = 'created';
+  fakeSystemInfo.dnsSuffix = '.cluster.local';
+  fakeSystemInfo.kubernetesVersion = 'v1.18.0';
+  fakeSystemInfo.processorType = 'x86_64';
   const fakeActivatedRoute = {
     snapshot: {
       data: {
-        systeminfo: {
-          auth_mode: "ldap_auth",
-          board_host: "10.0.0.0",
-          board_version: "dev",
-          init_project_repo: "created",
-          redirection_url: "http://redirection.mydomain.com",
-          set_auth_password: "updated",
-          sync_k8s: "created"
-        }
+        systeminfo: fakeSystemInfo
       }
     }
   };
@@ -68,27 +72,27 @@ describe("SignInComponent", () => {
       .then(() => {
       /*The AppComponent must be first create,
        because set currentLang on it's constructor function*/
-      let appFixture = TestBed.createComponent(AppComponent);
+      const appFixture = TestBed.createComponent(AppComponent);
       appFixture.detectChanges();
       appFixture.componentInstance.ngAfterViewInit();
       fixture = TestBed.createComponent(SignInComponent);
       fixture.detectChanges();
       component = fixture.componentInstance;
       accountService = fixture.debugElement.injector.get(AccountService);
-      signInSpy = spyOn(accountService, "signIn");
-    })
+      signInSpy = spyOn(accountService, 'signIn');
+    });
   }));
 
-  //Todo:Test HttpClient Service:https://angular.cn/guide/testing#component-with-async-service
+  // Todo:Test HttpClient Service:https://angular.cn/guide/testing#component-with-async-service
   function testErrorHandle(status: number): void {
-    let btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css("[type='submit']"));
-    let btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
-    let appInitService = fixture.debugElement.injector.get(AppInitService);
-    component.signInUser.username = "hello";
-    component.signInUser.password = "world";
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
+    const appInitService = fixture.debugElement.injector.get(AppInitService);
+    component.signInUser.username = 'hello';
+    component.signInUser.password = 'world';
     const errorResponse = new HttpErrorResponse({
       error: 'test error',
-      status: status
+      status
     });
     signInSpy.and.returnValue(errorResponse);
     btnSubmit.click();
@@ -106,20 +110,20 @@ describe("SignInComponent", () => {
   });
 
   it('should submit button is disabled', () => {
-    let btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css("[type='submit']"));
-    let btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
     fixture.detectChanges();
-    expect<boolean>(btnSubmit.disabled).toBeTruthy("submit button is disabled");
+    expect<boolean>(btnSubmit.disabled).toBeTruthy('submit button is disabled');
   });
 
-  it('should submit button is enable', fakeAsync(() => {
-    let btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css("[type='submit']"));
-    let btnSubmit: HTMLInputElement = btnSubmitDebug.nativeElement as HTMLInputElement;
-    component.signInUser.username = "hello";
-    component.signInUser.password = "world";
-    tick();
-    expect<boolean>(btnSubmit.disabled).toBeFalsy("submit button is enabled");
-  }));
+  it('should submit button is enable', () => {
+    const btnSubmitDebug: DebugElement = fixture.debugElement.query(By.css('.btn-primary-outline'));
+    const btnSubmit: HTMLButtonElement = btnSubmitDebug.nativeElement as HTMLButtonElement;
+    component.signInUser.username = 'hello';
+    component.signInUser.password = 'world';
+    fixture.detectChanges();
+    expect<boolean>(btnSubmit.disabled).toBeFalsy('submit button is enabled');
+  });
 
   // it("test sign-in click and catch 400 error code", async(() => {
   //   testErrorHandle(400);

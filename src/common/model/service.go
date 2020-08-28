@@ -12,6 +12,7 @@ const (
 	ServiceTypeClusterIP
 	ServiceTypeStatefulSet
 	ServiceTypeJob
+	ServiceTypeEdgeComputing
 )
 
 type ServiceStatus struct {
@@ -44,8 +45,9 @@ type PaginatedServiceStatus struct {
 }
 
 type ServiceInfoStruct struct {
-	NodePort []int32       `json:"node_Port,omitempty"`
-	NodeName []NodeAddress `json:"node_Name,omitempty"`
+	NodePort          []int32            `json:"node_Port,omitempty"`
+	NodeName          []NodeAddress      `json:"node_Name,omitempty"`
+	ServiceContainers []ServiceContainer `json:"service_Containers,omitempty"`
 }
 
 type ServiceToggle struct {

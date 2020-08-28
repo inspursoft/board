@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Job, JobPod } from "../job.type";
-import { JobService } from "../job.service";
-import { MessageService } from "../../shared.service/message.service";
-import { CsModalChildMessage } from "../../shared/cs-modal-base/cs-modal-child-base";
+import { Job, JobPod } from '../job.type';
+import { JobService } from '../job.service';
+import { MessageService } from '../../shared.service/message.service';
+import { CsModalChildMessage } from '../../shared/cs-modal-base/cs-modal-child-base';
 
 @Component({
   selector: 'app-job-logs',
@@ -12,7 +12,7 @@ import { CsModalChildMessage } from "../../shared/cs-modal-base/cs-modal-child-b
 export class JobLogsComponent extends CsModalChildMessage implements OnInit {
   @Input() job: Job;
   jobPods: Array<JobPod>;
-  jobLogs: Array<{datetime: string, content: string}>;
+  jobLogs: Array<{ datetime: string, content: string }>;
   isLoading = false;
   sinceTime: string;
   sinceDate: Date;
@@ -23,10 +23,8 @@ export class JobLogsComponent extends CsModalChildMessage implements OnInit {
     super(messageService);
     const now: Date = new Date();
     this.jobPods = Array<JobPod>();
-    this.jobLogs = Array<{datetime: string, content: string}>();
+    this.jobLogs = Array<{ datetime: string, content: string }>();
     this.sinceDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const num = Number(now.getHours());
-    console.log();
     this.sinceTime = `${this.getFormatNumber(now.getHours())}:${this.getFormatNumber(now.getMinutes())}`;
   }
 
@@ -73,6 +71,9 @@ export class JobLogsComponent extends CsModalChildMessage implements OnInit {
   }
 
   getLogs(pod: JobPod) {
+    if (this.isLoading) {
+      return;
+    }
     this.currentPod = pod;
     this.isLoading = true;
     this.jobLogs.splice(0, this.jobLogs.length);
@@ -82,12 +83,12 @@ export class JobLogsComponent extends CsModalChildMessage implements OnInit {
       sinceTime: this.getSearchDateTime().toISOString()
     }).subscribe((res: string) => {
         res.split(/\n/).forEach((log: string) => {
-          const arrLog = log.split(" ");
-          if (arrLog.length >= 2){
-            let content = log.substring(arrLog[0].length);
+          const arrLog = log.split(' ');
+          if (arrLog.length >= 2) {
+            const content = log.substring(arrLog[0].length);
             this.jobLogs.push({datetime: arrLog[0], content: `   ${content}`});
           }
-        })
+        });
       },
       () => this.isLoading = false,
       () => this.isLoading = false

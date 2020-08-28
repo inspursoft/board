@@ -35,15 +35,18 @@ function init()
         util_done $sleeptime curl http://grafana:3000/api/org
         echo "grafana server has already started"
 
+        # set light preference
+        util_done $sleeptime curl -X PUT -H "Content-Type: application/json;charset=UTF-8" -d '{"theme": "light"}' http://grafana:3000/api/org/preferences
+
         # set the kubernetes plugin
         echo "setting the kubernetes plugin"
-        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/raintank-kubernetes-app/settings
+        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/kubernetes.json http://grafana:3000/api/plugins/devopsprodigy-kubegraf-app/settings
         echo "set the kubernetes plugin successfully"
 
-        # add the graphite datasource
-        echo "adding the graphite datasource to grafana"
-        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/graphite-datasource.json http://grafana:3000/api/datasources
-        echo "add the graphite datasource to grafana successfully"
+        # add the prometheus datasource
+        echo "adding the prometheus datasource to grafana"
+        util_done $sleeptime curl -X POST -H "Content-Type: application/json;charset=UTF-8" -d @/etc/grafana/config/prometheus-datasource.json http://grafana:3000/api/datasources
+        echo "add the prometheus datasource to grafana successfully"
 
         # add the kubernetes datasource
         echo "adding the kubernetes datasource to grafana"

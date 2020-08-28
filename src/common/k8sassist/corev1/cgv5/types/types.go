@@ -1,7 +1,7 @@
 package types
 
 import (
-	appsv1beta2 "k8s.io/api/apps/v1beta2"
+	appsv1 "k8s.io/api/apps/v1"
 	betchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,15 +9,17 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	config "k8s.io/client-go/rest"
+	"k8s.io/client-go/scale"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 //define Deployment type
-type DeploymentList = appsv1beta2.DeploymentList
-type Deployment = appsv1beta2.Deployment
+type DeploymentList = appsv1.DeploymentList
+type Deployment = appsv1.Deployment
 type TypeMeta = metav1.TypeMeta
 type ObjectMeta = metav1.ObjectMeta
-type DeploymentSpec = appsv1beta2.DeploymentSpec
-type DeploymentStatus = appsv1beta2.DeploymentStatus
+type DeploymentSpec = appsv1.DeploymentSpec
+type DeploymentStatus = appsv1.DeploymentStatus
 type LabelSelector = metav1.LabelSelector
 type PodTemplateSpec = v1.PodTemplateSpec
 type PodSpec = v1.PodSpec
@@ -64,6 +66,7 @@ type DeleteOptions = metav1.DeleteOptions
 //define config
 type Config = config.Config
 type Clientset = kubernetes.Clientset
+type ScaleGetter = scale.ScalesGetter
 type NamespacePhase = v1.NamespacePhase
 
 //define api
@@ -90,8 +93,10 @@ const (
 	serviceAPIVersion    = "v1"
 	serviceKind          = "Service"
 	nodePort             = "NodePort"
-	deploymentAPIVersion = "apps/v1beta2"
+	deploymentAPIVersion = "apps/v1"
 	deploymentKind       = "Deployment"
+	daemonsetAPIVersion  = "apps/v1"
+	daemonsetKind        = "DaemonSet"
 	namespaceKind        = "Namespace"
 	namespaceAPIVersion  = "v1"
 	podKind              = "Pod"
@@ -99,3 +104,9 @@ const (
 	maxPort              = 32765
 	minPort              = 30000
 )
+
+type TerminalSizeQueueFunc func() *remotecommand.TerminalSize
+
+func (t TerminalSizeQueueFunc) Next() *remotecommand.TerminalSize {
+	return t()
+}

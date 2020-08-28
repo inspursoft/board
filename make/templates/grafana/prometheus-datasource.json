@@ -1,0 +1,19 @@
+{
+	"name": "Prometheus",
+	"type": "prometheus",
+	"typeLogoUrl": "",
+	"url": "http://prometheus:9090",
+	"access": "proxy",
+	"password": "",
+	"user": "",
+	"database": "",
+	"basicAuth": false,
+	"basicAuthUser": "",
+	"basicAuthPassword": "",
+	"withCredentials": false,
+	"isDefault": true,
+	"jsonData": {},
+	"secureJsonFields": {},
+	"version": 1,
+	"readOnly": false
+}

@@ -1,4 +1,4 @@
-<status *ngIf="service" [service]="service"></status>
+<app-status *ngIf="service" [service]="service"></app-status>
 <table class="table">
   <thead>
   <tr>
@@ -9,15 +9,15 @@
   </thead>
   <tbody>
   <tr class="btn-primary image-tag-line" *ngFor="let imageIndex of imageList">
-    <td class="left image-name">{{imageIndex.image_name}}</td>
-    <td class="left image-tag">{{imageIndex.image_tag}}</td>
-    <td class="left" [ngClass]="{'change':imageIndex.image_tag != imageTagSelected.get(imageIndex.image_name)}">
+    <td class="left image-name">{{imageIndex.imageName}}</td>
+    <td class="left image-tag">{{imageIndex.imageTag}}</td>
+    <td class="left" [ngClass]="{'change':imageIndex.imageTag != imageTagSelected.get(imageIndex.imageName)}">
       <lib-dropdown-ex [dropdownTip]="'SERVICE.SERVICE_CONTROL_LOCATE_SELECT' | translate"
                        [dropdownMinWidth]="150"
-                       [dropdownItems]="imageTagList.get(imageIndex.image_name)"
-                       [dropdownKey]="'image_tag'"
+                       [dropdownItems]="imageTagList.get(imageIndex.imageName)"
+                       [dropdownKey]="'imageTag'"
                        [dropdownDisabled]="isActionInWIP"
-                       (dropdownChangeItem)="changeImageTag(imageIndex.image_name,$event)">
+                       (dropdownChangeItem)="changeImageTag(imageIndex.imageName,$event)">
       </lib-dropdown-ex>
     </td>
   </tr>

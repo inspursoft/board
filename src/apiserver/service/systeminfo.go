@@ -7,7 +7,17 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"os/exec"
+
+	"github.com/astaxie/beego/logs"
 )
+
+type SystemResourcesInfo struct {
+	TotalNumberCpuCore int        `json:"total_number_cpu_core"`
+	TotalMemorySize    int        `json:"total_memory_size"`
+	TotalCpuUsage      float32    `json:"total_cpu_usage"`
+	TotalMemoryUsage   int        `json:"total_memory_usage"`
+	NodesResources     []NodeInfo `json:"nodes_resources"`
+}
 
 func GetSystemInfo() (*model.SystemInfo, error) {
 	configs, err := dao.GetAllConfigs()
@@ -17,6 +27,8 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 	var systemInfo model.SystemInfo
 	for _, config := range configs {
 		switch config.Name {
+		case "MODE":
+			systemInfo.Mode = config.Value
 		case "BOARD_HOST_IP":
 			systemInfo.BoardHost = config.Value
 		case "AUTH_MODE":
@@ -35,11 +47,13 @@ func GetSystemInfo() (*model.SystemInfo, error) {
 			systemInfo.DNSSuffix = config.Value
 		case "KUBERNETES_VERSION":
 			systemInfo.KubernetesVersion = config.Value
+		case "DEVOPS_OPT":
+			systemInfo.DevOpsOpt = config.Value
 		}
 	}
 
 	//Get the hareware processor arch
-	cmd := exec.Command("uname", "-p")
+	cmd := exec.Command("uname", "-m")
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Errorf("Uname failed to get info %v", err)
@@ -73,4 +87,21 @@ func GetKubernetesInfo() (*model.KubernetesInfo, error) {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	return k8sclient.AppV1().Discovery().ServerVersion()
+}
+
+func GetSystemResourcesInfo() (systemResourcesInfo SystemResourcesInfo, err error) {
+	nodes, err := GetNodes()
+	if err != nil {
+		logs.Error("Failed to get Node information.")
+		return
+	}
+	for _, node := range nodes {
+		systemResourcesInfo.TotalNumberCpuCore += node.NumberCPUCore
+		systemResourcesInfo.TotalMemorySize += node.MemorySize
+		systemResourcesInfo.TotalCpuUsage += node.CPUUsage / 100
+		systemResourcesInfo.TotalMemoryUsage += int(float32(node.MemorySize) * node.MemoryUsage / 100)
+		systemResourcesInfo.NodesResources = append(systemResourcesInfo.NodesResources, node)
+	}
+
+	return
 }

@@ -8,24 +8,53 @@ import { catchError, tap, timeout } from 'rxjs/operators';
 import { AppTokenService } from './app-token.service';
 import { MessageService } from './message.service';
 import { GlobalAlertType } from '../shared/shared.types';
+import { CookieService } from 'ngx-cookie';
 
 @Injectable()
 export class HttpClientInterceptor implements HttpInterceptor {
+  exceptUrls: Array<string>;
 
   constructor(private appTokenService: AppTokenService,
               private messageService: MessageService,
-              private translateService: TranslateService) {
+              private translateService: TranslateService,
+              private cookieService: CookieService) {
+    this.exceptUrls = new Array<string>();
+    this.initExceptUrls();
+  }
 
+  initExceptUrls() {
+    this.exceptUrls.push('/captcha');
+    this.exceptUrls.push('/api/v1/systeminfo');
+    this.exceptUrls.push('/api/v1/log-out');
+    this.exceptUrls.push('/api/v1/search');
+    this.exceptUrls.push('/api/v1/sign-in');
+    this.exceptUrls.push('/api/v1/user-exists');
+    this.exceptUrls.push('/api/v1/sign-up');
+    this.exceptUrls.push('/api/v1/forgot-password');
+  }
+
+  isNotExceptUrl(res: HttpResponse<object>): boolean {
+    return this.exceptUrls.every(value => res.url.indexOf(value) === -1);
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const xsrf = this.cookieService.get('_xsrf');
+    let xsrfToken = '';
+    if (xsrf) {
+      const originValue = xsrf.split('|')[0];
+      xsrfToken = window.atob(originValue);
+    }
     let authReq: HttpRequest<any> = req.clone({
       headers: req.headers
     });
     if (this.appTokenService.token !== '') {
       authReq = authReq.clone({
-        headers: authReq.headers.set("token", this.appTokenService.token),
-        params: authReq.params.set("Timestamp", Date.now().toString())
+        headers: authReq.headers
+          .set('token', this.appTokenService.token)
+          .set('Content-Security-Policy', 'default-src \'self\'; font-src \'self\' data:; script-src \'self\' \'unsafe-inline\'' +
+            ' \'unsafe-eval\'; img-src \'self\' data: base64; style-src \'self\' \'unsafe-inline\';')
+          .set('X-Xsrftoken', xsrfToken),
+        params: authReq.params.set('Timestamp', Date.now().toString())
       });
     }
     return next.handle(authReq)
@@ -33,11 +62,19 @@ export class HttpClientInterceptor implements HttpInterceptor {
         tap((event: HttpEvent<any>) => {
           if (event instanceof HttpResponse) {
             const res = event as HttpResponse<object>;
-            if (res.ok && res.headers.has('token')) {
+            if (res.ok && res.headers.has('Token') && res.headers.get('Token') !== '') {
               this.appTokenService.chainResponse(res);
+            } else if (this.isNotExceptUrl(res)) {
+              this.translateService.get('ERROR.INVALID_TOKEN').subscribe(value => {
+                const msg = `${value}:${res.url}`;
+                this.messageService.showGlobalMessage(msg, {
+                  alertType: 'warning',
+                  globalAlertType: GlobalAlertType.gatLogin
+                });
+              });
             }
           }
-        }), timeout(30000),
+        }), timeout(60000),
         catchError((err: HttpErrorResponse | TimeoutError) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status >= 200 && err.status < 300) {
@@ -106,6 +143,6 @@ export class HttpClientInterceptor implements HttpInterceptor {
 export const HttpInterceptorService = {
   provide: HTTP_INTERCEPTORS,
   useClass: HttpClientInterceptor,
-  deps: [AppTokenService, MessageService, TranslateService],
+  deps: [AppTokenService, MessageService, TranslateService, CookieService],
   multi: true
 };

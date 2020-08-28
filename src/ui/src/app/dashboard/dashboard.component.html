@@ -48,8 +48,12 @@
         <span class="stat-panel-title">{{ 'DASHBOARD.TOTAL' | translate }}:</span>
       </div>
       <div class="section-right-container-container">
-        <span class="stat-panel-value-font">{{curRealTimeValue.get(2)?.curFirst}}{{StorageUnit}}</span>
-        <span class="stat-panel-value-font">{{curRealTimeValue.get(2)?.curSecond}}{{StorageUnit}}</span>
+        <span class="stat-panel-value-font">
+          {{curRealTimeValue.get(2)?.curFirst}}{{curRealTimeValue.get(2)?.curFirstUnit}}
+        </span>
+        <span class="stat-panel-value-font">
+          {{curRealTimeValue.get(2)?.curSecond}}{{curRealTimeValue.get(2)?.curSecondUnit}}
+        </span>
       </div>
     </div>
   </div>
@@ -59,36 +63,36 @@
   <div class="card-header">{{'DASHBOARD.SERVICE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
-      <lib-dropdown-ex [dropdownTip]="getCurLineName(0)"
+      <lib-dropdown-ex [dropdownTip]="queryData.serviceName"
                        [dropdownMinWidth]="300"
-                       [dropdownDisabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
-                       [dropdownItems]="getLinesName(0)"
+                       [dropdownDisabled]="lineStateInfo.inRefreshWIP"
+                       [dropdownItems]="prometheus.serviceLineData.list"
                        [dropdownMenuHeader]="'DASHBOARD.SERVICE_LIST' | translate"
-                       (dropdownChangeItem)="dropDownChange(0,$event)">
+                       (dropdownChangeItem)="serviceDropDownChange($event)">
       </lib-dropdown-ex>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)">
+         [class.disabled]="lineStateInfo.inRefreshWIP">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
         <span class="first-line">{{ 'DASHBOARD.PODS' | translate }}:{{curValue.get(0)?.curFirst}}</span>
         <span class="second-line">{{ 'DASHBOARD.CONTAINERS' | translate }}:{{curValue.get(0)?.curSecond}}</span>
       </div>
-      <time-range-scale class="range-scale"
-                        [disabled]="lineStateInfo.get(0)?.inRefreshWIP || !lineStateInfo.get(0)"
-                        [options]="scaleOptions"
-                        [curScale]="query.get(0) ? query.get(0).scale:{}"
-                        (scaleChange)="scaleChange(0,$event)">
-      </time-range-scale>
+      <app-time-range-scale class="range-scale"
+                            [disabled]="lineStateInfo.inRefreshWIP"
+                            [options]="scaleOptions"
+                            [curScale]="curScaleOption"
+                            (scaleChange)="scaleChange(0,$event)">
+      </app-time-range-scale>
     </div>
     <div class="card-block-bottom-container">
-      <div *ngIf="noData.get(0)" class="no-data-mask"><span>{{ noDataErrMsg.get(0) | translate }}</span></div>
+      <div *ngIf="noData" class="no-data-mask"><span>{{ noDataErrMsg.get(0) | translate }}</span></div>
       <div echarts
            (chartInit)="onEChartInit(0,$event)"
            [options]="lineOptions.get(0)"
-           [loading]="lineStateInfo.get(0)?.inRefreshWIP"
+           [loading]="lineStateInfo.inRefreshWIP"
            (mouseup)="chartMouseUp(0,$event)"
-           (chartDataZoom)="chartDataZoom(0,$event)"
+           (chartDataZoom)="chartDataZoom(0, $event)"
            style="height: 300px">
       </div>
     </div>
@@ -99,15 +103,15 @@
   <div class="card-header">{{'DASHBOARD.NODE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
-      <lib-dropdown-ex [dropdownTip]="getCurLineName(1)"
+      <lib-dropdown-ex [dropdownTip]="queryData.nodeName"
                        [dropdownMinWidth]="300"
-                       [dropdownDisabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
-                       [dropdownItems]="getLinesName(1)"
+                       [dropdownDisabled]="lineStateInfo.inRefreshWIP"
+                       [dropdownItems]="prometheus.nodeLineData.list"
                        [dropdownMenuHeader]="'DASHBOARD.NODE_LIST' | translate"
-                       (dropdownChangeItem)="dropDownChange(1,$event)">
+                       (dropdownChangeItem)="nodeDropDownChange($event)">
       </lib-dropdown-ex>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)">
+         [class.disabled]="lineStateInfo.inRefreshWIP">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
@@ -115,21 +119,21 @@
         <span class="second-line">{{ 'DASHBOARD.MEMORY' | translate }}:{{curValue.get(1)?.curSecond}}%</span>
       </div>
       <div class="select-time-container">
-        <time-range-scale [curScale]="query.get(1) ? query.get(1).scale:{}"
-                          (scaleChange)="scaleChange(1,$event)"
-                          [disabled]="lineStateInfo.get(1)?.inRefreshWIP || !lineStateInfo.get(1)"
-                          [options]="scaleOptions">
-        </time-range-scale>
+        <app-time-range-scale [curScale]="curScaleOption"
+                              (scaleChange)="scaleChange(1,$event)"
+                              [disabled]="lineStateInfo.inRefreshWIP"
+                              [options]="scaleOptions">
+        </app-time-range-scale>
       </div>
     </div>
     <div class="card-block-bottom-container">
-      <div *ngIf="noData.get(1)" class="no-data-mask">
+      <div *ngIf="noData" class="no-data-mask">
         <span>{{ noDataErrMsg.get(1) | translate }}</span>
       </div>
       <div echarts
            (chartInit)="onEChartInit(1,$event)"
            [options]="lineOptions.get(1)"
-           [loading]="lineStateInfo.get(1)?.inRefreshWIP"
+           [loading]="lineStateInfo.inRefreshWIP"
            (mouseup)="chartMouseUp(1,$event)"
            (chartDataZoom)="chartDataZoom(1,$event)"
            style="height: 300px">
@@ -142,38 +146,41 @@
   <div class="card-header">{{'DASHBOARD.STORAGE' | translate }}</div>
   <div class="card-block line-area-block">
     <div class="card-block-top-container">
-     <lib-dropdown-ex [dropdownItems]="getLinesName(2)"
-                      [dropdownTip]="getCurLineName(2)"
-                      [dropdownDisabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
-                      [dropdownMinWidth]="300"
-                      (dropdownChangeItem)="dropDownChange(2,$event)">
-     </lib-dropdown-ex>
+      <lib-dropdown-ex [dropdownItems]="prometheus.storageLineData.list"
+                       [dropdownTip]="queryData.nodeName"
+                       [dropdownDisabled]="lineStateInfo.inRefreshWIP"
+                       [dropdownMinWidth]="300"
+                       (dropdownChangeItem)="nodeDropDownChange($event)">
+      </lib-dropdown-ex>
       <a href="javascript:void(0)" (click)="refreshLine()" class="refresh"
-         [class.disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)">
+         [class.disabled]="lineStateInfo.inRefreshWIP">
         <clr-icon shape="refresh" class="refresh"></clr-icon>
       </a>
       <div class="caption_container">
-        <span class="first-line">{{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{StorageUnit}}</span>
-        <span
-            class="second-line">{{'DASHBOARD.TOTAL' | translate }}:{{curValue.get(2)?.curSecond}}{{StorageUnit}}</span>
+        <span class="first-line">
+          {{ 'DASHBOARD.USAGE' | translate }}:{{curValue.get(2)?.curFirst}}{{curValue.get(2)?.curFirstUnit}}
+        </span>
+        <span class="second-line">
+          {{'DASHBOARD.TOTAL' | translate }}:{{curValue.get(2)?.curSecond}}{{curValue.get(2)?.curSecondUnit}}
+        </span>
       </div>
       <div class="select-time-container">
-        <time-range-scale [curScale]="query.get(2) ? query.get(2).scale:{}"
-                          (scaleChange)="scaleChange(2,$event)"
-                          [disabled]="lineStateInfo.get(2)?.inRefreshWIP || !lineStateInfo.get(2)"
-                          [options]="scaleOptions">
-        </time-range-scale>
+        <app-time-range-scale [curScale]="curScaleOption"
+                              (scaleChange)="scaleChange(2,$event)"
+                              [disabled]="lineStateInfo.inRefreshWIP"
+                              [options]="scaleOptions">
+        </app-time-range-scale>
       </div>
     </div>
     <div class="card-block-bottom-container">
-      <div *ngIf="noData.get(2)" class="no-data-mask">
+      <div *ngIf="noData" class="no-data-mask">
         <span>{{ noDataErrMsg.get(2) | translate }}</span>
       </div>
       <div echarts
            (chartInit)="onEChartInit(2,$event)"
            (mouseup)="chartMouseUp(2,$event)"
            [options]="lineOptions.get(2)"
-           [loading]="lineStateInfo.get(2)?.inRefreshWIP"
+           [loading]="lineStateInfo.inRefreshWIP"
            (chartDataZoom)="chartDataZoom(2,$event)"
            style="height: 300px">
       </div>
@@ -192,7 +199,7 @@
     </a>
   </div>
   <div class="card-block" [ngStyle]="{height:showMaxGrafanaWindow?'100%':'300px'}">
-    <iframe height="100%" width="100%" frameborder="0" [src]="grafanaViewUrl | safe">
+    <iframe height="100%" width="100%" [src]="grafanaViewUrl | safe">
       {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
     </iframe>
   </div>

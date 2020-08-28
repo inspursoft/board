@@ -13,3 +13,13 @@ span.filed-text-value {
   text-align: left;
 }
 
+div.dynamic-line-container {
+  display: flex;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  align-items: center;
+}
+
+div.dynamic-line-container.key-title {
+  margin-top: 10px;
+}

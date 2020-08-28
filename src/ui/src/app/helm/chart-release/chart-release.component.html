@@ -1,58 +1,190 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP && !isCheckNameWip">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'" [clrModalClosable]="!isReleaseWIP">
   <h3 class="modal-title">{{ 'HELM.RELEASE_CHART_TITLE' | translate }}</h3>
   <div class="modal-body">
-    <div class="info-container">
-      <lib-dropdown-ex [dropdownIsRequired]="true"
-                       [dropdownItems]="projectsList"
-                       [dropdownKey]="'project_name'"
-                       [dropdownLabelWidth]="150"
-                       [dropdownMinWidth]="260"
-                       [dropdownLabel]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
-                       [dropdownTip]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
-                       [dropdownDisabled]="isReleaseWIP || isCheckNameWip"
-                       (dropdownChangeItem)="changeSelectProject($event)">
-      </lib-dropdown-ex>
-      <lib-input-ex [inputLabel]="'HELM.RELEASE_CHART_NAME' | translate"
-                    [inputDefaultValue]="releaseName"
-                    [inputLabelWidth]="150"
-                    [inputIsRequired]="true"
-                    [inputDisabled]="isReleaseWIP"
-                    [validatorAsyncFn]="checkChartReleaseNameFun"
-                    [validatorMessage]="[{key:'nodeGroupExist',message:'HELM.RELEASE_CHART_NAME_EXISTING' | translate}]"
-                    (commitEvent)="releaseName = $event">
-      </lib-input-ex>
-      <div class="line-container base-margin-top">
-        <label class="base-text">{{"HELM.RELEASE_CHART_REPO_NAME" | translate}}:</label>
-        <label class="base-margin-left">{{repoInfo.name}}</label>
+    <div class="release-container">
+      <div class="info-container">
+        <p>{{'HELM.RELEASE_CHART_BASE_INFO' | translate}}</p>
+        <lib-dropdown-ex [dropdownIsRequired]="true"
+                         [dropdownItems]="projectsList"
+                         [dropdownKey]="'projectName'"
+                         [dropdownLabelWidth]="160"
+                         [dropdownMinWidth]="240"
+                         [dropdownLabel]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
+                         [dropdownTip]="'HELM.RELEASE_CHART_SELECT_PROJECT' | translate"
+                         [dropdownDisabled]="isReleaseWIP"
+                         (dropdownChangeItem)="changeSelectProject($event)">
+        </lib-dropdown-ex>
+        <lib-input-ex [inputLabel]="'HELM.RELEASE_CHART_NAME' | translate"
+                      [inputDefaultValue]="releaseName"
+                      [inputLabelWidth]="150"
+                      [inputIsRequired]="true"
+                      [inputDisabled]="isReleaseWIP"
+                      [validatorAsyncFn]="checkChartReleaseNameFun"
+                      [validatorMessage]="[{key:'nodeGroupExist',message:'HELM.RELEASE_CHART_NAME_EXISTING' | translate}]"
+                      (commitEvent)="releaseName = $event">
+        </lib-input-ex>
+        <div class="line-container base-margin-top">
+          <label class="base-text">{{"HELM.RELEASE_CHART_REPO_NAME" | translate}}:</label>
+          <label class="base-margin-left">{{repoInfo.name}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+          <label class="base-text">{{"HELM.RELEASE_CHART_CHART_NAME" | translate}}:</label>
+          <label class="base-margin-left">{{chartVersion.name}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+          <label class="base-text">{{"HELM.RELEASE_CHART_CHART_VERSION" | translate}}:</label>
+          <label class="base-margin-left">{{chartVersion.version}}</label>
+        </div>
+        <div class="line-container base-margin-top">
+          <label class="base-text">{{"HELM.RELEASE_CHART_DESCRIPTION" | translate}}:</label>
+          <label class="base-margin-left">{{chartVersion.description}}</label>
+        </div>
+        <div class="code-container">
+          <div class="code-editor" id="compile-editor-question"></div>
+        </div>
       </div>
-      <div class="line-container base-margin-top">
-        <label class="base-text">{{"HELM.RELEASE_CHART_CHART_NAME" | translate}}:</label>
-        <label class="base-margin-left">{{chartVersion.name}}</label>
+      <div class="questions-container">
+        <div *ngIf="chartRelease.questions.length > 0">
+          <p>{{'HELM.RELEASE_CHART_QUESTION_SETTING' | translate}}</p>
+          <div class="question" *ngFor="let question of chartRelease.questions;let i = index">
+            {{i}}.
+            <ng-container *ngIf="question.questionType === 1"
+                          [ngTemplateOutlet]="booleanTemplate"
+                          [ngTemplateOutletContext]="question">
+            </ng-container>
+            <ng-container *ngIf="question.questionType === 2"
+                          [ngTemplateOutlet]="stringTemplate"
+                          [ngTemplateOutletContext]="question">
+            </ng-container>
+            <ng-container *ngIf="question.questionType === 3"
+                          [ngTemplateOutlet]="integerTemplate"
+                          [ngTemplateOutletContext]="question">
+            </ng-container>
+          </div>
+        </div>
+        <div class="code-container" style="height: 100%; overflow-y: auto "
+             *ngIf="chartRelease.questions.length === 0">
+          <div class="code-editor" id="compile-editor"></div>
+        </div>
       </div>
-      <div class="line-container base-margin-top">
-        <label class="base-text">{{"HELM.RELEASE_CHART_CHART_VERSION" | translate}}:</label>
-        <label class="base-margin-left">{{chartVersion.version}}</label>
-      </div>
-      <div class="line-container base-margin-top">
-        <label class="base-text">{{"HELM.RELEASE_CHART_DESCRIPTION" | translate}}:</label>
-        <label class="base-margin-left">{{chartVersion.description}}</label>
-      </div>
-    </div>
-    <div class="code-container">
-      <cs-highlight [language]="'yaml'" [code]="chartValue"></cs-highlight>
     </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline"
-            [disabled]="isReleaseWIP || isCheckNameWip"
+            [disabled]="isReleaseWIP"
             (click)="modalOpened = false">
       {{ 'BUTTON.CANCEL' | translate }}
     </button>
     <button type="button" class="btn btn-primary"
-            [disabled]="isReleaseWIP || isCheckNameWip"
-            (click)="chartRelease()">
+            [disabled]="isReleaseWIP"
+            (click)="chartReleaseAction()">
       {{ 'HELM.RELEASE_CHART_RELEASE' | translate }}
     </button>
     <span *ngIf="isReleaseWIP" class="spinner spinner-sm"></span>
   </div>
 </clr-modal>
+
+<ng-template #booleanTemplate
+             let-variable="variable"
+             let-label="label"
+             let-isShowSubQuestion="isShowSubQuestion"
+             let-isHasSubQuestion="isHasSubQuestion"
+             let-subQuestions="subQuestions"
+             let-description="description"
+             let-questionType="questionType"
+             let-defaultValue="defaultValue">
+  <p><b>{{description}}</b></p>
+  <div class="boolean-template-container">
+    <label class="base-text">{{label}}:</label>
+    <input [disabled]="isReleaseWIP" type="checkbox" clrToggle
+           [checked]="defaultValue"
+           (change)="setAnswer(variable,$event)"/>
+  </div>
+  <div *ngIf="isShowSubQuestion && isHasSubQuestion">
+    <div *ngFor="let subQuestion of subQuestions">
+      <ng-container *ngIf="subQuestion['questionType'] === 1"
+                    [ngTemplateOutlet]="booleanTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 2"
+                    [ngTemplateOutlet]="stringTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 3"
+                    [ngTemplateOutlet]="integerTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #stringTemplate
+             let-variable="variable"
+             let-label="label"
+             let-isShowSubQuestion="isShowSubQuestion"
+             let-isHasSubQuestion="isHasSubQuestion"
+             let-questionType="questionType"
+             let-subQuestions="subQuestions"
+             let-description="description"
+             let-defaultValue="defaultValue">
+  <p><b>{{description}}</b></p>
+  <lib-input-ex [inputLabel]="label"
+                [inputLabelWidth]="150"
+                [inputDisabled]="isReleaseWIP"
+                [inputDefaultValue]="defaultValue"
+                (commitEvent)="setAnswer(variable, $event)">
+  </lib-input-ex>
+  <div *ngIf="isShowSubQuestion && isHasSubQuestion">
+    <div *ngFor="let subQuestion of subQuestions">
+      <ng-container *ngIf="subQuestion['questionType'] === 1"
+                    [ngTemplateOutlet]="booleanTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 2"
+                    [ngTemplateOutlet]="stringTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 3"
+                    [ngTemplateOutlet]="integerTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #integerTemplate
+             let-variable="variable"
+             let-label="label"
+             let-isShowSubQuestion="isShowSubQuestion"
+             let-isHasSubQuestion="isHasSubQuestion"
+             let-subQuestions="subQuestions"
+             let-questionType="questionType"
+             let-description="description"
+             let-defaultValue="defaultValue">
+  <p><b>{{description}}</b></p>
+  <lib-input-ex [inputLabel]="label"
+                [inputLabelWidth]="150"
+                [inputCategory]="2"
+                [inputDisabled]="isReleaseWIP"
+                [inputDefaultValue]="defaultValue"
+                (commitEvent)="setAnswer(variable,$event)">
+  </lib-input-ex>
+  <div *ngIf="isShowSubQuestion && isHasSubQuestion">
+    <div *ngFor="let subQuestion of subQuestions">
+      <ng-container *ngIf="subQuestion['questionType'] === 1"
+                    [ngTemplateOutlet]="booleanTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 2"
+                    [ngTemplateOutlet]="stringTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+      <ng-container *ngIf="subQuestion['questionType'] === 3"
+                    [ngTemplateOutlet]="integerTemplate"
+                    [ngTemplateOutletContext]="subQuestion">
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+

@@ -1,4 +1,4 @@
-<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
   <div class="modal-title clr-row clr-align-items-center">
     {{ 'JOB.JOB_CREATE_CONFIG_CONTAINER' | translate }}
     <span *ngIf="isLoading" class="spinner spinner-sm"></span>
@@ -13,17 +13,17 @@
                   (commitEvent)="container.name = $event">
     </lib-input-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_WORKING_DIR' | translate"
-                  [inputPattern]="patternWorkdir"
-                  [inputDefaultValue]="container.working_Dir"
+                  [inputPattern]="patternWorkingDir"
+                  [inputDefaultValue]="container.workingDir"
                   [inputPlaceholder]="'JOB.JOB_CREATE_WORK_DIRECTOR'| translate"
-                  (commitEvent)="container.working_Dir = $event"></lib-input-ex>
+                  (commitEvent)="container.workingDir = $event"></lib-input-ex>
     <lib-input-ex [inputType]="2"
                   [inputLabel]="'JOB.JOB_CREATE_VOLUME_MOUNTS' | translate"
                   [inputDefaultValue]="volumesDescriptions[0]"
                   [inputPlaceholder]="'JOB.JOB_CREATE_CONFIG_VOLUME_MOUNTS'| translate"
                   (editEvent)="editVolumeMount()"></lib-input-ex>
-    <div *ngIf="container.volume_mounts.length > 1" class="volume-info-container">
-        <span class="volume-info" *ngFor="let _ of container.volume_mounts; let i = index">
+    <div *ngIf="container.volumeMounts.length > 1" class="volume-info-container">
+        <span class="volume-info" *ngFor="let _ of container.volumeMounts; let i = index">
           <span *ngIf="i > 0">{{volumesDescriptions[i]}}</span>
         </span>
     </div>
@@ -37,9 +37,9 @@
                         [inputLabel]="'JOB.JOB_CREATE_CONTAINER_PORT' | translate"
                         [inputMax]="65535"
                         [inputMin]="1"
-                        [inputArrayDefault]="container.container_port "
+                        [inputArrayDefault]="container.containerPort "
                         [inputPlaceholder]="'[1..65535]'"
-                        (commitEvent)="container.container_port = $event">
+                        (commitEvent)="setContainerPort($event)">
     </lib-input-array-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_COMMAND' | translate"
                   [inputDefaultValue]="container.command"
@@ -47,28 +47,28 @@
                   (commitEvent)="container.command = $event"></lib-input-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_CPU_REQUEST' | translate"
                   [inputPattern]="patternCpuRequest"
-                  [inputDefaultValue]="container.cpu_request"
+                  [inputDefaultValue]="container.cpuRequest"
                   [inputPlaceholder]="'eg. 100m'"
                   [validatorAsyncFn]="checkSetCpuRequestFun"
                   [validatorMessage]="[{key:'beyondMaxLimit', message: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE' | translate}]"
-                  (commitEvent)="container.cpu_request = $event"></lib-input-ex>
+                  (commitEvent)="container.cpuRequest = $event"></lib-input-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_MEMORY_REQUEST' | translate"
                   [inputPattern]="patternMemRequest"
                   [validatorAsyncFn]="checkSetMemRequestFun"
                   [validatorMessage]="[{key:'beyondMaxLimit', message: 'JOB.JOB_CREATE_BEYOND_MAX_VALUE' | translate}]"
-                  [inputDefaultValue]="container.mem_request"
+                  [inputDefaultValue]="container.memRequest"
                   [inputPlaceholder]="'eg. 100Mi'"
-                  (commitEvent)="container.mem_request = $event"></lib-input-ex>
+                  (commitEvent)="container.memRequest = $event"></lib-input-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_CPU_LIMIT' | translate"
-                  [inputDefaultValue]="container.cpu_limit"
+                  [inputDefaultValue]="container.cpuLimit"
                   [inputPlaceholder]="'eg. 1024m'"
                   [inputPattern]="patternCpuLimit"
-                  (commitEvent)="container.cpu_limit = $event"></lib-input-ex>
+                  (commitEvent)="container.cpuLimit = $event"></lib-input-ex>
     <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_MEMORY_LIMIT' | translate"
-                  [inputDefaultValue]="container.mem_limit"
+                  [inputDefaultValue]="container.memLimit"
                   [inputPattern]="patternMemLimit"
                   [inputPlaceholder]="'eg. 1024Mi'"
-                  (commitEvent)="container.mem_limit = $event"></lib-input-ex>
+                  (commitEvent)="container.memLimit = $event"></lib-input-ex>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="modalOpened = false">
@@ -79,10 +79,10 @@
     </button>
   </div>
 </clr-modal>
-<environment-value *ngIf="showEnvironmentValue"
-                   [isProvideBindConfigMap]="true"
-                   [projectName]="projectName"
-                   [inputEnvsData]="getDefaultEnvsData()"
-                   (closeNotification)="showEnvironmentValue = false"
-                   (onConfirm)="setEnvironment($event)">
-</environment-value>
+<app-environment-value *ngIf="showEnvironmentValue"
+                       [isProvideBindConfigMap]="true"
+                       [projectName]="projectName"
+                       [inputEnvsData]="getDefaultEnvsData()"
+                       (closeNotification)="showEnvironmentValue = false"
+                       (confirm)="setEnvironment($event)">
+</app-environment-value>

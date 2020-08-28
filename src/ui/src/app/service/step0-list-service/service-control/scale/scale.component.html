@@ -1,5 +1,5 @@
 <div class="scale-container">
-  <status *ngIf="service" [service]="service"></status>
+  <app-status *ngIf="service" [service]="service"></app-status>
   <div class="utilization-container" #alertView>
     <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_CPU_UTILIZATION_CURRENT'| translate"
                   [inputLabelWidth]="230"
@@ -42,28 +42,28 @@
                         [inputLabelWidth]="100"
                         [inputPattern]="patternHpaName"
                         [inputIsRequired]="true"
-                        [inputDefaultValue]="hpa.hpa_name"
+                        [inputDefaultValue]="hpa.hpaName"
                         [inputDisabled]="isActionInWIP || hpa.isEdit"
-                        (commitEvent)="hpa.hpa_name = $event">
+                        (commitEvent)="hpa.hpaName = $event">
           </lib-input-ex>
           <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_TARGET'| translate"
                         [inputLabelWidth]="200"
                         [inputIsRequired]="true"
-                        [inputDefaultValue]="hpa.cpu_percent"
+                        [inputDefaultValue]="hpa.cpuPercent"
                         [inputCategory]="2"
                         [inputDisabled]="isActionInWIP"
-                        (commitEvent)="hpa.cpu_percent = $event">
+                        (commitEvent)="hpa.cpuPercent = $event">
           </lib-input-ex>
         </div>
         <div class="auto-scale-line-container">
           <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MIN_REPLICAS'| translate"
                         [inputLabelWidth]="100"
-                        [inputDefaultValue]="hpa.min_pod"
+                        [inputDefaultValue]="hpa.minPod"
                         [inputMin]="1"
                         [inputMax]="99"
                         [inputCategory]="2"
                         [inputDisabled]="isActionInWIP"
-                        (commitEvent)="hpa.min_pod = $event">
+                        (commitEvent)="hpa.minPod = $event">
           </lib-input-ex>
           <lib-input-ex [inputLabel]="'SERVICE.SERVICE_CONTROL_MAX_REPLICAS'| translate"
                         [inputLabelWidth]="200"
@@ -71,15 +71,15 @@
                         [inputMin]="1"
                         [inputMax]="99"
                         [inputDisabled]="isActionInWIP"
-                        [inputDefaultValue]="hpa.max_pod"
-                        (commitEvent)="hpa.max_pod = $event">
+                        [inputDefaultValue]="hpa.maxPod"
+                        (commitEvent)="hpa.maxPod = $event">
           </lib-input-ex>
         </div>
         <div class="auto-scale-delete-container" *ngIf="hpa.isEdit"
-             [class.only-delete]="hpa.hpa_status == 1">
+             [class.only-delete]="hpa.hpaStatus == 1">
           <clr-alert [clrAlertType]="'warning'"
                      [clrAlertClosable]="false"
-                     [hidden]="hpa.hpa_status == 1">
+                     [hidden]="hpa.hpaStatus == 1">
             <div class="alert-item">
               <span class="alert-text">
                 {{"SERVICE.SERVICE_CONTROL_HPA_DESCRIPTION" | translate}}

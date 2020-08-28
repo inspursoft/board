@@ -54,12 +54,12 @@
                        [dropdownMinWidth]="200"
                        [dropdownItems]="userNames"
                        [dropdownDisabled]="isInLoading"
-                       [dropdownKey]="'user_name'"
+                       [dropdownKey]="'userName'"
                        (dropdownChangeItem)="changeUsernameQuery($event)">
-        <ng-template libItemTemp let-userName="user_name" let-id="user_id">
+        <ng-template libItemTemp let-userName="userName" let-id="userId">
           <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
         </ng-template>
-        <ng-template libTitleTemp let-userName="user_name" let-id="user_id">
+        <ng-template libTitleTemp let-userName="userName" let-id="userId">
           <span [style.color]="id === 0 ? 'blue' : 'black'">{{userName | translate}}</span>
         </ng-template>
       </lib-dropdown-ex>
@@ -84,11 +84,11 @@
   <clr-dg-column>{{"AUDIT.STATUS" | translate}}</clr-dg-column>
   <clr-dg-column>{{"AUDIT.USER" | translate}}</clr-dg-column>
   <clr-dg-row *ngFor="let audit of auditsListData">
-    <clr-dg-cell>{{audit.operation_creation_time | date:'short' }}</clr-dg-cell>
-    <clr-dg-cell>{{getObjectTitle(audit.operation_object_type) | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{getActionTitle(audit.operation_action) | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{getStatusTitle(audit.operation_status) | translate}}</clr-dg-cell>
-    <clr-dg-cell>{{audit.operation_user_name}}</clr-dg-cell>
+    <clr-dg-cell>{{audit.creationTime | date:'short' }}</clr-dg-cell>
+    <clr-dg-cell>{{getObjectTitle(audit.objectType) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getActionTitle(audit.action) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{getStatusTitle(audit.status) | translate}}</clr-dg-cell>
+    <clr-dg-cell>{{audit.userName}}</clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>
     {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} of {{pagination.totalItems}} items

@@ -2,14 +2,14 @@
   <h3 class="modal-title">{{ 'SERVICE.STEP_3_SET_AFFINITY' | translate }}</h3>
   <div class="modal-body">
     <div class="advance-left-config">
-      <affinity-card-list #affinitySource
-                          [title]="'SERVICE.STEP_3_COLLABORATIVE'|translate"
-                          [viewModel]="'column'"
-                          [acceptDrag]="false"
-                          [description]="'SERVICE.STEP_3_AFFINITY_DESCRIPTION' | translate"
-                          [disabled]="isActionWip"
-                          [affinityCardDataList]="affinitySourceDataList">
-      </affinity-card-list>
+      <app-affinity-card-list #affinitySource
+                              [title]="'SERVICE.STEP_3_COLLABORATIVE'|translate"
+                              [viewModel]="'column'"
+                              [acceptDrag]="false"
+                              [description]="'SERVICE.STEP_3_AFFINITY_DESCRIPTION' | translate"
+                              [disabled]="isActionWip"
+                              [affinityCardDataList]="affinitySourceDataList">
+      </app-affinity-card-list>
     </div>
     <div class="advance-right-config">
       <a href="javascript:void(0)" (click)="addNewAffinity()">
@@ -41,15 +41,15 @@
             <clr-icon shape="trash"></clr-icon>
           </a>
         </div>
-        <affinity-card-list [sourceList]="affinitySource"
-                            [acceptDrag]="true"
-                            [listMinHeight]="150"
-                            [viewModel]="'row'"
-                            [listBorder]="true"
-                            [cardWidth]="220"
-                            [disabled]="isActionWip"
-                            [affinityCardDataList]="affinity.services">
-        </affinity-card-list>
+        <app-affinity-card-list [sourceList]="affinitySource"
+                                [acceptDrag]="true"
+                                [listMinHeight]="150"
+                                [viewModel]="'row'"
+                                [listBorder]="true"
+                                [cardWidth]="220"
+                                [disabled]="isActionWip"
+                                [affinityCardDataList]="affinity.services">
+        </app-affinity-card-list>
       </div>
     </div>
   </div>

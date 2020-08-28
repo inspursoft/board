@@ -43,18 +43,35 @@ func DeployService(serviceConfig *model.ConfigServiceStep, registryURI string) (
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 	deploymentConfig := MarshalDeployment(serviceConfig, registryURI)
 	//logs.Debug("Marshaled deployment: ", deploymentConfig)
+	if serviceConfig.ServiceType == model.ServiceTypeEdgeComputing {
+		deploymentConfig.Spec.Template.Spec.HostNetwork = true
+		deploymentConfig.Spec.Template.Spec.Affinity.NodeAffinity = model.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &model.NodeSelector{
+				NodeSelectorTerms: []model.NodeSelectorTerm{
+					model.NodeSelectorTerm{
+						MatchExpressions: []model.NodeSelectorRequirement{
+							model.NodeSelectorRequirement{
+								Key:      "node-role.kubernetes.io/edge",
+								Operator: model.NodeSelectorOpExists,
+							}}}}}}
+	}
 	deploymentInfo, deploymentFileInfo, err := cli.AppV1().Deployment(serviceConfig.ProjectName).Create(deploymentConfig)
 	if err != nil {
 		logs.Error("Deploy deployment object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
 		return nil, err
 	}
 	logs.Debug("Created deployment: ", deploymentInfo)
-	svcConfig := MarshalService(serviceConfig)
-	serviceInfo, serviceFileInfo, err := cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
-	if err != nil {
-		cli.AppV1().Deployment(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
-		logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
-		return nil, err
+
+	var serviceInfo *model.Service
+	var serviceFileInfo []byte
+	if serviceConfig.ServiceType != model.ServiceTypeEdgeComputing {
+		svcConfig := MarshalService(serviceConfig)
+		serviceInfo, serviceFileInfo, err = cli.AppV1().Service(serviceConfig.ProjectName).Create(svcConfig)
+		if err != nil {
+			cli.AppV1().Deployment(serviceConfig.ProjectName).Delete(serviceConfig.ServiceName)
+			logs.Error("Deploy service object of %s failed. error: %+v\n", serviceConfig.ServiceName, err)
+			return nil, err
+		}
 	}
 
 	return &DeployInfo{
@@ -70,11 +87,16 @@ func GenerateDeployYamlFiles(deployInfo *DeployInfo, loadPath string) error {
 		logs.Error("Deploy info is empty.")
 		return errors.New("Deploy info is empty.")
 	}
-	err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
-	if err != nil {
-		return err
+	if deployInfo.ServiceFileInfo != nil {
+		err := utils.GenerateFile(deployInfo.ServiceFileInfo, loadPath, serviceFilename)
+		if err != nil {
+			return err
+		}
+	} else {
+		logs.Warning("The file of deployInfo.ServiceFileInfo is nil.")
 	}
-	err = utils.GenerateFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
+
+	err := utils.GenerateFile(deployInfo.DeploymentFileInfo, loadPath, deploymentFilename)
 	if err != nil {
 		return err
 	}
@@ -106,24 +128,30 @@ func DeployServiceByYaml(projectName, loadPath string) error {
 	cli := k8sassist.NewK8sAssistClient(clusterConfig)
 
 	deploymentAbsName := filepath.Join(loadPath, deploymentFilename)
-	deploymentFile, err := os.Open(deploymentAbsName)
+	deploymentFile, err := FetchFileContentByDevOpsOpt("master", deploymentAbsName)
 	if err != nil {
 		return err
 	}
-
-	defer deploymentFile.Close()
+	defer func() {
+		if h, ok := deploymentFile.(*os.File); ok {
+			h.Close()
+		}
+	}()
 	deploymentInfo, err := cli.AppV1().Deployment(projectName).CreateByYaml(deploymentFile)
 	if err != nil {
 		logs.Error("Deploy deployment object by deployment.yaml failed, err:%+v\n", err)
 		return err
 	}
-
-	ServiceAbsName := filepath.Join(loadPath, serviceFilename)
-	serviceFile, err := os.Open(ServiceAbsName)
+	serviceAbsName := filepath.Join(loadPath, serviceFilename)
+	serviceFile, err := FetchFileContentByDevOpsOpt("master", serviceAbsName)
 	if err != nil {
 		return err
 	}
-	defer serviceFile.Close()
+	defer func() {
+		if h, ok := serviceFile.(*os.File); ok {
+			h.Close()
+		}
+	}()
 	_, err = cli.AppV1().Service(projectName).CreateByYaml(serviceFile)
 	if err != nil {
 		cli.AppV1().Deployment(projectName).Delete(deploymentInfo.Name)

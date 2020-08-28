@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"git/inspursoft/board/src/apiserver/models/helms/repositories/vm"
 	helmpkg "git/inspursoft/board/src/apiserver/service/helm"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/k8sassist"
@@ -25,10 +26,41 @@ var (
 	NotExistError = fmt.Errorf("does not exist")
 )
 
-type matchedServiceAndDeployment struct {
+type WORKLOAD_TYPE string
+
+const (
+	WORKLOAD_TYPE_DEPLOYMENT  WORKLOAD_TYPE = "Deployment"
+	WORKLOAD_TYPE_STATEFULSET WORKLOAD_TYPE = "StatefulSet"
+)
+
+type matchedServiceAndWorkload struct {
 	Service     *model.K8sInfo
 	ServiceType int
-	Deployment  *model.K8sInfo
+	Type        WORKLOAD_TYPE
+	Workload    *model.K8sInfo
+}
+
+func vmRepositoryModel(repo model.HelmRepository) vm.HelmRepository {
+	return vm.HelmRepository{
+		ID:   repo.ID,
+		Name: repo.Name,
+		URL:  repo.URL,
+		Type: repo.Type,
+	}
+}
+
+func ListVMHelmRepositories() ([]vm.HelmRepository, error) {
+	// list the repos from storage
+	repos, err := dao.GetHelmRepositories()
+	if err != nil {
+		return nil, err
+	}
+
+	vmRepos := []vm.HelmRepository{}
+	for _, r := range repos {
+		vmRepos = append(vmRepos, vmRepositoryModel(r))
+	}
+	return vmRepos, nil
 }
 
 func ListHelmRepositories() ([]model.HelmRepository, error) {
@@ -188,7 +220,7 @@ func InstallChart(repo *model.HelmRepository, target *model.Release) error {
 	if err != nil {
 		return err
 	}
-	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, helmhost)
+	err = chartrepo.InstallChart(target.Chart, target.ChartVersion, target.Name, target.ProjectName, target.Values, target.Answers, helmhost)
 	if err != nil {
 		return err
 	}
@@ -269,7 +301,12 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 		KubeConfigPath: kubeConfigPath(),
 	})
 	//resolve the templateInfo into kubernetes service and deployments.....
-	return processBoardMatchedServiceAndDeployments(r.Workloads, r.ProjectName, func(matched *matchedServiceAndDeployment) (bool, error) {
+	return processBoardMatchedServiceAndWorkloads(r.Workloads, r.ProjectName, func(matched *matchedServiceAndWorkload) (bool, error) {
+		// process the statefulset
+		if matched.Type == WORKLOAD_TYPE_STATEFULSET {
+			matched.ServiceType = model.ServiceTypeStatefulSet
+			return true, nil
+		}
 		// check service existents
 		exist, err := ServiceExists(matched.Service.Name, matched.Service.Namespace)
 		if err != nil {
@@ -284,7 +321,7 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 			return true, nil
 		}
 		return false, nil
-	}, func(matched []*matchedServiceAndDeployment) error {
+	}, func(matched []*matchedServiceAndWorkload) error {
 		// add the service into board
 		for i := range matched {
 			_, err := CreateServiceConfig(model.ServiceStatus{
@@ -301,7 +338,7 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 				UpdateTime:     r.UpdateTime,
 				Source:         helm,
 				ServiceYaml:    matched[i].Service.Source,
-				DeploymentYaml: matched[i].Deployment.Source,
+				DeploymentYaml: matched[i].Workload.Source,
 			})
 			if err != nil {
 				return err
@@ -311,7 +348,7 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 	})
 }
 
-func processBoardMatchedServiceAndDeployments(workloads, projectname string, prepare func(matched *matchedServiceAndDeployment) (bool, error), process func(matched []*matchedServiceAndDeployment) error) error {
+func processBoardMatchedServiceAndWorkloads(workloads, projectname string, prepare func(matched *matchedServiceAndWorkload) (bool, error), process func(matched []*matchedServiceAndWorkload) error) error {
 	return model.NewK8sHelper().Visit(workloads, func(infos []*model.K8sInfo, err error) error {
 		if err != nil {
 			return err
@@ -331,10 +368,10 @@ func processBoardMatchedServiceAndDeployments(workloads, projectname string, pre
 			return err
 		}
 
-		matched := []*matchedServiceAndDeployment{}
+		matched := []*matchedServiceAndWorkload{}
 		pipeline := rivers.FromSlice(infos).Filter(func(t stream.T) bool {
 			info := t.(*model.K8sInfo)
-			if info.Kind == "Deployment" {
+			if info.Kind == string(WORKLOAD_TYPE_DEPLOYMENT) || info.Kind == string(WORKLOAD_TYPE_STATEFULSET) {
 				info.Namespace = projectname
 				return true
 			}
@@ -353,13 +390,13 @@ func processBoardMatchedServiceAndDeployments(workloads, projectname string, pre
 					logs.Warning("set the service namespace error:%+v", err)
 					return
 				}
-				emitter.Emit(&matchedServiceAndDeployment{Service: svc, Deployment: info})
+				emitter.Emit(&matchedServiceAndWorkload{Service: svc, Workload: info, Type: WORKLOAD_TYPE(info.Kind)})
 			}
 		})
 		if prepare != nil {
 			pipeline = pipeline.Apply(&transformers.Observer{
 				OnNext: func(data stream.T, emitter stream.Emitter) error {
-					send, err := prepare(data.(*matchedServiceAndDeployment))
+					send, err := prepare(data.(*matchedServiceAndWorkload))
 					if send {
 						emitter.Emit(data)
 					}
@@ -442,11 +479,11 @@ func DeleteRelease(releaseid int64) error {
 	if err != nil {
 		return err
 	}
-	return processBoardMatchedServiceAndDeployments(release.Workloads, release.ProjectName, nil, func(matched []*matchedServiceAndDeployment) error {
+	return processBoardMatchedServiceAndWorkloads(release.Workloads, release.ProjectName, nil, func(matched []*matchedServiceAndWorkload) error {
 		// delete the service from board
 		services := []model.ServiceStatus{}
 		rivers.FromSlice(matched).Map(func(t stream.T) stream.T {
-			m := t.(*matchedServiceAndDeployment)
+			m := t.(*matchedServiceAndWorkload)
 			return model.ServiceStatus{
 				Name:        m.Service.Name,
 				ProjectName: m.Service.Namespace,
@@ -502,12 +539,50 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 	}()
 
 	loadChan := make(chan string)
+	podsChan := make(chan []model.PodMO)
 	go func() {
 		load, err := helmpkg.GetReleaseManifest(release.Name, helmhost)
 		if err != nil {
 			logs.Warning("Get release %s workloads from helm error:%+v", release.Name, err)
 		}
 		loadChan <- load
+		// analysis the manifest and get the pods.
+		var pods []model.PodMO
+		model.NewK8sHelper().Visit(load, func(infos []*model.K8sInfo, err error) error {
+			// add the kubernetes resources to board
+			k8sclient := k8sassist.NewK8sAssistClient(&k8sassist.K8sAssistConfig{
+				KubeConfigPath: kubeConfigPath(),
+			})
+			podlist, err := k8sclient.AppV1().Extend().ListSelectRelatePods(infos)
+			if err != nil {
+				logs.Warn("list release %s relate pods error:%+v", release.Name, err)
+				return err
+			}
+			if podlist != nil {
+				for i := range podlist.Items {
+					var containers []model.ContainerMO
+					for j := range podlist.Items[i].Spec.Containers {
+						containers = append(containers, model.ContainerMO{
+							Name:  podlist.Items[i].Spec.Containers[j].Name,
+							Image: podlist.Items[i].Spec.Containers[j].Image,
+						})
+					}
+					pods = append(pods, model.PodMO{
+						Name:        podlist.Items[i].Name,
+						ProjectName: podlist.Items[i].Namespace,
+						Spec: model.PodSpecMO{
+							Containers: containers,
+						},
+					})
+				}
+				// sort the pods by project and name.
+				sort.SliceStable(pods, func(i, j int) bool {
+					return strings.Compare(pods[i].ProjectName+"/"+pods[i].Name, pods[j].ProjectName+"/"+pods[j].Name) <= 0
+				})
+			}
+			return nil
+		})
+		podsChan <- pods
 	}()
 
 	//get the result
@@ -516,12 +591,13 @@ func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {
 	notes := <-notesChan
 	workloads := <-loadChan
 	status := <-statusChan
-
+	pods := <-podsChan
 	detail := model.ReleaseDetail{
 		Release:        generateModelRelease(release, helmrelease),
 		Workloads:      workloads,
 		Notes:          notes,
 		WorkloadStatus: status,
+		Pods:           pods,
 	}
 	return &detail, err
 }

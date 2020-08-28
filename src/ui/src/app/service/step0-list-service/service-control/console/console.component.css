@@ -1,0 +1,59 @@
+div.console-container {
+  height: 440px;
+  overflow-y: auto;
+}
+
+div.bottom-container {
+  flex-basis: 100%;
+  margin-bottom: 20px;
+}
+
+div.top-container {
+  flex-direction: column
+}
+
+div.upload-download-container {
+  margin-top: 5px;
+  flex-wrap: nowrap;
+}
+
+a.disabled {
+  color: silver;
+}
+
+a.disabled:hover {
+  cursor: not-allowed;
+}
+
+div.left-info-container {
+  flex-direction: column;
+  padding: 5px;
+  margin: 5px;
+  border: solid 1px gray;
+}
+
+div.container-info-container {
+  margin: 5px;
+  border-radius: 5px;
+  border: solid 1px silver;
+  padding: 5px;
+}
+
+div.container-info-container.active {
+  background-color: lightgreen;
+}
+
+div.terminal-container {
+  margin: 5px;
+  flex-basis: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+clr-icon.connect {
+  color: darkgreen;
+}
+
+clr-icon.connect :hover {
+  cursor: pointer;
+}

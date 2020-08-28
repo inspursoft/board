@@ -1,20 +1,34 @@
 <clr-vertical-nav [clrVerticalNavCollapsible]="true"
                   [(clrVerticalNavCollapsed)]="collapsed">
   <div *ngFor="let navItem of navSource">
-    <ng-container *ngIf="!navItem.children" [ngTemplateOutletContext]="navItem"
+    <ng-container *ngIf="!navItem.children"
+                  [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemTemp"></ng-container>
-    <ng-container *ngIf="navItem.children && navItem.visible" [ngTemplateOutletContext]="navItem"
+    <ng-container *ngIf="navItem.children && navItem.visible"
+                  [ngTemplateOutletContext]="navItem"
                   [ngTemplateOutlet]="itemGroupTemp"></ng-container>
   </div>
-  <ng-template let-visible='visible' let-url='url' let-icon='icon' let-caption='caption' #itemTemp>
-    <a *ngIf="visible"
+  <ng-template let-visible='visible'
+               let-url='url'
+               let-icon='icon'
+               let-caption='caption'
+               let-isAdminServer='isAdminServer'
+               #itemTemp>
+    <a *ngIf="visible && !isAdminServer"
        clrVerticalNavLink
        [routerLink]="url"
        [routerLinkActive]="'active'"
        [queryParams]="queryParams">
       <clr-icon clrVerticalNavIcon [attr.shape]="icon" class="is-solid"></clr-icon>
       <span>{{caption | translate}}</span>
-      <ng-template [csVerticalNavGuide]="url"></ng-template>
+      <ng-template [appVerticalNavGuide]="url"></ng-template>
+    </a>
+    <a *ngIf="isAdminServer && isShowAdminSever "
+       target="_blank"
+       clrVerticalNavLink
+       [href]="adminServerUrl">
+      <clr-icon clrVerticalNavIcon [attr.shape]="'home'" class="is-solid"></clr-icon>
+      <span>{{"AdminServer.Name" | translate}}</span>
     </a>
   </ng-template>
   <ng-template let-visible='visible'
@@ -23,10 +37,12 @@
                let-caption='caption'
                let-children='children'
                #itemGroupTemp>
-    <clr-vertical-nav-group routerLinkActive="active">
+    <clr-vertical-nav-group (clrVerticalNavGroupExpandedChange)="setIsShowAdminServer()"
+                            routerLinkActive="active">
       <clr-icon [attr.shape]="icon" clrVerticalNavIcon></clr-icon>
       <span>{{caption | translate}}</span>
-      <clr-vertical-nav-group-children>
+      <a [routerLink]="url" hidden aria-hidden="true"></a>
+      <clr-vertical-nav-group-children *clrIfExpanded>
         <div *ngFor="let navItem of children">
           <ng-container [ngTemplateOutletContext]="navItem" [ngTemplateOutlet]="itemTemp"></ng-container>
         </div>

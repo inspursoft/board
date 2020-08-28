@@ -1,0 +1,1097 @@
+<app-header></app-header>
+<div id="container"
+     #divTarget>
+  <div class="clr-row clr-justify-content-center"
+       style="margin-right: 0; margin-left: 0;">
+    <div class="clr-col-lg-9 clr-col-12 clr-align-self-center end-with-blank">
+      <div style="text-align: center; padding-top: 3rem;"
+           *ngIf="!enableInitialization">
+        <div *ngIf="loadingFlag">
+          <clr-spinner>
+            {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+          </clr-spinner>
+          {{ 'INITIALIZATION.TOOLS.LOADING' | translate }}
+        </div>
+        <div style="font-size: 36px;"
+             *ngIf="disconnect">
+          <clr-icon shape="disconnect"
+                    class="is-error"
+                    size="48"></clr-icon>
+          {{'INITIALIZATION.ALERTS.INITIALIZATION' | translate}}
+        </div>
+      </div>
+
+      <div class="card"
+           *ngIf="enableInitialization">
+
+        <div class="card-header"
+             *ngIf="installStep >= 0">
+          {{'INITIALIZATION.PAGE_TITLE.WELCOME' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 0">
+          <h4 class="card-title">{{'INITIALIZATION.CONTENTS.UUID' | translate}}</h4>
+          <form clrForm>
+            <variable-input [disabled]="installStep >= 1"
+                            [label]="'UUID'"
+                            [type]="'text'"
+                            [required]="true"
+                            [pattern]="uuidPattern"
+                            [placeholder]="'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+                            [helper]="'UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+                            [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                            [patternMsg]="'INITIALIZATION.ALERTS.UUID' | translate"
+                            [firstItem]="true"
+                            (commitEvent)="uuid = $event"
+                            #UUID>
+            </variable-input>
+          </form>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep >= 1 && !ignoreStep1">
+          {{'INITIALIZATION.PAGE_TITLE.EDIT_CONFIG_CONFIRM' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 1 && !ignoreStep1">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.EDIT_CONFIG_CONFIRM' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep >= 2 && !ignoreStep2">
+          {{'INITIALIZATION.PAGE_TITLE.EDIT_CONFIG' | translate}}
+          <clr-toggle-wrapper>
+            <input type="checkbox"
+                   clrToggle
+                   name="simpleMode"
+                   required
+                   [(ngModel)]="simpleMode" />
+            <label>
+              {{'INITIALIZATION.BUTTONS.FAST_MODE' | translate}}
+              <a role="tooltip"
+                 aria-haspopup="true"
+                 class="tooltip tooltip-md tooltip-bottom-left">
+                <clr-icon shape="info-circle"
+                          size="20"></clr-icon>
+                <span class="tooltip-content">{{'INITIALIZATION.HELPER.FAST_MODE' | translate}}<br></span>
+              </a>
+            </label>
+          </clr-toggle-wrapper>
+        </div>
+        <div class="card-block"
+             *ngIf="installStep >= 2 && !ignoreStep2">
+          <form clrForm>
+
+            <div>
+              <div class="card-title">
+                Board:
+              </div>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.ARCH_TYPE.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.board.archType"
+                              [enumType]="'text'"
+                              [enumItem]="{x86_64:'x86_64',ARM64v8:'arm64v8',MIPS:'mips'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.BOARD.ARCH_TYPE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.archType = $event">
+              </variable-input>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.MODE.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.board.mode"
+                              [enumType]="'text'"
+                              [enumItem]="{Normal:'normal',Security:'security'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.BOARD.MODE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.mode = $event">
+              </variable-input>
+              <!-- <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.BOARD.ACCESS_PROTOCOL.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.board.accessProtocol"
+                              [enumType]="'text'"
+                              [enumItem]="{HTTP:'http',HTTPS:'https'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.BOARD.ACCESS_PROTOCOL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.accessProtocol = $event">
+              </variable-input> -->
+              <variable-input [label]="'CONFIGURATIONS.BOARD.HOSTNAME.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.board.hostname"
+                              [placeholder]="'CONFIGURATIONS.BOARD.HOSTNAME.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.BOARD.HOSTNAME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.board.hostname = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.BOARD.API_SERVER_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.board.apiServerPort"
+                              [placeholder]="'CONFIGURATIONS.BOARD.API_SERVER_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.BOARD.API_SERVER_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.board.apiServerPort = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.board.devopsOpt"
+                              [enumType]="'text'"
+                              [enumItem]="{Gogs:'legacy',Gitlab:'gitlab'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.devopsOpt = $event">
+              </variable-input>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.AUTH_MODE.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.board.authMode"
+                              [enumType]="'text'"
+                              [enumItem]="{Database:'db_auth',LDAP:'ldap_auth'}"
+                              [enumInline]="true"
+                              [placeholder]="'CONFIGURATIONS.BOARD.AUTH_MODE.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.BOARD.AUTH_MODE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.authMode = $event">
+              </variable-input>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.BOARD.AUDIT_DEBUG.LABEL' | translate"
+                              [type]="'boolean'"
+                              [defaultValue]="config.board.auditDebug === 'true'"
+                              [helper]="'CONFIGURATIONS.BOARD.AUDIT_DEBUG.HELPER' | translate"
+                              [showHelper]="'onfocus'"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.board.auditDebug = $event">
+              </variable-input>
+
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                K8s:
+              </div>
+              <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_MASTER_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.k8s.kubeMasterIP"
+                              [placeholder]="'CONFIGURATIONS.K8S.KUBE_MASTER_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.K8S.KUBE_MASTER_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.k8s.kubeMasterIP = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_HTTP_SCHEME.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.k8s.kubeHttpScheme"
+                              [enumType]="'text'"
+                              [enumItem]="{HTTP:'http',HTTPS:'https'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.K8S.KUBE_HTTP_SCHEME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.k8s.kubeHttpScheme = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.k8s.kubeHttpScheme === 'http' ? 8080 : 6443"
+                              [enumType]="'number'"
+                              [enumItem]="{'8080':8080,'6443':6443}"
+                              [enumInline]="true"
+                              [enableCustomItem]="true"
+                              [customItemPlaceholder]="'1~65535'"
+                              [customItemWidth]="'3.5rem'"
+                              [helper]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.k8s.kubeMasterPort = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.K8S.REGISTRY_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.k8s.registryIP"
+                              [placeholder]="'CONFIGURATIONS.K8S.REGISTRY_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.K8S.REGISTRY_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.k8s.registryIP = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.K8S.REGISTRY_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.k8s.registryPort"
+                              [placeholder]="'CONFIGURATIONS.K8S.REGISTRY_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.K8S.REGISTRY_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.k8s.registryPort = $event">
+              </variable-input>
+
+              <clr-date-container *ngIf="!simpleMode">
+                <label>{{'CONFIGURATIONS.K8S.IMAGE_BASELINE_TIME.LABEL' | translate}}</label>
+                <input type="date"
+                       [(clrDate)]="newDate"
+                       style="width: 10.6rem;"
+                       newFormLayout="true"
+                       (focus)="onFocusBaselineHelper()"
+                       (blur)="onBlurBaselineHelper()">
+                <clr-control-helper *ngIf="showBaselineHelper">
+                  {{ 'CONFIGURATIONS.K8S.IMAGE_BASELINE_TIME.HELPER' | translate }}
+                </clr-control-helper>
+              </clr-date-container>
+
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.K8S.TILLER_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.k8s.tillerPort"
+                              [placeholder]="'CONFIGURATIONS.K8S.TILLER_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.K8S.TILLER_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.k8s.tillerPort = $event">
+              </variable-input>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.K8S.DNS_SUFFIX.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.k8s.dnsSuffix"
+                              [placeholder]="'CONFIGURATIONS.K8S.DNS_SUFFIX.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.K8S.DNS_SUFFIX.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.k8s.dnsSuffix = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="config.board.devopsOpt == 'legacy'">
+
+            <div *ngIf="config.board.devopsOpt == 'legacy'">
+              <div class="card-title">
+                Gogs:
+              </div>
+
+              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+                              [label]="'CONFIGURATIONS.GOGS.HOST_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.gogs.hostIP"
+                              [placeholder]="'CONFIGURATIONS.GOGS.HOST_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GOGS.HOST_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.gogs.hostIP = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+                              [label]="'CONFIGURATIONS.GOGS.HOST_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.gogs.hostPort"
+                              [placeholder]="'CONFIGURATIONS.GOGS.HOST_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GOGS.HOST_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.gogs.hostPort = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+                              [label]="'CONFIGURATIONS.GOGS.SSH_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.gogs.sshPort"
+                              [placeholder]="'CONFIGURATIONS.GOGS.SSH_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GOGS.SSH_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.gogs.sshPort = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="config.board.devopsOpt == 'gitlab'">
+
+            <div *ngIf="config.board.devopsOpt == 'gitlab'">
+              <div class="card-title">
+                Gitlab:
+              </div>
+              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+                              [label]="'CONFIGURATIONS.GITLAB.HOST_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.gitlab.hostIP"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.HOST_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.HOST_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.gitlab.hostIP = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+                              [label]="'CONFIGURATIONS.GITLAB.HOST_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.gitlab.hostPort"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.HOST_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.HOST_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.gitlab.hostPort = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+                              [label]="'CONFIGURATIONS.GITLAB.SSH_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.gitlab.sshPort"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.SSH_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.SSH_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.gitlab.sshPort = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+                              [label]="'CONFIGURATIONS.GITLAB.ADMIN_TOKEN.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.gitlab.adminToken"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.ADMIN_TOKEN.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.ADMIN_TOKEN.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.gitlab.adminToken = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.gitlab.sshUsername"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.gitlab.sshUsername = $event">
+              </variable-input>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [defaultValue]="config.gitlab.sshPassword"
+                              [placeholder]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.GITLAB.SSH_PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.gitlab.sshPassword = $event">
+              </variable-input>
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                Prometheus:
+              </div>
+              <variable-input [label]="'CONFIGURATIONS.PROMETHEUS.URL.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.prometheus.url"
+                              [placeholder]="'CONFIGURATIONS.PROMETHEUS.URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.PROMETHEUS.URL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.prometheus.url = $event">
+              </variable-input>
+
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                Jenkins:
+              </div>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.HOST_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.hostIP"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.HOST_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.HOST_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.jenkins.hostIP = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.HOST_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.jenkins.hostPort"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.HOST_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.HOST_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.jenkins.hostPort = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.NODE_IP.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.nodeIP"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.NODE_IP.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.NODE_IP.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.jenkins.nodeIP = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.NODE_SSH_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.jenkins.nodeSshPort"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.NODE_SSH_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.NODE_SSH_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.jenkins.nodeSshPort = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.NODE_USERNAME.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.nodeUsername"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.NODE_USERNAME.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.NODE_USERNAME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.jenkins.nodeUsername = $event">
+              </variable-input>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.JENKINS.NODE_PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.nodePassword"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.NODE_PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.NODE_PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.jenkins.nodePassword = $event">
+              </variable-input>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.JENKINS.NODE_VOLUME.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.nodeVolume"
+                              [placeholder]="'CONFIGURATIONS.JENKINS.NODE_VOLUME.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.JENKINS.NODE_VOLUME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.jenkins.nodeVolume = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.JENKINS.EXECUTION_MODE.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.jenkins.executionMode"
+                              [enumType]="'text'"
+                              [enumItem]="{Single:'single',Multi:'multi'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.JENKINS.EXECUTION_MODE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.jenkins.executionMode = $event">
+              </variable-input>
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                DB:
+              </div>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.DB.DB_PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [pattern]="passwordPattern"
+                              [defaultValue]="config.db.dbPassword"
+                              [confirmPassword]="true"
+                              [confirmLabel]="'CONFIGURATIONS.DB.DB_PASSWORD.CONFIRM_LABEL' | translate"
+                              [placeholder]="'CONFIGURATIONS.DB.DB_PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.DB.DB_PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [patternMsg]="'CONFIGURATIONS.DB.DB_PASSWORD.PATTERN_ERROR' | translate"
+                              [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
+                              (commitEvent)="config.db.dbPassword = $event">
+              </variable-input>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.DB.DB_MAX_CONNECTIONS.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="16384"
+                              [defaultValue]="config.db.dbMaxConnections"
+                              [placeholder]="'CONFIGURATIONS.DB.DB_MAX_CONNECTIONS.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.DB.DB_MAX_CONNECTIONS.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 16384'"
+                              (commitEvent)="config.db.dbMaxConnections = $event">
+              </variable-input>
+              <variable-input *ngIf="config.board.authMode == 'db_auth'"
+                              [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.DB.BOARD_ADMIN_PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [pattern]="passwordPattern"
+                              [defaultValue]="config.db.boardAdminPassword"
+                              [confirmPassword]="true"
+                              [confirmLabel]="'CONFIGURATIONS.DB.BOARD_ADMIN_PASSWORD.CONFIRM_LABEL' | translate"
+                              [placeholder]="'CONFIGURATIONS.DB.BOARD_ADMIN_PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.DB.BOARD_ADMIN_PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [patternMsg]="'CONFIGURATIONS.DB.BOARD_ADMIN_PASSWORD.PATTERN_ERROR' | translate"
+                              [confirmMsg]="'ACCOUNT.PASSWORDS_ARE_NOT_IDENTICAL' | translate"
+                              (commitEvent)="config.db.boardAdminPassword = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="!simpleMode">
+
+            <div *ngIf="!simpleMode">
+              <div class="card-title">
+                Kvm:
+              </div>
+              <variable-input [label]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [defaultValue]="config.kvm.registrySize"
+                              [placeholder]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              (commitEvent)="config.kvm.registrySize = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.KVM.REGISTRY_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.kvm.registryPort"
+                              [placeholder]="'CONFIGURATIONS.KVM.REGISTRY_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.KVM.REGISTRY_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.kvm.registryPort = $event">
+              </variable-input>
+              <variable-input [label]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.kvm.toolkitsPath"
+                              [placeholder]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.kvm.toolkitsPath = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="false">
+
+            <div *ngIf="false">
+              <div class="card-title">
+                ES:
+              </div>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.ES.MEMORY_IN_MEGABYTES.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="128"
+                              [defaultValue]="config.es.memoryInMegabytes"
+                              [placeholder]="'CONFIGURATIONS.ES.MEMORY_IN_MEGABYTES.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.ES.MEMORY_IN_MEGABYTES.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 128'"
+                              (commitEvent)="config.es.memoryInMegabytes = $event">
+              </variable-input>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.ES.PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [defaultValue]="config.es.password"
+                              [placeholder]="'CONFIGURATIONS.ES.PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.ES.PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.es.password = $event">
+              </variable-input>
+            </div>
+
+            <!-- <hr>
+
+            <div>
+              <div class="card-title">
+                Indata:
+              </div>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.indata.verificationUrl"
+                              [placeholder]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.indata.verificationUrl = $event">
+              </variable-input>
+              <variable-input *ngIf="!simpleMode"
+                              [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.indata.redirectionUrl"
+                              [placeholder]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.indata.redirectionUrl = $event">
+              </variable-input>
+            </div> -->
+
+            <hr *ngIf="config.board.authMode == 'ldap_auth'">
+
+            <div *ngIf="config.board.authMode == 'ldap_auth'">
+              <div class="card-title">
+                LDAP:
+              </div>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.URL.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.url"
+                              [placeholder]="'CONFIGURATIONS.LDAP.URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.URL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.url = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.SEARCHDN.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.searchdn"
+                              [placeholder]="'CONFIGURATIONS.LDAP.SEARCHDN.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.SEARCHDN.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.searchdn = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.SEARCH_PWD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.searchPwd"
+                              [placeholder]="'CONFIGURATIONS.LDAP.SEARCH_PWD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.SEARCH_PWD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.searchPwd = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.BASEDN.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.basedn"
+                              [placeholder]="'CONFIGURATIONS.LDAP.BASEDN.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.BASEDN.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.basedn = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.FILTER.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.filter"
+                              [placeholder]="'CONFIGURATIONS.LDAP.FILTER.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.FILTER.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.filter = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.UID.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.uid"
+                              [placeholder]="'CONFIGURATIONS.LDAP.UID.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.UID.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.ldap.uid = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.SCOPE.LABEL' | translate"
+                              [type]="'enum'"
+                              [required]="true"
+                              [defaultValue]="config.ldap.scope"
+                              [enumType]="'text'"
+                              [enumItem]="{Base:'LDAP_SCOPE_BASE','One level':'LDAP_SCOPE_ONELEVEL',Subtree:'LDAP_SCOPE_SUBTREE'}"
+                              [enumInline]="true"
+                              [helper]="'CONFIGURATIONS.LDAP.SCOPE.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.ldap.scope = $event">
+              </variable-input>
+              <variable-input [disabled]="config.board.authMode !== 'ldap_auth'"
+                              [label]="'CONFIGURATIONS.LDAP.TIMEOUT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="99999"
+                              [defaultValue]="config.ldap.timeout"
+                              [placeholder]="'CONFIGURATIONS.LDAP.TIMEOUT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.LDAP.TIMEOUT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                              (commitEvent)="config.ldap.timeout = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="!simpleMode">
+
+            <div *ngIf="!simpleMode">
+              <div class="card-title">
+                Email:
+              </div>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.IDENTITY.LABEL' | translate"
+                              [type]="'text'"
+                              [defaultValue]="config.email.identity"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.IDENTITY.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.IDENTITY.HELPER' | translate"
+                              (commitEvent)="config.email.identity = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.SERVER.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.email.server"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.SERVER.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.SERVER.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.email.server = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.SERVER_PORT.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.email.serverPort"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.SERVER_PORT.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.SERVER_PORT.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
+                              (commitEvent)="config.email.serverPort = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.USERNAME.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.email.username"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.USERNAME.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.USERNAME.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.email.username = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.PASSWORD.LABEL' | translate"
+                              [type]="'password'"
+                              [required]="true"
+                              [defaultValue]="config.email.password"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.PASSWORD.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.PASSWORD.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.email.password = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.FROM.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.email.from"
+                              [placeholder]="'CONFIGURATIONS.EMAIL.FROM.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.EMAIL.FROM.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.email.from = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.EMAIL.SSL.LABEL' | translate"
+                              [type]="'boolean'"
+                              [defaultValue]="config.email.ssl === 'true'"
+                              [helper]="'CONFIGURATIONS.EMAIL.SSL.HELPER' | translate"
+                              [inputUpdateOn]="'change'"
+                              (commitEvent)="config.email.ssl = $event">
+              </variable-input>
+            </div>
+
+            <hr *ngIf="!simpleMode">
+
+            <div *ngIf="!simpleMode">
+              <div class="card-title">
+                Token:
+              </div>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.TOKEN.CACHE_EXPIRE_SECONDS.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="60"
+                              [max]="99999"
+                              [defaultValue]="config.token.cacheExpireSeconds"
+                              [placeholder]="'CONFIGURATIONS.TOKEN.CACHE_EXPIRE_SECONDS.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.TOKEN.CACHE_EXPIRE_SECONDS.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 60'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                              (commitEvent)="config.token.cacheExpireSeconds = $event">
+              </variable-input>
+              <variable-input [disabled]="simpleMode"
+                              [label]="'CONFIGURATIONS.TOKEN.EXPIRE_SECONDS.LABEL' | translate"
+                              [type]="'number'"
+                              [required]="true"
+                              [min]="60"
+                              [max]="99999"
+                              [defaultValue]="config.token.expireSeconds"
+                              [placeholder]="'CONFIGURATIONS.TOKEN.EXPIRE_SECONDS.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.TOKEN.EXPIRE_SECONDS.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 60'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 99999'"
+                              (commitEvent)="config.token.expireSeconds = $event">
+              </variable-input>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep === 3">
+          {{'INITIALIZATION.PAGE_TITLE.FINISH' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep === 3">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.FINISH' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-header"
+             *ngIf="installStep === 4">
+          {{'INITIALIZATION.PAGE_TITLE.UNINSTALL' | translate}}
+        </div>
+        <div class="card-block"
+             *ngIf="installStep === 4">
+          <h4 class="card-title">
+            {{'INITIALIZATION.CONTENTS.UNINSTALL' | translate}}
+          </h4>
+        </div>
+
+        <div class="card-footer">
+          <div class="progress">
+            <progress [value]="installProgress"
+                      max="100"></progress>
+          </div>
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onNext()"
+                  *ngIf="installStep === 0">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.NEXT' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onEditCfg()"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.EDIT_CONFIG' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="openSSH = true; uninstallConfirm = false; user.password = '';"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.START_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn btn-warning"
+                  [clrLoading]="submitBtnState"
+                  (click)="openSSH = true; uninstallConfirm = true; clearDate = false; responsibility = false; user.password = '';"
+                  *ngIf="installStep === 1">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  [clrLoading]="submitBtnState"
+                  (click)="onCheckInput()"
+                  *ngIf="installStep === 2">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.APPLY_AND_START_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  (click)="goToBoard()"
+                  *ngIf="installStep === 3">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.GO_TO_BOARD' | translate}}</span>
+          </button>
+
+          <button class="btn"
+                  (click)="goToAdminserver()"
+                  *ngIf="installStep === 3">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.GO_TO_ADMINSERVER' | translate}}</span>
+          </button>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="installStep === 4">
+            <clr-icon shape="angle-double"
+                      style="transform: rotate(180deg);"></clr-icon>
+            <span> {{'INITIALIZATION.BUTTONS.REINSTALL' | translate}}</span>
+          </a>
+
+          <a href="/installation"
+             class="btn"
+             *ngIf="refresh">
+            <clr-icon shape="refresh"></clr-icon>
+            <span> {{'BUTTON.REFRESH' | translate}}</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <app-back-top [topTarget]="divTarget"
+                [visibilityHeight]="450"></app-back-top>
+</div>
+
+<clr-modal [(clrModalOpen)]="openSSH">
+  <h3 class="modal-title">{{ 'INITIALIZATION.PAGE_TITLE.SSH_ACCOUNT' | translate }}</h3>
+  <div class="modal-body">
+    <div>
+      {{ 'INITIALIZATION.CONTENTS.SSH' | translate }}
+    </div>
+    <form clrForm
+          #sshForm="ngForm">
+      <clr-checkbox-container *ngIf="uninstallConfirm">
+        <clr-checkbox-wrapper>
+          <input type="checkbox"
+                 clrCheckbox
+                 name="clearDate"
+                 value="true"
+                 [(ngModel)]="clearDate"
+                 [disabled]="!uninstallConfirm" />
+          <label>{{'INITIALIZATION.CONTENTS.CLEAR_DATA' | translate}}</label>
+        </clr-checkbox-wrapper>
+      </clr-checkbox-container>
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
+        <input clrInput
+               required
+               [(ngModel)]="user.username"
+               name=sshUsername />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+
+      <clr-password-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.PASSWORD' | translate }}</label>
+        <input clrPassword
+               required
+               [(ngModel)]="user.password"
+               name="sshPassword" />
+        <clr-control-error *clrIfError="'required'">
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-password-container>
+
+      <clr-checkbox-wrapper *ngIf="uninstallConfirm">
+        <input type="checkbox"
+               clrCheckbox
+               name="responsibility"
+               required
+               value="true"
+               [(ngModel)]="responsibility"
+               [disabled]="!uninstallConfirm" />
+        <label>{{'INITIALIZATION.CONTENTS.RESPONSIBILITY' | translate}}</label>
+      </clr-checkbox-wrapper>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn"
+            [clrLoading]="submitBtnState"
+            (click)="onStartBoard()"
+            [disabled]='!sshForm.valid'
+            *ngIf="installStep === 1 && !uninstallConfirm">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.START_BOARD' | translate}}</span>
+    </button>
+
+    <button class="btn btn-warning"
+            [clrLoading]="submitBtnState"
+            (click)="onUninstallBoard()"
+            [disabled]='!sshForm.valid'
+            *ngIf="installStep === 1 && uninstallConfirm">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
+    </button>
+
+    <button class="btn"
+            [clrLoading]="submitBtnState"
+            [disabled]='!sshForm.valid'
+            (click)="onApplyAndStartBoard()"
+            *ngIf="installStep === 2">
+      <clr-icon shape="angle-double"
+                style="transform: rotate(180deg);"></clr-icon>
+      <span> {{'INITIALIZATION.BUTTONS.APPLY_AND_START_BOARD' | translate}}</span>
+    </button>
+  </div>
+</clr-modal>

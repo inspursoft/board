@@ -1,21 +1,21 @@
 import { Directive, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ValidationErrors } from '@angular/forms/src/directives/validators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { InputExComponent } from 'board-components-library';
+import { TranslateService } from '@ngx-translate/core';
 import { AppInitService } from '../../shared.service/app-init.service';
-import { ValidationErrors } from "@angular/forms/src/directives/validators";
-import { UsernameInUseKey } from "../shared.const";
-import { Observable, of } from "rxjs";
-import { catchError, map } from "rxjs/operators";
-import { MessageService } from "../../shared.service/message.service";
-import { InputExComponent } from "board-components-library";
-import { TranslateService } from "@ngx-translate/core";
+import { MessageService } from '../../shared.service/message.service';
+import { UsernameInUseKey } from '../shared.const';
 
 @Directive({
-  selector: "[libCheckItemExistingEx]"
+  selector: '[appLibCheckItemExistingEx]'
 })
 export class LibCheckExistingExDirective {
-  @Input() libCheckItemExistingEx = "";
-  @Input() userID: number = 0;
+  @Input() appLibCheckItemExistingEx = '';
+  @Input() userID = 0;
   usernameIsKey = '';
   usernameExists = '';
   emailExists = '';
@@ -34,22 +34,22 @@ export class LibCheckExistingExDirective {
   }
 
   checkUserExists(value: string, errorMsg: string): Observable<ValidationErrors | null> {
-    if (this.libCheckItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0) {
-      return of({'checkItemExistingEx': this.usernameIsKey})
+    if (this.appLibCheckItemExistingEx === 'username' && UsernameInUseKey.indexOf(value) > 0) {
+      return of({checkItemExistingEx: this.usernameIsKey});
     }
-    return this.http.get("/api/v1/user-exists", {
-      observe: "response",
+    return this.http.get('/api/v1/user-exists', {
+      observe: 'response',
       params: {
-        'target': this.libCheckItemExistingEx,
-        'value': value,
-        'user_id': this.userID.toString()
+        target: this.appLibCheckItemExistingEx,
+        value,
+        user_id: this.userID.toString()
       }
     }).pipe(
       map(() => null),
       catchError(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
-          return of({'checkItemExistingEx': errorMsg});
+          return of({checkItemExistingEx: errorMsg});
         }
         return null;
       }));
@@ -57,23 +57,23 @@ export class LibCheckExistingExDirective {
 
   checkProjectExists(projectName: string): Observable<ValidationErrors | null> {
     return this.http.head('/api/v1/projects', {
-      observe: "response",
+      observe: 'response',
       params: {
-        'project_name': projectName
+        project_name: projectName
       }
     }).pipe(
       map(() => null),
       catchError(err => {
         this.messageService.cleanNotification();
         if (err && err.status === 409) {
-          return of({'checkItemExistingEx': this.projectNameExists});
+          return of({checkItemExistingEx: this.projectNameExists});
         }
         return null;
-      }))
+      }));
   }
 
   validateAction(control: AbstractControl): Observable<ValidationErrors | null> {
-    switch (this.libCheckItemExistingEx) {
+    switch (this.appLibCheckItemExistingEx) {
       case 'username':
         return this.checkUserExists(control.value, this.usernameExists);
       case 'email':

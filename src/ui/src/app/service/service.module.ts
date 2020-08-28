@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { ServiceComponent } from './service.component';
-import { ServiceHostDirective } from './service-host.directive';
 import { StepService } from './service-step.service';
 import { K8sService } from './service.k8s';
 import { ListServiceComponent } from './step0-list-service/list-service.component';
@@ -26,6 +25,8 @@ import { AffinityCardListComponent } from './step3-config-setting/affinity-card-
 import { LoadBalanceComponent } from './step0-list-service/service-control/loadBalance/loadBalance.component';
 import { CoreModule } from '../core/core.module';
 import { ServiceGuard } from './service-guard.service';
+import { ConfigParamsComponent } from './step2-config-container/config-params/config-params.component';
+import { ConsoleComponent } from './step0-list-service/service-control/console/console.component';
 
 @NgModule({
   imports: [
@@ -35,7 +36,6 @@ import { ServiceGuard } from './service-guard.service';
   ],
   declarations: [
     ServiceComponent,
-    ServiceHostDirective,
     ListServiceComponent,
     ChooseProjectComponent,
     ConfigContainerComponent,
@@ -55,6 +55,8 @@ import { ServiceGuard } from './service-guard.service';
     AffinityCardComponent,
     AffinityCardListComponent,
     SetAffinityComponent,
+    ConfigParamsComponent,
+    ConsoleComponent,
   ],
   entryComponents: [
     ListServiceComponent,
@@ -66,7 +68,8 @@ import { ServiceGuard } from './service-guard.service';
     DeployComponent,
     ServiceDetailComponent,
     SetAffinityComponent,
-    VolumeMountsComponent
+    VolumeMountsComponent,
+    ConfigParamsComponent
   ],
   providers: [
     K8sService,

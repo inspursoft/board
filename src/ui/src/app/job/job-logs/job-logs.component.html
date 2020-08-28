@@ -1,21 +1,18 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'lg'">
   <div class="modal-title">
-    {{job.job_name}}
+    {{job.jobName}}
     <span *ngIf="isLoading" class="spinner spinner-sm"></span>
   </div>
   <div class="modal-body">
     <div class="clr-flex-row">
-      <clr-dropdown>
+      <clr-dropdown [clrCloseMenuOnItemClick]="true">
         <button type="button" class="btn btn-outline-primary" clrDropdownTrigger>
           {{currentPod ? currentPod.name : "JOB.JOB_DETAIL_SELECT_POD" | translate}}
           <clr-icon shape="caret down"></clr-icon>
         </button>
         <clr-dropdown-menu *clrIfOpen>
           <label class="dropdown-header">{{"JOB.JOB_DETAIL_POD_LIST" | translate}}</label>
-          <button type="button"
-                  clrDropdownItem
-                  [disabled]="isLoading"
-                  *ngFor="let pod of jobPods" (click)="getLogs(pod)">
+          <button type="button" clrDropdownItem *ngFor="let pod of jobPods" (click)="getLogs(pod)">
             {{pod.name}}
           </button>
         </clr-dropdown-menu>

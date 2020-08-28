@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/astaxie/beego/logs"
 )
 
 const (
@@ -243,6 +245,7 @@ func ImageConfigClean(path string) error {
 
 func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile, error) {
 	if _, err := os.Stat(dockerfilePath); os.IsNotExist(err) {
+		logs.Error("Failed to find Dockerfile path: %+v", err)
 		return nil, err
 	}
 
@@ -251,6 +254,7 @@ func GetDockerfileInfo(dockerfilePath, imageName, tag string) (*model.Dockerfile
 	dockerfileName := ResolveDockerfileName(imageName, tag)
 	dockerfile, err := os.Open(filepath.Join(dockerfilePath, dockerfileName))
 	if err != nil {
+		logs.Error("Failed to find Dockerfile : %+v with name: %s", err, dockerfileName)
 		return nil, err
 	}
 	defer dockerfile.Close()
@@ -430,4 +434,31 @@ func UpdateDockerfileCopyCommand(repoImagePath, dockerfileName string) ([]byte, 
 	bufferInfo := buffer.Bytes()
 	buffer.WriteTo(dockerfile)
 	return bufferInfo, nil
+}
+
+func ExistRegistry(projectName string, imageName string, imageTag string) (bool, error) {
+	currentName := filepath.Join(projectName, imageName)
+	//check image
+	repoList, err := GetRegistryCatalog()
+	if err != nil {
+		logs.Error("Failed to unmarshal repoList body %+v", err)
+		return false, err
+	}
+	for _, imageRegistry := range repoList.Names {
+		if imageRegistry == currentName {
+			//check tag
+			tagList, err := GetRegistryImageTags(currentName)
+			if err != nil {
+				logs.Error("Failed to unmarshal body %+v", err)
+				return false, err
+			}
+			for _, tagID := range tagList.Tags {
+				if imageTag == tagID {
+					logs.Info("Image tag existing %s:%s", currentName, tagID)
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, err
 }

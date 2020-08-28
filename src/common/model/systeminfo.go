@@ -1,6 +1,7 @@
 package model
 
 type SystemInfo struct {
+	Mode              string `json:"mode"`
 	BoardHost         string `json:"board_host"`
 	AuthMode          string `json:"auth_mode"`
 	SetAdminPassword  string `json:"set_auth_password"`
@@ -11,6 +12,7 @@ type SystemInfo struct {
 	DNSSuffix         string `json:"dns_suffix"`
 	KubernetesVersion string `json:"kubernetes_version"`
 	ProcessorType     string `json:"processor_type"`
+	DevOpsOpt         string `json:"devops_opt"`
 }
 
 // Info contains versioning information.

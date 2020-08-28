@@ -1,11 +1,11 @@
 <div class="clr-row flex-items-xs-right">
-  <cs-guide *ngIf="isFirstLogin && guideStep == 2"
+  <app-cs-guide *ngIf="isFirstLogin && guideStep == 2"
             [description]="'PROJECT.GUIDE_CREATE_PROJECT'"
             [show]="isFirstLogin && guideStep == 2"
             [position]="'left-middle'"
-            (onClose)="setGuideNoneStep()"
-            (onNextStep)="guideNextStep(2)">
-  </cs-guide>
+            (closeGuide)="setGuideNoneStep()"
+            (nextStep)="guideNextStep(2)">
+  </app-cs-guide>
   <button class="btn btn-primary" (click)="createProject()">{{ 'PROJECT.CREATE_PROJECT' | translate }}</button>
 </div>
 <clr-datagrid (clrDgRefresh)="retrieve($event)" [clrDgLoading]="isInLoading">
@@ -23,14 +23,14 @@
   <clr-dg-column>{{ 'PROJECT.COMMENT' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'PROJECT.ACTIONS' | translate }}</clr-dg-column>
   <clr-dg-row *ngFor="let project of projects">
-    <clr-dg-cell>{{project.project_name}}</clr-dg-cell>
-    <clr-dg-cell>{{project.project_owner_name}}</clr-dg-cell>
-    <clr-dg-cell>{{project.project_creation_time | date: 'short'}}</clr-dg-cell>
+    <clr-dg-cell>{{project.projectName}}</clr-dg-cell>
+    <clr-dg-cell>{{project.projectOwnerName}}</clr-dg-cell>
+    <clr-dg-cell>{{project.creationTime | date: 'short'}}</clr-dg-cell>
     <clr-dg-cell>
       <div class="tooltip tooltip-right">
         <input type="checkbox"
                title=""
-               [checked]="project.project_public === 1"
+               [checked]="project.projectPublic === 1"
                [disabled]="!isSystemAdminOrOwner(project)"
                (click)="toggleProjectPublic(project, $event)">
         <label [hidden]="isSystemAdminOrOwner(project)" class="tooltip-content">
@@ -38,7 +38,7 @@
         </label>
       </div>
     </clr-dg-cell>
-    <clr-dg-cell>{{project.project_comment}}</clr-dg-cell>
+    <clr-dg-cell>{{project.projectComment}}</clr-dg-cell>
     <clr-dg-cell>
       <a href="javascript:void(0)">
         <clr-tooltip>

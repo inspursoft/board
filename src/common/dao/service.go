@@ -96,7 +96,7 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 		left join project_member pm0 on p0.id = pm0.project_id
 		left join user u0 on u0.id = pm0.user_id
 			where p0.deleted = 0 and u0.deleted = 0 and u0.id = ?) or exists (
-				select *
+				select u0.id
 			  from user u0
 			  where u0.deleted = 0 and u0.system_admin = 1 and u0.id = ?)) as is_member
 	from service_status s 
@@ -106,7 +106,7 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 	where s.deleted = 0 and s.status >= 1
 	and (s.public = 1 
 		or s.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
-		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
+		or exists (select u.id from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
 
 	params := make([]interface{}, 0)
 	params = append(params, userID, userID, userID, userID)

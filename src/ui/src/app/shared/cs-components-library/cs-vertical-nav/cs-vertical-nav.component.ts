@@ -6,18 +6,21 @@ import {
   Directive,
   Input,
   QueryList,
-  TemplateRef, ViewChild,
+  TemplateRef,
   ViewChildren,
   ViewContainerRef
 } from '@angular/core';
 import { ICsMenuItemData } from '../../shared.types';
-import { AppTokenService } from "../../../shared.service/app-token.service";
+import { AppTokenService } from '../../../shared.service/app-token.service';
+import { AppInitService } from '../../../shared.service/app-init.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MessageService } from '../../../shared.service/message.service';
 
 @Directive({
-  selector: 'ng-template[csVerticalNavGuide]'
+  selector: 'ng-template[appVerticalNavGuide]'
 })
-export class CsMenuItemUrlDirective {
-  @Input() csVerticalNavGuide = "";
+export class AppMenuItemUrlDirective {
+  @Input() appVerticalNavGuide = '';
 
   constructor(public templateRef: TemplateRef<any>,
               public viewContainer: ViewContainerRef) {
@@ -25,33 +28,29 @@ export class CsMenuItemUrlDirective {
 }
 
 @Component({
-  selector: 'cs-vertical-nav',
+  selector: 'app-cs-vertical-nav',
   templateUrl: './cs-vertical-nav.component.html',
   styleUrls: ['./cs-vertical-nav.component.css']
 })
 export class CsVerticalNavComponent implements AfterViewInit {
   collapsed = false;
-  private _navSource: Array<ICsMenuItemData>;
-  @ContentChildren(CsMenuItemUrlDirective) guideTemplates: QueryList<CsMenuItemUrlDirective>;
-  @ViewChildren(CsMenuItemUrlDirective) guideContainers: QueryList<CsMenuItemUrlDirective>;
-
-  @Input()
-  set navSource(value: Array<ICsMenuItemData>) {
-    this._navSource = value;
-  }
-
-  get navSource(): Array<ICsMenuItemData> {
-    return this._navSource;
-  }
+  isShowAdminSever = false;
+  @Input() navSource: Array<ICsMenuItemData>;
+  @ViewChildren(AppMenuItemUrlDirective) guideContainers: QueryList<AppMenuItemUrlDirective>;
+  @ContentChildren(AppMenuItemUrlDirective) guideTemplates: QueryList<AppMenuItemUrlDirective>;
 
   constructor(private tokenService: AppTokenService,
-              private changeRef: ChangeDetectorRef){
+              private appInitService: AppInitService,
+              private messageService: MessageService,
+              private changeRef: ChangeDetectorRef) {
     this.navSource = Array<ICsMenuItemData>();
   }
 
   ngAfterViewInit() {
     this.guideContainers.forEach(container => {
-      let guid = this.guideTemplates.find(guid => container.csVerticalNavGuide.includes(guid.csVerticalNavGuide));
+      const guid = this.guideTemplates.find(value =>
+        container.appVerticalNavGuide.includes(value.appVerticalNavGuide)
+      );
       if (guid) {
         container.viewContainer.createEmbeddedView(guid.templateRef);
         this.changeRef.detectChanges();
@@ -59,11 +58,29 @@ export class CsVerticalNavComponent implements AfterViewInit {
     });
   }
 
-  get queryParams(): {token: string} {
+  get queryParams(): { token: string } {
     return {token: this.tokenService.token};
   }
 
-  isHasChildren(item: ICsMenuItemData): boolean{
+  get adminServerUrl(): string {
+    return `http://${this.appInitService.systemInfo.boardHost}:8082/account/login`;
+  }
+
+  setIsShowAdminServer() {
+    this.appInitService.getIsShowAdminServer().subscribe(
+      () => this.isShowAdminSever = !this.appInitService.isArmSystem &&
+        !this.appInitService.isMipsSystem,
+      (err: HttpErrorResponse) => {
+        this.messageService.cleanNotification();
+        if (err.status === 401) {
+          this.isShowAdminSever = !this.appInitService.isArmSystem &&
+            !this.appInitService.isMipsSystem;
+        }
+      }
+    );
+  }
+
+  isHasChildren(item: ICsMenuItemData): boolean {
     return Reflect.has(item, 'children');
   }
 }

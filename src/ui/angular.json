@@ -26,13 +26,21 @@
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
               "node_modules/@clr/ui/clr-ui.min.css",
+              "node_modules/xterm/css/xterm.css",
               "src/styles.css"
             ],
             "scripts": [
               "node_modules/core-js/client/shim.min.js",
               "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
               "node_modules/@clr/icons/clr-icons.min.js",
-              "node_modules/echarts/dist/echarts.js"
+              "node_modules/echarts/dist/echarts.js",
+              "node_modules/xterm/lib/xterm.js",
+              "src/assets/ace.min.js",
+              "src/assets/yaml.min.js",
+              "src/assets/mode-yaml.min.js",
+              "src/assets/ext-beautify.min.js",
+              "src/assets/ext-language_tools.min.js",
+              "src/assets/theme-monokai.min.js"
             ],
             "es5BrowserSupport": true
           },

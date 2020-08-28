@@ -3,7 +3,8 @@ package collect
 import (
 	"git/inspursoft/board/src/collector/model/collect"
 	"git/inspursoft/board/src/collector/util"
-	"k8s.io/client-go/pkg/labels"
+
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (c *KvMap) PreMap() {

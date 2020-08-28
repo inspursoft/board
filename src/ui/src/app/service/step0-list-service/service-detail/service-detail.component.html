@@ -1,16 +1,16 @@
 <clr-modal [(clrModalOpen)]="isOpenServiceDetail" [clrModalSize]="'lg'">
-  <h3 class="modal-title">{{ curService?.service_name }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
-  <div class="modal-body">
+  <h3 class="modal-title">{{ curService?.serviceName }} {{ "SERVICE.SERVICE_DETAIL" | translate }}</h3>
+  <div class="modal-body" >
     <div *ngFor="let u of urlList; let i = index">
-      <span>{{urlList.length > 1 ? 'URL' + (i+1) : 'URL'}}:</span>
-      <a [href]="u.url" target="_blank">{{ u.route }}</a>
+      <span><b>{{urlList.length > 1 ? 'Service' + (i+1) : 'Service'}}:</b></span>
+      <a [href]="u.url" target="_blank">{{ u.url }}</a>
     </div>
-    <span class="dns">DNS:{{dns}}</span>
+    <span class="dns"><b>DNS:</b>{{dns}}</span>
     <clr-tabs>
-      <clr-tab>
+      <clr-tab *ngIf="curService.isNormalNode">
         <button clrTabLink>{{"SERVICE.SERVICE_DETAIL_SERVICE_INFO" | translate}}</button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail | json"></cs-highlight>
+          <app-cs-highlight *ngIf="serviceDetail" [language]="'json'" [code]="serviceDetail.res | json"></app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
       <clr-tab>
@@ -18,19 +18,19 @@
           {{"SERVICE.SERVICE_DETAIL_DEPLOYMENT_FILE" | translate}}
         </button>
         <clr-tab-content  *clrIfActive>
-          <cs-highlight
+          <app-cs-highlight
              *ngIf="deploymentYamlFile.length > 0"
              [language]="'yaml'"
              [code]="deploymentYamlFile">
-          </cs-highlight>
+          </app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
-      <clr-tab>
+      <clr-tab *ngIf="curService.isNotEdgeNode">
         <button clrTabLink (click)="getServiceYamlFile()">
           {{"SERVICE.SERVICE_DETAIL_SERVICE_FILE" | translate}}
         </button>
         <clr-tab-content *clrIfActive>
-          <cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></cs-highlight>
+          <app-cs-highlight *ngIf="serviceYamlFile.length > 0" [language]="'yaml'" [code]="serviceYamlFile"></app-cs-highlight>
         </clr-tab-content>
       </clr-tab>
     </clr-tabs>

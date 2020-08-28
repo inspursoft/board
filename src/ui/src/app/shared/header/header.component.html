@@ -1,8 +1,8 @@
 <clr-header [class.signInBackground]="isSignIn"  [class.signInForecolor]="isSignIn">
-  <change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></change-password>
-  <user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></user-setting>
+  <app-change-password *ngIf="showChangePassword" [(isOpen)]="showChangePassword"></app-change-password>
+  <app-user-setting *ngIf="showAccountSetting" [(isOpen)]="showAccountSetting"></app-user-setting>
   <div class="branding">
-    <img *ngIf="isMipsEnv" alt="" title="Mips platform" class="mips-logo" [src]="mipsLogoUrl"/>
+    <img *ngIf="isMipsEnv || isArmEnv" alt="" title="Mips platform" class="mips-logo" [src]="mipsLogoUrl"/>
     <a href="javascript:void(0)" class="nav-link" (click)="clickLogoAction()">
       <img [src]="brandLogoUrl" alt="board-logo"/>
     </a>
@@ -25,12 +25,12 @@
     </clr-dropdown>
     <clr-dropdown *ngIf="hasSignedIn"  [clrCloseMenuOnItemClick]="true">
       <button class="btn btn-link" clrDropdownToggle>
-        {{ currentUser.user_name }}
+        {{ currentUser.userName }}
         <clr-icon shape="caret down"></clr-icon>
       </button>
       <clr-dropdown-menu [clrPosition]="'bottom-right'">
-        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.user_name === 'admin'" clrDropdownItem (click)="showAccountSetting = true">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
-        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.user_name === 'admin'" clrDropdownItem (click)="showChangePassword = true">{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
+        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'admin'" clrDropdownItem (click)="showAccountSetting = true">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
+        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'admin'" clrDropdownItem (click)="showChangePassword = true">{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
         <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{ 'HEAD_NAV.LOG_OUT' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>

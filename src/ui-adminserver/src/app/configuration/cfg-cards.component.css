@@ -1,0 +1,149 @@
+#container {
+  margin: 0 auto;
+  padding-top: 15px;
+  padding-bottom: 30px;
+  position: relative;
+  /* min-height: calc(100vh - 132px - 1rem); */
+  /* height: 100vh; */
+}
+
+label {
+  position: relative;
+}
+
+#file-selector {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+#file-btn {
+  margin-right: 5px;
+}
+
+.search-block {
+  display: block;
+  float: right;
+  position: relative;
+}
+
+#search-box {
+  border-radius: 30px;
+  float: right;
+}
+
+.card-block {
+  padding: .75rem 2.25rem;
+  border: 1px solid #d7d7d7;
+  background-color: #fff;
+}
+
+hr {
+  margin: 1rem 0;
+}
+
+form {
+  position: relative;
+  margin: 0 auto;
+}
+
+.d7:after {
+  content: "";
+  clear: both;
+  display: table
+}
+
+.d7 form {
+  width: auto;
+  float: right;
+  margin-right: 30px;
+}
+
+.d7 input {
+  width: 200px;
+  height: 30px;
+  padding-left: 15px;
+  border-radius: 30px;
+  border: 2px solid #324b4e;
+  outline: none;
+  position: relative;
+  transition: .3s linear;
+}
+
+.d7 input:focus {
+  width: 250px;
+}
+
+.d7 button {
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  position: absolute;
+  right: 0;
+}
+
+.btn-container {
+  margin-top: 20px; 
+  display: flex; 
+  flex-direction: row-reverse;
+}
+
+.btn-container button {
+  width: 200px;
+}
+
+.to-top {
+  position: fixed;
+  bottom: 100px; 
+  right: 50px;
+  background: #fff;
+}
+
+.to-top .btn{
+  margin: 0;
+}
+
+.clr-form {
+  padding-left: 1rem;
+  padding-right: 0.5rem;
+}
+
+input, select {
+  width: 10rem;
+}
+
+.clr-control-label {
+  width: 5rem!important;
+  min-width: 5rem!important;
+}
+
+.clr-form-compact .clr-subtext {
+  /* max-width: calc(100% - 11rem); */
+  /* width: 45%;
+  max-width: 100%;
+  min-width: 25%; */
+  flex: 1;
+  min-width: 25%;
+  text-align: justify
+}
+
+.clr-control-container {
+  flex-wrap: wrap!important;
+}
+
+.config-line {
+  display: flex; 
+  flex-wrap: wrap;
+}
+
+.config-container {
+  width: 55%;
+  min-width: 370px;
+  height: 1.6rem;
+}
+
+.lib-input-ex {
+  display: flex;
+}

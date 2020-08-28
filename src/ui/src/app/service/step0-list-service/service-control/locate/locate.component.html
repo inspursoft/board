@@ -1,5 +1,5 @@
 <div class="locate-container">
-  <status *ngIf="service" [service]="service"></status>
+  <app-status *ngIf="service" [service]="service"></app-status>
   <lib-dropdown-ex class="locate-dropdown"
                    [dropdownDisabled]="isActionInWIP"
                    [dropdownTip]="dropdownDefaultText | translate"

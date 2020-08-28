@@ -109,6 +109,10 @@ then
 fi
 echo ""
 
+echo "[Step $item]: remove Board network..."; let item+=1
+	docker network rm board &> /dev/null || true
+echo ""
+
 echo "[Step $item]: remove Board images..."; let item+=1
 	delete_images
 echo ""
@@ -138,8 +142,10 @@ else
                 echo "Sorry ,timeout!"
         fi
 fi
-	
+
 echo ""
+
+sed -i "s/^hostname.*$/hostname = reg.mydomain.com/" board.cfg
 
 echo $"----Board uninstaller running complete.----
 For more information, please visit http://10.110.18.40:10080/inspursoft/board"
