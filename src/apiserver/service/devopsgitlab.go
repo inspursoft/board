@@ -9,13 +9,19 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
 	"golang.org/x/net/context"
 )
 
+const (
+	gitlabBuildConsoleTemplateURL = "%s/{{.JobName}}/-/jobs/{{.BuildSerialID}}/raw"
+)
+
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+var gitlabBaseURL = utils.GetConfig("GITLAB_BASE_URL")
 
 type gitlabJenkinsPushProjectPayload struct {
 	ID         int    `json:"id"`
@@ -409,7 +415,7 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 }
 
 func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
-	// userID, _ := strconv.Atoi(configurations["user_id"])
+	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
@@ -420,7 +426,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 		Stage: "build-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			// ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$CI_JOB_ID?pipeline_id=$CI_PIPELINE_ID\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
@@ -437,7 +443,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 }
 
 func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
-	// userID, _ := strconv.Atoi(configurations["user_id"])
+	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
@@ -448,7 +454,7 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 		Stage: "push-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			// ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$CI_JOB_ID?pipeline_id=$CI_PIPELINE_ID\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
@@ -479,5 +485,22 @@ func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 }
 
 func (g GitlabDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
+	jobName := configurations["project_name"]
+	repoToken := configurations["repo_token"]
+	pipelineID, _ := strconv.Atoi(configurations["pipeline_id"])
+	buildSerialID := configurations["build_serial_id"]
+	query := CIConsole{JobName: jobName, BuildSerialID: buildSerialID}
+	consoleURL, err = utils.GenerateURL(fmt.Sprintf(gitlabBuildConsoleTemplateURL, gitlabBaseURL()), query)
+
+	gitlabHandler := gitlab.NewGitlabHandler(repoToken)
+	if gitlabHandler == nil {
+		return
+	}
+	project, err := g.GetRepo(repoToken, jobName)
+	if err != nil {
+		err = fmt.Errorf("failed to get repo by name: %s, error: %+v", jobName, err)
+		return
+	}
+	stopURL = fmt.Sprintf("%s/api/v4/projects/%d/pipelines/%d/cancel?private_token=%s", gitlabBaseURL(), project.ID, pipelineID, repoToken)
 	return
 }
