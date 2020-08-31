@@ -32,6 +32,11 @@ func (j *CIJobCallbackController) BuildNumberCallback() {
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
 	logs.Info("Get build number from CI job callback: %d", buildNumber)
 	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
+	pipelineID, _ := strconv.Atoi(j.GetString("pipeline_id"))
+	if pipelineID != 0 {
+		logs.Info("Got pipeline ID from CI pipeline callback: %s", pipelineID)
+		c.MemoryCache.Put(userID+"_pipelineID", pipelineID, buildNumberCacheExpireSecond)
+	}
 }
 
 func (j CIJobCallbackController) CustomPushEventPayload() {
@@ -48,19 +53,21 @@ type CIJobController struct {
 	c.BaseController
 }
 
-func (j *CIJobController) getBuildNumber() (int, error) {
-	if buildNumber, ok := c.MemoryCache.Get(strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber").(int); ok {
-		logs.Info("Get build number with key %s from cache is %d", strconv.Itoa(int(j.CurrentUser.ID))+"_lastBuildNumber", buildNumber)
-		return buildNumber, nil
+func (j *CIJobController) getStoredID(key string) (int, error) {
+	if storedID, ok := c.MemoryCache.Get(strconv.Itoa(int(j.CurrentUser.ID)) + key).(int); ok {
+		logs.Info("Get stored ID with key %s from cache is %d", strconv.Itoa(int(j.CurrentUser.ID))+key, storedID)
+		return storedID, nil
 	}
-	return 0, fmt.Errorf("cannot get build number from cache currently")
+	return 0, fmt.Errorf("cannot get stored ID from cache currently")
 }
 
 func (j *CIJobController) clearBuildNumber() {
-	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildNumber"
-	if c.MemoryCache.IsExist(key) {
-		c.MemoryCache.Delete(key)
-		logs.Info("Build number stored with key %s has been deleted from cache.", key)
+	userID := strconv.Itoa(int(j.CurrentUser.ID))
+	for _, key := range []string{userID + "_buildNumber", userID + "_pipelineID"} {
+		if c.MemoryCache.IsExist(key) {
+			c.MemoryCache.Delete(key)
+			logs.Info("Build number stored with key %s has been deleted from cache.", key)
+		}
 	}
 }
 
@@ -84,7 +91,7 @@ func (j *CIJobController) Console() {
 	var buildNumber int
 	var err error
 	for true {
-		buildNumber, err = j.getBuildNumber()
+		buildNumber, err = j.getStoredID("_buildNumber")
 		if j.getBuildSignal() == false || getBuildNumberRetryCount >= maxRetryCount {
 			logs.Debug("User canceled current process or exceeded max retry count, will exit.")
 			return
@@ -110,6 +117,7 @@ func (j *CIJobController) Console() {
 		return
 	}
 	configurations := make(map[string]string)
+	configurations["project_name"] = fmt.Sprintf("%s/%s", j.CurrentUser.Username, repoName)
 	configurations["job_name"] = repoName
 	configurations["build_serial_id"] = strconv.Itoa(buildNumber)
 	buildConsoleURL, _, _ := service.CurrentDevOps().ResolveHandleURL(configurations)
@@ -197,11 +205,15 @@ func (j *CIJobController) Console() {
 }
 
 func (j *CIJobController) Stop() {
-	lastBuildNumber, err := j.getBuildNumber()
+	lastBuildNumber, err := j.getStoredID("_buildNumber")
 	if err != nil {
 		logs.Error("Failed to get job number: %+v", err)
 		j.toggleBuild(false)
 		return
+	}
+	lastPipelineID, err := j.getStoredID("_pipelineID")
+	if err != nil {
+		logs.Warning("Pipeline ID was not found in store.")
 	}
 
 	jobName := j.GetString("job_name")
@@ -217,8 +229,11 @@ func (j *CIJobController) Stop() {
 	}
 
 	configurations := make(map[string]string)
+	configurations["project_name"] = fmt.Sprintf("%s/%s", j.CurrentUser.Username, repoName)
 	configurations["job_name"] = repoName
 	configurations["build_serial_id"] = j.GetString("build_serial_id", strconv.Itoa(lastBuildNumber))
+	configurations["pipeline_id"] = strconv.Itoa(lastPipelineID)
+	configurations["repo_token"] = j.CurrentUser.RepoToken
 	_, stopBuildURL, err := service.CurrentDevOps().ResolveHandleURL(configurations)
 	if err != nil {
 		j.InternalError(err)

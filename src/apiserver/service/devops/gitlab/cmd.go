@@ -173,6 +173,15 @@ type commonRespMessage struct {
 	Message string `json:"message"`
 }
 
+type PipelineStatus struct {
+	ID        int    `json:"id"`
+	Status    string `json:"status"`
+	Ref       string `json:"ref"`
+	Sha       string `json:"sha"`
+	BeforeSha string `json:"before_sha"`
+	Tag       bool   `json:"tag"`
+}
+
 var ErrFileAlreadyExists = errors.New("A file with this name already exists")
 var ErrFileDoesNotExists = errors.New("A file with this name doesn't exist")
 
@@ -477,4 +486,15 @@ func (g *gitlabHandler) DeleteProject(projectID int) error {
 
 func (g *gitlabHandler) DeleteUser(userID int) error {
 	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/users/%d", g.gitlabAPIBaseURL, userID), g.getAccessHeader())
+}
+
+func (g *gitlabHandler) CancelPipeline(projectID int, pipelineID int) (p PipelineStatus, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/pipelines/%d/cancel", g.gitlabAPIBaseURL, projectID, pipelineID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &p)
+		})
+	return
 }
