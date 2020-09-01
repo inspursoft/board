@@ -25,8 +25,8 @@ class SSHUtil:
       command = '{} {}'.format(command, ' '.join(args))
       log.info("Executing command: {}".format(command))
       _, stdout, stderr = cls.client.exec_command(command)
-      if stderr:
-        return stderr.read().decode('utf-8')
+      # if stderr:
+      #   return stderr.read().decode('utf-8')
       return stdout.read().decode('utf-8')
     except Exception as e:
       log.error("Failed to execute command via SSH: %v", e)
