@@ -51,7 +51,7 @@ INSERT INTO `board`.`project`
  (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
   `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`, `istio_support`)
  VALUES
- (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0, 0);
+ (1, 'library', 'library comment', now(), now(), 0, 1,'boardadmin', 1, 1, 1, 0, 0);
 
 
 CREATE TABLE `project_member` (
