@@ -78,9 +78,27 @@ INSERT INTO `board`.`role` (id, name, comment)
          (2, 'developer', 'Developer'),
          (3, 'visitor', 'Visitor');
 
--- --------------------------------------------------
---  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
--- --------------------------------------------------
+    -- --------------------------------------------------
+    --  Table Structure for `git/inspursoft/board/src/common/model/image`
+    -- --------------------------------------------------
+    CREATE TABLE `board`.`image` (
+        `id` INT AUTO_INCREMENT NOT NULL,
+        `name` VARCHAR(255) NOT NULL DEFAULT '',
+        `comment` VARCHAR(255) NULL,
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+    CREATE TABLE `board`.`image_tag` (
+        `id` INT AUTO_INCREMENT NOT NULL,
+        `image_name` VARCHAR(255) NOT NULL DEFAULT '',
+        `tag` VARCHAR(255) NOT NULL DEFAULT '',
+        `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+    -- --------------------------------------------------
+    --  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
+    -- --------------------------------------------------
     CREATE TABLE `board`.`service_config` (
         `id` INT AUTO_INCREMENT NOT NULL,
         `project_id` INT NOT NULL,
