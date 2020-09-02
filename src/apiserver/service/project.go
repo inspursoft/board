@@ -21,7 +21,7 @@ var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
 const (
 	k8sAPIversion1 = "v1"
 	adminUserID    = 1
-	adminUserName  = "admin"
+	adminUserName  = "boardadmin"
 	projectPrivate = 0
 	kubeNamespace  = "kube-system"
 	istioNamespace = "istio-system"
