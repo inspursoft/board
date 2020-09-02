@@ -271,7 +271,18 @@ func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 		logs.Error("Failed to get user by name: %s, error: %+v", username, err)
 		return err
 	}
-	return gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	if err != nil {
+		logs.Error("Failed to delete Gogits repo with name: %s, error: %+v", repoName, err)
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
+		if err == utils.ErrUnprocessableEntity {
+			return err
+		}
+	}
+	return nil
 }
 
 func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {

@@ -34,7 +34,7 @@ func (j *CIJobCallbackController) BuildNumberCallback() {
 	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
 	pipelineID, _ := strconv.Atoi(j.GetString("pipeline_id"))
 	if pipelineID != 0 {
-		logs.Info("Got pipeline ID from CI pipeline callback: %s", pipelineID)
+		logs.Info("Got pipeline ID from CI pipeline callback: %d", pipelineID)
 		c.MemoryCache.Put(userID+"_pipelineID", pipelineID, buildNumberCacheExpireSecond)
 	}
 }
@@ -244,10 +244,6 @@ func (j *CIJobController) Stop() {
 	if err != nil {
 		j.InternalError(err)
 		return
-	}
-	err = service.ReleaseKVMRegistryByJobName(jobName)
-	if err != nil {
-		logs.Error("Failed to release KVM registry by job name: %s, error: %+v", jobName, err)
 	}
 	defer func() {
 		resp.Body.Close()
