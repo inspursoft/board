@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -187,13 +186,6 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 	err = os.RemoveAll(repoPath)
 	if err != nil {
 		logs.Error("Failed to remove repo path: %s, error: %+v", repoPath, err)
-		if err == utils.ErrUnprocessableEntity {
-			return false, err
-		}
-	}
-	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
-	if err != nil {
-		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
 		if err == utils.ErrUnprocessableEntity {
 			return false, err
 		}
