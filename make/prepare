@@ -244,7 +244,7 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         tiller_port=tiller_port)
 
 if kube_http_scheme == "http":
-	for name in ["apiserver", "collector"]:
+	for name in ["apiserver"]:
 		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
 				os.path.join(config_dir, name, "kubeconfig"),
 				kube_http_scheme=kube_http_scheme,
@@ -260,7 +260,7 @@ if kube_http_scheme == "http":
 elif kube_http_scheme == "https":
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
-	for name in ["apiserver", "collector", "grafana", "proxy"]:
+	for name in ["apiserver", "grafana", "proxy"]:
 		openssl_path=os.path.join(config_dir, name, "openssl.conf")
 		key_path=os.path.join("/data/board/cert", name+'-key.pem')
 		cert_path=os.path.join("/data/board/cert", name+'.pem')
