@@ -230,13 +230,13 @@ func main() {
 				utils.SetConfig("INIT_STATUS", "NOT_READY")
 				ctx = context.WithValue(ctx, systemInfo, info)
 				initBoardVersion(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
+				utils.SetConfig("INIT_STATUS", "4_1_UPDATE_ADMIN_PASSWORD")
 				updateAdminPassword(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
+				utils.SetConfig("INIT_STATUS", "4_2_INIT_PROJECT_REPO")
 				initProjectRepo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_3_INIT_KUBERNETES_INFO")
+				utils.SetConfig("INIT_STATUS", "4_3_INIT_KUBERNETES_INFO")
 				initKubernetesInfo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_4_SYNC_UP_K8S")
+				utils.SetConfig("INIT_STATUS", "4_4_SYNC_UP_K8S")
 				syncUpWithK8s(ctx, cancel)
 				for {
 					select {
