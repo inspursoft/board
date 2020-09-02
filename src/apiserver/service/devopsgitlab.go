@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlabci"
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -161,14 +160,6 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			logs.Debug("Successful created Gitlab project: %+v", projectCreation)
 			projectInfo.ID = int64(projectCreation.ID)
 
-			hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-			hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
-			if err != nil {
-				logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
-				cancel()
-			}
-			logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
-
 			fileInfo := gitlab.FileInfo{
 				Name:    "README.md",
 				Path:    "README.md",
@@ -182,14 +173,6 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			}
 			logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
 
-			ctx = context.WithValue(ctx, storeItem, "Jenkins")
-			jenkinsHandler := jenkins.NewJenkinsHandler()
-			err = jenkinsHandler.CreateJobWithParameter(repoName)
-			if err != nil {
-				logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-				cancel()
-			}
-			logs.Info("Finished executing both Gitlab with Jenkins process...")
 			for {
 				select {
 				case <-ctx.Done():
@@ -199,7 +182,7 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 					}
 					logs.Debug("Execution for %s in context has done.", ctx.Value(storeItem))
 				case <-done:
-					logs.Debug("Finished executing both Gitlab with Jenkins process.")
+					logs.Debug("Finished executing Gitlab process.")
 					e <- nil
 				}
 			}
@@ -278,21 +261,6 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 		return fmt.Errorf("failed to fork repo with name: %s from base repo ID: %d", baseRepoName, baseRepo.ID)
 	}
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
-
-	projectInfo := model.Project{ID: int64(forkedCreation.ID)}
-	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
-	if err != nil {
-		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
-	}
-	logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
-
-	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(forkedRepoName)
-	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", forkedRepoName, err)
-		return err
-	}
 	return nil
 }
 
