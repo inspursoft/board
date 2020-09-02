@@ -70,6 +70,11 @@ type Dashboard struct {
 	c.BaseController
 }
 
+func (s *Dashboard) GetServerTime() {
+	time := service.GetServerTime()
+	s.RenderJSON(time)
+}
+
 //Check the adminserver monitor modules
 func (s *Dashboard) AdminserverCheck() {
 	if s.IsSysAdmin == false {
