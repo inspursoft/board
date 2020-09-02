@@ -22,7 +22,7 @@ RUN go build -v -a -o /go/bin/apiserver && \
 
 WORKDIR /go/bin/
 
-VOLUME ["/go/bin", "/repos", "/keys"]
+VOLUME ["/go/bin", "/repos"]
 
 CMD ["apiserver"]
 

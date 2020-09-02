@@ -175,7 +175,7 @@ func (j *CIJobController) Console() {
 			buffer <- data
 			resp.Body.Close()
 			for _, line := range strings.Split(string(data), "\n") {
-				if strings.HasPrefix(line, "Finished:") {
+				if strings.HasPrefix(line, "Finished:") || strings.Contains(line, "Job succeeded") || strings.Contains(line, "Job failed:") {
 					done <- true
 				}
 			}
