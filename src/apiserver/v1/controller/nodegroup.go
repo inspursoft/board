@@ -103,3 +103,38 @@ func (n *NodeGroupController) DeleteNodeGroupAction() {
 	}
 	logs.Info("Removed nodegroup %s", groupName)
 }
+
+// Get nodegroup detail
+func (n *NodeGroupController) GetNodeGroupAction() {
+	var nodegroupdetail model.NodeGroupDetail
+	groupName := n.GetString("groupname")
+	logs.Debug("Get nodegroup %s", groupName)
+
+	if groupName == "" {
+		n.CustomAbortAudit(http.StatusBadRequest, "NodeGroup Name should not null")
+		return
+	}
+
+	nodegroup, err := service.GetNodeGroup(model.NodeGroup{GroupName: groupName}, "name")
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	if nodegroup == nil && nodegroup.ID == 0 {
+		n.CustomAbortAudit(http.StatusBadRequest, "Node Group name not exists.")
+		return
+	}
+	nodegroupdetail.NodeGroup = *nodegroup
+
+	// Get the node list of the nodegroup
+	nodelist, err := service.GetNodeListbyLabel(groupName)
+	if err != nil {
+		logs.Error("Failed to get nodelist: %s, error: %+v", groupName, err)
+		n.InternalError(err)
+		return
+	}
+	for _, nodeitem := range nodelist.Items {
+		nodegroupdetail.NodeList = append(nodegroupdetail.NodeList, nodeitem.Name)
+	}
+	n.RenderJSON(nodegroupdetail)
+}
