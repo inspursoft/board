@@ -155,7 +155,7 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
 			if err != nil {
 				logs.Error("Failed to create repo via Gitlab API, error %+v", err)
-				cancel()
+				close(e)
 			}
 			logs.Debug("Successful created Gitlab project: %+v", projectCreation)
 			projectInfo.ID = int64(projectCreation.ID)
