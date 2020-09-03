@@ -840,3 +840,17 @@ func GetEdgeHostname(edgeIP string, edgePassword string) (string, error) {
 	logs.Debug("Edge node %s hostname: %s", edgeIP, sshhostname)
 	return sshhostname, nil
 }
+
+//Get Node List by labelselector
+func GetNodeListbyLabel(labelselector string) (*model.NodeList, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+	nodeList, err := n.List(labelselector)
+	if err != nil {
+		logs.Error("Failed to get nodelist: %s, error: %+v", labelselector, err)
+		return nil, err
+	}
+	return nodeList, nil
+}
