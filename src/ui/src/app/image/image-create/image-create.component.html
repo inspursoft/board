@@ -11,7 +11,7 @@
   </div>
   <div class="modal-body modal-body-reset-position">
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
-      <div class="create-image-container">
+      <div class="create-image-container" *ngIf="!isBuildImageWIP">
         <ng-template [ngSwitchCase]="createImageMethod.Template">
           <div class="from-temp-container" [style.height.px]="500">
             <lib-dropdown-ex [dropdownLabel]="'IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP' | translate"

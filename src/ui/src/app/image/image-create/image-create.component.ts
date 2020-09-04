@@ -333,11 +333,15 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.ws.onmessage = (ev: MessageEvent): any => {
       this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_BUILD';
       this.cancelButtonDisable = false;
-      const consoleTextArr: Array<string> = (ev.data as string).split(/\r\n|\r|\n/);
-      this.jobLogComponent.appendContentArray(consoleTextArr);
+      const receivedMessage = ev.data as string;
+      let consoleTextArr = Array<string>();
+      if (receivedMessage && receivedMessage.length > 0) {
+        consoleTextArr = receivedMessage.split(/\r\n|\r|\n/);
+        this.jobLogComponent.appendContentArray(consoleTextArr);
+      }
       if (consoleTextArr.find(value => value.indexOf('Job succeeded') > -1)) {
         this.isNeedAutoRefreshImageList = true;
-        this.announceUserSubscription = interval(5 * 60 * 1000).subscribe(() => {
+        this.announceUserSubscription = interval(30 * 60 * 1000).subscribe(() => {
           if (this.isBuildImageWIP) {
             this.messageService.showDialog('IMAGE.CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT', {
               title: 'IMAGE.CREATE_IMAGE_TIMEOUT',

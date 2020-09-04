@@ -55,7 +55,7 @@ div.right-container {
 span.time {
   color: white;
   font-size: 12px;
-  background-color: silver;
+  background-color: gray;
   border-radius: 2px;
   margin-right: 3px;
   padding-left: 3px;
@@ -63,5 +63,6 @@ span.time {
   line-height: 15px;
   height: 15px;
   width: 50px;
+  text-align: center;
 }
 
