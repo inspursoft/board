@@ -300,6 +300,10 @@ func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
 
+func (l LegacyDevOps) CustomHookPipelinePayload(rawPayload []byte) (pipelineID int, buildNumber int, err error) {
+	return
+}
+
 func (l LegacyDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
 	return nil, fmt.Errorf("unimplement get repo files feature with the Gogits repo service")
 }

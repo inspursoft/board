@@ -33,6 +33,28 @@ type gitlabJenkinsPushPayload struct {
 	NodeSelector string                          `json:"node_selector"`
 }
 
+type objectAttr struct {
+	ID             int      `json:"id"`
+	Ref            string   `json:"ref"`
+	Tag            bool     `json:"tag"`
+	Sha            string   `json:"sha"`
+	BeforeSha      string   `json:"before_sha"`
+	Source         string   `json:"source"`
+	Status         string   `json:"status"`
+	DetailedStatus string   `json:"detailed_status"`
+	Stages         []string `json:"stages"`
+}
+
+type build struct {
+	ID    int    `json:"id"`
+	Stage string `json:"stage"`
+}
+
+type gitlabPipelinePayload struct {
+	ObjectAttr objectAttr `json:"object_attributes"`
+	Builds     []build    `json:"builds"`
+}
+
 type GitlabDevOps struct{}
 
 func (g GitlabDevOps) SignUp(user model.User) error {
@@ -158,6 +180,16 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 				close(e)
 			}
 			logs.Debug("Successful created Gitlab project: %+v", projectCreation)
+			hookURL := fmt.Sprintf("%s/jenkins-job/pipeline?user_id=%d", boardAPIBaseURL(), userID)
+			projectInfo.ID = int64(projectCreation.ID)
+
+			gitlabHookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+			if err != nil {
+				logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
+				cancel()
+			}
+			logs.Debug("Successful created Gitlab hook: %+v", gitlabHookCreation)
+
 			projectInfo.ID = int64(projectCreation.ID)
 
 			fileInfo := gitlab.FileInfo{
@@ -353,6 +385,19 @@ func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
 
+func (g GitlabDevOps) CustomHookPipelinePayload(rawPayload []byte) (pipelineID int, buildNumber int, err error) {
+	var cp gitlabPipelinePayload
+	err = json.Unmarshal(rawPayload, &cp)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal JSON custom pipeline payload: %+v", err)
+		return
+	}
+	pipelineID = cp.ObjectAttr.ID
+	buildNumber = cp.Builds[0].ID
+	logs.Debug("Resolved pipeline: %d payload for build number: %d", pipelineID, buildNumber)
+	return
+}
+
 func (g GitlabDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
 	user, err := GetUserByName(username)
 	if err != nil {
@@ -383,7 +428,6 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 }
 
 func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
@@ -394,7 +438,6 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 		Stage: "build-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$CI_JOB_ID?pipeline_id=$CI_PIPELINE_ID\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
@@ -411,7 +454,6 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 }
 
 func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
-	userID, _ := strconv.Atoi(configurations["user_id"])
 	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
@@ -422,7 +464,6 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 		Stage: "push-image",
 		Tags:  []string{"board-ci-vm"},
 		Script: []string{
-			ci.WriteMultiLine("curl \"%s/jenkins-job/%d/$CI_JOB_ID?pipeline_id=$CI_PIPELINE_ID\"", boardAPIBaseURL(), userID),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),

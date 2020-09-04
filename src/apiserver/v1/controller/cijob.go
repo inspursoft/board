@@ -32,11 +32,6 @@ func (j *CIJobCallbackController) BuildNumberCallback() {
 	buildNumber, _ := strconv.Atoi(j.Ctx.Input.Param(":buildNumber"))
 	logs.Info("Get build number from CI job callback: %d", buildNumber)
 	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
-	pipelineID, _ := strconv.Atoi(j.GetString("pipeline_id"))
-	if pipelineID != 0 {
-		logs.Info("Got pipeline ID from CI pipeline callback: %d", pipelineID)
-		c.MemoryCache.Put(userID+"_pipelineID", pipelineID, buildNumberCacheExpireSecond)
-	}
 }
 
 func (j CIJobCallbackController) CustomPushEventPayload() {
@@ -47,6 +42,19 @@ func (j CIJobCallbackController) CustomPushEventPayload() {
 	}
 	logs.Debug("%s", string(data))
 	service.CurrentDevOps().CustomHookPushPayload(data, nodeSelection())
+}
+
+func (j CIJobCallbackController) CustomPipelineEventPayload() {
+	userID := j.GetString("user_id")
+	data, err := ioutil.ReadAll(j.Ctx.Request.Body)
+	if err != nil {
+		j.InternalError(err)
+	}
+	logs.Debug("Received pipeline event payload: %s", string(data))
+	pipelineID, buildNumber, err := service.CurrentDevOps().CustomHookPipelinePayload(data)
+	logs.Info("Got pipeline ID: %d, build number: %d from CI pipeline callback.", pipelineID, buildNumber)
+	c.MemoryCache.Put(userID+"_pipelineID", pipelineID, buildNumberCacheExpireSecond)
+	c.MemoryCache.Put(userID+"_buildNumber", buildNumber, buildNumberCacheExpireSecond)
 }
 
 type CIJobController struct {
@@ -120,6 +128,11 @@ func (j *CIJobController) Console() {
 	configurations["project_name"] = fmt.Sprintf("%s/%s", j.CurrentUser.Username, repoName)
 	configurations["job_name"] = repoName
 	configurations["build_serial_id"] = strconv.Itoa(buildNumber)
+	pipelineID, err := j.getStoredID("_pipelineID")
+	if err != nil {
+		logs.Warning("Missing to get pipeline ID from store: %+v", err)
+	}
+	configurations["pipeline_id"] = strconv.Itoa(pipelineID)
 	buildConsoleURL, _, _ := service.CurrentDevOps().ResolveHandleURL(configurations)
 	if err != nil {
 		j.InternalError(err)

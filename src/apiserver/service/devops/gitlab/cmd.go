@@ -303,7 +303,8 @@ func (g *gitlabHandler) CreateHook(project model.Project, hookURL string) (h Hoo
 			req.Header = g.getAccessHeader()
 			formData := url.Values{}
 			formData.Add("url", hookURL)
-			formData.Add("push_events", "true")
+			formData.Add("push_events", "false")
+			formData.Add("pipeline_events", "true")
 			req.URL.RawQuery = formData.Encode()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {

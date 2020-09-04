@@ -41,6 +41,7 @@ type DevOps interface {
 	MergePullRequest(repoName, repoToken string) error
 	DeleteRepo(username string, repoName string) error
 	CustomHookPushPayload(rawPayload []byte, nodeSelection string) error
+	CustomHookPipelinePayload(rawPayload []byte) (pipelineID int, buildNumber int, err error)
 	GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error)
 	DeleteUser(username string) error
 	CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error)
