@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
@@ -158,6 +159,7 @@ func (j *CIJobController) Console() {
 	retryCount := 0
 	expiryTimer := time.NewTimer(time.Second * 900)
 	ticker := time.NewTicker(time.Second * 1)
+	var lastPos int
 	go func() {
 		for range ticker.C {
 			resp, err := client.Do(req)
@@ -185,7 +187,8 @@ func (j *CIJobController) Console() {
 				done <- true
 				return
 			}
-			buffer <- data
+			buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
+			lastPos = len(data)
 			resp.Body.Close()
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") || strings.Contains(line, "Job succeeded") || strings.Contains(line, "Job failed:") {
