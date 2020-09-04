@@ -2,6 +2,87 @@ import { HttpBase, HttpBind, HttpBindArray, HttpBindObject } from '../shared/ui-
 
 export enum CreateImageMethod {None, Template, DockerFile, ImagePackage}
 
+export const TermColCount = 70;
+export const TermOneRowHeight = 17;
+
+export class JobLogSection {
+  showContent = true;
+  startNum = 0;
+  startTop = 0;
+  contents: Array<string>;
+  startContent = '';
+  endContent = '';
+
+  constructor() {
+    this.contents = new Array<string>();
+  }
+
+  get endNum(): number {
+    return this.startNum + this.contents.length;
+  }
+
+  get contentNum(): Array<number> {
+    if (this.showContent) {
+      const arr = Array<number>();
+      this.contents.forEach((value, index) => arr.push(index));
+      return arr;
+    } else {
+      return Array.of(0);
+    }
+  }
+
+  getJobTime(): string {
+    const getNumberFormat = (num: number): string => {
+      return num < 10 ? `0${num}` : `${num}`;
+    };
+    const beginStartIndex = this.startContent.indexOf('section_start') + 14;
+    const beginEndIndex = beginStartIndex + 10;
+    const endStartIndex = this.endContent.indexOf('section_end') + 12;
+    const endEndIndex = endStartIndex + 10;
+    const startTimestamp = Number(this.startContent.substring(beginStartIndex, beginEndIndex));
+    const endTimestamp = Number(this.endContent.substring(endStartIndex, endEndIndex));
+    const m = Math.floor((endTimestamp - startTimestamp) / 60);
+    const s = endTimestamp - startTimestamp - m * 60;
+    return `${getNumberFormat(m)}:${getNumberFormat(s)}`;
+  }
+
+  get isOpenSection(): boolean {
+    return this.startContent.length > 0 && this.endContent.length === 0;
+  }
+
+  get isNormalSection(): boolean {
+    return this.startContent.length > 0 && this.endContent.length > 0;
+  }
+
+  getTopByIndex(index: number): number {
+    let top = this.startTop;
+    this.contents.forEach((value, index1) => {
+      if (index1 < index) {
+        top += this.getRowCount(value) * 17;
+      }
+    });
+    return top;
+  }
+
+  get termRowsCount(): number {
+    let count = 0;
+    if (this.showContent) {
+      this.contents.forEach(value => count += this.getRowCount(value));
+    } else {
+      count = this.getRowCount(this.contents[0]);
+    }
+    return count;
+  }
+
+  getRowCount(str: string): number {
+    if (str.length < TermColCount) {
+      return 1;
+    } else {
+      return 1 + this.getRowCount(str.substr(TermColCount));
+    }
+  }
+}
+
 export class Image extends HttpBase {
   @HttpBind('image_name') imageName = '';
   @HttpBind('image_comment') imageComment = '';

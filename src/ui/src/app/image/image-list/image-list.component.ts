@@ -115,11 +115,9 @@ export class ImageListComponent extends CsModalParentBase implements OnInit {
     component.initCustomerNewImage(this.selectedProjectId, this.selectedProjectName);
     component.initBuildMethod(this.createImageMethod);
     component.closeNotification.subscribe((res: any) => {
-      if (res) {
         this.createImageMethod = CreateImageMethod.None;
         this.isBuildImageWIP = false;
-        this.retrieve();
-      }
     });
+    component.refreshNotification.subscribe(() => this.retrieve());
   }
 }
