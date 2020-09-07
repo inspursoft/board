@@ -7,6 +7,7 @@ import { ImageService } from './image.service';
 import { CreateImageComponent } from './image-create/image-create.component';
 import { CoreModule } from '../core/core.module';
 import { JobLogComponent } from './job-log/job-log.component';
+import { ImageCreateOldComponent } from './image-create-old/image-create-old.component';
 
 @NgModule({
   imports: [
@@ -24,7 +25,8 @@ import { JobLogComponent } from './job-log/job-log.component';
     ImageListComponent,
     CreateImageComponent,
     ImageDetailComponent,
-    JobLogComponent
+    JobLogComponent,
+    ImageCreateOldComponent
   ]
 })
 export class ImageModule {
