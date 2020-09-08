@@ -18,8 +18,8 @@ import (
 
 const (
 	adminUserID            = 1
-	adminUsername          = "admin"
-	adminEmail             = "admin@inspur.com"
+	adminUsername          = "boardadmin"
+	adminEmail             = "boardadmin@inspur.com"
 	defaultProject         = "library"
 	defaultInitialPassword = "123456a?"
 )

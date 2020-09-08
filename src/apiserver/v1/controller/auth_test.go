@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	AdminUsername = "admin"
+	AdminUsername = "boardadmin"
 	AdminPassword = "MTIzNDU2YT8="
 )
 
