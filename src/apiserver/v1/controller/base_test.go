@@ -24,6 +24,8 @@ const (
 	defaultInitialPassword = "123456a?"
 )
 
+var gitlabAccessToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+
 func init() {
 	controller.InitRouter()
 	orm.RegisterModel(new(dashboard.NodeDashboardMinute), new(dashboard.NodeDashboardHour), new(dashboard.NodeDashboardDay))
@@ -65,24 +67,15 @@ func initProjectRepo() {
 		logs.Error("Failed to create admin user on Gogit: %+v", err)
 	}
 
-	token, err := gogs.CreateAccessToken(adminUsername, initialPassword)
-	if err != nil {
-		logs.Error("Failed to create access token for admin user: %+v", err)
-	}
-	user := model.User{ID: adminUserID, RepoToken: token.Sha1}
+	user := model.User{ID: adminUserID, RepoToken: gitlabAccessToken()}
 	service.UpdateUser(user, "repo_token")
 
-	err = service.ConfigSSHAccess(adminUsername, token.Sha1)
+	err = service.ConfigSSHAccess(adminUsername, gitlabAccessToken())
 	if err != nil {
 		logs.Error("Failed to config SSH access for admin user: %+v", err)
 	}
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
-
-	// err = service.CreateRepoAndJob(adminUserID, defaultProject)
-	// if err != nil {
-	// 	logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
-	// }
 
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
 	service.SetSystemInfo("INIT_PROJECT_REPO", true)
@@ -98,6 +91,7 @@ func TestMain(m *testing.M) {
 	utils.SetConfig("SSH_KEY_PATH", "/tmp/ssh-keys")
 	utils.SetConfig("AUDIT_DEBUG", "false")
 	utils.SetConfig("INIT_STATUS", "READY")
+	utils.AddEnv("GITLAB_ADMIN_TOKEN")
 
 	utils.ShowAllConfigs()
 	dao.InitDB()
