@@ -11,7 +11,7 @@
   </div>
   <div class="modal-body modal-body-reset-position">
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
-      <div class="create-image-container" *ngIf="!isBuildImageWIP">
+      <div class="create-image-container">
         <ng-template [ngSwitchCase]="createImageMethod.Template">
           <div class="from-temp-container" [style.height.px]="500">
             <lib-dropdown-ex [dropdownLabel]="'IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP' | translate"
@@ -270,8 +270,9 @@
         </ng-template>
       </div>
       <div class="console-container">
-        <app-job-log style="height: 100%;overflow: auto"></app-job-log>
-        <div class="build-btn-container" style="margin-top: auto">
+        <textarea #areaStatus title="" id="areaStatus" class="area-status"
+                  readonly>{{consoleText | translate}}</textarea>
+        <div class="build-btn-container">
           <button class="btn btn-primary default-primary"
                   [disabled]="isBuildDisabled"
                   (click)="buildImage()">

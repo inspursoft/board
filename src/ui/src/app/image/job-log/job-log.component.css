@@ -1,0 +1,68 @@
+div.term-container {
+  background-color: black;
+  display: flex;
+  padding: 5px;
+  overflow-x: auto;
+  width: 780px;
+  height: 100%;
+}
+
+div.left-container {
+  color: white;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+clr-icon.angle {
+  position: absolute;
+  left: 5px;
+  width: 17px;
+  height: 17px;
+}
+
+div.left-container clr-icon.angle.open {
+  transform: rotate(180deg);
+}
+
+div.left-container clr-icon.angle.close {
+  transform: rotate(90deg);
+}
+
+div.left-container clr-icon.angle:hover {
+  cursor: pointer;
+}
+
+span.number {
+  position: absolute;
+  left: 30px;
+  color: silver;
+  width: 17px;
+  height: 17px;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+div.right-container {
+  margin-left: auto;
+  width: 60px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+span.time {
+  color: white;
+  font-size: 12px;
+  background-color: gray;
+  border-radius: 2px;
+  margin-right: 3px;
+  padding-left: 3px;
+  padding-right: 3px;
+  line-height: 15px;
+  height: 15px;
+  width: 50px;
+  text-align: center;
+}
+
