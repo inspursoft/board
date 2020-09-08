@@ -3,7 +3,6 @@ package controller_test
 import (
 	"git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/v1/controller"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
@@ -61,19 +60,9 @@ func initProjectRepo() {
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
-
-	err := gogs.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
-	if err != nil {
-		logs.Error("Failed to create admin user on Gogit: %+v", err)
-	}
-
 	user := model.User{ID: adminUserID, RepoToken: gitlabAccessToken()}
 	service.UpdateUser(user, "repo_token")
 
-	err = service.ConfigSSHAccess(adminUsername, gitlabAccessToken())
-	if err != nil {
-		logs.Error("Failed to config SSH access for admin user: %+v", err)
-	}
 	logs.Info("Initialize serve repo ...")
 	logs.Info("Init git repo for default project %s", defaultProject)
 
