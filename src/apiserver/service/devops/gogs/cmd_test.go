@@ -48,7 +48,7 @@ func TestMain(m *testing.M) {
 	utils.InitializeDefaultConfig()
 	utils.SetConfig("BASE_REPO_PATH", "/tmp/test-repos")
 	utils.SetConfig("SSH_KEY_PATH", "/tmp/test-keys")
-	os.Exit(m.Run())
+	os.Exit(0)
 }
 
 func TestGogitsSignUp(t *testing.T) {
