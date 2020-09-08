@@ -54,7 +54,7 @@ func TestSignIn(t *testing.T) {
 	u, err := (*currentAuth).DoAuth(adminUsername, adminPassword)
 	assert.Nil(err, "Error occurred while calling SignIn method.")
 	assert.NotNil(u, "User is nil.")
-	assert.Equal("admin", u.Username, "Signed in failed.")
+	assert.Equal(adminUsername, u.Username, "Signed in failed.")
 }
 
 func TestSignInLdap(t *testing.T) {
