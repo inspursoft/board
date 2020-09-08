@@ -46,15 +46,25 @@ export class NodeListComponent implements OnInit, OnDestroy {
   deleteNode(node: NodeListType) {
     this.resourceService.getNodeControlStatus(node.nodeName).subscribe(
       (res: NodeControlStatus) => {
-        if (res.nodeDeletable) {
-          const logInfo = new NodeLog({});
-          logInfo.ip = node.ip;
-          this.createNodeDetail(logInfo, NodeActionsType.Remove);
+        if (res.nodeUnschedulable) {
+          if (res.nodeDeletable) {
+            const logInfo = new NodeLog({});
+            logInfo.ip = node.ip;
+            this.createNodeDetail(logInfo, NodeActionsType.Remove);
+          } else {
+            this.translateService.get(['Node.Node_Detail_Remove', 'Node.Node_Logs_Can_Not_Remove']).subscribe(
+              translate => {
+                const title = Reflect.get(translate, 'Node.Node_Detail_Remove');
+                const msg = Reflect.get(translate, 'Node.Node_Logs_Can_Not_Remove');
+                this.messageService.showDialog(msg, {title});
+              }
+            );
+          }
         } else {
-          this.translateService.get(['Node.Node_Detail_Remove', 'Node.Node_Logs_Can_Not_Remove']).subscribe(
+          this.translateService.get(['Node.Node_Detail_Remove', 'Node.Node_Logs_Can_Not_Remove_1']).subscribe(
             translate => {
               const title = Reflect.get(translate, 'Node.Node_Detail_Remove');
-              const msg = Reflect.get(translate, 'Node.Node_Logs_Can_Not_Remove');
+              const msg = Reflect.get(translate, 'Node.Node_Logs_Can_Not_Remove_1');
               this.messageService.showDialog(msg, {title});
             }
           );

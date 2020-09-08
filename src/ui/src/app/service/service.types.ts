@@ -51,6 +51,15 @@ export class ServiceNode extends HttpBase {
   @HttpBind('node_name') nodeName = '';
   @HttpBind('node_ip') nodeIp = '';
   @HttpBind('status') status = 0;
+  @HttpBind('node_type') nodeType = '';
+
+  get isEdgeNode(): boolean {
+    return this.nodeType === 'edge';
+  }
+
+  get isNormalNode(): boolean {
+    return this.nodeType !== 'edge';
+  }
 }
 
 export class ServiceNodeGroup extends HttpBase {

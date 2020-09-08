@@ -1,33 +1,36 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ClrDatagridStateInterface } from '@clr/angular';
 import { NodeService } from '../node.service';
-import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { NodeControlStatus, NodeStatus, ServiceInstance } from '../node.types';
 import { interval, Subscription } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MessageService } from '../../shared.service/message.service';
 
 @Component({
   selector: 'app-node-service-control',
   templateUrl: './node-service-control.component.html',
   styleUrls: ['./node-service-control.component.css']
 })
-export class NodeServiceControlComponent extends CsModalChildBase implements OnInit, OnDestroy {
+export class NodeServiceControlComponent implements OnInit, OnDestroy {
   @Input() nodeCurrent: NodeStatus;
   @Input() instanceCount: number;
   @Input() deletable: boolean;
   @Output() instanceCountChange: EventEmitter<number>;
   @Output() deletableChange: EventEmitter<boolean>;
+  @Output() closeEvent: EventEmitter<boolean>;
   nodeControlStatus: NodeControlStatus;
   serviceInstanceList: Array<ServiceInstance>;
   curPageIndex = 1;
   curPageSize = 6;
   autoRefreshSubscription: Subscription;
 
-  constructor(private nodeService: NodeService) {
-    super();
+  constructor(private nodeService: NodeService,
+              private messageService: MessageService) {
     this.nodeControlStatus = new NodeControlStatus({});
     this.serviceInstanceList = Array<ServiceInstance>();
     this.instanceCountChange = new EventEmitter<number>();
     this.deletableChange = new EventEmitter<boolean>();
+    this.closeEvent = new EventEmitter<boolean>();
   }
 
   ngOnInit() {
@@ -37,7 +40,6 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
 
   ngOnDestroy() {
     this.autoRefreshSubscription.unsubscribe();
-    super.ngOnDestroy();
   }
 
   get phaseStyle(): { [p: string]: string } {
@@ -61,7 +63,13 @@ export class NodeServiceControlComponent extends CsModalChildBase implements OnI
         this.deletableChange.emit(this.nodeControlStatus.deletable);
         this.curPageIndex = 1;
         this.retrieve({page: {from: 0, to: 5}});
-      }
+      },
+      ((error1: HttpErrorResponse) => {
+        if (error1.status === 500) {
+          this.messageService.cleanNotification();
+          this.closeEvent.emit(true);
+        }
+      })
     );
   }
 

@@ -74,7 +74,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
               });
             }
           }
-        }), timeout(30000),
+        }), timeout(60000),
         catchError((err: HttpErrorResponse | TimeoutError) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status >= 200 && err.status < 300) {

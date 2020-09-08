@@ -15,6 +15,7 @@
           <clr-tab-content>
             <app-node-service-control
               [nodeCurrent]="curNode"
+              (closeEvent)="modalOpened = false"
               [(deletable)]="nodeDeletable"
               [(instanceCount)]="serviceInstanceCount">
             </app-node-service-control>

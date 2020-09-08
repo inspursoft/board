@@ -877,7 +877,7 @@ func setDeploymentAffinity(affinityList []model.Affinity) model.K8sAffinity {
 // Create a torleration for Edge Service
 func addDeploymentEdgeToleration(nodeselector map[string]string) model.Toleration {
 	logs.Debug("Create a torleration for %v", nodeselector)
-	return model.Toleration{Key: "edge", Operator: model.TolerationOpExists, Effect: model.TaintEffectNoSchedule}
+	return model.Toleration{Key: "edge", Operator: model.TolerationOpExists}
 }
 
 func MarshalDeployment(serviceConfig *model.ConfigServiceStep, registryURI string) *model.Deployment {
