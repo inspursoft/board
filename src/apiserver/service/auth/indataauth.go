@@ -5,7 +5,6 @@ import (
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
-
 	"net/http"
 
 	"github.com/astaxie/beego/logs"

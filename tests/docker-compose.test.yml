@@ -40,43 +40,9 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
     ports:
       - 5000:5000
-  gogits:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/gogits/Dockerfile
-    image: dev_gogits:dev
-    restart: always
-    volumes:
-      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
-      - /data/board/gogits:/data:rw
-    ports:
-      - "10022:22"
-      - "10080:3000"
   gomail:    
     image: 10.111.25.119/board/dev_gomail:dev
     restart: always
     ports:
       - "12225:12225"
-  jenkins:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/jenkins/Dockerfile
-    image: dev_jenkins:dev
-    restart: always
-    volumes:
-      - /data/board/jenkins_home:/var/jenkins_home
-      - ../config/ssh_keys:/root/.ssh
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/bin/docker
-    environment:
-      - jenkins_host_ip=127.0.0.1
-      - jenkins_host_port=8888
-      - jenkins_node_ip=127.0.0.1
-      - jenkins_node_ssh_port=22
-      - jenkins_node_username=root
-      - jenkins_node_password=123456a?
-      - jenkins_node_volume=/data/jenkins_node
-    ports:
-      - 8888:8080
-      - 50000:50000
 

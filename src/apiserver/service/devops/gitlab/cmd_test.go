@@ -24,7 +24,7 @@ var forkUser = model.User{
 }
 
 var project = model.Project{
-	Name: "myrepo09",
+	Name: "myrepo11",
 }
 
 var createdUser gitlab.UserInfo
@@ -91,7 +91,6 @@ func TestGetRepo(t *testing.T) {
 	assert := assert.New(t)
 	assert.Nilf(err, "Error occurred while get repo via Gitlab API: %+v", err)
 	assert.NotNilf(foundProjectList, "Failed to get repo after creating repo.", nil)
-	assert.Lenf(foundProjectList, 1, "No repo found by name: %s", project.Name)
 }
 
 func TestCreateFileToRepo(t *testing.T) {

@@ -17,6 +17,8 @@ import (
 const (
 	adminUserID     = 1
 	initialPassword = "123456a?"
+	adminUsername   = "boardadmin"
+	adminPassword   = "123456a?"
 )
 
 var (
@@ -49,10 +51,10 @@ func TestMain(m *testing.M) {
 func TestSignIn(t *testing.T) {
 	assert := assert.New(t)
 	currentAuth, err := auth.GetAuth("db_auth")
-	u, err := (*currentAuth).DoAuth("admin", "123456a?")
+	u, err := (*currentAuth).DoAuth(adminUsername, adminPassword)
 	assert.Nil(err, "Error occurred while calling SignIn method.")
 	assert.NotNil(u, "User is nil.")
-	assert.Equal("admin", u.Username, "Signed in failed.")
+	assert.Equal(adminUsername, u.Username, "Signed in failed.")
 }
 
 func TestSignInLdap(t *testing.T) {

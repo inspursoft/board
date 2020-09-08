@@ -9,7 +9,6 @@ import (
 
 	"errors"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 )
 
@@ -71,65 +70,9 @@ type Dashboard struct {
 	c.BaseController
 }
 
-func (s *Dashboard) GetData() {
-	var req DsBodyPara
-	err := s.ResolveBody(&req)
-	if err != nil {
-		return
-	}
-	nodeName := s.GetString("node_name")
-	serviceName := s.GetString("service_name")
-
-	if req.Node.TimeCount == 0 && req.Service.TimeCount == 0 {
-		s.CustomAbortAudit(http.StatusBadRequest, "Time count for dashboard data retrieval cannot be empty.")
-		return
-	}
-	if req.Node.TimestampBase == 0 && req.Service.TimestampBase == 0 {
-		s.CustomAbortAudit(http.StatusBadRequest, "Timestamp for dashboard data retrieval cannot be empty.")
-		return
-	}
-	if req.Node.TimeUnit == "" && req.Service.TimeUnit == "" {
-		s.CustomAbortAudit(http.StatusBadRequest, "Time unit for dashboard data retrieval cannot be empty.")
-		return
-	}
-	var (
-		para service.Dashboard
-		resp DsResp
-	)
-	para.SetNodeParaFromBodyReq(req.Node.TimeUnit, req.Node.TimeCount,
-		req.Node.TimestampBase, nodeName, req.Node.DurationTime)
-	beego.Debug(req.Node.TimeUnit, req.Node.TimeCount,
-		req.Node.TimestampBase, nodeName)
-	err = para.GetNodeDataToObj()
-	if err != nil {
-		s.InternalError(err)
-		return
-	}
-	_, err = para.GetNodeListToObj()
-	if err != nil {
-		s.InternalError(err)
-		return
-	}
-	resp.Node = para.NodeResp
-	para.SetServicePara(req.Service.TimeUnit,
-		req.Service.TimeCount, req.Service.TimestampBase, serviceName,
-		req.Service.DurationTime)
-	err = para.GetServiceDataToObj()
-	if err != nil {
-		s.InternalError(err)
-		return
-	}
-	_, err = para.GetServiceListToObj()
-	if err != nil {
-		s.InternalError(err)
-		return
-	}
-	resp.Service = para.ServiceResp
-	if err != nil {
-		s.InternalError(err)
-		return
-	}
-	s.RenderJSON(resp)
+func (s *Dashboard) GetServerTime() {
+	time := service.GetServerTime()
+	s.RenderJSON(time)
 }
 
 //Check the adminserver monitor modules

@@ -11,8 +11,8 @@ import (
 
 var (
 	mockProjectName = "testgitproject"
-	mockUsername    = "admin"
-	mockEmail       = "admin@inspur.com"
+	mockUsername    = "boardadmin"
+	mockEmail       = "boardadmin@inspur.com"
 	mockRepoPath    string
 )
 
