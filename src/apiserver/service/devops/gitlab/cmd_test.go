@@ -24,7 +24,7 @@ var forkUser = model.User{
 }
 
 var project = model.Project{
-	Name: "myrepo10",
+	Name: "myrepo11",
 }
 
 var createdUser gitlab.UserInfo
