@@ -4,17 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
+	"git/inspursoft/board/src/apiserver/service/devops/gitlabci"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
 	"golang.org/x/net/context"
 )
 
+const (
+	gitlabBuildConsoleTemplateURL = "%s/{{.JobName}}/-/jobs/{{.BuildSerialID}}/raw"
+)
+
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
+var gitlabBaseURL = utils.GetConfig("GITLAB_BASE_URL")
 
 type gitlabJenkinsPushProjectPayload struct {
 	ID         int    `json:"id"`
@@ -25,6 +31,28 @@ type gitlabJenkinsPushProjectPayload struct {
 type gitlabJenkinsPushPayload struct {
 	Project      gitlabJenkinsPushProjectPayload `json:"project"`
 	NodeSelector string                          `json:"node_selector"`
+}
+
+type objectAttr struct {
+	ID             int      `json:"id"`
+	Ref            string   `json:"ref"`
+	Tag            bool     `json:"tag"`
+	Sha            string   `json:"sha"`
+	BeforeSha      string   `json:"before_sha"`
+	Source         string   `json:"source"`
+	Status         string   `json:"status"`
+	DetailedStatus string   `json:"detailed_status"`
+	Stages         []string `json:"stages"`
+}
+
+type build struct {
+	ID    int    `json:"id"`
+	Stage string `json:"stage"`
+}
+
+type gitlabPipelinePayload struct {
+	ObjectAttr objectAttr `json:"object_attributes"`
+	Builds     []build    `json:"builds"`
 }
 
 type GitlabDevOps struct{}
@@ -149,18 +177,20 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			projectCreation, err := gitlabHandler.CreateRepo(userInfo, projectInfo)
 			if err != nil {
 				logs.Error("Failed to create repo via Gitlab API, error %+v", err)
-				cancel()
+				close(e)
 			}
 			logs.Debug("Successful created Gitlab project: %+v", projectCreation)
+			hookURL := fmt.Sprintf("%s/jenkins-job/pipeline?user_id=%d", boardAPIBaseURL(), userID)
 			projectInfo.ID = int64(projectCreation.ID)
 
-			hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-			hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
+			gitlabHookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
 			if err != nil {
-				logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
+				logs.Error("Failed to create hook to repo: %s, error: %+v", repoName, err)
 				cancel()
 			}
-			logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
+			logs.Debug("Successful created Gitlab hook: %+v", gitlabHookCreation)
+
+			projectInfo.ID = int64(projectCreation.ID)
 
 			fileInfo := gitlab.FileInfo{
 				Name:    "README.md",
@@ -175,14 +205,6 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 			}
 			logs.Debug("Successful created file: %+v to Gitlab repository: %s", fileCreation, projectInfo.Name)
 
-			ctx = context.WithValue(ctx, storeItem, "Jenkins")
-			jenkinsHandler := jenkins.NewJenkinsHandler()
-			err = jenkinsHandler.CreateJobWithParameter(repoName)
-			if err != nil {
-				logs.Error("Failed to create Jenkins' job with repo name: %s, error: %+v", repoName, err)
-				cancel()
-			}
-			logs.Info("Finished executing both Gitlab with Jenkins process...")
 			for {
 				select {
 				case <-ctx.Done():
@@ -192,7 +214,7 @@ func (g GitlabDevOps) CreateRepoAndJob(userID int64, projectName string) error {
 					}
 					logs.Debug("Execution for %s in context has done.", ctx.Value(storeItem))
 				case <-done:
-					logs.Debug("Finished executing both Gitlab with Jenkins process.")
+					logs.Debug("Finished executing Gitlab process.")
 					e <- nil
 				}
 			}
@@ -271,21 +293,6 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 		return fmt.Errorf("failed to fork repo with name: %s from base repo ID: %d", baseRepoName, baseRepo.ID)
 	}
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
-
-	projectInfo := model.Project{ID: int64(forkedCreation.ID)}
-	hookURL := fmt.Sprintf("%s/jenkins-job/invoke", boardAPIBaseURL())
-	hookCreation, err := gitlabHandler.CreateHook(projectInfo, hookURL)
-	if err != nil {
-		logs.Error("Failed to create hook: %s to the repo: %s, error: %+v", hookURL, projectInfo.Name, err)
-	}
-	logs.Debug("Successful created hook: %+v to Gitlab repository: %s", hookCreation, projectInfo.Name)
-
-	jenkinsHandler := jenkins.NewJenkinsHandler()
-	err = jenkinsHandler.CreateJobWithParameter(forkedRepoName)
-	if err != nil {
-		logs.Error("Failed to create Jenkins' job with project name: %s, error: %+v", forkedRepoName, err)
-		return err
-	}
 	return nil
 }
 
@@ -378,6 +385,19 @@ func (g GitlabDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
 
+func (g GitlabDevOps) CustomHookPipelinePayload(rawPayload []byte) (pipelineID int, buildNumber int, err error) {
+	var cp gitlabPipelinePayload
+	err = json.Unmarshal(rawPayload, &cp)
+	if err != nil {
+		err = fmt.Errorf("failed to unmarshal JSON custom pipeline payload: %+v", err)
+		return
+	}
+	pipelineID = cp.ObjectAttr.ID
+	buildNumber = cp.Builds[0].ID
+	logs.Debug("Resolved pipeline: %d payload for build number: %d", pipelineID, buildNumber)
+	return
+}
+
 func (g GitlabDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
 	user, err := GetUserByName(username)
 	if err != nil {
@@ -405,4 +425,91 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 		return fmt.Errorf("failed to get repo user: %s, error: %+v", user.Username, err)
 	}
 	return gitlab.NewGitlabHandler(gitlabAdminToken()).DeleteUser(int(user.ID))
+}
+
+func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
+	token := configurations["token"]
+	imageURI := configurations["image_uri"]
+	dockerfileName := configurations["dockerfile"]
+	repoPath := configurations["repo_path"]
+	ciJobs := make(map[string]gitlabci.Job)
+	var ci gitlabci.GitlabCI
+	ciJobs["build-image"] = gitlabci.Job{
+		Stage: "build-image",
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			"if [ -d 'upload' ]; then rm -rf upload; fi",
+			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+			ci.WriteMultiLine("token=%s", token),
+			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+			ci.WriteMultiLine("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
+			ci.WriteMultiLine("docker push %s", imageURI),
+			ci.WriteMultiLine("docker rmi %s", imageURI),
+		},
+	}
+
+	return ci.GenerateGitlabCI(ciJobs, repoPath)
+}
+
+func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
+	token := configurations["token"]
+	imagePackageName := configurations["image_package_name"]
+	imageURI := configurations["image_uri"]
+	repoPath := configurations["repo_path"]
+	ciJobs := make(map[string]gitlabci.Job)
+	var ci gitlabci.GitlabCI
+	ciJobs["push-image"] = gitlabci.Job{
+		Stage: "push-image",
+		Tags:  []string{"board-ci-vm"},
+		Script: []string{
+			"if [ -d 'upload' ]; then rm -rf upload; fi",
+			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+			ci.WriteMultiLine("token=%s", token),
+			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+			ci.WriteMultiLine("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+			ci.WriteMultiLine("image_name_tag=${image_name_tag#sha256:}"),
+			ci.WriteMultiLine("docker tag $image_name_tag %s", imageURI),
+			ci.WriteMultiLine("docker push %s", imageURI),
+			ci.WriteMultiLine("docker rmi %s", imageURI),
+			ci.WriteMultiLine("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+		},
+	}
+
+	return ci.GenerateGitlabCI(ciJobs, repoPath)
+}
+
+func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
+	yamlName = gitlabci.GitlabCIFilename
+	switch action {
+	case BuildDockerImageCIYAML:
+		err = generateBuildingImageGitlabCIYAML(configurations)
+	case PushDockerImageCIYAML:
+		err = generatePushingImageGitlabCIYAML(configurations)
+	}
+	return
+}
+
+func (g GitlabDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
+	jobName := configurations["project_name"]
+	repoToken := configurations["repo_token"]
+	pipelineID, _ := strconv.Atoi(configurations["pipeline_id"])
+	buildSerialID := configurations["build_serial_id"]
+	query := CIConsole{JobName: jobName, BuildSerialID: buildSerialID}
+	consoleURL, err = utils.GenerateURL(fmt.Sprintf(gitlabBuildConsoleTemplateURL, gitlabBaseURL()), query)
+
+	gitlabHandler := gitlab.NewGitlabHandler(repoToken)
+	if gitlabHandler == nil {
+		return
+	}
+	project, err := g.GetRepo(repoToken, jobName)
+	if err != nil {
+		err = fmt.Errorf("failed to get repo by name: %s, error: %+v", jobName, err)
+		return
+	}
+	stopURL = fmt.Sprintf("%s/api/v4/projects/%d/pipelines/%d/cancel?private_token=%s", gitlabBaseURL(), project.ID, pipelineID, repoToken)
+	return
 }

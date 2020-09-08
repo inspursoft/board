@@ -19,7 +19,7 @@ func TestGetUserByID(t *testing.T) {
 	u, err := service.GetUserByID(1)
 	assert.Nil(err, "Error occurred while calling GetUserByID method.")
 	assert.NotNil(u, "User does not exists.")
-	assert.Equal("admin", u.Username, "Username is not equal to be expected.")
+	assert.Equal("boardadmin", u.Username, "Username is not equal to be expected.")
 }
 
 func TestUsernameExists(t *testing.T) {

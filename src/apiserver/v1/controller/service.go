@@ -4,7 +4,6 @@ import (
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io"
@@ -57,23 +56,6 @@ var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 
 type ServiceController struct {
 	c.BaseController
-}
-
-func (p *ServiceController) generateDeploymentTravis(serviceName, deploymentURL, serviceURL string) error {
-	userID := p.CurrentUser.ID
-	var travisCommand travis.TravisCommand
-	travisCommand.Script.Commands = []string{}
-	items := []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", c.BoardAPIBaseURL(), userID),
-	}
-	if deploymentURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/deployment.yaml %s", serviceName, deploymentURL))
-	}
-	if serviceURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/service.yaml %s", serviceName, serviceURL))
-	}
-	travisCommand.Script.Commands = items
-	return travisCommand.GenerateCustomTravis(p.RepoPath)
 }
 
 func (p *ServiceController) getKey() string {
