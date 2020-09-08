@@ -207,7 +207,7 @@ func RemoveUUIDTokenCache() {
 }
 
 func InitTokenCacheDuration() error {
-	TokenCacheSeconds, err := common.ReadCfgItem("token_cache_expire_seconds")
+	TokenCacheSeconds, err := common.ReadCfgItem("token_cache_expire_seconds", "/go/cfgfile/board.cfg")
 	if err != nil {
 		return err
 	}

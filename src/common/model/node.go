@@ -16,6 +16,11 @@ type NodeGroup struct {
 	ProjectID    int64     `json:"nodegroup_project" orm:"column(project_id)"`
 }
 
+type NodeGroupDetail struct {
+	NodeGroup NodeGroup `json:"nodegroup"`
+	NodeList  []string  `json:"nodelist,omitempty"`
+}
+
 type NodeAvailableResources struct {
 	NodeID       int    `json:"node_id"`
 	NodeName     string `json:"node_name"`

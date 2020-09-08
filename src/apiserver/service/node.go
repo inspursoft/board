@@ -758,7 +758,7 @@ func CreateEdgeNode(edgenode model.EdgeNodeCli) (*model.Node, error) {
 	node.Labels[K8sEdgeNodeLabel] = ""
 	node.Labels["name"] = edgenode.NodeName
 	node.Labels["kubernetes.io/hostname"] = edgenode.NodeName
-	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoSchedule})
+	node.Taints = append(node.Taints, model.Taint{Key: "edge", Value: node.NodeName, Effect: model.TaintEffectNoExecute})
 	if edgenode.RegistryMode == "auto" {
 		node.Labels["edge"] = "true"
 	}
@@ -839,4 +839,18 @@ func GetEdgeHostname(edgeIP string, edgePassword string) (string, error) {
 	sshhostname := strings.Replace(string(combo), "\n", "", -1)
 	logs.Debug("Edge node %s hostname: %s", edgeIP, sshhostname)
 	return sshhostname, nil
+}
+
+//Get Node List by labelselector
+func GetNodeListbyLabel(labelselector string) (*model.NodeList, error) {
+	var config k8sassist.K8sAssistConfig
+	config.KubeConfigPath = kubeConfigPath()
+	k8sclient := k8sassist.NewK8sAssistClient(&config)
+	n := k8sclient.AppV1().Node()
+	nodeList, err := n.List(labelselector)
+	if err != nil {
+		logs.Error("Failed to get nodelist: %s, error: %+v", labelselector, err)
+		return nil, err
+	}
+	return nodeList, nil
 }
