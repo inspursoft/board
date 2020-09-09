@@ -129,7 +129,6 @@ jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
 jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
 jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
-jenkins_execution_mode = rcp.get("configuration", "jenkins_execution_mode")
 
 tiller_port = rcp.get("configuration", "tiller_port")
 
@@ -276,7 +275,6 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_node_password=jenkins_node_password,
         jenkins_node_ssh_port=jenkins_node_ssh_port,
         jenkins_node_volume=jenkins_node_volume,
-        jenkins_execution_mode=jenkins_execution_mode,
         tiller_port=tiller_port)
 
 if kube_http_scheme == "http":

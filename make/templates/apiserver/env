@@ -44,7 +44,6 @@ JENKINS_NODE_USERNAME=$jenkins_node_username
 JENKINS_NODE_PASSWORD=$jenkins_node_password
 JENKINS_NODE_SSH_PORT=$jenkins_node_ssh_port
 JENKINS_NODE_VOLUME=$jenkins_node_volume
-JENKINS_EXECUTION_MODE=$jenkins_execution_mode
 AUDIT_DEBUG=$audit_debug
 DNS_SUFFIX=$dns_suffix
 TILLER_PORT=$tiller_port
