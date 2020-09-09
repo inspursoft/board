@@ -34,7 +34,7 @@ func (u *CommonController) Prepare() {
 // @Failure 403 Forbidden.
 // @router / [put]
 func (u *CommonController) Update() {
-	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "boardadmin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.CustomAbortAudit(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return

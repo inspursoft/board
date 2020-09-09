@@ -64,7 +64,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		}
 	}
 
-	if principal == "admin" {
+	if principal == "boardadmin" {
 		currentAuth, err = auth.GetAuth("db_auth")
 	} else {
 		currentAuth, err = auth.GetAuth(AuthMode())

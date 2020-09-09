@@ -34,7 +34,7 @@ func (u *PasswordController) Prepare() {
 func (u *PasswordController) UpdatePassword() {
 	var err error
 
-	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "boardadmin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return

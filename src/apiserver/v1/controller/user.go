@@ -65,7 +65,7 @@ func (u *UserController) GetUsersAction() {
 }
 
 func (u *UserController) ChangeUserAccount() {
-	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "boardadmin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.CustomAbortAudit(http.StatusPreconditionFailed, "Current AUTH_MODE is not available to the user.")
 		return
@@ -123,7 +123,7 @@ func (u *UserController) ChangeUserAccount() {
 func (u *UserController) ChangePasswordAction() {
 	var err error
 
-	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "boardadmin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
@@ -350,7 +350,7 @@ func (u *SystemAdminController) DeleteUserAction() {
 
 func (u *SystemAdminController) UpdateUserAction() {
 
-	if u.IsExternalAuth && u.CurrentUser.Username != "admin" {
+	if u.IsExternalAuth && u.CurrentUser.Username != "boardadmin" {
 		logs.Debug("Current AUTH_MODE is external auth.")
 		u.CustomAbortAudit(http.StatusMethodNotAllowed, "Current AUTH_MODE is external auth.")
 		return
