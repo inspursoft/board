@@ -1,8 +1,5 @@
-FROM mysql:5.6.35
+FROM mysql:5.7.31
 
-WORKDIR /tmp
+WORKDIR /docker-entrypoint-initdb.d
 
-ADD make/dev/container/db/board.sql r.sql
-
-ADD make/dev/container/db/docker-entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh
+ADD make/dev/container/db/board.sql /docker-entrypoint-initdb.d/r.sql
