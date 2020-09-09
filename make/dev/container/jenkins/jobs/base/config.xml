@@ -1,0 +1,190 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.buildblocker.BuildBlockerProperty plugin="build-blocker-plugin@1.7.3">
+      <useBuildBlocker>false</useBuildBlocker>
+      <blockLevel>GLOBAL</blockLevel>
+      <scanQueueFor>DISABLED</scanQueueFor>
+      <blockingJobs></blockingJobs>
+    </hudson.plugins.buildblocker.BuildBlockerProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>F00</name>
+          <description>Set job name.</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F01</name>
+          <description>Set Jenkins node IP</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F02</name>
+          <description>Set Jenkins master URL.</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F03</name>
+          <description>Set KVM registry URL.</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F04</name>
+          <description>Execution mode</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>F05</name>
+          <description>DevOps opt</description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.scm.NullSCM"/>
+  <assignedNode>master</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.69">
+      <scriptText>def job_name = binding.variables.get(&quot;F00&quot;)
+def jenkins_node_ip = binding.variables.get(&quot;F01&quot;)
+def jenkins_master_url = binding.variables.get(&quot;F02&quot;)
+def kvm_registry_url = binding.variables.get(&quot;F03&quot;)
+def execution_mode = binding.variables.get(&quot;F04&quot;)
+def devops_opt = binding.variables.get(&quot;F05&quot;)
+
+def multi_node_script = &apos;&apos;&apos;
+def node_name = &quot;unknown&quot;
+node(&apos;slave&apos;) {
+  stage(&quot;Allocate node for building ...&quot;) {
+    node_name = sh returnStdout: true, script: &quot;curl -X POST &apos;${kvm_registry_url}/register-job?job_name=${JOB_NAME}&amp;affinity=golang&apos;&quot;
+    def status = sh returnStatus: true, script: &quot;curl &apos;${kvm_registry_url}/trigger-script?name=register.sh&amp;arg=${jenkins_master_url},${jenkins_node_ip},${node_name}&apos;&quot;
+    println &quot;Register KVM: ${node_name} with status: ${status}&quot;
+  }
+}
+node(node_name) {
+  try{
+    stage(&quot;Update registry info ...&quot;) {
+      sh returnStatus: false, script: &quot;curl -X PUT &apos;${kvm_registry_url}/update-build?kvm_name=${node_name}&amp;job_name=${JOB_NAME}&amp;build_id=${BUILD_NUMBER}&apos;&quot;
+    }
+    stage(&quot;Start Docker service ....&quot;) {
+      sh returnStatus: false, script: &quot;systemctl start docker&quot;
+    }
+    stage(&quot;Clone repo ...&quot;) {
+      git &quot;${repo_clone_url}&quot;
+    }
+    stage(&quot;Execute travis ...&quot;) {
+      sh returnStatus: true, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
+    }
+  } finally {
+     sh returnStatus: false, script: &quot;curl &apos;${kvm_registry_url}/release-node?job_name=${JOB_NAME}&amp;build_id=${BUILD_NUMBER}&apos;&quot;
+     sh returnStatus: false, script: &quot;curl &apos;${kvm_registry_url}/trigger-script?name=release.sh&amp;arg=${jenkins_master_url},${node_name}&apos;&quot;
+  }
+}
+&apos;&apos;&apos;
+def single_node_script = &apos;&apos;&apos;
+node(&quot;${node_selector}&quot;) {
+  stage(&quot;Clone or pull repo ...&quot;) {
+    git &quot;${repo_clone_url}&quot;
+  }
+  stage(&quot;Execute travis ...&quot;) {
+    sh returnStatus: true, script: &quot;travis_yml_script.rb . workspace=${WORKSPACE}&quot;
+  }
+}
+&apos;&apos;&apos;
+
+def current_script = multi_node_script
+
+if (execution_mode == &quot;single&quot;) {
+  current_script = single_node_script
+}
+
+def repo_name_opt = &quot;\$.repository.name&quot;
+def repo_clone_url_opt = &quot;\$.repository.clone_url&quot;
+
+if (devops_opt == &quot;gitlab&quot;) {
+  repo_name_opt = &quot;\$.project.name&quot;
+  repo_clone_url_opt = &quot;\$.project.git_http_url&quot;
+}
+
+pipelineJob(job_name) {
+  environmentVariables {
+    env(&quot;jenkins_master_url&quot;, &quot;$jenkins_master_url&quot;)
+    env(&quot;kvm_registry_url&quot;, &quot;$kvm_registry_url&quot;)
+    env(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;)
+    env(&quot;node_selector&quot;, &quot;slave&quot;)
+  }
+  parameters {
+    stringParam(&quot;jenkins_master_url&quot;, &quot;$jenkins_master_url&quot;, &quot;Set Jenkins master URL.&quot;)
+    stringParam(&quot;kvm_registry_url&quot;, &quot;$kvm_registry_url&quot;, &quot;Set KVM registry URL.&quot;)
+    stringParam(&quot;jenkins_node_ip&quot;, &quot;$jenkins_node_ip&quot;, &quot;Set Jenkins node IP.&quot;)
+    stringParam(&quot;node_name&quot;, &quot;&quot;, &quot;Set node name.&quot;)
+    stringParam(&quot;node_selector&quot;, &quot;&quot;, &quot;Set specific node.&quot;)
+  }
+  triggers {
+    genericTrigger {
+      genericVariables {
+        genericVariable {
+          key(&quot;repo_name&quot;)
+          value(repo_name_opt)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;repo_clone_url&quot;)
+          value(repo_clone_url_opt)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+        genericVariable {
+          key(&quot;node_selector&quot;)
+          value(&quot;\$.node_selector&quot;)
+          expressionType(&quot;JSONPath&quot;)
+          regexpFilter(&quot;&quot;)
+          defaultValue(&quot;&quot;)
+        }
+      }
+      printContributedVariables(true)
+      printPostContent(true)
+      regexpFilterText(&quot;\$repo_name&quot;)
+      regexpFilterExpression(&quot;^(${job_name})\$&quot;)
+    }
+  }
+  definition {
+    cps {
+      script(current_script)
+    }
+  }
+}</scriptText>
+      <usingScriptText>true</usingScriptText>
+      <sandbox>false</sandbox>
+      <ignoreExisting>false</ignoreExisting>
+      <ignoreMissingFiles>false</ignoreMissingFiles>
+      <failOnMissingPlugin>false</failOnMissingPlugin>
+      <unstableOnDeprecation>false</unstableOnDeprecation>
+      <removedJobAction>IGNORE</removedJobAction>
+      <removedViewAction>IGNORE</removedViewAction>
+      <removedConfigFilesAction>IGNORE</removedConfigFilesAction>
+      <lookupStrategy>JENKINS_ROOT</lookupStrategy>
+    </javaposse.jobdsl.plugin.ExecuteDslScripts>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
