@@ -95,7 +95,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 }
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \
 --env MASTER_IP=%s \
 --env NODE_IP=%s \
@@ -399,7 +399,7 @@ func deleteActionFromApiServer(urlPath string) error {
 	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		err := utils.RequestHandle(http.MethodDelete, url, func(req *http.Request) error {
 			req.Header = http.Header{
 				"Content-Type": []string{"application/json"},
@@ -432,7 +432,7 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
 			req.Header = http.Header{
 				"Content-Type": []string{"application/json"},

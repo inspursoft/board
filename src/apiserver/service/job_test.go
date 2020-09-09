@@ -14,7 +14,7 @@ import (
 var unitTestJob = model.JobStatusMO{
 	Name:        "unittestjob",
 	OwnerID:     1,
-	OwnerName:   "admin",
+	OwnerName:   "boardadmin",
 	ProjectName: "library",
 }
 

@@ -29,8 +29,8 @@
         <clr-icon shape="caret down"></clr-icon>
       </button>
       <clr-dropdown-menu [clrPosition]="'bottom-right'">
-        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'admin'" clrDropdownItem (click)="showAccountSetting = true">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
-        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'admin'" clrDropdownItem (click)="showChangePassword = true">{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
+        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'boardadmin'" clrDropdownItem (click)="showAccountSetting = true">{{ 'HEAD_NAV.ACCOUNT_SETTINGS' | translate }}</a>
+        <a href="javascript:void(0)" *ngIf="authMode === 'db_auth' || currentUser.userName === 'boardadmin'" clrDropdownItem (click)="showChangePassword = true">{{ 'HEAD_NAV.CHANGE_PASSWORD' | translate }}</a>
         <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{ 'HEAD_NAV.LOG_OUT' | translate }}</a>
       </clr-dropdown-menu>
     </clr-dropdown>
