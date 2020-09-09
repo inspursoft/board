@@ -150,7 +150,7 @@ export class InstallationComponent implements OnInit {
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
       this.submitBtnState = ClrLoadingState.LOADING;
-      this.user.username = 'admin';
+      this.user.username = 'boardadmin';
       this.user.password = this.uuid;
       this.accountService.signIn(this.user).subscribe(
         () => {
