@@ -135,10 +135,6 @@ func (j *CIJobController) Console() {
 	}
 	configurations["pipeline_id"] = strconv.Itoa(pipelineID)
 	buildConsoleURL, _, _ := service.CurrentDevOps().ResolveHandleURL(configurations)
-	if err != nil {
-		j.InternalError(err)
-		return
-	}
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -187,8 +183,12 @@ func (j *CIJobController) Console() {
 				done <- true
 				return
 			}
-			buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
-			lastPos = len(data)
+			if devOpsOpt() == "legacy" {
+				buffer <- data
+			} else {
+				buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
+				lastPos = len(data)
+			}
 			resp.Body.Close()
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") || strings.Contains(line, "Job succeeded") || strings.Contains(line, "Job failed:") {
