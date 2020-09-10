@@ -1,11 +1,11 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
-import { NodeActionsType, NodeLog, NodeLogs } from '../../resource.types';
+import { NodeLog, NodeLogs } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
-import { NodeDetailComponent } from '../node-detail/node-detail.component';
 import { MessageService } from '../../../shared/message/message.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Message, ReturnStatus } from '../../../shared/message/message.types';
+import { NodeLogComponent } from '../node-log/node-log.component';
 
 @Component({
   selector: 'app-node-logs',
@@ -26,7 +26,7 @@ export class NodeLogsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptionUpdate = interval(3000).subscribe(() => this.retrieve());
+    this.subscriptionUpdate = interval(5000).subscribe(() => this.retrieve());
   }
 
   ngOnDestroy(): void {
@@ -71,9 +71,8 @@ export class NodeLogsComponent implements OnInit, OnDestroy {
   }
 
   showLogDetail(log: NodeLog) {
-    const factory = this.resolver.resolveComponentFactory(NodeDetailComponent);
+    const factory = this.resolver.resolveComponentFactory(NodeLogComponent);
     const detailRef = this.view.createComponent(factory);
-    detailRef.instance.actionType = NodeActionsType.Log;
     detailRef.instance.logInfo = log;
     detailRef.instance.openModal().subscribe(
       () => this.view.remove(this.view.indexOf(detailRef.hostView))

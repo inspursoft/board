@@ -1,0 +1,99 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
+  <h3 class="modal-title"><b>{{title | translate}}</b></h3>
+  <div class="modal-body">
+    <div #msgViewContainer></div>
+    <div *ngIf="curNodeLogStatus == 5 "
+         class="alert alert-success" role="alert">
+      <div class="alert-item">
+        <span class="alert-text">
+          {{ 'Node.Node_Detail_Add_Success' | translate }}
+        </span>
+      </div>
+    </div>
+    <div *ngIf="curNodeLogStatus == 6 "
+         class="alert alert-danger" role="alert">
+      <div class="alert-item">
+        <span class="alert-text">
+          {{ 'Node.Node_Detail_Add_Failed' | translate }}
+        </span>
+      </div>
+    </div>
+    <div *ngIf="actionStatus < 2">
+      <lib-input-ex [inputLabel]="masterTitle | async | translate"
+                    [inputLabelWidth]="240"
+                    [inputIsRequired]="true"
+                    [inputCategory]="3"
+                    [inputDisabled]="actionStatus === 1"
+                    [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Master_Hint' | translate}]"
+                    (commitEvent)="postData.masterPassword = $event">
+      </lib-input-ex>
+
+      <lib-input-ex [inputLabel]="hostUsernameTitle | async | translate"
+                    [inputIsRequired]="true"
+                    [inputLabelWidth]="240"
+                    [inputDisabled]="actionStatus === 1"
+                    [inputDefaultValue]=" postData.hostUsername"
+                    [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Host_Username_Hint' | translate}]"
+                    (commitEvent)="postData.hostUsername = $event">
+      </lib-input-ex>
+
+      <lib-input-ex [inputLabelWidth]="240"
+                    [inputLabel]="hostPasswordTitle | async | translate"
+                    [inputIsRequired]="true"
+                    [inputCategory]="3"
+                    [inputDisabled]="actionStatus === 1"
+                    [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Host_Password_Hint' | translate}]"
+                    (commitEvent)="postData.hostPassword = $event">
+      </lib-input-ex>
+      <div class="dynamic-line-container title-container">
+        <span class="title">{{'Node.Node_Detail_Node_Ip' | translate}}</span>
+        <span class="title">{{'Node.Node_Detail_Node_Password' | translate}}</span>
+      </div>
+      <div *ngFor="let node of newNodeList;index as i" class="dynamic-container">
+        <div class="dynamic-line-container">
+          <div class="dynamic-icon-container">
+            <clr-icon class="dynamic-icon" shape="minus" (click)="removeNodeInfo(i)"></clr-icon>
+          </div>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputLabelWidth]="240"
+                        [toolTipPosition]="'bottom-right'"
+                        [inputDisabled]="executing"
+                        [validatorAsyncFn]="checkIpExist"
+                        [inputDefaultValue]="node.nodeIp"
+                        [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Node_Ip_Hint' | translate}]"
+                        (commitEvent)="node.nodeIp = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabelWidth]="240"
+                        [inputIsRequired]="true"
+                        [inputCategory]="3"
+                        [validatorAsyncFn]="checkPassword"
+                        [inputDisabled]="executing"
+                        [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Node_Password_Hint' | translate}]"
+                        (commitEvent)="node.nodePassword = $event">
+          </lib-input-ex>
+        </div>
+      </div>
+      <div class="plus-container">
+        <clr-icon class="dynamic-icon" shape="plus" (click)="addNodeInfo()"></clr-icon>
+      </div>
+    </div>
+    <div *ngIf="actionStatus >= 2" class="logs-container" #divElement>
+      <div #consoleLogs></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button *ngIf="actionStatus === 0" class="btn btn-outline" (click)="modalOpened = false">
+      {{"BUTTON.CANCEL" | translate}}
+    </button>
+    <button class="btn btn-primary"
+            [disabled]="actionStatus === 1"
+            (click)="execute()">
+      {{executeBtnCaption | translate}}
+    </button>
+    <span *ngIf="refreshingLog || executing" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>
+
+<ng-template #logTemplate let-message="message" let-status="status">
+  <span [ngStyle]="getLogStyle(status)">{{message}}<br></span>
+</ng-template>
