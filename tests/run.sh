@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -e
 # listDeps lists packages referenced by package in $1, 
 # excluding golang standard library and packages in 
 # direcotry vendor
@@ -25,7 +25,6 @@ function listDeps()
     done
 }
 #$@pull      
-#set -e
 
 # set envirnment
 deps=""
