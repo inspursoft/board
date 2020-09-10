@@ -1,5 +1,5 @@
 <div style="display: flex;">
-  <button style="margin-left: auto" class="btn btn-primary" (click)="addNode()">
+  <button style="margin-left: auto" class="btn btn-primary" (click)="addNodeAction()">
     {{"Node.Node_List_Add" | translate}}
   </button>
 </div>
@@ -17,7 +17,7 @@
         <clr-icon shape="info" class="is-solid" (click)="showLog(node)"></clr-icon>
       </a>
       <a *ngIf="!node.isMaster && !node.isEdge" href="javascript:void(0)">
-        <clr-icon shape="trash" (click)="deleteNode(node)"></clr-icon>
+        <clr-icon shape="trash" (click)="removeNode(node)"></clr-icon>
       </a>
       <span *ngIf="node.isMaster" class="label label-info">
         {{"Node.Node_List_Master_Node" | translate}}

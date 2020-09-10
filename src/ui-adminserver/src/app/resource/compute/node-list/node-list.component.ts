@@ -1,11 +1,12 @@
 import { Component, ComponentFactoryResolver, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { NodeActionsType, NodeControlStatus, NodeList, NodeListType, NodeLog } from '../../resource.types';
+import { NodeControlStatus, NodeList, NodeListType, NodeLog } from '../../resource.types';
 import { ResourceService } from '../../services/resource.service';
 import { MessageService } from '../../../shared/message/message.service';
-import { Message, ReturnStatus } from '../../../shared/message/message.types';
-import { NodeDetailComponent } from '../node-detail/node-detail.component';
+import { NodeCreateComponent } from '../node-create/node-create.component';
+import { NodeRemoveComponent } from '../node-remove/node-remove.component';
+import { NodeLogComponent } from '../node-log/node-log.component';
 
 @Component({
   selector: 'app-node-list',
@@ -25,7 +26,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptionUpdate = interval(3000).subscribe(() => this.getNodeList());
+    this.subscriptionUpdate = interval(5000).subscribe(() => this.getNodeList());
     this.getNodeList();
   }
 
@@ -38,19 +39,38 @@ export class NodeListComponent implements OnInit, OnDestroy {
     this.resourceService.getNodeList().subscribe((res: NodeList) => this.nodeLists = res);
   }
 
-  addNode() {
-    const logInfo = new NodeLog({});
-    this.createNodeDetail(logInfo, NodeActionsType.Add);
+  addNodeAction() {
+    const factory = this.resolver.resolveComponentFactory(NodeCreateComponent);
+    const ref = this.view.createComponent(factory);
+    ref.instance.openModal().subscribe(
+      () => this.view.remove(this.view.indexOf(ref.hostView))
+    );
   }
 
-  deleteNode(node: NodeListType) {
+  removeNodeAction(nodeIp: string) {
+    const factory = this.resolver.resolveComponentFactory(NodeRemoveComponent);
+    const ref = this.view.createComponent(factory);
+    ref.instance.postData.nodeIp = nodeIp;
+    ref.instance.openModal().subscribe(
+      () => this.view.remove(this.view.indexOf(ref.hostView))
+    );
+  }
+
+  showNodeLogAction(logInfo: NodeLog): void {
+    const factory = this.resolver.resolveComponentFactory(NodeLogComponent);
+    const ref = this.view.createComponent(factory);
+    ref.instance.logInfo = logInfo;
+    ref.instance.openModal().subscribe(
+      () => this.view.remove(this.view.indexOf(ref.hostView))
+    );
+  }
+
+  removeNode(node: NodeListType) {
     this.resourceService.getNodeControlStatus(node.nodeName).subscribe(
       (res: NodeControlStatus) => {
         if (res.nodeUnschedulable) {
           if (res.nodeDeletable) {
-            const logInfo = new NodeLog({});
-            logInfo.ip = node.ip;
-            this.createNodeDetail(logInfo, NodeActionsType.Remove);
+            this.removeNodeAction(node.ip);
           } else {
             this.translateService.get(['Node.Node_Detail_Remove', 'Node.Node_Logs_Can_Not_Remove']).subscribe(
               translate => {
@@ -69,7 +89,8 @@ export class NodeListComponent implements OnInit, OnDestroy {
             }
           );
         }
-      });
+      }
+    );
   }
 
   showLog(node: NodeListType) {
@@ -77,7 +98,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
       const logInfo = new NodeLog({});
       logInfo.ip = node.ip;
       logInfo.creationTime = node.logTime;
-      this.createNodeDetail(logInfo, NodeActionsType.Log);
+      this.showNodeLogAction(logInfo);
     }
   }
 
@@ -90,15 +111,5 @@ export class NodeListComponent implements OnInit, OnDestroy {
       case 3:
         return 'Node.Node_List_Status_Unknown';
     }
-  }
-
-  createNodeDetail(logInfo: NodeLog, action: NodeActionsType) {
-    const factory = this.resolver.resolveComponentFactory(NodeDetailComponent);
-    const detailRef = this.view.createComponent(factory);
-    detailRef.instance.logInfo = logInfo;
-    detailRef.instance.actionType = action;
-    detailRef.instance.openModal().subscribe(
-      () => this.view.remove(this.view.indexOf(detailRef.hostView))
-    );
   }
 }
