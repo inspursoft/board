@@ -10,13 +10,19 @@ import { BoardComponentsLibraryModule } from 'board-components-library';
 import { NodeListComponent } from './compute/node-list/node-list.component';
 import { NodeLogsComponent } from './compute/node-logs/node-logs.component';
 import { NodeDetailComponent } from './compute/node-detail/node-detail.component';
+import { NodeCreateComponent } from './compute/node-create/node-create.component';
+import { NodeRemoveComponent } from './compute/node-remove/node-remove.component';
+import { NodeLogComponent } from './compute/node-log/node-log.component';
 
 @NgModule({
   declarations: [
     ResourceComponent,
     NodeListComponent,
     NodeLogsComponent,
-    NodeDetailComponent
+    NodeDetailComponent,
+    NodeCreateComponent,
+    NodeRemoveComponent,
+    NodeLogComponent
   ],
   imports: [
     CommonModule,
@@ -33,7 +39,12 @@ import { NodeDetailComponent } from './compute/node-detail/node-detail.component
     TranslateModule,
     BoardComponentsLibraryModule
   ],
-  entryComponents: [NodeDetailComponent],
+  entryComponents: [
+    NodeDetailComponent,
+    NodeCreateComponent,
+    NodeRemoveComponent,
+    NodeLogComponent
+  ],
   providers: [
     ResourceService,
     CustomHttpProvider

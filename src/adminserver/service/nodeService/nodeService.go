@@ -354,7 +354,10 @@ func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 	addHosts.WriteString("[etcd]\n")
 	addHosts.WriteString(fmt.Sprintf("%s\n", masterIp))
 	addHosts.WriteString("[nodes]\n")
-	addHosts.WriteString(fmt.Sprintf("%s\n", nodeIp))
+	nodes := strings.Split("|", "")
+	for _, node := range nodes {
+		addHosts.WriteString(fmt.Sprintf("%s\n", node))
+	}
 	addHosts.WriteString("[registry]\n")
 	addHosts.WriteString(fmt.Sprintf("%s\n", registryIp))
 	return nil

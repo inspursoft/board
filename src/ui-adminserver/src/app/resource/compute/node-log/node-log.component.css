@@ -1,0 +1,28 @@
+div.modal-body{
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.alert {
+  height: 30px;
+  line-height: 30px;
+}
+
+div.alert-item{
+  margin-left: 5px;
+}
+
+div.logs-container {
+  background-color: black;
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid silver;
+  border-radius: 5px;
+  padding: 3px;
+  flex-basis: 100%;
+}
+
+div.modal-footer {
+  align-items: center;
+}
