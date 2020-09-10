@@ -7,12 +7,14 @@ import {
   NodePostData,
   NodePreparationData
 } from '../../resource.types';
-import { interval, Observable, Subscription } from 'rxjs';
+import { interval, Observable, of, Subscription } from 'rxjs';
 import { MessageService } from '../../../shared/message/message.service';
 import { TranslateService } from '@ngx-translate/core';
 import { ResourceService } from '../../services/resource.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ModalChildBase } from '../../../shared/cs-components-library/modal-child-base';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-node-create',
@@ -84,6 +86,40 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     }
   }
 
+  get checkIpExist() {
+    return this.checkIpExistFun.bind(this);
+  }
+
+  get checkPassword() {
+    return this.checkPasswordFun.bind(this);
+  }
+
+  checkIpExistFun(control: AbstractControl): Observable<ValidationErrors | null> {
+    const ip = control.value;
+    if (this.newNodeList.find(value => value.nodeIp === ip)) {
+      return this.translateService.get('Node.Node_Detail_Error_Node_Repeat').pipe(
+        map(msg => {
+          return {ipExists: msg};
+        })
+      );
+    } else {
+      return of(null);
+    }
+  }
+
+  checkPasswordFun(control: AbstractControl): Observable<ValidationErrors | null> {
+    const ps = control.value as string;
+    if (ps.indexOf('_') > -1) {
+      return this.translateService.get('Node.Node_Detail_Error_Node_Reserve').pipe(
+        map(msg => {
+          return {charReserved: msg};
+        })
+      );
+    } else {
+      return of(null);
+    }
+  }
+
   removeNodeInfo(index: number): void {
     this.newNodeList.splice(index, 1);
   }
@@ -134,7 +170,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
 
   execute() {
     if (this.actionStatus === ActionStatus.Ready) {
-        this.addNode();
+      this.addNode();
     } else {
       this.modalOpened = false;
     }
