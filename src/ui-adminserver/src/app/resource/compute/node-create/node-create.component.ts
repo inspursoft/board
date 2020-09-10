@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import {
-  ActionStatus, NodeActionsType,
+  ActionStatus,
   NodeDetails,
   NodeLog,
   NodeLogStatus,
@@ -122,9 +122,11 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   }
 
   generatePostData(): void {
+    this.postData.nodeIp = '';
+    this.postData.nodePassword = '';
     this.newNodeList.forEach((nodeInfo) => {
-      this.postData.nodeIp += `${nodeInfo.nodeIp}|`;
-      this.postData.nodePassword += `${nodeInfo.nodePassword}|`;
+      this.postData.nodeIp += `${nodeInfo.nodeIp}_`;
+      this.postData.nodePassword += `${nodeInfo.nodePassword}_`;
     });
     this.postData.nodeIp = this.postData.nodeIp.substr(0, this.postData.nodeIp.length - 1);
     this.postData.nodePassword = this.postData.nodePassword.substr(0, this.postData.nodePassword.length - 1);

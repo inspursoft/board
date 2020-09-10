@@ -129,7 +129,7 @@ export class NodeRemoveComponent extends ModalChildBase implements OnInit, OnDes
             this.messageService.cleanNotification();
             this.messageService.showGlobalMessage('Node.Node_Detail_Error_Invalid_Password', {view: this.view});
           }
-          this.actionStatus = ActionStatus.Preparing;
+          this.actionStatus = ActionStatus.Ready;
         },
         () => this.actionStatus = ActionStatus.Executing
       );

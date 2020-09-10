@@ -1,5 +1,7 @@
 <clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
-  <h3 class="modal-title"><b>{{"Node.Node_Detail_Title_Remove" | translate}}</b></h3>
+  <h3 class="modal-title">
+    <b>{{"Node.Node_Detail_Title_Remove" | translate}}</b>:{{postData.nodeIp}}
+  </h3>
   <div class="modal-body">
     <div #msgViewContainer></div>
     <div *ngIf="curNodeLogStatus == 5 "
@@ -31,7 +33,7 @@
       <lib-input-ex [inputLabel]="'Node.Node_Detail_Node_Ip' | translate"
                     [inputIsRequired]="true"
                     [inputLabelWidth]="240"
-                    [inputDisabled]="executing || actionStatus !== 0"
+                    [inputDisabled]="true"
                     [inputDefaultValue]="postData.nodeIp"
                     [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Node_Ip_Hint' | translate}]"
                     (commitEvent)="postData.nodeIp = $event">
@@ -72,7 +74,10 @@
     <button *ngIf="actionStatus === 0" class="btn btn-outline" (click)="modalOpened = false ">
       {{'BUTTON.CANCEL' | translate}}
     </button>
-    <button class="btn" (click)="execute()" [ngClass]="btnClassName">
+    <button class="btn"
+            (click)="execute()"
+            [disabled]="actionStatus === 1"
+            [ngClass]="btnClassName">
       {{executeBtnCaption | translate}}
     </button>
     <span *ngIf="refreshingLog || executing" class="spinner spinner-sm"></span>

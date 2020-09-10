@@ -82,7 +82,9 @@
     <button *ngIf="actionStatus === 0" class="btn btn-outline" (click)="modalOpened = false">
       {{"BUTTON.CANCEL" | translate}}
     </button>
-    <button class="btn btn-primary" (click)="execute()">
+    <button class="btn btn-primary"
+            [disabled]="actionStatus === 1"
+            (click)="execute()">
       {{executeBtnCaption | translate}}
     </button>
     <span *ngIf="refreshingLog || executing" class="spinner spinner-sm"></span>
