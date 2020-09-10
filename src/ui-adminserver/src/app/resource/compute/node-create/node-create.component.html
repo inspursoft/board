@@ -56,7 +56,9 @@
           </div>
           <lib-input-ex [inputIsRequired]="true"
                         [inputLabelWidth]="240"
+                        [toolTipPosition]="'bottom-right'"
                         [inputDisabled]="executing"
+                        [validatorAsyncFn]="checkIpExist"
                         [inputDefaultValue]="node.nodeIp"
                         [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Node_Ip_Hint' | translate}]"
                         (commitEvent)="node.nodeIp = $event">
@@ -64,6 +66,7 @@
           <lib-input-ex [inputLabelWidth]="240"
                         [inputIsRequired]="true"
                         [inputCategory]="3"
+                        [validatorAsyncFn]="checkPassword"
                         [inputDisabled]="executing"
                         [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Node_Password_Hint' | translate}]"
                         (commitEvent)="node.nodePassword = $event">
