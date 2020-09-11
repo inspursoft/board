@@ -73,7 +73,8 @@ export class NodeGroupComponent extends CsModalParentBase implements OnInit {
 
   editGroup(group: NodeGroupStatus): void {
     const ref = this.createNewModal(NodeGroupEditComponent);
-    ref.nodeGroup = group;
+    ref.nodeGroup = new NodeGroupStatus(group.res);
+    ref.nodeGroup.initFromRes();
     ref.afterUpdate.subscribe(() => this.refreshList());
   }
 }

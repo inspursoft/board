@@ -48,8 +48,9 @@ export class NodeGroupStatus extends HttpBase {
   @HttpBind('nodegroup_update_time') updateTime = '';
   @HttpBind('nodegroup_deleted') deleted = 0;
 
-  postBody(): { [p: string]: string } {
+  postBody(): { [p: string]: any } {
     return {
+      nodegroup_id: this.id,
       nodegroup_project: this.projectName,
       nodegroup_name: this.name,
       nodegroup_comment: this.comment

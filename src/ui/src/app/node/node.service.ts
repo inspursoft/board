@@ -117,7 +117,7 @@ export class NodeService {
   }
 
   updateGroup(nodeGroup: NodeGroupStatus): Observable<any> {
-    return this.http.put(`/api/v1/nodegroup/${nodeGroup.id}`, nodeGroup,
+    return this.http.put(`/api/v1/nodegroup/${nodeGroup.id}`, nodeGroup.postBody(),
       {
         params: {
           id: nodeGroup.id.toString()
