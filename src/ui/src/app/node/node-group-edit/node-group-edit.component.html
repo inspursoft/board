@@ -1,0 +1,26 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'">
+  <h3 class="modal-title">{{ 'NODE.NODE_GROUP_EDIT' | translate }}</h3>
+  <div class="modal-body">
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="true"
+                  [inputPattern]="patternNodeGroupName"
+                  [inputLabel]="'NODE.NODE_GROUP_NAME' | translate"
+                  [inputDefaultValue]="nodeGroup.name">
+    </lib-input-ex>
+    <lib-input-ex [inputIsRequired]="true"
+                  [inputDisabled]="isActionWip"
+                  [inputLabel]="'NODE.NODE_GROUP_COMMENT' | translate"
+                  [inputDefaultValue]="nodeGroup.comment"
+                  (commitEvent)="nodeGroup.comment = $event">
+    </lib-input-ex>
+  </div>
+  <div class="modal-footer">
+    <button type="button" [disabled]="isActionWip" class="btn btn-default" (click)="modalOpened = false">
+      {{ 'BUTTON.CANCEL' | translate }}
+    </button>
+    <button type="button" [disabled]="isActionWip" class="btn btn-primary" (click)="updateNodeGroup()">
+      {{ 'NodeCreateNew.Commit' | translate }}
+    </button>
+    <span *ngIf="isActionWip" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>

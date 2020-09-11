@@ -939,6 +939,10 @@ export const LANG_EN_US = {
     "NODE_GROUP_UPDATE_TIME":"Update time",
     "NODE_GROUP_CREATE_PATTERN_MESSAGE": "Node group name should be composed by numbers,alphabets,or some specific characters (.-_).",
     "CONFIRM_TO_DELETE_NODE_GROUP": "Confirm to delete node group {{0}} ?",
+    "NODE_GROUP_MEMBERS":"Members",
+    "NODE_GROUP_UPDATE_SUCCESS":"Updated node-group successfully.",
+    "NODE_GROUP_UPDATE_FAILED":"Failed to update",
+    "NODE_GROUP_EDIT": "Edit node group",
   },
 
   NodeControl: {

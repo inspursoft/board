@@ -2,7 +2,7 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { AfterViewInit, Component, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ValidationErrors } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent } from '@angular/common/http';
@@ -50,7 +50,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   isUploadFileWIP = false;
   isGetImageDetailListWip = false;
   customerNewImage: BuildImageData;
-  consoleText = '';
   uploadCopyToPath = '/tmp';
   uploadProgressValue: HttpProgressEvent;
   imageList: Array<Image>;
@@ -210,7 +209,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   get cancelCaption() {
-    return this.consoleText === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE' ?
+    return this.waitingMessage === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE' ?
       'IMAGE.CREATE_IMAGE_CANCEL_WAIT' :
       'IMAGE.CREATE_IMAGE_BUILD_CANCEL';
   }
@@ -258,7 +257,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   cancelBuildImage() {
-    if (this.consoleText === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE') {
+    if (this.waitingMessage === 'IMAGE.CREATE_IMAGE_WAITING_BUILD') {
       this.cancelInfo.isForce = true;
       this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
       this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
@@ -395,7 +394,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       this.cancelButtonDisable = true;
       this.isBuildImageWIP = true;
       this.waitingMessage = 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE';
-      this.consoleText = 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE';
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
     if (this.imageBuildMethod === CreateImageMethod.Template) {
@@ -615,7 +613,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if ((this.baseImageSource === 1 && isGetBoardRegistry) ||
       (this.baseImageSource === 2 && !isGetBoardRegistry)) {
       this.selectedImage = null;
-      this.consoleText = '';
       this.imageDetailList.splice(0, this.imageDetailList.length);
       this.customerNewImage.imageDockerFile.imageBase = '';
     }

@@ -1,4 +1,4 @@
-import { HttpBase, HttpBind, HttpBindArray } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, HttpBindArray, HttpBindObject } from '../shared/ui-model/model-types';
 
 export enum NodeStatusType {
   Schedulable = 1, Unschedulable, Unknown, AutonomousOffline
@@ -85,6 +85,16 @@ export class NodeDetail extends HttpBase {
   @HttpBind('memory_usage') memoryUsage: number;
   @HttpBind('storage_total') storageTotal: string;
   @HttpBind('storage_use') storageUse: string;
+}
+
+export class NodeGroupDetail extends HttpBase {
+  @HttpBindObject('nodegroup', NodeGroupStatus) nodeGroup: NodeGroupStatus;
+  @HttpBind('nodelist') nodeList: Array<string>;
+
+  protected prepareInit() {
+    this.nodeGroup = new NodeGroupStatus();
+    this.nodeList = new Array<string>();
+  }
 }
 
 export class EdgeNode extends HttpBase {
