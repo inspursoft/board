@@ -258,13 +258,13 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
 
   cancelBuildImage() {
     if (this.waitingMessage === 'IMAGE.CREATE_IMAGE_WAITING_BUILD') {
-      this.cancelInfo.isForce = true;
-      this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
-      this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
-    } else {
       this.cancelInfo.isForce = false;
       this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL';
       this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL_MSG';
+    } else {
+      this.cancelInfo.isForce = true;
+      this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
+      this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
     }
     this.cancelInfo.isShow = true;
   }
