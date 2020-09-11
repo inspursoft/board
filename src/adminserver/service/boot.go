@@ -6,6 +6,8 @@ import (
 	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/common/utils"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -50,7 +52,7 @@ func CheckSysStatus() (models.InitStatus, error) {
 	var err error
 	var cfgCheck bool
 	if err = CheckBoard(); err != nil {
-		logs.Info("Board is down")
+		logs.Info("Board is down: %+v", err)
 		if cfgCheck, err = CheckCfgModified(); err != nil {
 			return 0, err
 		}
@@ -65,7 +67,6 @@ func CheckSysStatus() (models.InitStatus, error) {
 
 func CheckBoard() error {
 	var err error
-
 	if err = dao.CheckDB(); err != nil {
 		if err = dao.RegisterDB(); err != nil {
 			return err
@@ -74,7 +75,7 @@ func CheckBoard() error {
 	if tokenserver := CheckTokenserver(); !tokenserver {
 		return common.ErrTokenServer
 	}
-	return nil
+	return utils.RequestHandle(http.MethodGet, "http://apiserver:8088/api/v1/systeminfo", nil, nil, nil)
 }
 
 func CheckCfgModified() (bool, error) {
