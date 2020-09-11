@@ -328,7 +328,6 @@ export class InstallationComponent implements OnInit {
         this.installStep++;
         this.installProgress = 100;
         this.submitBtnState = ClrLoadingState.DEFAULT;
-        console.log(this.config);
       }, 5000);
       return;
     }
@@ -360,7 +359,6 @@ export class InstallationComponent implements OnInit {
   goToBoard() {
     if (this.config) {
       const protocol = this.config.board.mode === 'normal' ? 'http' : 'https';
-      console.log(`${protocol}://${this.config.board.hostname}`);
       window.open(`${protocol}://${this.config.board.hostname}`);
     } else {
       const boardURL = window.location.hostname;
