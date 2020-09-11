@@ -11,9 +11,8 @@ export class Board extends ResponseBase implements RequestBase {
   @HttpBind('audit_debug') auditDebug: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.archType = 'x86_64';
       this.mode = 'normal';
       this.accessProtocol = 'http';
@@ -50,9 +49,8 @@ export class K8s extends ResponseBase implements RequestBase {
   @HttpBind('dns_suffix') dnsSuffix: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.kubeHttpScheme = 'http';
       this.kubeMasterIP = ' 10.0.0.0';
       this.kubeMasterPort = '8080';
@@ -84,9 +82,8 @@ export class Gogs extends ResponseBase implements RequestBase {
   @HttpBind('gogits_ssh_port') sshPort: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.hostIP = '10.0.0.0';
       this.hostPort = '10080';
       this.sshPort = '10022';
@@ -111,9 +108,8 @@ export class Gitlab extends ResponseBase implements RequestBase {
   @HttpBind('gitlab_ssh_password') sshPassword: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.hostIP = '10.0.0.0';
       this.hostPort = '10088';
       this.sshPort = '10028';
@@ -139,9 +135,8 @@ export class Prometheus extends ResponseBase implements RequestBase {
   @HttpBind('prometheus_url') url: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.url = 'http://10.0.0.0:9090';
     }
   }
@@ -164,9 +159,8 @@ export class Jenkins extends ResponseBase implements RequestBase {
   @HttpBind('jenkins_execution_mode') executionMode: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.hostIP = '10.0.0.0';
       this.hostPort = '8888';
       this.nodeIP = '10.0.0.0';
@@ -198,9 +192,8 @@ export class Kvm extends ResponseBase implements RequestBase {
   @HttpBind('kvm_toolkits_path') toolkitsPath: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.registrySize = '5';
       this.registryPort = '8890';
       this.toolkitsPath = '/root/kvm_toolkits';
@@ -221,9 +214,8 @@ export class ES extends ResponseBase implements RequestBase {
   @HttpBind('elastic_password') password: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.memoryInMegabytes = '1024';
       this.password = 'root123';
     }
@@ -243,9 +235,8 @@ export class DB extends ResponseBase implements RequestBase {
   @HttpBind('board_admin_password') boardAdminPassword: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.dbPassword = 'root123';
       this.dbMaxConnections = '1000';
       this.boardAdminPassword = '123456a?';
@@ -266,9 +257,8 @@ export class Indata extends ResponseBase implements RequestBase {
   @HttpBind('redirection_url') redirectionUrl: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.verificationUrl = 'http://verification.mydomain.com';
       this.redirectionUrl = 'http://redirection.mydomain.com';
     }
@@ -293,9 +283,8 @@ export class LDAP extends ResponseBase implements RequestBase {
   @HttpBind('ldap_timeout') timeout: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.url = 'ldaps://ldap.mydomain.com';
       this.searchdn = 'uid=searchuser,ou=people,dc=mydomain,dc=com';
       this.searchPwd = 'password';
@@ -331,9 +320,8 @@ export class Email extends ResponseBase implements RequestBase {
   @HttpBind('email_ssl') ssl: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.identity = '';
       this.server = 'smtp.mydomain.com';
       this.serverPort = '25';
@@ -362,9 +350,8 @@ export class Token extends ResponseBase implements RequestBase {
   @HttpBind('token_expire_seconds') expireSeconds: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.cacheExpireSeconds = '1800';
       this.expireSeconds = '1800';
     }
