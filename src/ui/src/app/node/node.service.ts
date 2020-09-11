@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { delay, map, timeout } from 'rxjs/operators';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
-import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus, EdgeNode } from './node.types';
+import { NodeDetail, NodeControlStatus, NodeGroupStatus, NodeStatus, EdgeNode, NodeGroupDetail } from './node.types';
 import { AUDIT_RECORD_HEADER_KEY, AUDIT_RECORD_HEADER_VALUE } from '../shared/shared.const';
 import { ModelHttpClient } from '../shared/ui-model/model-http-client';
 
@@ -109,5 +109,20 @@ export class NodeService {
         edge_password: nodePassword
       }
     });
+  }
+
+  getGroupMembers(groupId: number): Observable<Array<string>> {
+    return this.http.getJson(`/api/v1/nodegroup/${groupId}`, NodeGroupDetail)
+      .pipe(map((res: NodeGroupDetail) => res.nodeList));
+  }
+
+  updateGroup(nodeGroup: NodeGroupStatus): Observable<any> {
+    return this.http.put(`/api/v1/nodegroup/${nodeGroup.id}`, nodeGroup.postBody(),
+      {
+        params: {
+          id: nodeGroup.id.toString()
+        }
+      }
+    );
   }
 }
