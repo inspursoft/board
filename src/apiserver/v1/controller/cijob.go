@@ -183,12 +183,8 @@ func (j *CIJobController) Console() {
 				done <- true
 				return
 			}
-			if devOpsOpt() == "legacy" {
-				buffer <- data
-			} else {
-				buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
-				lastPos = len(data)
-			}
+			buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
+			lastPos = len(data)
 			resp.Body.Close()
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") || strings.Contains(line, "Job succeeded") || strings.Contains(line, "Job failed:") {
@@ -227,23 +223,20 @@ func (j *CIJobController) Stop() {
 		j.toggleBuild(false)
 		return
 	}
-	lastPipelineID, err := j.getStoredID("_pipelineID")
-	if err != nil {
-		logs.Warning("Pipeline ID was not found in store.")
-	}
-
 	jobName := j.GetString("job_name")
 	if jobName == "" {
 		j.CustomAbortAudit(http.StatusBadRequest, "No job name found.")
 		return
 	}
-
 	repoName, err := service.ResolveRepoName(jobName, j.CurrentUser.Username)
 	if err != nil {
 		j.InternalError(err)
 		return
 	}
-
+	lastPipelineID, err := j.getStoredID("_pipelineID")
+	if err != nil {
+		logs.Warning("Missing to get pipeline ID from store: %+v", err)
+	}
 	configurations := make(map[string]string)
 	configurations["project_name"] = fmt.Sprintf("%s/%s", j.CurrentUser.Username, repoName)
 	configurations["job_name"] = repoName
