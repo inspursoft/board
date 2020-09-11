@@ -1,0 +1,10 @@
+div.modal-body{
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  margin-right: 50px;
+}
+
+div.modal-body lib-input-ex{
+  margin-top: 10px;
+}

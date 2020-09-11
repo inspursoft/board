@@ -939,6 +939,10 @@ export const LANG_ZH_CN = {
     "NODE_GROUP_UPDATE_TIME":"更新时间",
     "NODE_GROUP_CREATE_PATTERN_MESSAGE":"由小写字母、大写字母、数字、'.'、'_'、'-'组成的字符串",
     "CONFIRM_TO_DELETE_NODE_GROUP": "确定删除节点组 {{0}} ?",
+    "NODE_GROUP_MEMBERS":"节点组成员",
+    "NODE_GROUP_UPDATE_SUCCESS":"修改节点组成功",
+    "NODE_GROUP_UPDATE_FAILED":"修改节点组失败",
+    "NODE_GROUP_EDIT": "编辑节点组",
   },
 
   NodeControl: {
