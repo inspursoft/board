@@ -1,10 +1,7 @@
 version: '2'
 services:
   log:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
+    image: board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -14,10 +11,7 @@ services:
     ports:
       - 1514:514
   db:
-    build: 
-      context: ../../
-      dockerfile: make/dev/container/db/Dockerfile
-    image: dev_db:dev
+    image: board_db:__version__
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -27,8 +21,6 @@ services:
       - ../config/db/env
     networks:
       - board
-    ports:
-      - 3306:3306
     depends_on:
       - log
     ulimits:
@@ -40,39 +32,75 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
-  apiserver:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/apiserver/Dockerfile
-    image: dev_apiserver:dev
+  gogits:
+    image: board_gogits:__version__
     restart: always
     volumes:
-      - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+      - /data/board/gogits:/data:rw
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "10022:22"
+      - "10080:3000"
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gogits"
+  jenkins:
+    image: board_jenkins:__version__
+    restart: always
+    networks:
+      - board
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - ../config/jenkins/env
+    ports:
+      - 8888:8080
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jenkins"
+  apiserver:
+    image: board_apiserver:__version__
+    restart: always
+    volumes:
+#     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
+      - /data/board/repos:/repos:rw
+      - /data/board/keys:/keys:rw
       - /data/board/cert:/cert:rw
-      - /etc/board/cert:/etc/board/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
+      - /etc/board/cert:/etc/board/cert:rw
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - ../config/apiserver/env
+    ports:
+      - 8088:8088
     networks:
       - board
     links:
       - db
-    ports: 
-      - 8088:8088
     depends_on:
       - log
-      - jenkins
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: dev_tokenserver:dev
+    image: board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -88,18 +116,15 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   proxy:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/proxy/Dockerfile
-    image: dev_proxy:dev
+    image: board_proxy:__version__
     networks:
       - board
     restart: always
     volumes:
       - ../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
-      - ../../src/ui/dist:/usr/share/nginx/html:z
+#     - ../../src/ui/dist:/usr/share/nginx/html:z
       - /data/board/cert/proxy.pem:/etc/ssl/certs/proxy.pem:z
-      - /data/board/cert/proxy-key.pem:/etc/ssl/certs/proxy-key.pem:z      
+      - /data/board/cert/proxy-key.pem:/etc/ssl/certs/proxy-key.pem:z  
       - /etc/localtime:/etc/localtime:ro
     ports: 
       - 80:80
@@ -115,10 +140,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
   grafana:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/grafana/Dockerfile
-    image: dev_grafana:dev
+    image: board_grafana:__version__
     restart: always
     volumes:
       - /data/board/grafana/data:/var/lib/grafana
@@ -127,8 +149,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     networks:
       - board
-    ports:
-      - 3000:3000
     depends_on:
       - log
     logging:
@@ -137,10 +157,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "grafana"
   elasticsearch:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/elasticsearch/Dockerfile
-    image: dev_elasticsearch:dev
+    image: board_elasticsearch:__version__
     restart: always
     env_file:
       - ../config/elasticsearch/env
@@ -163,10 +180,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "elasticsearch"
   kibana:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/kibana/Dockerfile
-    image: dev_kibana:dev
+    image: board_kibana:__version__
     restart: always
     env_file:
       - ../config/kibana/env
@@ -183,15 +197,12 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "kibana"
   chartmuseum:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/chartmuseum/Dockerfile
-    image: dev_chartmuseum:dev
+    image: board_chartmuseum:__version__
     restart: always
     networks:
       - board
-    ports:
-      - 8089:8080
+#    ports:
+#      - 8089:8080
     depends_on:
       - log
     volumes:
@@ -203,10 +214,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
   prometheus:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/prometheus/Dockerfile
-    image: dev_prometheus:dev
+    image: board_prometheus:__version__
     restart: always
     networks:
       - board

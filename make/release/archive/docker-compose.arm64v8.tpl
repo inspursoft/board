@@ -27,6 +27,47 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
+  gogits:
+    image: board_gogits:__version__
+    restart: always
+    volumes:
+      - /data/board/gogits:/data:rw
+      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "10022:22"
+      - "10080:3000"
+    networks:
+      - board
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gogits"
+  jenkins:
+    image: board_jenkins:__version__
+    restart: always
+    networks:
+      - board
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - ../config/jenkins/env
+    ports:
+      - 8888:8080
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jenkins"
   apiserver:
     image: board_apiserver:__version__
     restart: always
