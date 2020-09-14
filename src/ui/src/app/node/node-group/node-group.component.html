@@ -8,6 +8,7 @@
   <clr-dg-column>{{ 'NODE.NODE_GROUP_COMMENT' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'NODE.CREATION_TIME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'NODE.NODE_GROUP_UPDATE_TIME' | translate }}</clr-dg-column>
+  <clr-dg-column>{{ 'NODE.CREATION_TIME' | translate }}</clr-dg-column>
   <clr-dg-column>{{ 'NODE.OPERATION' | translate }}</clr-dg-column>
   <clr-dg-row *ngFor="let nodeGroup of nodeGroupList">
     <clr-dg-cell>{{nodeGroup.name}}</clr-dg-cell>
@@ -15,11 +16,17 @@
     <clr-dg-cell>{{nodeGroup.creationTime | date: 'short'}}</clr-dg-cell>
     <clr-dg-cell>{{nodeGroup.updateTime | date: 'short'}}</clr-dg-cell>
     <clr-dg-cell>
+      <span [innerHTML]="nodeListMap.get(nodeGroup.id)"></span>
+    </clr-dg-cell>
+    <clr-dg-cell>
       <a href="javascript:void(0)">
         <clr-icon shape="trash"
                   class="action"
                   (click)="confirmToDeleteNodeGroup(nodeGroup.name,nodeGroup.id)">
         </clr-icon>
+      </a>
+      <a href="javascript:void(0)">
+        <clr-icon (click)="editGroup(nodeGroup)" class="edit" shape="edit"></clr-icon>
       </a>
     </clr-dg-cell>
   </clr-dg-row>

@@ -16,9 +16,8 @@ export class ComponentStatus extends ResponseBase {
   @HttpBind('pids') pids: string;
 
   constructor(res?: object) {
-    if (res) {
-      super(res);
-    } else {
+    super(res);
+    if (!res) {
       this.id = '';
       this.image = 'test:dev';
       this.created_at = '8 days ago';
