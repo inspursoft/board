@@ -21,7 +21,7 @@ func InitDB() {
 	model.InitModelDB()
 	logs.Info("Initializing DB registration.")
 	orm.RegisterDriver("mysql", orm.DRMySQL)
-	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8", dbPassword, dbIP, dbPort))
+	err := orm.RegisterDataBase("default", "mysql", fmt.Sprintf("root:%s@tcp(%s:%d)/board?charset=utf8&loc=Local", dbPassword, dbIP, dbPort))
 	if err != nil {
 		logs.Error("error occurred on registering DB: %+v", err)
 		panic(err)

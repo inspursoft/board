@@ -306,6 +306,8 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
+			reqProject.CreationTime = namespace.CreationTimestamp
+			reqProject.UpdateTime = namespace.CreationTimestamp
 			if namespace.Labels != nil && namespace.Labels[istioLabel] == "enabled" {
 				reqProject.IstioSupport = true
 			}
