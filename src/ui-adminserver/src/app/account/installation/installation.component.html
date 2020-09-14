@@ -155,7 +155,7 @@
                               [required]="true"
                               [defaultValue]="config.board.devopsOpt"
                               [enumType]="'text'"
-                              [enumItem]="{Gogs:'legacy',Gitlab:'gitlab'}"
+                              [enumItem]="{Gitlab:'gitlab',Gogs:'legacy'}"
                               [enumInline]="true"
                               [helper]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
@@ -302,7 +302,7 @@
                 Gogs:
               </div>
 
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_IP.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
@@ -312,7 +312,7 @@
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.gogs.hostIP = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -326,7 +326,7 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.gogs.hostPort = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.SSH_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -418,25 +418,6 @@
               </variable-input>
             </div>
 
-            <hr>
-
-            <div>
-              <div class="card-title">
-                Prometheus:
-              </div>
-              <variable-input [disabled]="!isEditable"
-                              [label]="'CONFIGURATIONS.PROMETHEUS.URL.LABEL' | translate"
-                              [type]="'text'"
-                              [required]="true"
-                              [defaultValue]="config.prometheus.url"
-                              [placeholder]="'CONFIGURATIONS.PROMETHEUS.URL.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.PROMETHEUS.URL.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              (commitEvent)="config.prometheus.url = $event">
-              </variable-input>
-
-            </div>
-
             <hr *ngIf="config.board.devopsOpt == 'legacy'">
 
             <div *ngIf="config.board.devopsOpt == 'legacy'">
@@ -516,6 +497,24 @@
                               [helper]="'CONFIGURATIONS.JENKINS.NODE_VOLUME.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.jenkins.nodeVolume = $event">
+              </variable-input>
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                Prometheus:
+              </div>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.PROMETHEUS.URL.LABEL' | translate"
+                              [type]="'text'"
+                              [required]="true"
+                              [defaultValue]="config.prometheus.url"
+                              [placeholder]="'CONFIGURATIONS.PROMETHEUS.URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.PROMETHEUS.URL.HELPER' | translate"
+                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
+                              (commitEvent)="config.prometheus.url = $event">
               </variable-input>
             </div>
 
