@@ -6,6 +6,8 @@ import (
 	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
+	"git/inspursoft/board/src/common/utils"
+	"net/http"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,15 +17,14 @@ import (
 
 func StartBoard(host *models.Account) error {
 	cmdList := []string{}
-	devopsOpt, err := common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
+	boardComposeFile, devopsOpt, err := GetFileFromDevopsOpt()
 	if err != nil {
 		return err
 	}
-
 	cmdGitlabHelper := fmt.Sprintf("docker run --rm -v %s/board.cfg.tmp:/app/instance/board.cfg gitlab-helper:1.0", models.MakePath)
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
-	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
-	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
+	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", boardComposeFile)
+	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", boardComposeFile)
 
 	if devopsOpt == "legacy" {
 		cmdList = []string{cmdPrepare, cmdComposeDown, cmdComposeUp}
@@ -50,7 +51,7 @@ func CheckSysStatus() (models.InitStatus, error) {
 	var err error
 	var cfgCheck bool
 	if err = CheckBoard(); err != nil {
-		logs.Info("Board is down")
+		logs.Info("Board is down: %+v", err)
 		if cfgCheck, err = CheckCfgModified(); err != nil {
 			return 0, err
 		}
@@ -65,7 +66,6 @@ func CheckSysStatus() (models.InitStatus, error) {
 
 func CheckBoard() error {
 	var err error
-
 	if err = dao.CheckDB(); err != nil {
 		if err = dao.RegisterDB(); err != nil {
 			return err
@@ -74,7 +74,7 @@ func CheckBoard() error {
 	if tokenserver := CheckTokenserver(); !tokenserver {
 		return common.ErrTokenServer
 	}
-	return nil
+	return utils.RequestHandle(http.MethodGet, "http://apiserver:8088/api/v1/systeminfo", nil, nil, nil)
 }
 
 func CheckCfgModified() (bool, error) {
@@ -97,4 +97,17 @@ func CheckTokenserver() bool {
 	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1")
 	cmd.Run()
 	return (cmd.ProcessState.ExitCode() == 0)
+}
+
+func GetFileFromDevopsOpt() (boardComposeFile, devopsOpt string, err error) {
+	devopsOpt, err = common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
+	if err != nil {
+		return
+	}
+	if devopsOpt == "legacy" {
+		boardComposeFile = models.BoardcomposeLegacy
+	} else {
+		boardComposeFile = models.Boardcompose
+	}
+	return
 }
