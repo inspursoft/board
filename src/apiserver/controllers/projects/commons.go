@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -152,6 +153,8 @@ func (p *CommonController) Add() {
 	reqProject.Name = strings.TrimSpace(reqProject.Name)
 	reqProject.OwnerID = int(p.CurrentUser.ID)
 	reqProject.OwnerName = p.CurrentUser.Username
+	reqProject.CreationTime = time.Now()
+	reqProject.UpdateTime = reqProject.CreationTime
 
 	isSuccess, err := adapting.CreateProject(reqProject)
 	if err != nil {
