@@ -302,7 +302,7 @@
                 Gogs:
               </div>
 
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_IP.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
@@ -312,7 +312,7 @@
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.gogs.hostIP = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -326,7 +326,7 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.gogs.hostPort = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.SSH_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
