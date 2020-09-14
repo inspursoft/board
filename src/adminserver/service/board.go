@@ -17,13 +17,15 @@ func Start(host *models.Account) error {
 	if err != nil {
 		return err
 	}
-
-	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
+	boardComposeFile, _, err := GetFileFromDevopsOpt()
+	if err != nil {
+		return err
+	}
+	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", boardComposeFile)
 	err = shell.ExecuteCommand(cmdComposeUp)
 	if err != nil {
 		return err
 	}
-
 	RemoveUUIDTokenCache()
 
 	return nil
@@ -67,8 +69,11 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	if err != nil {
 		return err
 	}
-
-	cmdCompose := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
+	boardComposeFile, _, err := GetFileFromDevopsOpt()
+	if err != nil {
+		return err
+	}
+	cmdCompose := fmt.Sprintf("docker-compose -f %s down", boardComposeFile)
 	err = shell.ExecuteCommand(cmdCompose)
 	if err != nil {
 		return err
