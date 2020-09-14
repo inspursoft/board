@@ -261,8 +261,8 @@ INSERT INTO `board`.`helm_repository`
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-        `creation_time` NOT NULL DEFAULT '2017-06-06 00:00:00',
-        `update_time` NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
         `yaml` TEXT,
         PRIMARY KEY (`id`)
