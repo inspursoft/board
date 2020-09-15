@@ -3,7 +3,6 @@ import { HttpBind, ResponseBase, RequestBase } from '../shared/shared.type';
 export class Board extends ResponseBase implements RequestBase {
   @HttpBind('arch_type') archType: string;
   @HttpBind('mode') mode: string;
-  @HttpBind('access_protocol') accessProtocol: string;
   @HttpBind('hostname') hostname: string;
   @HttpBind('api_server_port') apiServerPort: string;
   @HttpBind('devops_opt') devopsOpt: string;
@@ -15,7 +14,6 @@ export class Board extends ResponseBase implements RequestBase {
     if (!res) {
       this.archType = 'x86_64';
       this.mode = 'normal';
-      this.accessProtocol = 'http';
       this.hostname = 'reg.mydomain.com';
       this.apiServerPort = '8088';
       this.devopsOpt = 'legacy';
@@ -28,7 +26,6 @@ export class Board extends ResponseBase implements RequestBase {
     return {
       arch_type: this.archType.toString(),
       mode: this.mode.toString(),
-      access_protocol: this.accessProtocol.toString(),
       hostname: this.hostname.toString(),
       api_server_port: this.apiServerPort.toString().toString(),
       devops_opt: this.devopsOpt.toString(),
@@ -103,6 +100,7 @@ export class Gitlab extends ResponseBase implements RequestBase {
   @HttpBind('gitlab_host_ip') hostIP: string;
   @HttpBind('gitlab_host_port') hostPort: string;
   @HttpBind('gitlab_host_ssh_port') sshPort: string;
+  @HttpBind('gitlab_helper_version') helperVersion: string;
   @HttpBind('gitlab_admin_token') adminToken: string;
   @HttpBind('gitlab_ssh_username') sshUsername: string;
   @HttpBind('gitlab_ssh_password') sshPassword: string;
@@ -113,6 +111,7 @@ export class Gitlab extends ResponseBase implements RequestBase {
       this.hostIP = '10.0.0.0';
       this.hostPort = '10088';
       this.sshPort = '10028';
+      this.helperVersion = '1.1';
       this.adminToken = '1234567901234567890';
       this.sshUsername = 'root';
       this.sshPassword = '123456a?';
@@ -124,6 +123,7 @@ export class Gitlab extends ResponseBase implements RequestBase {
       gitlab_host_ip: this.hostIP.toString(),
       gitlab_host_port: this.hostPort.toString(),
       gitlab_host_ssh_port: this.sshPort.toString(),
+      gitlab_helper_version: this.helperVersion.toString(),
       gitlab_admin_token: this.adminToken.toString(),
       gitlab_ssh_username: this.sshUsername.toString(),
       gitlab_ssh_password: this.sshPassword.toString(),
@@ -156,7 +156,6 @@ export class Jenkins extends ResponseBase implements RequestBase {
   @HttpBind('jenkins_node_username') nodeUsername: string;
   @HttpBind('jenkins_node_password') nodePassword: string;
   @HttpBind('jenkins_node_volume') nodeVolume: string;
-  @HttpBind('jenkins_execution_mode') executionMode: string;
 
   constructor(res?: object) {
     super(res);
@@ -168,7 +167,6 @@ export class Jenkins extends ResponseBase implements RequestBase {
       this.nodeUsername = 'root';
       this.nodePassword = '123456a?';
       this.nodeVolume = '/data/jenkins_node';
-      this.executionMode = 'single';
     }
   }
 
@@ -181,30 +179,6 @@ export class Jenkins extends ResponseBase implements RequestBase {
       jenkins_node_username: this.nodeUsername.toString(),
       jenkins_node_password: this.nodePassword.toString(),
       jenkins_node_volume: this.nodeVolume.toString(),
-      jenkins_execution_mode: this.executionMode.toString(),
-    };
-  }
-}
-
-export class Kvm extends ResponseBase implements RequestBase {
-  @HttpBind('kvm_registry_size') registrySize: string;
-  @HttpBind('kvm_registry_port') registryPort: string;
-  @HttpBind('kvm_toolkits_path') toolkitsPath: string;
-
-  constructor(res?: object) {
-    super(res);
-    if (!res) {
-      this.registrySize = '5';
-      this.registryPort = '8890';
-      this.toolkitsPath = '/root/kvm_toolkits';
-    }
-  }
-
-  PostBody(): object {
-    return {
-      kvm_registry_size: this.registrySize.toString(),
-      kvm_registry_port: this.registryPort.toString(),
-      kvm_toolkits_path: this.toolkitsPath.toString(),
     };
   }
 }
@@ -372,7 +346,6 @@ export class Configuration implements RequestBase {
   gitlab: Gitlab;
   prometheus: Prometheus;
   jenkins: Jenkins;
-  kvm: Kvm;
   es: ES;
   db: DB;
   indata: Indata;
@@ -391,7 +364,6 @@ export class Configuration implements RequestBase {
       this.gitlab = new Gitlab(Reflect.get(res, 'gitlab'));
       this.prometheus = new Prometheus(Reflect.get(res, 'prometheus'));
       this.jenkins = new Jenkins(Reflect.get(res, 'jenkins'));
-      this.kvm = new Kvm(Reflect.get(res, 'kvm'));
       this.es = new ES(Reflect.get(res, 'es'));
       this.db = new DB(Reflect.get(res, 'db'));
       this.indata = new Indata(Reflect.get(res, 'indata'));
@@ -409,7 +381,6 @@ export class Configuration implements RequestBase {
       this.gitlab = new Gitlab();
       this.prometheus = new Prometheus();
       this.jenkins = new Jenkins();
-      this.kvm = new Kvm();
       this.es = new ES();
       this.db = new DB();
       this.indata = new Indata();
@@ -431,7 +402,6 @@ export class Configuration implements RequestBase {
       gitlab: this.gitlab.PostBody(),
       prometheus: this.prometheus.PostBody(),
       jenkins: this.jenkins.PostBody(),
-      kvm: this.kvm.PostBody(),
       es: this.es.PostBody(),
       db: this.db.PostBody(),
       indata: this.indata.PostBody(),
