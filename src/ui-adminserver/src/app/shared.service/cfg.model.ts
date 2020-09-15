@@ -156,7 +156,7 @@ export class Jenkins extends ResponseBase implements RequestBase {
   @HttpBind('jenkins_node_username') nodeUsername: string;
   @HttpBind('jenkins_node_password') nodePassword: string;
   @HttpBind('jenkins_node_volume') nodeVolume: string;
-  @HttpBind('jenkins_execution_mode') executionMode: string;
+  @HttpBind('jenkins_execution_mode') executionMode = 'single';
 
   constructor(res?: object) {
     super(res);
