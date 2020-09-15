@@ -27,14 +27,17 @@ func StartBoard(host *models.Account) error {
 	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", boardComposeFile)
 
 	if devopsOpt == "legacy" {
+		logs.Info("starting Board in legacy mode...")
 		cmdList = []string{cmdPrepare, cmdComposeDown, cmdComposeUp}
 	} else {
+		logs.Info("starting Gitlab-helper...")
 		tag, err := common.ReadCfgItem("gitlab_helper_version", "/go/cfgfile/board.cfg.tmp")
 		if err != nil {
 			return err
 		}
-		cmdGitlabHelper = fmt.Sprintf("docker run --rm -v %s/board.cfg.tmp:/app/instance/board.cfg gitlab-helper:%s", models.MakePath, tag)
+		cmdGitlabHelper = fmt.Sprintf("docker run --rm -v %s/board.cfg:/app/instance/board.cfg gitlab-helper:%s", models.MakePath, tag)
 		if err = CheckGitlab(); err == nil {
+			logs.Info("Gitlab is up")
 			cmdGitlabHelper += " python action/perform.py -r true"
 		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
