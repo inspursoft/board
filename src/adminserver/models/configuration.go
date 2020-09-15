@@ -36,12 +36,13 @@ type Gogs struct {
 }
 
 type Gitlab struct {
-	HostIP      string `json:"gitlab_host_ip"`
-	HostPort    string `json:"gitlab_host_port"`
-	SSHPort     string `json:"gitlab_host_ssh_port"`
-	AdminToken  string `json:"gitlab_admin_token"`
-	SSHUsername string `json:"gitlab_ssh_username"`
-	SSHPassword string `json:"gitlab_ssh_password"`
+	HostIP        string `json:"gitlab_host_ip"`
+	HostPort      string `json:"gitlab_host_port"`
+	SSHPort       string `json:"gitlab_host_ssh_port"`
+	AdminToken    string `json:"gitlab_admin_token"`
+	SSHUsername   string `json:"gitlab_ssh_username"`
+	SSHPassword   string `json:"gitlab_ssh_password"`
+	HelperVersion string `json:"gitlab_helper_version"`
 }
 
 type Prometheus struct {
@@ -49,20 +50,13 @@ type Prometheus struct {
 }
 
 type Jenkins struct {
-	HostIP        string `json:"jenkins_host_ip"`
-	HostPort      string `json:"jenkins_host_port"`
-	NodeIP        string `json:"jenkins_node_ip"`
-	NodeSSHPort   string `json:"jenkins_node_ssh_port"`
-	NodeUsername  string `json:"jenkins_node_username"`
-	NodePassword  string `json:"jenkins_node_password"`
-	NodeVolume    string `json:"jenkins_node_volume"`
-	ExecutionMode string `json:"jenkins_execution_mode"`
-}
-
-type Kvm struct {
-	RegistrySize string `json:"kvm_registry_size"`
-	RegistryPort string `json:"kvm_registry_port"`
-	ToolkitsPath string `json:"kvm_toolkits_path"`
+	HostIP       string `json:"jenkins_host_ip"`
+	HostPort     string `json:"jenkins_host_port"`
+	NodeIP       string `json:"jenkins_node_ip"`
+	NodeSSHPort  string `json:"jenkins_node_ssh_port"`
+	NodeUsername string `json:"jenkins_node_username"`
+	NodePassword string `json:"jenkins_node_password"`
+	NodeVolume   string `json:"jenkins_node_volume"`
 }
 
 type Es struct {
@@ -114,7 +108,6 @@ type Configuration struct {
 	Gitlab        Gitlab     `json:"gitlab"`
 	Prometheus    Prometheus `json:"prometheus"`
 	Jenkins       Jenkins    `json:"jenkins"`
-	Kvm           Kvm        `json:"kvm"`
 	Es            Es         `json:"es"`
 	Db            Db         `json:"db"`
 	Indata        Indata     `json:"indata"`
@@ -157,7 +150,6 @@ func GetConfiguration(section *configparser.Section) Configuration {
 		Gitlab:        *GetCfg(section, &Gitlab{}).(*Gitlab),
 		Prometheus:    *GetCfg(section, &Prometheus{}).(*Prometheus),
 		Jenkins:       *GetCfg(section, &Jenkins{}).(*Jenkins),
-		Kvm:           *GetCfg(section, &Kvm{}).(*Kvm),
 		Es:            *GetCfg(section, &Es{}).(*Es),
 		Db:            *GetCfg(section, &Db{}).(*Db),
 		Indata:        *GetCfg(section, &Indata{}).(*Indata),
@@ -177,7 +169,6 @@ func UpdateConfiguration(section *configparser.Section, cfg *Configuration) {
 	SetCfg(section, &(cfg.Gitlab))
 	SetCfg(section, &(cfg.Prometheus))
 	SetCfg(section, &(cfg.Jenkins))
-	SetCfg(section, &(cfg.Kvm))
 	SetCfg(section, &(cfg.Es))
 	SetCfg(section, &(cfg.Db))
 	SetCfg(section, &(cfg.Indata))
@@ -197,3 +188,4 @@ var DBcompose string = os.Getenv("DB_COMPOSE")
 var Boardcompose string = os.Getenv("BOARD_COMPOSE")
 var PrepareFile string = os.Getenv("PREPARE_FILE")
 var MakePath string = os.Getenv("MAKE_PATH")
+var BoardcomposeLegacy string = os.Getenv("BOARD_COMPOSE_LEGACY")

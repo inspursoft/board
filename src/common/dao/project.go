@@ -11,10 +11,6 @@ import (
 
 func AddProject(project model.Project) (int64, error) {
 	o := orm.NewOrm()
-
-	project.CreationTime = time.Now()
-	project.UpdateTime = project.CreationTime
-
 	projectID, err := o.Insert(&project)
 	if err != nil {
 		if err == orm.ErrNoRows {

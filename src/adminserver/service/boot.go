@@ -17,19 +17,26 @@ import (
 
 func StartBoard(host *models.Account) error {
 	cmdList := []string{}
-	devopsOpt, err := common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
+	boardComposeFile, devopsOpt, err := GetFileFromDevopsOpt()
 	if err != nil {
 		return err
 	}
-
-	cmdGitlabHelper := fmt.Sprintf("docker run --rm -v %s/board.cfg.tmp:/app/instance/board.cfg gitlab-helper:1.0", models.MakePath)
+	var cmdGitlabHelper string
 	cmdPrepare := fmt.Sprintf("%s", models.PrepareFile)
-	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", models.Boardcompose)
-	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", models.Boardcompose)
+	cmdComposeDown := fmt.Sprintf("docker-compose -f %s down", boardComposeFile)
+	cmdComposeUp := fmt.Sprintf("docker-compose -f %s up -d", boardComposeFile)
 
 	if devopsOpt == "legacy" {
 		cmdList = []string{cmdPrepare, cmdComposeDown, cmdComposeUp}
 	} else {
+		tag, err := common.ReadCfgItem("gitlab_helper_version", "/go/cfgfile/board.cfg.tmp")
+		if err != nil {
+			return err
+		}
+		cmdGitlabHelper = fmt.Sprintf("docker run --rm -v %s/board.cfg.tmp:/app/instance/board.cfg gitlab-helper:%s", models.MakePath, tag)
+		if err = CheckGitlab(); err == nil {
+			cmdGitlabHelper += " python action/perform.py -r true"
+		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
 	}
 
@@ -98,4 +105,24 @@ func CheckTokenserver() bool {
 	cmd := exec.Command("sh", "-c", "ping -q -c1 tokenserver > /dev/null 2>&1")
 	cmd.Run()
 	return (cmd.ProcessState.ExitCode() == 0)
+}
+
+func GetFileFromDevopsOpt() (boardComposeFile, devopsOpt string, err error) {
+	devopsOpt, err = common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
+	if err != nil {
+		return
+	}
+	if devopsOpt == "legacy" {
+		boardComposeFile = models.BoardcomposeLegacy
+	} else {
+		boardComposeFile = models.Boardcompose
+	}
+	return
+}
+
+func CheckGitlab() error {
+	ip, _ := common.ReadCfgItem("gitlab_host_ip", "/go/cfgfile/board.cfg.tmp")
+	port, _ := common.ReadCfgItem("gitlab_host_port", "/go/cfgfile/board.cfg.tmp")
+	url := fmt.Sprintf("http://%s:%s", ip, port)
+	return utils.RequestHandle(http.MethodGet, url, nil, nil, nil)
 }
