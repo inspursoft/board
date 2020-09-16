@@ -12,7 +12,7 @@ import { GlobalAlertType } from './message/message.types';
 export class HttpClientInterceptor implements HttpInterceptor {
 
   constructor(private messageService: MessageService,
-              private translateService: TranslateService) {
+    private translateService: TranslateService) {
 
   }
 
@@ -41,7 +41,7 @@ export class HttpClientInterceptor implements HttpInterceptor {
             }
           }
         }),
-        timeout(300 * 1000),
+        timeout(60 * 60 * 1000),
         catchError((err: HttpErrorResponse | TimeoutError) => {
           if (err instanceof HttpErrorResponse) {
             if (err.status >= 200 && err.status < 300) {
@@ -79,15 +79,15 @@ export class HttpClientInterceptor implements HttpInterceptor {
                 alertType: 'warning'
               });
             } else if (err.status === 403) {
-              this.messageService.showAlert(`ERROR.HTTP_403`, {alertType: 'danger'});
+              this.messageService.showAlert(`ERROR.HTTP_403`, { alertType: 'danger' });
             } else if (err.status === 404) {
-              this.messageService.showAlert(`ERROR.HTTP_404`, {alertType: 'danger'});
+              this.messageService.showAlert(`ERROR.HTTP_404`, { alertType: 'danger' });
             } else if (err.status === 412) {
-              this.messageService.showAlert(`ERROR.HTTP_412`, {alertType: 'warning'});
+              this.messageService.showAlert(`ERROR.HTTP_412`, { alertType: 'warning' });
             } else if (err.status === 422) {
               this.translateService.get(`ERROR.HTTP_422`).subscribe((msg: string) => {
                 const alertMsg = `${msg},${err.error}`;
-                this.messageService.showAlert(alertMsg, {alertType: 'danger'});
+                this.messageService.showAlert(alertMsg, { alertType: 'danger' });
               });
             }
           } else {
