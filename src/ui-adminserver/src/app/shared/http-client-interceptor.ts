@@ -12,7 +12,7 @@ import { GlobalAlertType } from './message/message.types';
 export class HttpClientInterceptor implements HttpInterceptor {
 
   constructor(private messageService: MessageService,
-    private translateService: TranslateService) {
+              private translateService: TranslateService) {
 
   }
 
