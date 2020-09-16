@@ -42,17 +42,19 @@ func StartBoard(host *models.Account) error {
 		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
 	}
-
-	shell, err := SSHtoHost(host)
-	if err != nil {
-		return err
-	}
-	for _, cmd := range cmdList {
-		err = shell.ExecuteCommand(cmd)
+	go func() {
+		shell, err := SSHtoHost(host)
 		if err != nil {
-			return err
+			logs.Error(err)
 		}
-	}
+		for _, cmd := range cmdList {
+			logs.Info("running cmd: %s", cmd)
+			err = shell.ExecuteCommand(cmd)
+			if err != nil {
+				logs.Error(err)
+			}
+		}
+	}()
 	RemoveUUIDTokenCache()
 
 	return nil
@@ -85,7 +87,11 @@ func CheckBoard() error {
 	if tokenserver := CheckTokenserver(); !tokenserver {
 		return common.ErrTokenServer
 	}
-	return utils.RequestHandle(http.MethodGet, "http://apiserver:8088/api/v1/systeminfo", nil, nil, nil)
+	err = utils.RequestHandle(http.MethodGet, "http://apiserver:8088/api/v1/systeminfo", nil, nil, nil)
+	if err == utils.ErrNotAcceptable {
+		return nil
+	}
+	return err
 }
 
 func CheckCfgModified() (bool, error) {
