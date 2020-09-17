@@ -442,7 +442,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 		Stage: "build-image",
 		Tags:  []string{"kaniko-ci-vm"},
 		Script: []string{
-			ci.WriteMultiLine("CI-REGISTRY=%s", registryBaseURI()),
+			ci.WriteMultiLine("CI_REGISTRY=%s", registryBaseURI()),
 			ci.WriteMultiLine("CI_REGISTRY_USER=%s", "admin"),
 			ci.WriteMultiLine("CI_REGISTRY_PASSWORD=%s", "$(echo -n 123456a? | base64)"),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
