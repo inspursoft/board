@@ -31,7 +31,7 @@ func StartBoard(host *models.Account) error {
 		cmdList = []string{cmdPrepare, cmdComposeDown, cmdComposeUp}
 	} else {
 		logs.Info("starting Gitlab-helper...")
-		tag, err := common.ReadCfgItem("gitlab_helper_version", "/go/cfgfile/board.cfg.tmp")
+		tag, err := common.ReadCfgItem("gitlab_helper_version", "/go/cfgfile/board.cfg")
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func CheckTokenserver() bool {
 }
 
 func GetFileFromDevopsOpt() (boardComposeFile, devopsOpt string, err error) {
-	devopsOpt, err = common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg.tmp")
+	devopsOpt, err = common.ReadCfgItem("devops_opt", "/go/cfgfile/board.cfg")
 	if err != nil {
 		return
 	}
@@ -130,8 +130,8 @@ func GetFileFromDevopsOpt() (boardComposeFile, devopsOpt string, err error) {
 }
 
 func CheckGitlab() error {
-	ip, _ := common.ReadCfgItem("gitlab_host_ip", "/go/cfgfile/board.cfg.tmp")
-	port, _ := common.ReadCfgItem("gitlab_host_port", "/go/cfgfile/board.cfg.tmp")
+	ip, _ := common.ReadCfgItem("gitlab_host_ip", "/go/cfgfile/board.cfg")
+	port, _ := common.ReadCfgItem("gitlab_host_port", "/go/cfgfile/board.cfg")
 	url := fmt.Sprintf("http://%s:%s", ip, port)
 	return utils.RequestHandle(http.MethodGet, url, nil, nil, nil)
 }
