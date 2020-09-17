@@ -339,9 +339,22 @@ export class InstallationComponent implements OnInit {
       () => {
         this.boardService.applyCfg(this.user).subscribe(
           () => {
-            this.installStep++;
-            this.installProgress = 100;
-            this.submitBtnState = ClrLoadingState.DEFAULT;
+            const initProcess = setInterval(() => {
+              this.appInitService.getSystemStatus().subscribe(
+                (res: InitStatus) => {
+                  if (InitStatusCode.InitStatusThird === res.status) {
+                    this.installStep++;
+                    this.installProgress = 100;
+                    this.submitBtnState = ClrLoadingState.DEFAULT;
+                    clearInterval(initProcess);
+                  }
+                },
+                (err: HttpErrorResponse) => {
+                  console.error(err.message);
+                  this.getSysStatusFailed();
+                },
+              );
+            }, 5 * 1000);
           },
           (err: HttpErrorResponse) => {
             // COMMON
