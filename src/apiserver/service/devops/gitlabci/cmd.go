@@ -11,8 +11,14 @@ import (
 
 type GitlabCI int
 
+type Image struct {
+	Name       string   `json:"name"`
+	Entrypoint []string `json:"entrypoint"`
+}
+
 type Job struct {
 	Stage  string   `json:"stage"`
+	Image  Image    `json:"image"`
 	Tags   []string `json:"tags"`
 	Script []string `json:"script"`
 }

@@ -21,6 +21,8 @@ const (
 
 var gitlabAdminToken = utils.GetConfig("GITLAB_ADMIN_TOKEN")
 var gitlabBaseURL = utils.GetConfig("GITLAB_BASE_URL")
+var registryBaseURI = utils.GetConfig("REGISTRY_BASE_URI")
+var kanikoImage = "kaniko-project/executor:dev"
 
 type gitlabJenkinsPushProjectPayload struct {
 	ID         int    `json:"id"`
@@ -432,21 +434,24 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
 	repoPath := configurations["repo_path"]
+	ciImage := gitlabci.Image{Name: fmt.Sprintf("%s/%s", registryBaseURI(), kanikoImage)}
 	ciJobs := make(map[string]gitlabci.Job)
 	var ci gitlabci.GitlabCI
 	ciJobs["build-image"] = gitlabci.Job{
+		Image: ciImage,
 		Stage: "build-image",
-		Tags:  []string{"board-ci-vm"},
+		Tags:  []string{"kaniko-ci-vm"},
 		Script: []string{
+			ci.WriteMultiLine("CI_REGISTRY=%s", registryBaseURI()),
+			ci.WriteMultiLine("CI_REGISTRY_USER=%s", "admin"),
+			ci.WriteMultiLine("CI_REGISTRY_PASSWORD=%s", "$(echo -n 123456a? | base64)"),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
 			ci.WriteMultiLine("token=%s", token),
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-			ci.WriteMultiLine("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
-			ci.WriteMultiLine("docker push %s", imageURI),
-			ci.WriteMultiLine("docker rmi %s", imageURI),
+			ci.WriteMultiLine("/kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/containers/%s --destination %s", dockerfileName, imageURI),
 		},
 	}
 
