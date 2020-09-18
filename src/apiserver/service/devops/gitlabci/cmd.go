@@ -18,7 +18,7 @@ type Image struct {
 
 type Job struct {
 	Stage  string   `json:"stage"`
-	Image  Image    `json:"image"`
+	Image  *Image   `json:"image,omitempty"`
 	Tags   []string `json:"tags"`
 	Script []string `json:"script"`
 }

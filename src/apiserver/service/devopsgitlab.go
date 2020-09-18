@@ -438,7 +438,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 	ciJobs := make(map[string]gitlabci.Job)
 	var ci gitlabci.GitlabCI
 	ciJobs["build-image"] = gitlabci.Job{
-		Image: ciImage,
+		Image: &ciImage,
 		Stage: "build-image",
 		Tags:  []string{"docker-ci"},
 		Script: []string{
