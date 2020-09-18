@@ -440,7 +440,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 	ciJobs["build-image"] = gitlabci.Job{
 		Image: ciImage,
 		Stage: "build-image",
-		Tags:  []string{"kaniko-ci-vm"},
+		Tags:  []string{"docker-ci"},
 		Script: []string{
 			ci.WriteMultiLine("CI_REGISTRY=%s", registryBaseURI()),
 			ci.WriteMultiLine("CI_REGISTRY_USER=%s", "admin"),
@@ -454,7 +454,6 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 			ci.WriteMultiLine("/kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/containers/%s --destination %s", dockerfileName, imageURI),
 		},
 	}
-
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
@@ -467,7 +466,7 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 	var ci gitlabci.GitlabCI
 	ciJobs["push-image"] = gitlabci.Job{
 		Stage: "push-image",
-		Tags:  []string{"board-ci-vm"},
+		Tags:  []string{"shell-ci"},
 		Script: []string{
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
@@ -483,7 +482,6 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 			ci.WriteMultiLine("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
 		},
 	}
-
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
