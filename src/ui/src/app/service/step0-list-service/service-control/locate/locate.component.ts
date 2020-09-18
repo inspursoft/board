@@ -28,12 +28,12 @@ export class LocateComponent implements OnInit {
     this.actionIsEnabledEvent.emit(false);
     if (this.service.serviceType === ServiceType.ServiceTypeEdgeComputing) {
       this.k8sService.getEdgeNodes().subscribe(
-        (res: Array<{ description: string }>) => res.forEach(node => this.nodeSelectorList.push(node.description))
-      );
+        (res: Array<{ description: string }>) => res.forEach(node => this.nodeSelectorList.push(node.description)),
+        (err) => this.errorEvent.emit(err));
     } else {
       this.k8sService.getNodeSelectors().subscribe(
-        (res: Array<{ name: string, status: number }>) =>
-          res.forEach(value => this.nodeSelectorList.push(value.name))
+        (res: Array<{ name: string, status: number }>) => res.forEach(value => this.nodeSelectorList.push(value.name)),
+        (err) => this.errorEvent.emit(err)
       );
     }
     this.k8sService.getLocate(this.service.serviceProjectName, this.service.serviceName).subscribe(
@@ -41,7 +41,7 @@ export class LocateComponent implements OnInit {
         if (res && res !== '') {
           this.dropdownDefaultText = res;
         }
-      });
+      }, (err) => this.errorEvent.emit(err));
   }
 
   actionExecute() {
