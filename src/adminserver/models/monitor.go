@@ -54,5 +54,5 @@ type TokenString struct {
 
 type InitSysStatus struct {
 	Status InitStatus `json:"status"`
-	Log    []string   `json:"log"`
+	Log    string     `json:"log"`
 }

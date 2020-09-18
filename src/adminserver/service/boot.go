@@ -2,12 +2,12 @@ package service
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"git/inspursoft/board/src/adminserver/common"
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/common/utils"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,7 +16,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func StartBoard(host *models.Account, logDetail *[]string) error {
+func StartBoard(host *models.Account, buf *bytes.Buffer) error {
 	cmdList := []string{}
 	boardComposeFile, devopsOpt, err := GetFileFromDevopsOpt()
 	if err != nil {
@@ -43,36 +43,22 @@ func StartBoard(host *models.Account, logDetail *[]string) error {
 		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
 	}
-	go func(logDetail *[]string) {
-		shell, output, err := SSHtoHost(host)
+	go func(buf *bytes.Buffer) {
+		shell, err := SSHtoHost(host, buf)
 		if err != nil {
 			logs.Error(err)
 			return
 		}
 		for _, cmd := range cmdList {
-			output.Reset()
 			logs.Info("running cmd: %s", cmd)
 			err = shell.ExecuteCommand(cmd)
 			if err != nil {
 				logs.Error(err)
 				return
 			}
-			logs.Debug(output.String())
-			reader := bufio.NewReader(strings.NewReader(output.String()))
-			for {
-				line, err := reader.ReadString('\n')
-				if err != nil {
-					if err == io.EOF {
-						break
-					}
-					logs.Error(err)
-					return
-				}
-				line = strings.TrimSpace(line)
-				*logDetail = append(*logDetail, line)
-			}
+			logs.Debug(buf.String())
 		}
-	}(logDetail)
+	}(buf)
 	RemoveUUIDTokenCache()
 
 	return nil
