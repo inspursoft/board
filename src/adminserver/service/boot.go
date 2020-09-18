@@ -50,6 +50,7 @@ func StartBoard(host *models.Account, logDetail *[]string) error {
 			return
 		}
 		for _, cmd := range cmdList {
+			output.Reset()
 			logs.Info("running cmd: %s", cmd)
 			err = shell.ExecuteCommand(cmd)
 			if err != nil {

@@ -49,6 +49,7 @@ func (b *BoardController) Start() {
 // @router /applycfg [post]
 func (b *BoardController) Applycfg() {
 	var host models.Account
+	logDetail = []string{}
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
