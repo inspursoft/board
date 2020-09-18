@@ -11,12 +11,18 @@ import (
 func TestGenerateGitlabCI(t *testing.T) {
 	var gc gitlabci.GitlabCI
 	tagName := "abc:v1.0"
+	image := gitlabci.Image{
+		Name:       "kaniko",
+		Entrypoint: []string{"bash", "-c", "ls", "-al"},
+	}
 	job1 := gitlabci.Job{
+		Image:  image,
 		Stage:  "test1",
 		Script: []string{"echo hello"},
 		Tags:   []string{"board-test-vm"},
 	}
 	job2 := gitlabci.Job{
+		Image: image,
 		Stage: "test2",
 		Script: []string{
 			"echo world",
