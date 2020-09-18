@@ -9,11 +9,13 @@ import (
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/astaxie/beego/logs"
 )
 
 //Start Board without loading cfg.
 func Start(host *models.Account) error {
-	shell, err := SSHtoHost(host)
+	shell, output, err := SSHtoHost(host)
 	if err != nil {
 		return err
 	}
@@ -26,13 +28,14 @@ func Start(host *models.Account) error {
 	if err != nil {
 		return err
 	}
+	logs.Debug(output.String())
 	RemoveUUIDTokenCache()
 
 	return nil
 }
 
 //Applycfg restarts Board with applying of cfg.
-func Applycfg(host *models.Account) error {
+func Applycfg(host *models.Account, logDetail *[]string) error {
 
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
@@ -52,7 +55,7 @@ func Applycfg(host *models.Account) error {
 		return err
 	}
 
-	if err = StartBoard(host); err != nil {
+	if err = StartBoard(host, logDetail); err != nil {
 		return err
 	}
 
@@ -65,7 +68,7 @@ func Applycfg(host *models.Account) error {
 
 //Shutdown Board.
 func Shutdown(host *models.Account, uninstall bool) error {
-	shell, err := SSHtoHost(host)
+	shell, output, err := SSHtoHost(host)
 	if err != nil {
 		return err
 	}
@@ -78,6 +81,7 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	if err != nil {
 		return err
 	}
+	logs.Debug(output.String())
 	RemoveUUIDTokenCache()
 
 	if uninstall {
@@ -99,19 +103,19 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	return nil
 }
 
-func SSHtoHost(host *models.Account) (*secureShell.SecureShell, error) {
+func SSHtoHost(host *models.Account) (*secureShell.SecureShell, *bytes.Buffer, error) {
 	var output bytes.Buffer
 	var shell *secureShell.SecureShell
 
 	HostIP, err := Execute("ip route | awk 'NR==1 {print $3}'|xargs echo -n")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	shell, err = secureShell.NewSecureShell(&output, HostIP, host.Username, host.Password)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return shell, nil
+	return shell, &output, nil
 }
 
 //Execute command in container.

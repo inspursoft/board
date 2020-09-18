@@ -15,6 +15,8 @@ type BoardController struct {
 	BaseController
 }
 
+var logDetail []string
+
 // @Title Start
 // @Description start Board
 // @Param	token	query 	string	false		"token"
@@ -52,7 +54,7 @@ func (b *BoardController) Applycfg() {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
-	if err = service.Applycfg(&host); err != nil {
+	if err = service.Applycfg(&host, &logDetail); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}

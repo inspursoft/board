@@ -26,6 +26,6 @@ func (b *BootController) CheckSysStatus() {
 		logs.Error(err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
-	b.Data["json"] = models.InitSysStatus{Status: this}
+	b.Data["json"] = models.InitSysStatus{Status: this, Log: logDetail}
 	b.ServeJSON()
 }

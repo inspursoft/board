@@ -15,7 +15,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func StartBoard(host *models.Account) error {
+func StartBoard(host *models.Account, logDetail *[]string) error {
 	cmdList := []string{}
 	boardComposeFile, devopsOpt, err := GetFileFromDevopsOpt()
 	if err != nil {
@@ -42,19 +42,35 @@ func StartBoard(host *models.Account) error {
 		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
 	}
-	go func() {
-		shell, err := SSHtoHost(host)
+	go func(logDetail *[]string) {
+		shell, output, err := SSHtoHost(host)
 		if err != nil {
 			logs.Error(err)
+			return
 		}
 		for _, cmd := range cmdList {
 			logs.Info("running cmd: %s", cmd)
 			err = shell.ExecuteCommand(cmd)
 			if err != nil {
 				logs.Error(err)
+				return
+			}
+			logs.Debug(output.String())
+			reader = bufio.NewReader(strings.NewReader(output.String()))
+			for {
+				line, err := reader.ReadString('\n')
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
+					logs.Error(err)
+					return
+				}
+				line = strings.TrimSpace(line)
+				*logDetail = append(*logDetail, line)
 			}
 		}
-	}()
+	}(logDetail)
 	RemoveUUIDTokenCache()
 
 	return nil
