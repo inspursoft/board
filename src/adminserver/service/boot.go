@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/adminserver/dao"
 	"git/inspursoft/board/src/adminserver/models"
 	"git/inspursoft/board/src/common/utils"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -56,7 +57,7 @@ func StartBoard(host *models.Account, logDetail *[]string) error {
 				return
 			}
 			logs.Debug(output.String())
-			reader = bufio.NewReader(strings.NewReader(output.String()))
+			reader := bufio.NewReader(strings.NewReader(output.String()))
 			for {
 				line, err := reader.ReadString('\n')
 				if err != nil {
