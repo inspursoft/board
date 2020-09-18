@@ -51,6 +51,7 @@ export class InstallationComponent implements OnInit {
   editBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   isEdit = false;
   user: User;
+  startLog = '';
 
   @ViewChild('UUID') uuidInput: VariableInputComponent;
   @ViewChildren(VariableInputComponent) myInputTemplateComponents: QueryList<VariableInputComponent>;
@@ -323,12 +324,17 @@ export class InstallationComponent implements OnInit {
     // for test
     if (this.debugMode) {
       this.submitBtnState = ClrLoadingState.LOADING;
+      let helloTime = 0;
+      const outPutLog = setInterval(() => {
+        this.startLog += `hello world! ${helloTime++}<br>`;
+      }, 1000);
       setTimeout(() => {
         this.openSSH = false;
         this.installStep++;
         this.installProgress = 100;
         this.submitBtnState = ClrLoadingState.DEFAULT;
-      }, 5000);
+        clearInterval(outPutLog);
+      }, 60 * 1000);
       return;
     }
 
@@ -346,7 +352,10 @@ export class InstallationComponent implements OnInit {
                     this.installStep++;
                     this.installProgress = 100;
                     this.submitBtnState = ClrLoadingState.DEFAULT;
+                    this.startLog = '';
                     clearInterval(initProcess);
+                  } else {
+                    this.startLog = res.log;
                   }
                 },
                 (err: HttpErrorResponse) => {
