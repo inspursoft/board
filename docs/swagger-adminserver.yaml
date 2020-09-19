@@ -573,9 +573,7 @@ definitions:
     type: object
     properties:
       log:
-        type: array
-        items:
-          type: string
+        type: string
       status:
         $ref: '#/definitions/models.InitStatus'
   models.Jenkins:
