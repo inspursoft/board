@@ -15,8 +15,8 @@ import (
 
 //Start Board without loading cfg.
 func Start(host *models.Account) error {
-	var buf *bytes.Buffer
-	shell, err := SSHtoHost(host, buf)
+	var buf bytes.Buffer
+	shell, err := SSHtoHost(host, &buf)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func Start(host *models.Account) error {
 
 //Applycfg restarts Board with applying of cfg.
 func Applycfg(host *models.Account) error {
-	var buf *bytes.Buffer
+	var buf bytes.Buffer
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
@@ -56,7 +56,7 @@ func Applycfg(host *models.Account) error {
 		return err
 	}
 
-	if err = StartBoard(host, buf); err != nil {
+	if err = StartBoard(host, &buf); err != nil {
 		return err
 	}
 
@@ -69,8 +69,8 @@ func Applycfg(host *models.Account) error {
 
 //Shutdown Board.
 func Shutdown(host *models.Account, uninstall bool) error {
-	var buf *bytes.Buffer
-	shell, err := SSHtoHost(host, buf)
+	var buf bytes.Buffer
+	shell, err := SSHtoHost(host, &buf)
 	if err != nil {
 		return err
 	}
