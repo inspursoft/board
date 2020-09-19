@@ -409,6 +409,12 @@ func (p *ImageController) UploadAndPushImagePackageAction() {
 	projectName := strings.TrimSpace(p.GetString("project_name"))
 	p.ResolveUserPrivilege(projectName)
 	p.ResolveRepoImagePath(projectName)
+	err := utils.CheckFilePath(p.RepoImagePath)
+	if err != nil {
+		logs.Error("Failed to create directory to store image building items.")
+		p.CustomAbort(http.StatusInternalServerError, "Failed to create directory to store image building items.")
+		return
+	}
 	imageName := strings.TrimSpace(p.GetString("image_name"))
 	imageTag := strings.TrimSpace(p.GetString("image_tag"))
 	if imageName == "" || imageTag == "" {

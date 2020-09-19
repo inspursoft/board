@@ -16,13 +16,13 @@ func TestGenerateGitlabCI(t *testing.T) {
 		Entrypoint: []string{"bash", "-c", "ls", "-al"},
 	}
 	job1 := gitlabci.Job{
-		Image:  image,
+		Image:  &image,
 		Stage:  "test1",
 		Script: []string{"echo hello"},
 		Tags:   []string{"board-test-vm"},
 	}
 	job2 := gitlabci.Job{
-		Image: image,
+		Image: &image,
 		Stage: "test2",
 		Script: []string{
 			"echo world",
