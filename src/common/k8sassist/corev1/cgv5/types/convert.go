@@ -387,6 +387,9 @@ func ToK8sContainer(container *model.K8sContainer) *v1.Container {
 	if v, ok := container.Resources.Limits["memory"]; ok {
 		resources.Limits["memory"] = resource.MustParse(string(v))
 	}
+	if v, ok := container.Resources.Limits["nvidia.com/gpu"]; ok {
+		resources.Limits["nvidia.com/gpu"] = resource.MustParse(string(v))
+	}
 	return &v1.Container{
 		Name:         container.Name,
 		Image:        container.Image,
@@ -903,7 +906,9 @@ func FromK8sContainer(container *v1.Container) *model.K8sContainer {
 	if v, ok := container.Resources.Limits["memory"]; ok {
 		resources.Limits["memory"] = model.QuantityStr(v.String())
 	}
-
+	if v, ok := container.Resources.Limits["nvidia.com/gpu"]; ok {
+		resources.Limits["nvidia.com/gpu"] = model.QuantityStr(v.String())
+	}
 	return &model.K8sContainer{
 		Name:            container.Name,
 		Image:           container.Image,
