@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"bytes"
 	"git/inspursoft/board/src/adminserver/service"
 	"net/http"
 
@@ -11,7 +10,6 @@ import (
 
 type BaseController struct {
 	beego.Controller
-	buf bytes.Buffer
 }
 
 func (b *BaseController) Prepare() {

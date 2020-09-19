@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -49,6 +50,7 @@ func StartBoard(host *models.Account, buf *bytes.Buffer) error {
 			logs.Error(err)
 			return
 		}
+		var totalLog string
 		for _, cmd := range cmdList {
 			logs.Info("running cmd: %s", cmd)
 			err = shell.ExecuteCommand(cmd)
@@ -57,6 +59,9 @@ func StartBoard(host *models.Account, buf *bytes.Buffer) error {
 				return
 			}
 			logs.Debug(buf.String())
+			totalLog += buf.String()
+			dao.GlobalCache.Put("log", totalLog, time.Second*time.Duration(3600))
+			buf.Reset()
 		}
 	}(buf)
 	RemoveUUIDTokenCache()
@@ -64,21 +69,25 @@ func StartBoard(host *models.Account, buf *bytes.Buffer) error {
 	return nil
 }
 
-func CheckSysStatus() (models.InitStatus, error) {
+func CheckSysStatus() (models.InitStatus, string, error) {
 	var err error
 	var cfgCheck bool
+	var log string
+	if currentLog, ok := dao.GlobalCache.Get("log").(string); ok {
+		log = currentLog
+	}
 	if err = CheckBoard(); err != nil {
 		logs.Info("Board is down: %+v", err)
 		if cfgCheck, err = CheckCfgModified(); err != nil {
-			return 0, err
+			return 0, "", err
 		}
 		if !cfgCheck {
-			return models.InitStatusFirst, nil
+			return models.InitStatusFirst, log, nil
 		} else {
-			return models.InitStatusSecond, nil
+			return models.InitStatusSecond, log, nil
 		}
 	}
-	return models.InitStatusThird, nil
+	return models.InitStatusThird, log, nil
 }
 
 func CheckBoard() error {

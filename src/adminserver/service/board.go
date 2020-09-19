@@ -36,8 +36,8 @@ func Start(host *models.Account) error {
 }
 
 //Applycfg restarts Board with applying of cfg.
-func Applycfg(host *models.Account, buf *bytes.Buffer) error {
-
+func Applycfg(host *models.Account) error {
+	var buf *bytes.Buffer
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {

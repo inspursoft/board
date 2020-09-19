@@ -24,7 +24,6 @@ type BoardController struct {
 // @Failure 401 unauthorized: token invalid/session timeout
 // @router /start [post]
 func (b *BoardController) Start() {
-	b.buf.Reset()
 	var host models.Account
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
@@ -47,14 +46,13 @@ func (b *BoardController) Start() {
 // @Failure 401 unauthorized: token invalid/session timeout
 // @router /applycfg [post]
 func (b *BoardController) Applycfg() {
-	b.buf.Reset()
 	var host models.Account
 	err := utils.UnmarshalToJSON(b.Ctx.Request.Body, &host)
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
-	if err = service.Applycfg(&host, &(b.buf)); err != nil {
+	if err = service.Applycfg(&host); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
@@ -72,7 +70,6 @@ func (b *BoardController) Applycfg() {
 // @Failure 401 unauthorized: token invalid/session timeout
 // @router /shutdown [post]
 func (b *BoardController) Shutdown() {
-	b.buf.Reset()
 	var host models.Account
 	uninstall, err := b.GetBool("uninstall")
 	if err != nil {
