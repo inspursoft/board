@@ -1,5 +1,8 @@
 <div class="load-balance-container">
-  <app-status *ngIf="service" [service]="service"></app-status>
+  <app-status *ngIf="service"
+              [service]="service"
+              (errorEvent)="errorEvent.emit($event)">
+  </app-status>
   <div class="session-container">
     <span>{{"SERVICE.SERVICE_CONTROL_SESSION_AFFINITY" | translate}}</span>
     <clr-dropdown>
