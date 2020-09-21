@@ -2,8 +2,9 @@ from service.ssh import SSHUtil
 import service.config
 import service.http
 import logging
-import re
+import re, time
 from os import path
+import sys, getopt
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +33,8 @@ def reset_root_password():
 
 def setting_access_token(token):
   log.info("Setting root access token ...")
-  command_set_access_token=f'''\'user = User.where(id: 1).first; token = user.personal_access_tokens.create(scopes: [:read_user, :read_repository, :write_repository, :api, :sudo], name: "Automation_token_updated"); token.set_token("{token}"); token.save!\''''
+  access_token_name = "auto_gen_token"
+  command_set_access_token=f'''\'user = User.where(admin: true).first; user.personal_access_tokens.where("name":"{access_token_name}").each{{|t| t.delete}}; token = user.personal_access_tokens.create(scopes: [:read_user, :read_repository, :write_repository, :api, :sudo], name: "{access_token_name}"); token.set_token("{token}"); token.save!\''''
   return SSHUtil.exec_command(gitlab_docker_exec(command_set_access_token))
 
 def update_access_token(token):
@@ -63,27 +65,50 @@ def obtain_shared_runner_token():
     return None
   return token.strip()
 
-def register_gitlab_shared_runner(gitlab_runner_token):
+def command_to_register_runner(gitlab_url, gitlab_runner_token, executor, r):
+  cmd = f'''gitlab-runner register --name "{r["runner_name"] + "-" + executor}" \
+--url="{gitlab_url}" \
+--registration-token="{gitlab_runner_token}" \
+--executor="{executor}" \
+--non-interactive \
+--tag-list "{executor + "-ci"}"'''
+  if executor == "docker":
+    cmd += f''' --docker-image "{r["runner_image"]}"'''
+  return cmd
+
+def register_gitlab_shared_runner(gitlab_runner_token, executor):
   log.info("Registering Gitlab runner with token: %s", gitlab_runner_token)
   gitlab = service.config.get_config_from_file("gitlab")
   gitlab_url = f'''http://{gitlab["host_ip"]}:{gitlab["host_port"]}'''
   r = service.config.get_config_from_file("gitlab-runner")
-  cmd_runner_register = f'''
-gitlab-runner register --name "{r["runner_name"]}" \
---url="{gitlab_url}" \
---registration-token="{gitlab_runner_token}" \
---executor="shell" \
---non-interactive --tag-list "{r["runner_tag"]}"'''
+  cmd_runner_register = command_to_register_runner(gitlab_url, gitlab_runner_token, executor, r)
   return SSHUtil.exec_command(cmd_runner_register)
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)
-  gitlab_docker_run()
-  # log.info(reset_root_password())
-  admin_access_token = service.config.generate_token()
-  setting_access_token(admin_access_token)
-  update_access_token(admin_access_token)
-  update_allow_local_webhook_request(admin_access_token)
-  token = obtain_shared_runner_token()
-  if token:
-    register_gitlab_shared_runner(token)
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "hr:",["reset-token-only=",])
+    reset_token_only = False
+    for opt, arg in opts:
+      if opt in ("-r", "--reset-token-only"):
+        if arg and arg.lower() == "true":
+          reset_token_only = True
+    log.info("Obtaining Gitlab admin access token...")
+    admin_access_token = service.config.generate_token()
+    if reset_token_only:
+      log.info("Resetting token only...")
+      setting_access_token(admin_access_token)
+      update_access_token(admin_access_token)
+    else:
+      log.info("Start normally...")
+      gitlab_docker_run()
+      setting_access_token(admin_access_token)
+      update_access_token(admin_access_token)
+      update_allow_local_webhook_request(admin_access_token)
+      runner_token = obtain_shared_runner_token()
+      if runner_token:
+        register_gitlab_shared_runner(runner_token, "docker")
+        register_gitlab_shared_runner(runner_token, "shell")
+  except getopt.GetoptError:
+    log.info("action/perform.py -ro | --reset-token-only=[true]")
+  

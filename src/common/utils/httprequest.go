@@ -22,6 +22,7 @@ var ErrConflict = errors.New("Conflict")
 var ErrUnprocessableEntity = errors.New("Unprocessable entity")
 var ErrInternalError = errors.New("Internal server error")
 var ErrBadGateway = errors.New("Bad gateway")
+var ErrNotAcceptable = errors.New("Not Acceptable")
 
 func EncodeString(content string) string {
 	return base64.StdEncoding.EncodeToString([]byte(content))
@@ -50,6 +51,8 @@ func DefaultResponseHandler(req *http.Request, resp *http.Response) error {
 			return ErrForbidden
 		case http.StatusNotFound:
 			return ErrNotFound
+		case http.StatusNotAcceptable:
+			return ErrNotAcceptable
 		case http.StatusConflict:
 			return ErrConflict
 		case http.StatusUnprocessableEntity:

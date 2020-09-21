@@ -9,11 +9,14 @@ import (
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/astaxie/beego/logs"
 )
 
 //Start Board without loading cfg.
 func Start(host *models.Account) error {
-	shell, err := SSHtoHost(host)
+	var buf bytes.Buffer
+	shell, err := SSHtoHost(host, &buf)
 	if err != nil {
 		return err
 	}
@@ -26,6 +29,7 @@ func Start(host *models.Account) error {
 	if err != nil {
 		return err
 	}
+	logs.Debug(buf.String())
 	RemoveUUIDTokenCache()
 
 	return nil
@@ -33,7 +37,7 @@ func Start(host *models.Account) error {
 
 //Applycfg restarts Board with applying of cfg.
 func Applycfg(host *models.Account) error {
-
+	var buf bytes.Buffer
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
@@ -52,7 +56,7 @@ func Applycfg(host *models.Account) error {
 		return err
 	}
 
-	if err = StartBoard(host); err != nil {
+	if err = StartBoard(host, &buf); err != nil {
 		return err
 	}
 
@@ -65,7 +69,8 @@ func Applycfg(host *models.Account) error {
 
 //Shutdown Board.
 func Shutdown(host *models.Account, uninstall bool) error {
-	shell, err := SSHtoHost(host)
+	var buf bytes.Buffer
+	shell, err := SSHtoHost(host, &buf)
 	if err != nil {
 		return err
 	}
@@ -78,6 +83,7 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	if err != nil {
 		return err
 	}
+	logs.Debug(buf.String())
 	RemoveUUIDTokenCache()
 
 	if uninstall {
@@ -99,15 +105,12 @@ func Shutdown(host *models.Account, uninstall bool) error {
 	return nil
 }
 
-func SSHtoHost(host *models.Account) (*secureShell.SecureShell, error) {
-	var output bytes.Buffer
-	var shell *secureShell.SecureShell
-
+func SSHtoHost(host *models.Account, buf *bytes.Buffer) (*secureShell.SecureShell, error) {
 	HostIP, err := Execute("ip route | awk 'NR==1 {print $3}'|xargs echo -n")
 	if err != nil {
 		return nil, err
 	}
-	shell, err = secureShell.NewSecureShell(&output, HostIP, host.Username, host.Password)
+	shell, err := secureShell.NewSecureShell(buf, HostIP, host.Username, host.Password)
 	if err != nil {
 		return nil, err
 	}

@@ -48,3 +48,4 @@ src/apiserver/swagger
 *.exe
 src/apiserver/*.tmp
 src/apiserver/*.zip
+__pycache__/
