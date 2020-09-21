@@ -31,7 +31,6 @@ services:
     image: board_apiserver:__version__
     restart: always
     volumes:
-#     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
       - /data/board/cert:/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
       - /etc/board/cert:/etc/board/cert:rw

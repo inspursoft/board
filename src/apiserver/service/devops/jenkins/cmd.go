@@ -17,7 +17,6 @@ var seedJobName = "base"
 var jenkinsHostIP = utils.GetConfig("JENKINS_HOST_IP")
 var jenkinsHostPort = utils.GetConfig("JENKINS_HOST_PORT")
 var jenkinsNodeIP = utils.GetConfig("JENKINS_NODE_IP")
-var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var executionMode = utils.GetConfig("JENKINS_EXECUTION_MODE")
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 
@@ -48,7 +47,7 @@ func NewJenkinsHandler() *jenkinsHandler {
 		time.Sleep(time.Second)
 	}
 	return &jenkinsHandler{
-		registryURL: fmt.Sprintf("http://%s:%s", jenkinsNodeIP(), kvmRegistryPort()),
+		registryURL: fmt.Sprintf("http://%s:%s", jenkinsNodeIP(), jenkinsHostPort()),
 	}
 }
 

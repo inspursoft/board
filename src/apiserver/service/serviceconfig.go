@@ -615,6 +615,10 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 			container.Resources.Limits["memory"] = model.QuantityStr(cont.MemLimit)
 		}
 
+		if cont.GPULimit != "" {
+			container.Resources.Limits["nvidia.com/gpu"] = model.QuantityStr(cont.GPULimit)
+		}
+
 		k8sContainerList = append(k8sContainerList, container)
 	}
 	return k8sContainerList
@@ -709,6 +713,9 @@ func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []mo
 		}
 		if _, ok := cont.Resources.Limits["memory"]; ok {
 			container.MemLimit = string(cont.Resources.Limits["memory"])
+		}
+		if _, ok := cont.Resources.Limits["nvidia.com/gpu"]; ok {
+			container.GPULimit = string(cont.Resources.Limits["nvidia.com/gpu"])
 		}
 		viewContainerList = append(viewContainerList, container)
 	}

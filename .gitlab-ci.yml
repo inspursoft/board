@@ -8,7 +8,7 @@ variables:
   golang_version: "1.14.0"
   jenkins_version: "2.127"
   last_version: "latest"
-  mysql_version: "5.6.35"
+  mysql_version: "5.7.31"
   openldap_version: "1.1.11"
   registry_ip: "10.110.27.103:6000"
 stages:

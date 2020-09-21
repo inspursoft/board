@@ -120,6 +120,7 @@ func (n *NodeGroupController) GetNodeGroupAction() {
 			return
 		}
 		nodegroup, err = service.GetNodeGroup(model.NodeGroup{ID: int64(nodegroupID)}, "id")
+		groupName = nodegroup.GroupName
 	} else {
 		nodegroup, err = service.GetNodeGroup(model.NodeGroup{GroupName: groupName}, "name")
 	}

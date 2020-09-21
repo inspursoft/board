@@ -210,7 +210,7 @@ paths:
       tags:
       - node
       description: Get node list
-      operationId: Controller.Get node list
+      operationId: NodeController.Get node list
       responses:
         "200":
           description: success
@@ -226,7 +226,7 @@ paths:
       tags:
       - node
       description: Get add nodeModel
-      operationId: Controller.add nodeModel
+      operationId: NodeController.add nodeModel
       parameters:
       - in: body
         name: body
@@ -244,7 +244,7 @@ paths:
       tags:
       - node
       description: remove node
-      operationId: Controller.remove node
+      operationId: NodeController.remove node
       parameters:
       - in: query
         name: node_ip
@@ -279,7 +279,7 @@ paths:
       tags:
       - node
       description: Get node control status
-      operationId: Controller.Get node control status
+      operationId: NodeController.Get node control status
       parameters:
       - in: path
         name: node_name
@@ -299,7 +299,7 @@ paths:
       tags:
       - node
       description: Update node log
-      operationId: Controller.Update node log
+      operationId: NodeController.Update node log
       parameters:
       - in: body
         name: body
@@ -318,7 +318,7 @@ paths:
       tags:
       - node
       description: Get detail of history log info
-      operationId: Controller.Get detail of history log info
+      operationId: NodeController.Get detail of history log info
       parameters:
       - in: query
         name: node_ip
@@ -344,7 +344,7 @@ paths:
       - node
       description: Delete node log info from node_log table and node_log_detail_info
         table
-      operationId: Controller.Delete node log
+      operationId: NodeController.Delete node log
       parameters:
       - in: query
         name: creation_time
@@ -362,7 +362,7 @@ paths:
       tags:
       - node
       description: Get node log list
-      operationId: Controller.Get node log list
+      operationId: NodeController.Get node log list
       responses:
         "200":
           description: success
@@ -377,7 +377,7 @@ paths:
       tags:
       - node
       description: get preparation data
-      operationId: Controller.get preparation data
+      operationId: NodeController.get preparation data
       responses:
         "200":
           description: success
@@ -388,7 +388,7 @@ paths:
         "500":
           description: Internal Server Error
 definitions:
-  3526.<nil>.NodeLog:
+  3619.<nil>.NodeLog:
     title: NodeLog
     type: object
   model.NodeControlStatus:
@@ -405,25 +405,25 @@ definitions:
         type: string
       username:
         type: string
-  models.Apiserver:
-    title: Apiserver
+  models.Board:
+    title: Board
     type: object
     properties:
+      access_protocol:
+        type: string
       api_server_port:
+        type: string
+      arch_type:
+        type: string
+      audit_debug:
+        type: string
+      auth_mode:
+        type: string
+      devops_opt:
         type: string
       hostname:
         type: string
-      image_baseline_time:
-        type: string
-      kube_http_scheme:
-        type: string
-      kube_master_ip:
-        type: string
-      kube_master_port:
-        type: string
-      registry_ip:
-        type: string
-      registry_port:
+      mode:
         type: string
   models.Boardinfo:
     title: Boardinfo
@@ -457,26 +457,46 @@ definitions:
     title: Configuration
     type: object
     properties:
-      Apiserver:
-        $ref: '#/definitions/models.Apiserver'
-      Email:
-        $ref: '#/definitions/models.Email'
-      Gogitserver:
-        $ref: '#/definitions/models.Gogitserver'
-      Jenkinsserver:
-        $ref: '#/definitions/models.Jenkinsserver'
-      Kvm:
-        $ref: '#/definitions/models.Kvm'
-      Ldap:
-        $ref: '#/definitions/models.Ldap'
-      Other:
-        $ref: '#/definitions/models.Other'
+      board:
+        $ref: '#/definitions/models.Board'
       current:
         type: string
+      db:
+        $ref: '#/definitions/models.Db'
+      email:
+        $ref: '#/definitions/models.Email'
+      es:
+        $ref: '#/definitions/models.Es'
       first_time_post:
         type: boolean
+      gitlab:
+        $ref: '#/definitions/models.Gitlab'
+      gogs:
+        $ref: '#/definitions/models.Gogs'
+      indata:
+        $ref: '#/definitions/models.Indata'
+      jenkins:
+        $ref: '#/definitions/models.Jenkins'
+      k8s:
+        $ref: '#/definitions/models.K8s'
+      ldap:
+        $ref: '#/definitions/models.Ldap'
+      prometheus:
+        $ref: '#/definitions/models.Prometheus'
       tmp_exist:
         type: boolean
+      token:
+        $ref: '#/definitions/models.TokenCfg'
+  models.Db:
+    title: Db
+    type: object
+    properties:
+      board_admin_password:
+        type: string
+      db_max_connections:
+        type: string
+      db_password:
+        type: string
   models.Email:
     title: Email
     type: object
@@ -495,8 +515,34 @@ definitions:
         type: string
       email_username:
         type: string
-  models.Gogitserver:
-    title: Gogitserver
+  models.Es:
+    title: Es
+    type: object
+    properties:
+      elaseticsearch_memory_in_megabytes:
+        type: string
+      elastic_password:
+        type: string
+  models.Gitlab:
+    title: Gitlab
+    type: object
+    properties:
+      gitlab_admin_token:
+        type: string
+      gitlab_helper_version:
+        type: string
+      gitlab_host_ip:
+        type: string
+      gitlab_host_port:
+        type: string
+      gitlab_host_ssh_port:
+        type: string
+      gitlab_ssh_password:
+        type: string
+      gitlab_ssh_username:
+        type: string
+  models.Gogs:
+    title: Gogs
     type: object
     properties:
       gogits_host_ip:
@@ -504,6 +550,14 @@ definitions:
       gogits_host_port:
         type: string
       gogits_ssh_port:
+        type: string
+  models.Indata:
+    title: Indata
+    type: object
+    properties:
+      redirection_url:
+        type: string
+      verification_url:
         type: string
   models.InitStatus:
     title: InitStatus
@@ -518,14 +572,14 @@ definitions:
     title: InitSysStatus
     type: object
     properties:
+      log:
+        type: string
       status:
         $ref: '#/definitions/models.InitStatus'
-  models.Jenkinsserver:
-    title: Jenkinsserver
+  models.Jenkins:
+    title: Jenkins
     type: object
     properties:
-      jenkins_execution_mode:
-        type: string
       jenkins_host_ip:
         type: string
       jenkins_host_port:
@@ -540,15 +594,25 @@ definitions:
         type: string
       jenkins_node_volume:
         type: string
-  models.Kvm:
-    title: Kvm
+  models.K8s:
+    title: K8s
     type: object
     properties:
-      kvm_registry_port:
+      dns_suffix:
         type: string
-      kvm_registry_size:
+      image_baseline_time:
         type: string
-      kvm_toolkits_path:
+      kube_http_scheme:
+        type: string
+      kube_master_ip:
+        type: string
+      kube_master_port:
+        type: string
+      registry_ip:
+        type: string
+      registry_port:
+        type: string
+      tiller_port:
         type: string
   models.Ldap:
     title: Ldap
@@ -556,7 +620,13 @@ definitions:
     properties:
       ldap_basedn:
         type: string
+      ldap_filter:
+        type: string
       ldap_scope:
+        type: string
+      ldap_search_pwd:
+        type: string
+      ldap_searchdn:
         type: string
       ldap_timeout:
         type: string
@@ -564,37 +634,19 @@ definitions:
         type: string
       ldap_url:
         type: string
-  models.Other:
-    title: Other
+  models.Prometheus:
+    title: Prometheus
     type: object
     properties:
-      arch_type:
+      prometheus_url:
         type: string
-      audit_debug:
-        type: string
-      auth_mode:
-        type: string
-      board_admin_password:
-        type: string
-      db_max_connections:
-        type: string
-      db_password:
-        type: string
-      dns_suffix:
-        type: string
-      elaseticsearch_memory_in_megabytes:
-        type: string
-      mode:
-        type: string
-      redirection_url:
-        type: string
-      tiller_port:
-        type: string
+  models.TokenCfg:
+    title: TokenCfg
+    type: object
+    properties:
       token_cache_expire_seconds:
         type: string
       token_expire_seconds:
-        type: string
-      verification_url:
         type: string
   models.TokenString:
     title: TokenString
@@ -654,7 +706,7 @@ definitions:
     type: object
     properties:
       log_list:
-        $ref: '#/definitions/3526.<nil>.NodeLog'
+        $ref: '#/definitions/3619.<nil>.NodeLog'
       pagination:
         $ref: '#/definitions/nodeModel.Pagination'
   nodeModel.Pagination:

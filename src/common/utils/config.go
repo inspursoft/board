@@ -171,7 +171,7 @@ func InitializeDefaultConfig() {
 
 	AddEnv("TILLER_PORT")
 
-	AddEnv("DEVOPS_OPT", "gitlab")
+	AddEnv("DEVOPS_OPT")
 
 	AddEnv("GITLAB_HOST_IP")
 	AddEnv("GITLAB_HOST_PORT")

@@ -21,8 +21,8 @@ CREATE TABLE `user` (
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
   `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
-  `creation_time` datetime DEFAULT NULL,
-  `update_time` datetime DEFAULT NULL,
+  `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+  `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
   `failed_times` INT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -35,8 +35,6 @@ CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NULL,
   `comment` VARCHAR(255) NULL,
-  `creation_time` DATETIME NULL,
-  `update_time` DATETIME NULL,
   `deleted` SMALLINT(1) NULL,
   `owner_id` INT NULL,
   `owner_name` VARCHAR(45) NULL,
@@ -45,13 +43,16 @@ CREATE TABLE `board`.`project` (
   `current_user_role_id` INT NULL,
   `service_count` INT NULL,
   `istio_support` SMALLINT(1) NULL,
+  `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+  `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`project`
- (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
-  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`, `istio_support`)
+ (`id`, `name`, `comment`, `deleted`, `owner_id`, 
+  `owner_name`, `public`, `toggleable`, `current_user_role_id`, 
+  `service_count`, `istio_support`, `creation_time`, `update_time`)
  VALUES
- (1, 'library', 'library comment', now(), now(), 0, 1,'boardadmin', 1, 1, 1, 0, 0);
+ (1, 'library', 'library comment', 0, 1,'boardadmin', 1, 1, 1, 0, 0, now(), now());
 
 
 CREATE TABLE `project_member` (
@@ -122,8 +123,8 @@ INSERT INTO `board`.`role` (id, name, comment)
 		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
         `service_yaml` TEXT,
         `deployment_yaml` TEXT,
@@ -135,8 +136,8 @@ INSERT INTO `board`.`role` (id, name, comment)
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NOT NULL DEFAULT '',
         `owner_id` INT NOT NULL,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL DEFAULT 0,
@@ -152,8 +153,6 @@ INSERT INTO `board`.`role` (id, name, comment)
 	
     CREATE TABLE `board`.`operation` (
         `id` INT NOT NULL AUTO_INCREMENT,
-        `creation_time` timestamp DEFAULT 0,
-        `update_time` timestamp DEFAULT 0,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) DEFAULT '',
         `project_id` INT DEFAULT 0,
@@ -163,7 +162,9 @@ INSERT INTO `board`.`role` (id, name, comment)
         `object_name` VARCHAR(255) DEFAULT '',
         `action` VARCHAR(255) DEFAULT '',
         `status` VARCHAR(255) DEFAULT '',
-        `path` VARCHAR(255) DEFAULT '',		
+        `path` VARCHAR(255) DEFAULT '',
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp  NOT NULL DEFAULT '2017-06-06 00:00:00',
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
@@ -245,8 +246,8 @@ INSERT INTO `board`.`helm_repository`
         `workloads` TEXT,
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) NOT NULL,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -260,8 +261,8 @@ INSERT INTO `board`.`helm_repository`
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
         `yaml` TEXT,
         PRIMARY KEY (`id`)

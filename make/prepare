@@ -109,6 +109,12 @@ redirection_url = rcp.get("configuration", "redirection_url")
 elaseticsearch_memory_in_megabytes = rcp.get("configuration", "elaseticsearch_memory_in_megabytes")
 elastic_password = rcp.get("configuration", "elastic_password")
 
+devops_opt = rcp.get("configuration", "devops_opt")
+
+gogits_host_ip = rcp.get("configuration", "gogits_host_ip")
+gogits_host_port = rcp.get("configuration", "gogits_host_port")
+gogits_ssh_port = rcp.get("configuration", "gogits_ssh_port")
+
 gitlab_host_ip = rcp.get("configuration", "gitlab_host_ip")
 gitlab_host_port = rcp.get("configuration", "gitlab_host_port")
 gitlab_host_ssh_port = rcp.get("configuration", "gitlab_host_ssh_port")
@@ -116,6 +122,13 @@ gitlab_admin_token = rcp.get("configuration", "gitlab_admin_token")
 
 prometheus_url = rcp.get("configuration", "prometheus_url")
 
+jenkins_host_ip = rcp.get("configuration", "jenkins_host_ip")
+jenkins_host_port = rcp.get("configuration", "jenkins_host_port")
+jenkins_node_ip = rcp.get("configuration", "jenkins_node_ip")
+jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
+jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
+jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
+jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
 
 tiller_port = rcp.get("configuration", "tiller_port")
 
@@ -178,6 +191,18 @@ proxy_config_dir = os.path.join(config_dir, "proxy")
 if not os.path.exists(proxy_config_dir):
     os.makedirs(os.path.join(config_dir, "proxy"))
 
+
+if devops_opt == "legacy":
+    jenkins_config_dir = os.path.join(config_dir, "jenkins")
+    if not os.path.exists(jenkins_config_dir):
+        os.makedirs(os.path.join(config_dir, "jenkins"))
+    jenkins_env = os.path.join(config_dir, "jenkins", "env")
+
+    gogits_config_dir = os.path.join(config_dir, "gogits")
+    if not os.path.exists(gogits_config_dir):
+        os.makedirs(os.path.join(config_dir, "gogits"))
+    gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
+
 grafana_config_dir = os.path.join(config_dir, "grafana")
 if not os.path.exists(grafana_config_dir):
     os.makedirs(os.path.join(config_dir, "grafana"))
@@ -237,10 +262,21 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         ldap_timeout=ldap_timeout,
         verification_url=verification_url,
         redirection_url=redirection_url,
+        devops_opt=devops_opt,
+        gogits_host_ip=gogits_host_ip,
+        gogits_host_port=gogits_host_port,
+        gogits_ssh_port=gogits_ssh_port,
         gitlab_host_ip=gitlab_host_ip,
         gitlab_host_port=gitlab_host_port,
         gitlab_host_ssh_port=gitlab_host_ssh_port,
         gitlab_admin_token=gitlab_admin_token,
+        jenkins_host_ip=jenkins_host_ip,
+        jenkins_host_port=jenkins_host_port,
+        jenkins_node_ip=jenkins_node_ip,
+        jenkins_node_username=jenkins_node_username,
+        jenkins_node_password=jenkins_node_password,
+        jenkins_node_ssh_port=jenkins_node_ssh_port,
+        jenkins_node_volume=jenkins_node_volume,
         tiller_port=tiller_port)
 
 if kube_http_scheme == "http":
@@ -318,6 +354,24 @@ else:
 	render(os.path.join(templates_dir, "proxy", "nginx.http.conf"),
 		proxy_conf,
 		basic_auth=basic_auth.strip())
+
+if devops_opt == "legacy":
+    render(os.path.join(templates_dir, "jenkins", "env"),
+            jenkins_env,
+            jenkins_host_ip=jenkins_host_ip,
+            jenkins_host_port=jenkins_host_port,
+            jenkins_node_ip=jenkins_node_ip,
+            jenkins_node_ssh_port=jenkins_node_ssh_port,
+            jenkins_node_username=jenkins_node_username,
+            jenkins_node_password=jenkins_node_password,
+            jenkins_node_volume=jenkins_node_volume)
+        
+    render(os.path.join(templates_dir, "gogits", "app.ini"),
+            gogits_conf,
+            gogits_host_ip=gogits_host_ip,
+            gogits_host_port=gogits_host_port,
+            gogits_ssh_port=gogits_ssh_port)
+
 
 render(os.path.join(templates_dir, "grafana", "prometheus-datasource.json"),
         grafana_prometheus_ds)

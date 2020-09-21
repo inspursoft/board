@@ -135,10 +135,6 @@ func (j *CIJobController) Console() {
 	}
 	configurations["pipeline_id"] = strconv.Itoa(pipelineID)
 	buildConsoleURL, _, _ := service.CurrentDevOps().ResolveHandleURL(configurations)
-	if err != nil {
-		j.InternalError(err)
-		return
-	}
 	logs.Debug("Requested Jenkins build console URL: %s", buildConsoleURL)
 	ws, err := websocket.Upgrade(j.Ctx.ResponseWriter, j.Ctx.Request, nil, 1024, 1024)
 	if _, ok := err.(websocket.HandshakeError); ok {
@@ -227,23 +223,20 @@ func (j *CIJobController) Stop() {
 		j.toggleBuild(false)
 		return
 	}
-	lastPipelineID, err := j.getStoredID("_pipelineID")
-	if err != nil {
-		logs.Warning("Pipeline ID was not found in store.")
-	}
-
 	jobName := j.GetString("job_name")
 	if jobName == "" {
 		j.CustomAbortAudit(http.StatusBadRequest, "No job name found.")
 		return
 	}
-
 	repoName, err := service.ResolveRepoName(jobName, j.CurrentUser.Username)
 	if err != nil {
 		j.InternalError(err)
 		return
 	}
-
+	lastPipelineID, err := j.getStoredID("_pipelineID")
+	if err != nil {
+		logs.Warning("Missing to get pipeline ID from store: %+v", err)
+	}
 	configurations := make(map[string]string)
 	configurations["project_name"] = fmt.Sprintf("%s/%s", j.CurrentUser.Username, repoName)
 	configurations["job_name"] = repoName
