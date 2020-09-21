@@ -5,5 +5,6 @@ export enum InitStatusCode {
 }
 
 export class InitStatus extends ResponseBase {
-  @HttpBind('status')status: InitStatusCode;
+  @HttpBind('status') status: InitStatusCode;
+  @HttpBind('log') log = '';
 }
