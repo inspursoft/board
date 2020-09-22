@@ -647,6 +647,7 @@ export const LANG_ZH_CN = {
       PASSWORD: '密码',
       PASSWORD_CONFIRM: '确认密码',
       ACCOUNT: '账户',
+      LOG: '日志',
     },
     HELPER: {
       REQUIRED: '必填项！',

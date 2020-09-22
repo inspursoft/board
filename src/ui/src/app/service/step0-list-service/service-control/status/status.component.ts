@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SERVICE_STATUS } from '../../../../shared/shared.const';
 import { K8sService } from '../../../service.k8s';
@@ -11,6 +11,7 @@ import { Service } from '../../../service.types';
   styleUrls: ['./status.component.css']
 })
 export class StatusComponent implements OnInit, OnDestroy {
+  @Output() errorEvent: EventEmitter<any>;
   @Input() service: Service;
   @Input() scaleInfo: IScaleInfo = {
     desired_instance: 0,
@@ -20,6 +21,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   constructor(private k8sService: K8sService) {
     this.onDestroy = new Subject<any>();
+    this.errorEvent = new EventEmitter<any>();
   }
 
   ngOnDestroy() {
@@ -32,10 +34,12 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   refreshScaleInfo() {
-    this.k8sService.getServiceScaleInfo(this.service.serviceId)
-      .subscribe((scaleInfo: IScaleInfo) => {// needn't handle error~!
+    this.k8sService.getServiceScaleInfo(this.service.serviceId).subscribe(
+      (scaleInfo: IScaleInfo) => {
         this.scaleInfo = scaleInfo;
-      });
+      },
+      (err) => this.errorEvent.emit(err)
+    );
   }
 
   getStatusClass(status: SERVICE_STATUS) {

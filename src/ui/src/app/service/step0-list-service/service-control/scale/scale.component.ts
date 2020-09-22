@@ -44,18 +44,22 @@ export class ScaleComponent extends CsComponentBase implements OnInit {
     for (let i = 1; i <= 10; i++) {
       this.dropDownListNum.push(i);
     }
-    this.k8sService.getServiceScaleInfo(this.service.serviceId).subscribe((scaleInfo: IScaleInfo) => {
-      this.scaleInfo = scaleInfo;
-      this.scaleNum = this.scaleInfo.available_instance;
-      this.actionEnabled();
-    });
-    this.k8sService.getAutoScaleConfig(this.service.serviceId).subscribe((res: Array<ServiceHPA>) => {
-      this.autoScaleConfig = res;
-      if (this.autoScaleConfig.length > 0) {
-        this.scaleModule = ScaleMethod.smAuto;
-      }
-      this.actionEnabled();
-    });
+    this.k8sService.getServiceScaleInfo(this.service.serviceId).subscribe(
+      (scaleInfo: IScaleInfo) => {
+        this.scaleInfo = scaleInfo;
+        this.scaleNum = this.scaleInfo.available_instance;
+        this.actionEnabled();
+      }, (err) => this.errorEvent.emit(err)
+    );
+    this.k8sService.getAutoScaleConfig(this.service.serviceId).subscribe(
+      (res: Array<ServiceHPA>) => {
+        this.autoScaleConfig = res;
+        if (this.autoScaleConfig.length > 0) {
+          this.scaleModule = ScaleMethod.smAuto;
+        }
+        this.actionEnabled();
+      }, (err) => this.errorEvent.emit(err)
+    );
   }
 
   setScaleMethod(scaleMethod: ScaleMethod): void {
