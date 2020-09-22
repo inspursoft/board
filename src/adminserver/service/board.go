@@ -13,6 +13,8 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+var logBuffer bytes.Buffer
+
 //Start Board without loading cfg.
 func Start(host *models.Account) error {
 	var buf bytes.Buffer
@@ -37,7 +39,6 @@ func Start(host *models.Account) error {
 
 //Applycfg restarts Board with applying of cfg.
 func Applycfg(host *models.Account) error {
-	var buf bytes.Buffer
 	cfgPath := path.Join("/go", "/cfgfile/board.cfg")
 	err := os.Rename(cfgPath, cfgPath+".bak1")
 	if err != nil {
@@ -56,7 +57,7 @@ func Applycfg(host *models.Account) error {
 		return err
 	}
 
-	if err = StartBoard(host, &buf); err != nil {
+	if err = StartBoard(host, &logBuffer); err != nil {
 		return err
 	}
 
