@@ -982,6 +982,14 @@
       </clr-checkbox-wrapper>
 
     </form>
+
+    <label *ngIf="startLog"
+           class="clr-control-label"
+           style="padding-left: .25rem; margin-top: 1rem;">{{'INITIALIZATION.LABELS.LOG' | translate}}</label>
+    <div *ngIf="startLog"
+         style="border: solid;margin-top: 0.3rem;padding: 0.3rem;max-height: 10rem;overflow-y: auto;"
+         [innerHtml]="startLog">
+    </div>
   </div>
   <div class="modal-footer">
     <button class="btn"

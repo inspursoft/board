@@ -648,6 +648,7 @@ export const LANG_EN_US = {
       PASSWORD: 'Password',
       PASSWORD_CONFIRM: 'Confirm Password',
       ACCOUNT: 'Account',
+      LOG: 'LOG',
     },
     HELPER: {
       REQUIRED: 'This field is required!',

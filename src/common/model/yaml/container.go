@@ -23,4 +23,5 @@ type Container struct {
 	CPURequest    string   `json:"container_cpurequest"`
 	MemoryLimit   string   `json:"container_memorylimit"`
 	CPULimit      string   `json:"container_cpulimit"`
+	GPULimit      string   `json:"container_gpulimit"`
 }

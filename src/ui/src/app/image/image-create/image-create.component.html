@@ -121,7 +121,7 @@
                                 [inputDisabled]="isBuildImageWIP"
                                 [inputMaxlength]="1023"
                                 [inputLabel]="'IMAGE.CREATE_IMAGE_IMAGE_RUN'|translate"
-                                [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_VOLUME' | translate"
+                                [inputPlaceholder]="'IMAGE.CREATE_IMAGE_IMAGE_RUN' | translate"
                                 (commitEvent)="imageRun = $event; getDockerFilePreviewInfo()">
             </lib-input-array-ex>
             <lib-input-array-ex [inputArrayDefault]="imageExpose"

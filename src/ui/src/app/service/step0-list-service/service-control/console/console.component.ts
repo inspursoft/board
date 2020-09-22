@@ -36,6 +36,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   @Output() updateProgressEvent: EventEmitter<HttpProgressEvent>;
   @Input() isActionInWIP: boolean;
   @Output() isActionInWIPChange: EventEmitter<boolean>;
+  @Output() errorEvent: EventEmitter<any>;
   term: Terminal;
   fitAddon: FitAddon;
   webLinkAddon: WebLinksAddon;
@@ -62,6 +63,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.actionIsEnabledEvent = new EventEmitter<boolean>();
     this.updateProgressEvent = new EventEmitter<HttpProgressEvent>();
     this.isActionInWIPChange = new EventEmitter<boolean>();
+    this.errorEvent = new EventEmitter<any>();
   }
 
   ngOnInit() {
@@ -77,7 +79,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
           this.buildSocketConnect(this.serviceDetailInfo.serviceContainers[0], 0);
         }
         this.changeRef.detectChanges();
-      }
+      },
+      (err) => this.errorEvent.emit(err)
     );
     this.resizeListener = this.resizeListener.bind(this);
     this.actionIsEnabledEvent.emit(true);

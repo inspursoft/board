@@ -1,7 +1,7 @@
 /**
  * Created by liyanq on 04/12/2017.
  */
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { K8sService } from '../../service.k8s';
 import { MessageService } from '../../../shared.service/message.service';
@@ -12,7 +12,7 @@ import { CsModalChildBase } from '../../../shared/cs-modal-base/cs-modal-child-b
 import { LoadBalanceComponent } from './loadBalance/loadBalance.component';
 import { ConsoleComponent } from './console/console.component';
 import { GlobalAlertType } from '../../../shared/shared.types';
-import { HttpProgressEvent } from '@angular/common/http';
+import { HttpErrorResponse, HttpProgressEvent } from '@angular/common/http';
 import { Service } from '../../service.types';
 
 export interface IScaleInfo {
@@ -55,9 +55,10 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit,
     }
   }
 
-  defaultDispatchErr(err) {
+  defaultDispatchErr(err: HttpErrorResponse) {
     this.modalOpened = false;
-    this.messageService.showGlobalMessage(err.message, {
+    const errMsg = typeof err.error === 'string' ? err.error : err.message;
+    this.messageService.showGlobalMessage(errMsg, {
         alertType: 'danger',
         globalAlertType: GlobalAlertType.gatShowDetail,
         errorObject: err
@@ -67,12 +68,16 @@ export class ServiceControlComponent extends CsModalChildBase implements OnInit,
 
   defaultHandleMessage(msg: string) {
     this.modalOpened = false;
-    this.translateService.get(msg, [this.service.serviceName])
-      .subscribe((res: string) => this.messageService.showAlert(res));
+    this.translateService.get(msg, [this.service.serviceName]).subscribe(
+      (res: string) => this.messageService.showAlert(res)
+    );
   }
 
   defaultHandleAlertMessage(msg: string) {
-    this.messageService.showAlert(msg, {alertType: 'warning', view: this.alertView});
+    this.messageService.showAlert(msg, {
+      alertType: 'warning',
+      view: this.alertView
+    });
   }
 
   defaultHandleActionEnabled(enabled: boolean) {

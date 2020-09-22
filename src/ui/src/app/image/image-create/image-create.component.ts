@@ -314,7 +314,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.isUploadFileWIP = false;
     this.isNeedAutoRefreshImageList = false;
     if (err) {
-      const reason = err ? ((err as HttpErrorResponse).error as Error).message : '';
+      const reason = err ? err.error as string : '';
       this.translateService.get(`IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED`).subscribe(
         (msg: string) => this.messageService.showAlert(`${msg}:${reason}`, {
           alertType: 'danger',
