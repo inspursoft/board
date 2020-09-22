@@ -383,10 +383,16 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   buildImageResole() {
-    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}/api/v1/jenkins-job/console`;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}:30080/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.projectName}&token=${this.appInitService.token}`;
-    this.ws = new WebSocket(`${wsHost}?${wsParams}`);
-    this.mountWebSocket();
+    try {
+      this.ws = new WebSocket(`${wsHost}?${wsParams}`);
+      this.mountWebSocket();
+    } catch (e) {
+      this.isBuildImageWIP = false;
+      this.waitingMessage = '';
+      this.messageService.showGlobalMessage(e.toString(), {view: this.alertView});
+    }
   }
 
   buildImage() {
