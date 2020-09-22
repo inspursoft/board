@@ -1,0 +1,26 @@
+{{- if and .Values.prometheus.persistence.enabled (not .Values.prometheus.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "board.prometheus.fullname" . }}
+  labels:
+    app: {{ include "board.prometheus.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.prometheus.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.persistence.size | quote }}
+{{- if .Values.prometheus.persistence.storageClass }}
+{{- if (eq "-" .Values.prometheus.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.prometheus.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.prometheus.persistence.volumeName }}
+  volumeName: "{{ .Values.prometheus.persistence.volumeName }}"
+{{- end }}
+{{- end }}

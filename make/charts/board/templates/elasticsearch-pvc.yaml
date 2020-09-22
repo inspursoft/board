@@ -1,0 +1,26 @@
+{{- if and .Values.elasticsearch.persistence.enabled (not .Values.elasticsearch.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "board.elasticsearch.fullname" . }}
+  labels:
+    app: {{ include "board.elasticsearch.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.elasticsearch.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.elasticsearch.persistence.size | quote }}
+{{- if .Values.elasticsearch.persistence.storageClass }}
+{{- if (eq "-" .Values.elasticsearch.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.elasticsearch.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.elasticsearch.persistence.volumeName }}
+  volumeName: "{{ .Values.elasticsearch.persistence.volumeName }}"
+{{- end }}
+{{- end }}

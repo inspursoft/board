@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.proxy.fullname" . }}
+  labels:
+    app: {{ include "board.proxy.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.proxy.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.proxy.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.proxy.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{ include "board.proxy.image.image" . }}
+        imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
+        name: tokenserver
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        - containerPort: 8080
+          name: proxy
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /etc/nginx/nginx.conf
+          name: config
+          subPath: nginx.conf
+        - mountPath: /etc/ssl/certs
+          name: certs
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: nginx.conf
+            path: nginx.conf
+          name: {{ include "board.proxy.fullname" . }}
+        name: config
+      - configMap:
+          defaultMode: 420
+          name: {{ include "board.proxy.fullname" . }}-certs
+        name: certs
+      restartPolicy: '{{.Values.proxy.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.proxy.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.proxy.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.proxy.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

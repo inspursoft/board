@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.prometheus.fullname" . }}
+  labels:
+    app: {{ include "board.prometheus.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.prometheus.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.prometheus.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.prometheus.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+      - name: "chown"
+        image: {{ include "board.prometheus.image.image" . }}
+        imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+        command:  ["chown", "-R", "nobody:nogroup", "/storage"]
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: data
+          mountPath: /storage
+      containers:
+      - image: {{ include "board.prometheus.image.image" . }}
+        imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+        name: prometheus
+        ports:
+        - containerPort: 9090
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /etc/prometheus/prometheus.yml
+          name: config
+          subPath: prometheus.yml
+        - mountPath: /prometheus
+          name: data
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: prometheus.yml
+            path: prometheus.yml
+          name: {{ include "board.prometheus.fullname" . }}
+        name: config
+      - name: data
+      {{- if .Values.prometheus.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.prometheus.persistence.existingClaim | default (include "board.prometheus.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: '{{.Values.prometheus.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.prometheus.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.prometheus.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.prometheus.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
