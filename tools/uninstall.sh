@@ -9,7 +9,7 @@ set -e
 usage=$'This shell script will uninstall Board images and data volume. Only run it under the installation directory. \nUsage:    uninstalil [OPTINOS]  \nOptions:\n  -s      Silent uninstall.\n  --help  Show this help info.'
 item=0
 defaultDataVolume="/data/board"
-silentFlag=flase
+silentFlag=false
 
 while [ $# -gt 0 ]; do
         case $1 in
@@ -101,6 +101,13 @@ echo "[Step $item]: checking uninstallation environment ..."; let item+=1
 check_docker
 check_dockercompose
 
+sed -i "s/^hostname.*$/hostname = reg.mydomain.com/" board.cfg
+
+if [[ $(cat ./config/apiserver/env) =~ DEVOPS_OPT=(legacy?) ]]
+then
+cd archive
+fi
+
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
 then
@@ -144,8 +151,6 @@ else
 fi
 
 echo ""
-
-sed -i "s/^hostname.*$/hostname = reg.mydomain.com/" board.cfg
 
 echo $"----Board uninstaller running complete.----
 For more information, please visit http://10.110.18.40:10080/inspursoft/board"
