@@ -1,7 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  height: 500px;
+  height: 420px;
 }
 
 .base-margin-left {
@@ -30,7 +30,7 @@ div.build-method-container {
 }
 
 div.from-temp-container {
-  padding: 10px;
+  padding: 0 10px;
 }
 
 div.from-docker-file-container {

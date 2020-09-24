@@ -453,7 +453,7 @@ export const LANG_ZH_CN = {
     "CREATE_IMAGE_CANCEL_WAIT":"取消等待",
     "CREATE_IMAGE_REMOVE_FILE_FAILED":"删除文件失败。",
     "CREATE_IMAGE_REMOVE_FILE_SUCCESS":"删除文件成功。",
-    "CREATE_IMAGE_SELECT_DOCKER_FILE":"Dockerfile文件",
+    "CREATE_IMAGE_SELECT_DOCKER_FILE":"选择Dockerfile文件",
     "CREATE_IMAGE_SELECT_IMAGE_PACKAGE":"选择创建镜像使用的tar文件",
     "CREATE_IMAGE_SELECTED_FILE_INFO":"选择Dockerfile文件的基本信息",
     "CREATE_IMAGE_FILE_NAME":"文件名",
