@@ -498,11 +498,6 @@ export class DashboardComponent extends DashboardComponentParent implements OnIn
     this.eventZoomBarChange.next({start: data.start, end: data.end});
   }
 
-  get grafanaViewUrl(): string {
-    const protocol = this.appInitService.getHttpProtocol;
-    return `${protocol}://${this.appInitService.systemInfo.boardHost}/grafana/dashboard/db/kubernetes/`;
-  }
-
   get showGrafanaWindow(): boolean {
     return this.appInitService.isSystemAdmin &&
       !this.appInitService.isMipsSystem &&

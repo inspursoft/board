@@ -25,7 +25,6 @@ const AUTO_REFRESH_IMAGE_LIST = 2000;
   styleUrls: ['./image-create.component.css']
 })
 export class CreateImageComponent extends CsModalChildBase implements OnInit, OnDestroy {
-  boardHost: string;
   @Output() refreshNotification: Subject<any>;
   @ViewChild(JobLogComponent) jobLogComponent: JobLogComponent;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
@@ -72,7 +71,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
-    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: '', message: ''};
@@ -354,7 +352,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             });
           }
         });
-      } else if (consoleTextArr.find(value => value.indexOf('ERROR: Job failed:') > -1)) {
+      } else if (consoleTextArr.find(value => value.indexOf('ERROR: Job failed') > -1)) {
         this.isBuildImageWIP = false;
         this.isUploadFileWIP = false;
         this.cancelButtonDisable = true;
@@ -383,10 +381,17 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   buildImageResole() {
-    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}/api/v1/jenkins-job/console`;
+    const boardHost = this.appInitService.systemInfo.boardHost;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${boardHost}:${window.location.port}/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.projectName}&token=${this.appInitService.token}`;
-    this.ws = new WebSocket(`${wsHost}?${wsParams}`);
-    this.mountWebSocket();
+    try {
+      this.ws = new WebSocket(`${wsHost}?${wsParams}`);
+      this.mountWebSocket();
+    } catch (e) {
+      this.isBuildImageWIP = false;
+      this.waitingMessage = '';
+      this.messageService.showGlobalMessage(e.toString(), {view: this.alertView});
+    }
   }
 
   buildImage() {
