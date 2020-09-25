@@ -451,7 +451,7 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
-			ci.WriteMultiLine("/kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/containers/%s --destination %s", dockerfileName, imageURI),
+			ci.WriteMultiLine("/kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/containers/%s --destination %s --cache-repo $CI_REGISTRY --cache=true", dockerfileName, imageURI),
 		},
 	}
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
