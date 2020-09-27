@@ -2,6 +2,7 @@ package controller
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
@@ -70,9 +71,32 @@ func (j *CIJobController) getStoredID(key string) (int, error) {
 	return 0, fmt.Errorf("cannot get stored ID from cache currently")
 }
 
+type storedContext struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+func (j *CIJobController) resolveStoredContext() (ctx context.Context, cancel context.CancelFunc) {
+	storedKey := strconv.Itoa(int(j.CurrentUser.ID)) + "_context"
+	logs.Info("Resolving context with stored key: %s", storedKey)
+	var stored storedContext
+	if c.MemoryCache.IsExist(storedKey) {
+		logs.Info("Context already exist with stored key: %s", storedKey)
+		stored = c.MemoryCache.Get(storedKey).(storedContext)
+	} else {
+		ctx, cancel := context.WithCancel(context.Background())
+		stored = storedContext{ctx, cancel}
+		c.MemoryCache.Put(storedKey, stored, toggleBuildingCacheExpireSecond)
+		logs.Info("Created and stored context with key: %s", storedKey)
+	}
+	ctx = stored.ctx
+	cancel = stored.cancel
+	return
+}
+
 func (j *CIJobController) clearBuildNumber() {
 	userID := strconv.Itoa(int(j.CurrentUser.ID))
-	for _, key := range []string{userID + "_buildNumber", userID + "_pipelineID"} {
+	for _, key := range []string{userID + "_buildNumber", userID + "_pipelineID", userID + "_context"} {
 		if c.MemoryCache.IsExist(key) {
 			c.MemoryCache.Delete(key)
 			logs.Info("Build number stored with key %s has been deleted from cache.", key)
@@ -80,28 +104,14 @@ func (j *CIJobController) clearBuildNumber() {
 	}
 }
 
-func (j *CIJobController) toggleBuild(status bool) {
-	logs.Info("Set building signal as %+v currently.", status)
-	c.MemoryCache.Put(strconv.Itoa(int(j.CurrentUser.ID))+"_buildSignal", status, toggleBuildingCacheExpireSecond)
-}
-
-func (j *CIJobController) getBuildSignal() bool {
-	key := strconv.Itoa(int(j.CurrentUser.ID)) + "_buildSignal"
-	if buildingSignal, ok := c.MemoryCache.Get(key).(bool); ok {
-		return buildingSignal
-	}
-	return false
-}
-
 func (j *CIJobController) Console() {
 	j.clearBuildNumber()
-	j.toggleBuild(true)
 	getBuildNumberRetryCount := 0
 	var buildNumber int
 	var err error
 	for true {
 		buildNumber, err = j.getStoredID("_buildNumber")
-		if j.getBuildSignal() == false || getBuildNumberRetryCount >= maxRetryCount {
+		if getBuildNumberRetryCount >= maxRetryCount {
 			logs.Debug("User canceled current process or exceeded max retry count, will exit.")
 			return
 		} else if err != nil {
@@ -149,25 +159,25 @@ func (j *CIJobController) Console() {
 	req, err := http.NewRequest("GET", buildConsoleURL, nil)
 	client := http.Client{}
 
-	buffer := make(chan []byte, 1024)
-	done := make(chan bool)
-
+	buffer := make(chan bytes.Buffer)
 	retryCount := 0
 	expiryTimer := time.NewTimer(time.Second * 900)
 	ticker := time.NewTicker(time.Second * 1)
 	var lastPos int
+
+	ctx, cancel := j.resolveStoredContext()
 	go func() {
 		for range ticker.C {
 			resp, err := client.Do(req)
 			if err != nil {
 				j.InternalError(err)
 				logs.Error("Failed to get console response: %+v", err)
-				done <- true
-				return
+				cancel()
 			}
 			if resp.StatusCode == http.StatusNotFound {
 				if retryCount >= maxRetryCount {
-					done <- true
+					logs.Info("Sent cancel signal to stop WS of console as the retry count has exceeded the maximum.")
+					cancel()
 				} else {
 					retryCount++
 					if retryCount%50 == 0 {
@@ -179,48 +189,61 @@ func (j *CIJobController) Console() {
 			data, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				j.InternalError(err)
-				logs.Error("Failed to read data from response body: %+v", err)
-				done <- true
-				return
+				logs.Error("Sent cancel signal to stop WS of console as failed to read data from response body: %+v", err)
+				cancel()
 			}
-			buffer <- bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'})
+			var partialBuf bytes.Buffer
+			partialBuf.Write(bytes.TrimSuffix(data[lastPos:], []byte{'\r', '\n'}))
+			buffer <- partialBuf
+			partialBuf.Reset()
 			lastPos = len(data)
 			resp.Body.Close()
 			for _, line := range strings.Split(string(data), "\n") {
 				if strings.HasPrefix(line, "Finished:") || strings.Contains(line, "Job succeeded") || strings.Contains(line, "Job failed:") {
-					done <- true
+					logs.Info("Sent cancel signal to stop WS of console as job has reached the end.")
+					cancel()
 				}
 			}
 		}
 	}()
-
 	for {
 		select {
 		case content := <-buffer:
-			err = ws.WriteMessage(websocket.TextMessage, content)
+			err = ws.WriteMessage(websocket.TextMessage, content.Bytes())
 			if err != nil {
-				done <- true
+				logs.Error("Sent cancel signal to stop WS of console as error occured: %+v", err)
+				cancel()
 			}
-		case <-done:
+		case <-ctx.Done():
 			ticker.Stop()
-			err = ws.Close()
 			logs.Debug("WS is being closed.")
+			err = ws.Close()
+			if err := ctx.Err(); err != nil {
+				logs.Error("Context has canceled with error: %+v", err)
+			}
+			return
 		case <-expiryTimer.C:
 			ticker.Stop()
 			err = ws.Close()
 			logs.Debug("WS is being closed due to timeout.")
-		}
-		if err != nil {
-			logs.Error("Failed to write message: %+v", err)
+			if err != nil {
+				logs.Error("Failed to write message: %+v", err)
+			}
+			return
 		}
 	}
 }
 
 func (j *CIJobController) Stop() {
+	_, cancel := j.resolveStoredContext()
+	cancel()
+	logs.Info("Sent cancel signal to stop WS of console as user prompted.")
+
 	lastBuildNumber, err := j.getStoredID("_buildNumber")
 	if err != nil {
 		logs.Error("Failed to get job number: %+v", err)
-		j.toggleBuild(false)
+		cancel()
+		logs.Info("Sent cancel signal to stop WS of console as miss job build number.")
 		return
 	}
 	jobName := j.GetString("job_name")
@@ -259,5 +282,6 @@ func (j *CIJobController) Stop() {
 		j.clearBuildNumber()
 	}()
 	logs.Debug("Response status of stopping CI jobs: %d", resp.StatusCode)
+
 	j.ServeStatus(resp.StatusCode, "")
 }

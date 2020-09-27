@@ -49,9 +49,14 @@ export class InstallationComponent implements OnInit {
   isEditable = true;
   submitBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   editBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  startBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  uninstallBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   isEdit = false;
+  isStart = false;
+  isUninstall = false;
   user: User;
   startLog = '';
+  modalSize = '';
 
   @ViewChild('UUID') uuidInput: VariableInputComponent;
   @ViewChildren(VariableInputComponent) myInputTemplateComponents: QueryList<VariableInputComponent>;
@@ -251,6 +256,7 @@ export class InstallationComponent implements OnInit {
       },
       (err: HttpErrorResponse) => {
         // COMMON
+        this.isEdit = false;
         this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
     );
@@ -259,29 +265,36 @@ export class InstallationComponent implements OnInit {
   onStartBoard() {
     // for test
     if (this.debugMode) {
+      this.startBtnState = ClrLoadingState.LOADING;
       this.submitBtnState = ClrLoadingState.LOADING;
+      this.isStart = true;
       setTimeout(() => {
         this.openSSH = false;
         this.installStep += 2;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.startBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
-      }, 2000);
+      }, 20000);
       return;
     }
 
+    this.startBtnState = ClrLoadingState.LOADING;
     this.submitBtnState = ClrLoadingState.LOADING;
+    this.isStart = true;
     this.boardService.start(this.user).subscribe(
       () => {
         this.openSSH = false;
         this.installStep += 2;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.startBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
         // COMMON
         this.openSSH = false;
+        this.isStart = false;
         this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
       },
     );
@@ -290,19 +303,24 @@ export class InstallationComponent implements OnInit {
   onUninstallBoard() {
     // for test
     if (this.debugMode) {
+      this.uninstallBtnState = ClrLoadingState.LOADING;
       this.submitBtnState = ClrLoadingState.LOADING;
+      this.isUninstall = true;
       setTimeout(() => {
         this.openSSH = false;
         this.installStep = 4;
         this.ignoreStep1 = true;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.uninstallBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
-      }, 5000);
+      }, 20000);
       return;
     }
 
+    this.uninstallBtnState = ClrLoadingState.LOADING;
     this.submitBtnState = ClrLoadingState.LOADING;
+    this.isUninstall = true;
     this.boardService.shutdown(this.user, this.clearDate).subscribe(
       () => {
         this.openSSH = false;
@@ -310,11 +328,13 @@ export class InstallationComponent implements OnInit {
         this.ignoreStep1 = true;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.uninstallBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
         // COMMON
         this.openSSH = false;
+        this.isUninstall = false;
         this.commonError(err, { 503: 'INITIALIZATION.ALERTS.ALREADY_UNINSTALL' }, 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
       },
     );
@@ -326,13 +346,17 @@ export class InstallationComponent implements OnInit {
       this.submitBtnState = ClrLoadingState.LOADING;
       let helloTime = 0;
       const outPutLog = setInterval(() => {
-        this.startLog += `hello world! ${helloTime++}<br>`;
+        this.startLog += `hello world! ${helloTime++}\n`;
+        if (!this.modalSize) {
+          this.modalSize = 'xl';
+        }
       }, 1000);
       setTimeout(() => {
         this.openSSH = false;
         this.installStep++;
         this.installProgress = 100;
         this.submitBtnState = ClrLoadingState.DEFAULT;
+        this.modalSize = '';
         clearInterval(outPutLog);
       }, 60 * 1000);
       return;
@@ -340,7 +364,7 @@ export class InstallationComponent implements OnInit {
 
 
     this.submitBtnState = ClrLoadingState.LOADING;
-    this.openSSH = false;
+    let maxTry = 100;
     this.configurationService.putConfig(this.config).subscribe(
       () => {
         this.boardService.applyCfg(this.user).subscribe(
@@ -351,16 +375,24 @@ export class InstallationComponent implements OnInit {
                   if (InitStatusCode.InitStatusThird === res.status) {
                     this.installStep++;
                     this.installProgress = 100;
+                    this.openSSH = false;
                     this.submitBtnState = ClrLoadingState.DEFAULT;
+                    this.modalSize = '';
                     this.startLog = '';
                     clearInterval(initProcess);
                   } else {
                     this.startLog = res.log;
+                    if (!this.modalSize) {
+                      this.modalSize = 'xl';
+                    }
                   }
                 },
                 (err: HttpErrorResponse) => {
                   console.error(err.message);
-                  this.getSysStatusFailed();
+                  if (maxTry-- < 0) {
+                    this.getSysStatusFailed();
+                    clearInterval(initProcess);
+                  }
                 },
               );
             }, 5 * 1000);

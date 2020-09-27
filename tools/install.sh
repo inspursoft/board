@@ -97,7 +97,13 @@ then
 fi
 echo ""
 
+option=legacy
+
+if [[ $(cat ./board.cfg) =~ devops_opt[[:blank:]]*=[[:blank:]]*(gitlab?) ]]
+then
+option=${BASH_REMATCH[1]}
 docker run --rm -v $(pwd)/board.cfg:/app/instance/board.cfg gitlab-helper:1.0
+fi
 
 echo "[Step $item]: preparing environment ...";  let item+=1
 #if [ -n "$host" ]
@@ -106,6 +112,24 @@ echo "[Step $item]: preparing environment ...";  let item+=1
 #fi
 ./prepare
 echo ""
+
+protocol=http
+hostname=reg.mydomain.com
+
+if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
+then
+protocol=${BASH_REMATCH[1]}
+fi
+
+if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
+then
+hostname=${BASH_REMATCH[1]}
+fi
+
+if [ $option == "legacy" ]
+then
+	cd archive
+fi
 
 echo "[Step $item]: checking existing instance of Board ..."; let item+=1
 if [ -n "$(docker-compose ps -q)"  ]
@@ -121,18 +145,6 @@ docker network create board &> /dev/null || true
 echo "[Step $item]: starting Board ..."
 docker-compose up -d
 
-protocol=http
-hostname=reg.mydomain.com
-
-if [[ $(cat ./board.cfg) =~ ui_url_protocol[[:blank:]]*=[[:blank:]]*(https?) ]]
-then
-protocol=${BASH_REMATCH[1]}
-fi
-
-if [[ $(grep 'hostname[[:blank:]]*=' ./board.cfg) =~ hostname[[:blank:]]*=[[:blank:]]*(.*) ]]
-then
-hostname=${BASH_REMATCH[1]}
-fi
 echo ""
 
 echo $"----Board has been installed and started successfully.----
