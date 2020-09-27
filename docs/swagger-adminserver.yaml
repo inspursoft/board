@@ -403,6 +403,9 @@ definitions:
         format: int64
       password:
         type: string
+      port:
+        type: integer
+        format: int64
       username:
         type: string
   models.Board:
