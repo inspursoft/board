@@ -565,6 +565,7 @@ export const LANG_EN_US = {
       SAVE: 'Save successfully',
       COMMENT: 'The new configuration has been saved successfully. Is the configuration applied in the Board?It takes some time to restart the system for the configuration to take effect. To confirm the effect, enter the administrator account of the host.',
       ACCOUNT: {
+        SSH_PORT: 'SSH Port',
         NAME: 'Account',
         PASSWORD: 'Password',
         REQUIRED: 'This field is required'

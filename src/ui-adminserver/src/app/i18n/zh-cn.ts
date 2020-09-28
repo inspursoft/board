@@ -564,6 +564,7 @@ export const LANG_ZH_CN = {
       SAVE: '保存成功',
       COMMENT: '新配置已经成功保存，是否在Board中应用该配置？生效配置需要花费一些时间来重启系统，确认生效请输入该主机的管理员账户及密码。',
       ACCOUNT: {
+        SSH_PORT: 'SSH端口',
         NAME: '账户',
         PASSWORD: '密码',
         REQUIRED: '必填项'

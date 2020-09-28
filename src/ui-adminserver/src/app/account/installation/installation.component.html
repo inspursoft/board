@@ -150,7 +150,8 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.board.apiServerPort = $event">
               </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
                               [type]="'enum'"
                               [required]="true"
                               [defaultValue]="config.board.devopsOpt"
@@ -217,18 +218,16 @@
                               (commitEvent)="config.k8s.kubeHttpScheme = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.LABEL' | translate"
-                              [type]="'enum'"
+                              [type]="'number'"
                               [required]="true"
-                              [defaultValue]="config.k8s.kubeHttpScheme === 'http' ? 8080 : 6443"
-                              [enumType]="'number'"
-                              [enumItem]="{'8080':8080,'6443':6443}"
-                              [enumInline]="true"
-                              [enableCustomItem]="true"
-                              [customItemPlaceholder]="'1~65535'"
-                              [customItemWidth]="'3.5rem'"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.k8s.kubeMasterPort"
+                              [placeholder]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.PLACEHOLDER' | translate"
                               [helper]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [inputUpdateOn]="'change'"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.k8s.kubeMasterPort = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.REGISTRY_IP.LABEL' | translate"
@@ -949,6 +948,19 @@
           <label>{{'INITIALIZATION.CONTENTS.CLEAR_DATA' | translate}}</label>
         </clr-checkbox-wrapper>
       </clr-checkbox-container>
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.SSH_PORT' | translate }}</label>
+        <input clrInput
+               required
+               type="number"
+               [(ngModel)]="user.port"
+               [disabled]="submitBtnState != 0"
+               name=sshPort />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
 
       <clr-input-container>
         <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
