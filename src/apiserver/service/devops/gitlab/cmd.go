@@ -195,6 +195,7 @@ type CommitRepoData struct {
 	AuthorName    string `json:"author_name"`
 	Content       string `json:"content"`
 	CommitMessage string `json:"commit_message"`
+	FilePath      string `json:"file_path"`
 }
 
 type FileCreation struct {

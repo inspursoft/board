@@ -83,6 +83,9 @@ func generateCommitActionInfo(repoUser model.User, repoProject model.Project, ac
 	for i, item := range items {
 		fi := gitlab.FileInfo{Path: item.PathWithName}
 		_, err := gitlab.NewGitlabHandler(repoUser.RepoToken).ManipulateFile("detect", repoUser, repoProject, "master", fi)
+		if err != nil {
+			logs.Error("Failed to manipulate file with action: %s, with error: %+v", action, err)
+		}
 		if err == nil {
 			logs.Debug("Update file: %s as it already exist.", item.PathWithName)
 			action = "update"
@@ -126,7 +129,11 @@ func (g GitlabDevOps) CommitAndPush(repoName string, isRemoved bool, username st
 	}
 	commitActionInfos, commitMessage := generateCommitActionInfo(repoUser, repoProject, action, items...)
 	logs.Debug("Commit action info: %+v", commitActionInfos)
-	gitlab.NewGitlabHandler(user.RepoToken).CommitMultiFiles(repoUser, repoProject, "master", commitMessage, isRemoved, commitActionInfos)
+	commitCreation, err := gitlab.NewGitlabHandler(user.RepoToken).CommitMultiFiles(repoUser, repoProject, "master", commitMessage, isRemoved, commitActionInfos)
+	if err != nil {
+		return fmt.Errorf("Failed to commit multi file actions: %+v, with error: %+v", commitCreation, err)
+	}
+	logs.Debug("Commit multi file creation: %+v", commitCreation)
 	return nil
 }
 
@@ -237,9 +244,19 @@ func (g GitlabDevOps) GetRepo(token string, repoName string) (project model.Proj
 		logs.Error("Repo: %s not found.", repoName)
 		return
 	}
-	project.ID = int64(foundProjectList[0].ID)
-	project.Name = foundProjectList[0].Name
-	project.OwnerName = foundProjectList[0].Owner.Name
+	found := true
+	for _, foundProject := range foundProjectList {
+		if repoName == foundProject.Name {
+			logs.Debug("Get repo: %+v by name: %s", foundProject, repoName)
+			project.ID = int64(foundProject.ID)
+			project.Name = foundProject.Name
+			project.OwnerName = foundProject.Owner.Name
+		}
+	}
+	if !found {
+		err = fmt.Errorf("Failed to get repo by not found with name: %s", repoName)
+		return
+	}
 	return
 }
 
@@ -294,6 +311,14 @@ func (g GitlabDevOps) ForkRepo(forkedUser model.User, baseRepoName string) error
 	if err != nil {
 		return fmt.Errorf("failed to fork repo with name: %s from base repo ID: %d", baseRepoName, baseRepo.ID)
 	}
+	hookURL := fmt.Sprintf("%s/jenkins-job/pipeline?user_id=%d", boardAPIBaseURL(), forkedUser.ID)
+	forkedProjectInfo := model.Project{Name: forkedRepoName}
+	forkedProjectInfo.ID = int64(forkedCreation.ID)
+	gitlabHookCreation, err := gitlabHandler.CreateHook(forkedProjectInfo, hookURL)
+	if err != nil {
+		return fmt.Errorf("Failed to create hook to forked repo: %s, error: %+v", forkedRepoName, err)
+	}
+	logs.Debug("Successful created Gitlab hook: %+v", gitlabHookCreation)
 	logs.Debug("Successful forked repo with name: %s, with detail: %+v", baseRepoName, forkedCreation)
 	return nil
 }
@@ -303,19 +328,18 @@ func (g GitlabDevOps) CreatePullRequestAndComment(username, ownerName, repoName,
 	if err != nil {
 		return fmt.Errorf("failed to get assignee by name: %s, error: %+v", username, err)
 	}
-	sourceProject, err := g.GetRepo(repoToken, repoName)
+	sourceRepoName, err := ResolveRepoName(repoName, username)
 	if err != nil {
-		return fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+		return fmt.Errorf("failed to resolve repo name via base repo name: %s, error: %+v", sourceRepoName, err)
 	}
-	foundRepoList, err := gitlab.NewGitlabHandler(repoToken).GetRepoInfo(model.Project{Name: repoName})
+	sourceProject, err := g.GetRepo(repoToken, sourceRepoName)
 	if err != nil {
-		return fmt.Errorf("failed to list repo info by name: %s, error: %+v", repoName, err)
+		return fmt.Errorf("failed to get source repo by name: %s, error: %+v", sourceRepoName, err)
 	}
-	if len(foundRepoList) == 0 {
-		return fmt.Errorf("repo: %s not found", repoName)
+	targetProject, err := g.GetRepo(repoToken, repoName)
+	if err != nil {
+		return fmt.Errorf("failed to get target repo by name: %s, error: %+v", repoName, err)
 	}
-	targetRepo := foundRepoList[0].ForkedFromProject
-	targetProject := model.Project{ID: int64(targetRepo.ID)}
 	mergeInfo := strings.Split(compareInfo, "...")
 	sourceBranch := mergeInfo[0]
 	subMergeInfo := strings.Split(mergeInfo[1], ":")

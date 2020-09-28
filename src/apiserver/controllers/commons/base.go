@@ -401,7 +401,7 @@ func (b *BaseController) CollaborateWithPullRequest(headBranch, baseBranch strin
 	repoName := b.Project.Name
 	ownerName := b.Project.OwnerName
 	if ownerName == username {
-		logs.Info("User %s is the owner to the current repo: %s", username, repoName)
+		logs.Info("Skip to create Merge Request as the user %s is the owner to the current repo: %s", username, repoName)
 		return
 	}
 
@@ -428,8 +428,8 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 }
 
 func (b *BaseController) MergeCollaborativePullRequest() {
-	if b.CurrentUser.Username == b.Project.OwnerName {
-		logs.Info("User %s is the owner to the current repo: %s", b.CurrentUser.Username, b.Project.Name)
+	if b.CurrentUser.Username != b.Project.OwnerName {
+		logs.Info("Skip to merge as the user %s is not the owner to the current repo: %s", b.CurrentUser.Username, b.Project.Name)
 		return
 	}
 	projectOwner, err := service.GetUserByName(b.Project.OwnerName)
