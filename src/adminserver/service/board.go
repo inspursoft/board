@@ -111,7 +111,7 @@ func SSHtoHost(host *models.Account, buf *bytes.Buffer) (*secureShell.SecureShel
 	if err != nil {
 		return nil, err
 	}
-	shell, err := secureShell.NewSecureShell(buf, HostIP, host.Username, host.Password)
+	shell, err := secureShell.NewSecureShell(buf, HostIP, host.Username, host.Password, host.Port)
 	if err != nil {
 		return nil, err
 	}

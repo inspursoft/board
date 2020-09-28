@@ -21,7 +21,6 @@ const YAML_TYPE_SERVICE = 'service';
 })
 export class ServiceDetailComponent {
   isOpenServiceDetailValue = false;
-  boardHost: string;
   serviceDetail: ServiceDetailInfo;
   urlList: Array<NodeURL>;
   curService: Service;
@@ -33,7 +32,6 @@ export class ServiceDetailComponent {
 
   constructor(private appInitService: AppInitService,
               private k8sService: K8sService) {
-    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.closeNotification = new Subject<any>();
     this.urlList = Array<NodeURL>();
   }

@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { DashboardService } from '../dashboard.service';
 
 @Component({
+  selector: 'app-grafana',
   templateUrl: './grafana.component.html'
 })
 export class GrafanaComponent implements OnInit {
