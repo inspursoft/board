@@ -365,6 +365,7 @@ export class InstallationComponent implements OnInit {
 
     this.submitBtnState = ClrLoadingState.LOADING;
     let maxTry = 100;
+    const installStepNow = this.installStep;
     this.configurationService.putConfig(this.config).subscribe(
       () => {
         this.boardService.applyCfg(this.user).subscribe(
@@ -373,7 +374,9 @@ export class InstallationComponent implements OnInit {
               this.appInitService.getSystemStatus().subscribe(
                 (res: InitStatus) => {
                   if (InitStatusCode.InitStatusThird === res.status) {
-                    this.installStep++;
+                    if (this.installStep === installStepNow) {
+                      this.installStep++;
+                    }
                     this.installProgress = 100;
                     this.openSSH = false;
                     this.submitBtnState = ClrLoadingState.DEFAULT;
@@ -462,6 +465,9 @@ export class InstallationComponent implements OnInit {
     console.error(err.message);
     this.refresh = true;
     this.submitBtnState = ClrLoadingState.DEFAULT;
+    this.editBtnState = ClrLoadingState.DEFAULT;
+    this.startBtnState = ClrLoadingState.DEFAULT;
+    this.uninstallBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
       this.tokenError();
       return;
