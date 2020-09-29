@@ -184,6 +184,7 @@ type PipelineStatus struct {
 
 var ErrFileAlreadyExists = errors.New("A file with this name already exists")
 var ErrFileDoesNotExists = errors.New("A file with this name doesn't exist")
+var ErrBranchCannotBeMerged = errors.New("Branch has conflicts that cannot be merged.")
 
 func (f FileInfo) EscapedPath() string {
 	return strings.ReplaceAll(url.PathEscape(f.Path), ".", "%2E")
@@ -472,11 +473,14 @@ func (g *gitlabHandler) CreateMR(assignee model.User, sourceProject model.Projec
 }
 
 func (g *gitlabHandler) AcceptMR(sourceProject model.Project, mergeRequestID int) (m MRCreation, err error) {
-	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/%d/merge", g.gitlabAPIBaseURL, sourceProject.ID, mergeRequestID),
+	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/merge_requests/%d/merge", g.gitlabAPIBaseURL, sourceProject.ID, mergeRequestID),
 		func(req *http.Request) error {
 			req.Header = g.getAccessHeader()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == http.StatusMethodNotAllowed || resp.StatusCode == http.StatusNotAcceptable {
+				return ErrBranchCannotBeMerged
+			}
 			return utils.UnmarshalToJSON(resp.Body, &m)
 		})
 	return

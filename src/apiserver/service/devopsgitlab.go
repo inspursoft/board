@@ -366,12 +366,13 @@ func (g GitlabDevOps) MergePullRequest(repoName, repoToken string) error {
 	if len(foundMRList) == 0 {
 		return fmt.Errorf("repo: %s has no merge request", repoName)
 	}
-	mrIID := foundMRList[0].IID
-	mrAcceptance, err := gitlab.NewGitlabHandler(repoToken).AcceptMR(sourceProject, mrIID)
-	if err != nil {
-		return fmt.Errorf("failed to accept MR by repo name: %s, error: %+v", repoName, err)
+	for _, mr := range foundMRList {
+		mrAcceptance, err := gitlab.NewGitlabHandler(repoToken).AcceptMR(sourceProject, mr.IID)
+		if err != nil {
+			return fmt.Errorf("failed to accept MR by repo name: %s, error: %+v", repoName, err)
+		}
+		logs.Debug("Successful accepted MR with detail: %+v", mrAcceptance)
 	}
-	logs.Debug("Successful accepted MR with detail: %+v", mrAcceptance)
 	return nil
 }
 

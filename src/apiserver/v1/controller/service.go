@@ -430,6 +430,19 @@ func (p *ServiceController) DeleteServiceAction() {
 
 }
 
+//Revert to base repo path as to adopt toggling service on forked repo which created by the base repo user.
+func (p *ServiceController) adoptToBaseRepoPath(serviceName string) {
+	if p.CurrentUser.Username != p.Project.OwnerName {
+		if _, err := os.Stat(p.RepoServicePath); err == nil {
+			logs.Debug("Skip to adopt repo path as the user has the configuration files.")
+			return
+		}
+		currentRepoName := p.Project.Name
+		p.RepoServicePath = filepath.Join(service.ResolveRepoPath(currentRepoName, p.Project.OwnerName), serviceName)
+		logs.Debug("Adopted repo path to base: %s as the current user is: %s not the repo owner: %s", p.RepoServicePath, p.CurrentUser.Username, p.Project.OwnerName)
+	}
+}
+
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
 	var err error
@@ -478,16 +491,19 @@ func (p *ServiceController) ToggleServiceAction() {
 	} else {
 		// start service
 		logs.Debug("Deploy service by YAML with project name: %s", s.ProjectName)
+		// Push deployment to Git repo
+		p.MergeCollaborativePullRequest()
+		p.adoptToBaseRepoPath(s.Name)
 		err := service.DeployServiceByYaml(s.ProjectName, p.RepoServicePath)
 		if err != nil {
 			p.ParseError(err, c.ParsePostK8sError)
 			return
 		}
-		// Push deployment to Git repo
+
 		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
 		p.PushItemsToRepo(items...)
 		p.CollaborateWithPullRequest("master", "master", items...)
-		p.MergeCollaborativePullRequest()
+
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {

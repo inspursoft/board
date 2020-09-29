@@ -255,7 +255,7 @@ func (p *ImageController) BuildImageAction() {
 	}
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
-	p.CollaborateWithPullRequest("master", "master", items...)
+	// p.CollaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) GetImageDockerfileAction() {
@@ -402,7 +402,7 @@ func (p *ImageController) DockerfileBuildImageAction() {
 
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
-	p.CollaborateWithPullRequest("master", "master", items...)
+	// p.CollaborateWithPullRequest("master", "master", items...)
 }
 
 func (p *ImageController) UploadAndPushImagePackageAction() {
@@ -431,7 +431,7 @@ func (p *ImageController) UploadAndPushImagePackageAction() {
 	}
 
 	p.PushItemsToRepo(yamlFileName)
-	p.CollaborateWithPullRequest("master", "master", yamlFileName)
+	// p.CollaborateWithPullRequest("master", "master", yamlFileName)
 }
 
 func (p *ImageController) CheckImageTagExistingAction() {
