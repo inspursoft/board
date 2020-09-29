@@ -153,10 +153,21 @@ func (p *ImageController) GetImageDetailAction() {
 			return
 		}
 		if len(manifest1.History) > 0 {
-			tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+			imageDetail := struct {
+				Created time.Time `json:"created"`
+				Arch    string    `json: "architecture"`
+				Author  string    `json: "author"`
+			}{}
+			err := json.Unmarshal([]byte((manifest1.History[0])["v1Compatibility"]), &imageDetail)
+			if err != nil {
+				logs.Error("Failed to Unmarshal registry manifest: %+v", err)
+			} else {
+				tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+				tagDetail.ImageArch = imageDetail.Arch
+				tagDetail.ImageAuthor = imageDetail.Author
+				tagDetail.ImageCreationTime = imageDetail.Created.Format("2006-01-02 15:04:05")
+			}
 		}
-		tagDetail.ImageAuthor = ""       //TODO: get the author by frontend simply
-		tagDetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
 		// Get version two schema
 		manifest2, err := service.GetRegistryManifest2(tagDetail.ImageName, tagDetail.ImageTag)
