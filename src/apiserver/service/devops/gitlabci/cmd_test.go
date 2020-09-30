@@ -15,11 +15,15 @@ func TestGenerateGitlabCI(t *testing.T) {
 		Name:       "kaniko",
 		Entrypoint: []string{"bash", "-c", "ls", "-al"},
 	}
+	only := gitlabci.Only{
+		Variables: []string{"$target =~ /image_build/"},
+	}
 	job1 := gitlabci.Job{
 		Image:  &image,
 		Stage:  "test1",
 		Script: []string{"echo hello"},
 		Tags:   []string{"board-test-vm"},
+		Only:   &only,
 	}
 	job2 := gitlabci.Job{
 		Image: &image,

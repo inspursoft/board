@@ -378,6 +378,10 @@ func (g LegacyDevOps) CreateCIYAML(action yamlAction, configurations map[string]
 	return
 }
 
+func (g LegacyDevOps) ResetOpts(configurations map[string]string) error {
+	return nil
+}
+
 func (g LegacyDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
 	jobName := configurations["job_name"]
 	buildSerialID := configurations["build_serial_id"]

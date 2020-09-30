@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
 
 	"strconv"
 
@@ -439,8 +440,10 @@ func (b *BaseController) MergeCollaborativePullRequest() {
 	}
 	err = service.CurrentDevOps().MergePullRequest(b.Project.Name, projectOwner.RepoToken)
 	if err != nil {
-		logs.Error("Failed to merge request with error: %+v", err)
-		b.CustomAbort(http.StatusNotAcceptable, "Branch has conflicts than cannot be merged.")
+		logs.Warning("Failed to merge request with error: %+v", err)
+		if err == gitlab.ErrBranchCannotBeMerged {
+			b.CustomAbort(http.StatusNotAcceptable, "Branch has conflicts than cannot be merged.")
+		}
 	}
 }
 

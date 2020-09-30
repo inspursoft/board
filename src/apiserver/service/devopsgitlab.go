@@ -455,7 +455,6 @@ func (g GitlabDevOps) DeleteUser(username string) error {
 }
 
 func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
-	token := configurations["token"]
 	imageURI := configurations["image_uri"]
 	dockerfileName := configurations["dockerfile"]
 	repoPath := configurations["repo_path"]
@@ -472,18 +471,20 @@ func generateBuildingImageGitlabCIYAML(configurations map[string]string) error {
 			ci.WriteMultiLine("CI_REGISTRY_PASSWORD=%s", "$(echo -n 123456a? | base64)"),
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-			ci.WriteMultiLine("token=%s", token),
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
 			ci.WriteMultiLine("/kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/containers/%s --destination %s --cache-repo $CI_REGISTRY --cache=true", dockerfileName, imageURI),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/reset?repo_name=$CI_PROJECT_NAME&token=$token\"", boardAPIBaseURL()),
+		},
+		Only: &gitlabci.Only{
+			Variables: []string{"$target =~ /image_build/"},
 		},
 	}
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
 func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
-	token := configurations["token"]
 	imagePackageName := configurations["image_package_name"]
 	imageURI := configurations["image_uri"]
 	repoPath := configurations["repo_path"]
@@ -495,7 +496,6 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 		Script: []string{
 			"if [ -d 'upload' ]; then rm -rf upload; fi",
 			"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
-			ci.WriteMultiLine("token=%s", token),
 			ci.WriteMultiLine("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
 			ci.WriteMultiLine("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
 			"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
@@ -505,12 +505,69 @@ func generatePushingImageGitlabCIYAML(configurations map[string]string) error {
 			ci.WriteMultiLine("docker push %s", imageURI),
 			ci.WriteMultiLine("docker rmi %s", imageURI),
 			ci.WriteMultiLine("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+			ci.WriteMultiLine("curl \"%s/jenkins-job/reset?repo_name=$CI_PROJECT_NAME&token=$token\"", boardAPIBaseURL()),
+		},
+		Only: &gitlabci.Only{
+			Variables: []string{"$target =~ /image_build/"},
 		},
 	}
 	return ci.GenerateGitlabCI(ciJobs, repoPath)
 }
 
+func (g GitlabDevOps) ResolveVariables(repoToken string, repoName string, key string, value string, isRemove bool) (err error) {
+	project, err := g.GetRepo(repoToken, repoName)
+	if err != nil {
+		err = fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+		return
+	}
+	gitlabHandler := gitlab.NewGitlabHandler(repoToken)
+	if gitlabHandler == nil {
+		err = fmt.Errorf("failed to create Gitlab handler")
+		return
+	}
+	projectID := int(project.ID)
+	if isRemove {
+		err = gitlabHandler.DeleteVariable(projectID, key)
+		if err != nil {
+			err = fmt.Errorf("failed to remove variable by ID: %d name: %s, with error: %+v", projectID, repoName, err)
+			return
+		}
+		logs.Debug("Successfully deleted variable by key: %s for repo: %s", key, repoName)
+		return
+	}
+	variableList, err := gitlabHandler.ListVariables(projectID)
+	if err != nil {
+		err = fmt.Errorf("failed to get variable by ID: %d name: %s, with error: %+v", projectID, repoName, err)
+		return
+	}
+	isExisting := false
+	var variableCreation gitlab.VariableCreation
+	for _, variable := range variableList {
+		if variable.Key == key {
+			variableCreation, err = gitlabHandler.UpdateVariable(projectID, key, value)
+			logs.Debug("Successfully updated Gitlab variable key: %s with variable creation: %+v", key, variableCreation)
+			isExisting = true
+			break
+		}
+	}
+	if !isExisting {
+		variableCreation, err = gitlabHandler.CreateVariable(projectID, key, value)
+		logs.Debug("Successfully created Gitlab variable key: %s with creation: %+v", key, variableCreation)
+	}
+	if err != nil {
+		err = fmt.Errorf("failed to create or update variable by ID: %d, name: %s with error: %+v", projectID, repoName, err)
+		return
+	}
+	return
+}
+
 func (g GitlabDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
+	repoName := configurations["repo_name"]
+	repoToken := configurations["repo_token"]
+	token := configurations["token"]
+	logs.Debug("Adding token to Gitlab variable for repo: %s", repoName)
+	g.ResolveVariables(repoToken, repoName, "token", token, false)
+	g.ResolveVariables(repoToken, repoName, "target", "image_build", false)
 	yamlName = gitlabci.GitlabCIFilename
 	switch action {
 	case BuildDockerImageCIYAML:
@@ -540,4 +597,24 @@ func (g GitlabDevOps) ResolveHandleURL(configurations map[string]string) (consol
 	}
 	stopURL = fmt.Sprintf("%s/api/v4/projects/%d/pipelines/%d/cancel?private_token=%s", gitlabBaseURL(), project.ID, pipelineID, repoToken)
 	return
+}
+
+func (g GitlabDevOps) ResetOpts(configurations map[string]string) error {
+	repoToken := configurations["repo_token"]
+	repoName := configurations["repo_name"]
+	project, err := g.GetRepo(repoToken, repoName)
+	if err != nil {
+		return fmt.Errorf("failed to get repo by name: %s, error: %+v", repoName, err)
+	}
+	gitlabHandler := gitlab.NewGitlabHandler(repoToken)
+	if gitlabHandler == nil {
+		return nil
+	}
+	projectID := int(project.ID)
+	err = gitlabHandler.DeleteVariable(projectID, "target")
+	if err != nil {
+		return fmt.Errorf("failed to remove Gitlab variable in ID: %d, repo name: %s with error: %+v", projectID, repoName, err)
+	}
+	logs.Debug("Removing target from Gitlab variable for repo: %s", repoName)
+	return nil
 }

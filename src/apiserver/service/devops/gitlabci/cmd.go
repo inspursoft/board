@@ -16,11 +16,16 @@ type Image struct {
 	Entrypoint []string `json:"entrypoint"`
 }
 
+type Only struct {
+	Variables []string `json:"variables"`
+}
+
 type Job struct {
 	Stage  string   `json:"stage"`
 	Image  *Image   `json:"image,omitempty"`
 	Tags   []string `json:"tags"`
 	Script []string `json:"script"`
+	Only   *Only    `json:"only,omitempty"`
 }
 
 var GitlabCIFilename = ".gitlab-ci.yml"
