@@ -484,10 +484,12 @@ func (p *ServiceController) ToggleServiceAction() {
 			p.ParseError(err, c.ParsePostK8sError)
 			return
 		}
-		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
-		p.PushItemsToRepo(items...)
-		p.CollaborateWithPullRequest("master", "master", items...)
-
+		if s.OwnerName == p.CurrentUser.Username {
+			//Commit changes only for the user is the owner of the service.
+			items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
+			p.PushItemsToRepo(items...)
+			p.CollaborateWithPullRequest("master", "master", items...)
+		}
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
