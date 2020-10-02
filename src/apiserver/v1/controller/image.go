@@ -192,6 +192,8 @@ func (p *ImageController) GetImageDetailAction() {
 func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
 	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
+	configurations["repo_name"] = p.RepoName
+	configurations["repo_token"] = p.CurrentUser.RepoToken
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["dockerfile"] = dockerfileName
@@ -202,6 +204,8 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
 	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
+	configurations["repo_name"] = p.RepoName
+	configurations["repo_token"] = p.CurrentUser.RepoToken
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["image_package_name"] = imagePackageName
@@ -264,6 +268,7 @@ func (p *ImageController) BuildImageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
+	p.MergeCollaborativePullRequest()
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
 	p.CollaborateWithPullRequest("master", "master", items...)
@@ -410,10 +415,11 @@ func (p *ImageController) DockerfileBuildImageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
-
+	p.MergeCollaborativePullRequest()
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
 	p.CollaborateWithPullRequest("master", "master", items...)
+
 }
 
 func (p *ImageController) UploadAndPushImagePackageAction() {
@@ -440,7 +446,7 @@ func (p *ImageController) UploadAndPushImagePackageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
-
+	p.MergeCollaborativePullRequest()
 	p.PushItemsToRepo(yamlFileName)
 	p.CollaborateWithPullRequest("master", "master", yamlFileName)
 }
