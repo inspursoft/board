@@ -285,3 +285,15 @@ func (j *CIJobController) Stop() {
 
 	j.ServeStatus(resp.StatusCode, "")
 }
+
+func (j *CIJobController) ResetVariable() {
+	repoName := j.GetString("repo_name")
+	configurations := make(map[string]string)
+	configurations["repo_name"] = repoName
+	configurations["repo_token"] = j.CurrentUser.RepoToken
+	err := service.CurrentDevOps().ResetOpts(configurations)
+	if err != nil {
+		j.InternalError(err)
+		return
+	}
+}

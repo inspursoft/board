@@ -181,6 +181,7 @@ type Account struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Port     int    `json:"port"`
 }
 
 var DBconfigdir string = "/data/board/make/config/db"

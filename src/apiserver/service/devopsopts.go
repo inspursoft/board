@@ -46,6 +46,7 @@ type DevOps interface {
 	DeleteUser(username string) error
 	CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error)
 	ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error)
+	ResetOpts(configurations map[string]string) error
 }
 
 func CurrentDevOps() DevOps {
