@@ -8,6 +8,15 @@ import sys, getopt
 
 log = logging.getLogger(__name__)
 
+def detect_gitlab_status():
+  gitlab = service.config.get_config_from_file("gitlab")
+  command_detection = f'''if [ -z $(docker ps -f name={gitlab['container_name']} --format {{{{.Names}}}}) ] && \
+[ ! -z $(docker ps -a -f name={gitlab['container_name']} --format {{{{.Names}}}}) ]; then \
+echo "Removing stopped Gitlab container...";\
+docker rm {gitlab['container_name']};\
+fi'''
+  return SSHUtil.exec_command(command_detection)
+
 def gitlab_docker_run():
   gitlab = service.config.get_config_from_file("gitlab")
   command_gitlab_run = f'''docker run -d \
@@ -86,7 +95,7 @@ def register_gitlab_shared_runner(gitlab_runner_token, executor):
 
 if __name__ == '__main__':
   logging.basicConfig(level=logging.INFO)
-  try:
+  try:      
     opts, args = getopt.getopt(sys.argv[1:], "hr:",["reset-token-only=",])
     reset_token_only = False
     for opt, arg in opts:
@@ -101,6 +110,7 @@ if __name__ == '__main__':
       update_access_token(admin_access_token)
     else:
       log.info("Start normally...")
+      detect_gitlab_status()
       gitlab_docker_run()
       setting_access_token(admin_access_token)
       update_access_token(admin_access_token)
@@ -111,4 +121,3 @@ if __name__ == '__main__':
         register_gitlab_shared_runner(runner_token, "shell")
   except getopt.GetoptError:
     log.info("action/perform.py -ro | --reset-token-only=[true]")
-  
