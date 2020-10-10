@@ -74,6 +74,27 @@ def obtain_shared_runner_token():
     return None
   return token.strip()
 
+def reset_gitlab_runner_config():
+  log.info("Reset Gitlab runner config.toml")
+  default_config = '''concurrent = 1
+check_interval = 0
+[session_server]
+session_timeout = 1800'''
+  r = service.config.get_config_from_file("gitlab-runner")
+  cmd_reset_config = ""
+  for index, content in enumerate(default_config.splitlines()):
+    append_operator = ">>"
+    if index == 0:
+      append_operator = ">"
+    cmd_reset_config += f'''echo {content} {append_operator} {r["config_path"]};'''
+  return SSHUtil.exec_command(cmd_reset_config)
+
+def clean_up_stale_runner(token):
+  log.info("Clean up stale Gitlab shared runners...")
+  runner_list = service.http.get_shared_runners(token)
+  for runner in runner_list:
+    service.http.delete_shared_runners(token, int(runner["id"]))
+
 def command_to_register_runner(gitlab_url, gitlab_runner_token, executor, r):
   cmd = f'''gitlab-runner register --name "{r["runner_name"] + "-" + executor}" \
 --url="{gitlab_url}" \
@@ -117,6 +138,8 @@ if __name__ == '__main__':
       update_allow_local_webhook_request(admin_access_token)
       runner_token = obtain_shared_runner_token()
       if runner_token:
+        reset_gitlab_runner_config()
+        clean_up_stale_runner(admin_access_token)
         register_gitlab_shared_runner(runner_token, "docker")
         register_gitlab_shared_runner(runner_token, "shell")
   except getopt.GetoptError:
