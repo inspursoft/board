@@ -153,10 +153,21 @@ func (p *ImageController) GetImageDetailAction() {
 			return
 		}
 		if len(manifest1.History) > 0 {
-			tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+			imageDetail := struct {
+				Created time.Time `json:"created"`
+				Arch    string    `json: "architecture"`
+				Author  string    `json: "author"`
+			}{}
+			err := json.Unmarshal([]byte((manifest1.History[0])["v1Compatibility"]), &imageDetail)
+			if err != nil {
+				logs.Error("Failed to Unmarshal registry manifest: %+v", err)
+			} else {
+				tagDetail.ImageDetail = (manifest1.History[0])["v1Compatibility"]
+				tagDetail.ImageArch = imageDetail.Arch
+				tagDetail.ImageAuthor = imageDetail.Author
+				tagDetail.ImageCreationTime = imageDetail.Created.Format("2006-01-02 15:04:05")
+			}
 		}
-		tagDetail.ImageAuthor = ""       //TODO: get the author by frontend simply
-		tagDetail.ImageCreationTime = "" //TODO: get the time by frontend simply
 
 		// Get version two schema
 		manifest2, err := service.GetRegistryManifest2(tagDetail.ImageName, tagDetail.ImageTag)
@@ -181,6 +192,8 @@ func (p *ImageController) GetImageDetailAction() {
 func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
 	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
+	configurations["repo_name"] = p.RepoName
+	configurations["repo_token"] = p.CurrentUser.RepoToken
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["dockerfile"] = dockerfileName
@@ -191,6 +204,8 @@ func (p *ImageController) generateBuildingImageTravis(imageURI, dockerfileName s
 func (p *ImageController) generatePushImagePackageTravis(imageURI, imagePackageName string) (yamlFileName string, err error) {
 	configurations := make(map[string]string)
 	configurations["user_id"] = strconv.Itoa(int(p.CurrentUser.ID))
+	configurations["repo_name"] = p.RepoName
+	configurations["repo_token"] = p.CurrentUser.RepoToken
 	configurations["token"] = p.Token
 	configurations["image_uri"] = imageURI
 	configurations["image_package_name"] = imagePackageName
@@ -253,6 +268,7 @@ func (p *ImageController) BuildImageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
+	p.MergeCollaborativePullRequest()
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
 	p.CollaborateWithPullRequest("master", "master", items...)
@@ -399,10 +415,11 @@ func (p *ImageController) DockerfileBuildImageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
-
+	p.MergeCollaborativePullRequest()
 	items := []string{yamlFileName, filepath.Join("containers", dockerfileName)}
 	p.PushItemsToRepo(items...)
 	p.CollaborateWithPullRequest("master", "master", items...)
+
 }
 
 func (p *ImageController) UploadAndPushImagePackageAction() {
@@ -429,7 +446,7 @@ func (p *ImageController) UploadAndPushImagePackageAction() {
 		logs.Error("Failed to generate building image travis: %+v", err)
 		return
 	}
-
+	p.MergeCollaborativePullRequest()
 	p.PushItemsToRepo(yamlFileName)
 	p.CollaborateWithPullRequest("master", "master", yamlFileName)
 }

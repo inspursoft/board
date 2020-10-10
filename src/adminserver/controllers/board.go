@@ -30,6 +30,9 @@ func (b *BoardController) Start() {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
+	if host.Port == 0 {
+		host.Port = 22
+	}
 	if err = service.Start(&host); err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
@@ -51,6 +54,9 @@ func (b *BoardController) Applycfg() {
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
+	if host.Port == 0 {
+		host.Port = 22
 	}
 	if err = service.Applycfg(&host); err != nil {
 		logs.Error(err)
@@ -80,6 +86,9 @@ func (b *BoardController) Shutdown() {
 	if err != nil {
 		logs.Error("Failed to unmarshal data: %+v", err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
+	}
+	if host.Port == 0 {
+		host.Port = 22
 	}
 	if err = service.Shutdown(&host, uninstall); err != nil {
 		logs.Error(err)

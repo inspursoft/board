@@ -203,7 +203,18 @@
 
     <form clrForm
           #sshForm="ngForm">
-
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.SSH_PORT' | translate }}</label>
+        <input clrInput
+               required
+               type="number"
+               [(ngModel)]="user.port"
+               name=sshPort
+               #getSSHPort="ngModel" />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
       <clr-input-container>
         <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
         <input clrInput

@@ -265,7 +265,7 @@ package: prepare_composefile
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/archive/docker-compose.yml
 
 	@echo "package images ..."
-	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.18 gitlab-helper:1.0
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)

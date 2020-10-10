@@ -150,7 +150,8 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.board.apiServerPort = $event">
               </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
                               [type]="'enum'"
                               [required]="true"
                               [defaultValue]="config.board.devopsOpt"
@@ -217,18 +218,16 @@
                               (commitEvent)="config.k8s.kubeHttpScheme = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.LABEL' | translate"
-                              [type]="'enum'"
+                              [type]="'number'"
                               [required]="true"
-                              [defaultValue]="config.k8s.kubeHttpScheme === 'http' ? 8080 : 6443"
-                              [enumType]="'number'"
-                              [enumItem]="{'8080':8080,'6443':6443}"
-                              [enumInline]="true"
-                              [enableCustomItem]="true"
-                              [customItemPlaceholder]="'1~65535'"
-                              [customItemWidth]="'3.5rem'"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.k8s.kubeMasterPort"
+                              [placeholder]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.PLACEHOLDER' | translate"
                               [helper]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [inputUpdateOn]="'change'"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.k8s.kubeMasterPort = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.REGISTRY_IP.LABEL' | translate"
@@ -853,6 +852,7 @@
 
           <button class="btn"
                   [clrLoading]="editBtnState"
+                  [disabled]="isStart || isUninstall"
                   (click)="onEditCfg()"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -861,8 +861,8 @@
           </button>
 
           <button class="btn"
-                  [clrLoading]="submitBtnState"
-                  [disabled]="isEdit"
+                  [clrLoading]="startBtnState"
+                  [disabled]="isEdit || isUninstall"
                   (click)="openSSH = true; uninstallConfirm = false; user.password = '';"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -871,8 +871,8 @@
           </button>
 
           <button class="btn btn-warning"
-                  [clrLoading]="submitBtnState"
-                  [disabled]="isEdit"
+                  [clrLoading]="uninstallBtnState"
+                  [disabled]="isEdit || isStart"
                   (click)="openSSH = true; uninstallConfirm = true; clearDate = false; responsibility = false; user.password = '';"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -928,7 +928,8 @@
                 [visibilityHeight]="450"></app-back-top>
 </div>
 
-<clr-modal [(clrModalOpen)]="openSSH">
+<clr-modal [(clrModalOpen)]="openSSH"
+           [clrModalSize]="modalSize">
   <h3 class="modal-title">{{ 'INITIALIZATION.PAGE_TITLE.SSH_ACCOUNT' | translate }}</h3>
   <div class="modal-body">
     <div>
@@ -943,16 +944,30 @@
                  name="clearDate"
                  value="true"
                  [(ngModel)]="clearDate"
-                 [disabled]="!uninstallConfirm" />
+                 [disabled]="submitBtnState != 0" />
           <label>{{'INITIALIZATION.CONTENTS.CLEAR_DATA' | translate}}</label>
         </clr-checkbox-wrapper>
       </clr-checkbox-container>
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.SSH_PORT' | translate }}</label>
+        <input clrInput
+               required
+               type="number"
+               [(ngModel)]="user.port"
+               [disabled]="submitBtnState != 0"
+               name=sshPort />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
 
       <clr-input-container>
         <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
         <input clrInput
                required
                [(ngModel)]="user.username"
+               [disabled]="submitBtnState != 0"
                name=sshUsername />
         <clr-control-error>
           {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
@@ -964,6 +979,7 @@
         <input clrPassword
                required
                [(ngModel)]="user.password"
+               [disabled]="submitBtnState != 0"
                name="sshPassword" />
         <clr-control-error *clrIfError="'required'">
           {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
@@ -977,7 +993,7 @@
                required
                value="true"
                [(ngModel)]="responsibility"
-               [disabled]="!uninstallConfirm" />
+               [disabled]="submitBtnState != 0" />
         <label>{{'INITIALIZATION.CONTENTS.RESPONSIBILITY' | translate}}</label>
       </clr-checkbox-wrapper>
 
@@ -986,10 +1002,10 @@
     <label *ngIf="startLog"
            class="clr-control-label"
            style="padding-left: .25rem; margin-top: 1rem;">{{'INITIALIZATION.LABELS.LOG' | translate}}</label>
-    <div *ngIf="startLog"
+    <pre *ngIf="startLog"
          style="border: solid;margin-top: 0.3rem;padding: 0.3rem;max-height: 10rem;overflow-y: auto;"
          [innerHtml]="startLog">
-    </div>
+    </pre>
   </div>
   <div class="modal-footer">
     <button class="btn"

@@ -4,12 +4,14 @@ export class User implements RequestBase {
   id = 0;
   username = '';
   password = '';
+  port = 22;
 
   PostBody(): object {
     return {
       id: this.id,
       username: this.username,
-      password: this.password
+      password: this.password,
+      port: this.port,
     };
   }
 }

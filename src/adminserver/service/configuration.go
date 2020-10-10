@@ -39,6 +39,7 @@ func GetAllCfg(which string, show bool) (*models.Configuration, error) {
 		cfg.Jenkins.NodePassword = ""
 		cfg.Email.Password = ""
 		cfg.Es.Password = ""
+		cfg.Gitlab.SSHPassword = ""
 	}
 
 	backupPath := path.Join("/go", "/cfgfile/board.cfg.bak1")
