@@ -13,8 +13,9 @@
     <div class="modal-body-container" [ngSwitch]="imageBuildMethod">
       <div class="create-image-container" *ngIf="!isBuildImageWIP">
         <ng-template [ngSwitchCase]="createImageMethod.Template">
-          <div class="from-temp-container" [style.height.px]="500">
-            <lib-dropdown-ex [dropdownLabel]="'IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP' | translate"
+          <div class="from-temp-container" [style.height.px]="400">
+            <lib-dropdown-ex *ngIf="false"
+                             [dropdownLabel]="'IMAGE.CREATE_IMAGE_SELECT_IMAGE_TEMP' | translate"
                              [dropdownDisabled]="isBuildImageWIP"
                              [dropdownMinWidth]="230"
                              [dropdownTip]="'Docker File Template'"

@@ -20,7 +20,6 @@ const AUTO_REFRESH_IMAGE_LIST = 2000;
   styleUrls: ['./image-create-old.component.css']
 })
 export class ImageCreateOldComponent extends CsModalChildBase implements OnInit, OnDestroy {
-  boardHost: string;
   @ViewChild('areaStatus') areaStatus: ElementRef;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
   createImageMethod = CreateImageMethod;
@@ -67,7 +66,6 @@ export class ImageCreateOldComponent extends CsModalChildBase implements OnInit,
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
-    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: '', message: ''};
@@ -309,7 +307,8 @@ export class ImageCreateOldComponent extends CsModalChildBase implements OnInit,
   }
 
   buildImageResole() {
-    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}/api/v1/jenkins-job/console`;
+    const boardHost = this.appInitService.systemInfo.boardHost;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${boardHost}:${window.location.port}/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.projectName}&token=${this.appInitService.token}`;
     this.processImageSubscription = this.webSocketService.connect(`${wsHost}?${wsParams}`)
       .subscribe((obs: MessageEvent) => {

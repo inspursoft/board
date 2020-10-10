@@ -79,6 +79,10 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
     return this.validContainerMemLimit.bind(this);
   }
 
+  get validContainerGpuLimitFun() {
+    return this.validContainerGpuLimit.bind(this);
+  }
+
   getVolumesDescription(index: number, container: Container): string {
     const volume = container.volumeMounts;
     if (volume.length > index) {
@@ -248,5 +252,9 @@ export class ConfigParamsComponent extends CsModalChildMessage implements OnInit
       isValid = Number.parseFloat(control.value) >= Number.parseFloat(this.container.memRequest);
     }
     return isValid ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
+  }
+
+  validContainerGpuLimit(control: AbstractControl): ValidationErrors | null {
+    return Number(control.value) >= 0 ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 }

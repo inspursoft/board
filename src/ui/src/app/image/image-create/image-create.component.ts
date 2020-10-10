@@ -25,7 +25,6 @@ const AUTO_REFRESH_IMAGE_LIST = 2000;
   styleUrls: ['./image-create.component.css']
 })
 export class CreateImageComponent extends CsModalChildBase implements OnInit, OnDestroy {
-  boardHost: string;
   @Output() refreshNotification: Subject<any>;
   @ViewChild(JobLogComponent) jobLogComponent: JobLogComponent;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
@@ -72,7 +71,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
-    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: '', message: ''};
@@ -103,7 +101,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             if (value.imageName === newImageName) {
               this.isNeedAutoRefreshImageList = false;
               this.refreshNotification.next(newImageName);
-              this.messageService.showAlert('IMAGE.CREATE_IMAGE_SUCCESS', {
+              this.messageService.showGlobalMessage('IMAGE.CREATE_IMAGE_SUCCESS', {
                 alertType: 'success',
                 view: this.alertView
               });
@@ -316,10 +314,14 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if (err) {
       const reason = err ? err.error as string : '';
       this.translateService.get(`IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED`).subscribe(
-        (msg: string) => this.messageService.showAlert(`${msg}:${reason}`, {
-          alertType: 'danger',
-          view: this.alertView
-        }));
+        (msg: string) => {
+          this.messageService.cleanNotification();
+          this.messageService.showGlobalMessage(`${msg}:${reason}`, {
+            alertType: 'danger',
+            view: this.alertView
+          });
+        }
+      );
     }
     this.imageService.deleteImageConfig(this.customerNewImage.projectName).subscribe();
   }
@@ -338,7 +340,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         consoleTextArr = receivedMessage.split(/\r\n|\r|\n/);
         this.jobLogComponent.appendContentArray(consoleTextArr);
       }
-      if (consoleTextArr.find(value => value.indexOf('Job succeeded') > -1)) {
+      if (consoleTextArr.find(value =>
+        value.indexOf('Job succeeded') > -1 ||
+        value.indexOf('Finished: SUCCESS') > -1)) {
         this.isNeedAutoRefreshImageList = true;
         this.announceUserSubscription = interval(30 * 60 * 1000).subscribe(() => {
           if (this.isBuildImageWIP) {
@@ -354,7 +358,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             });
           }
         });
-      } else if (consoleTextArr.find(value => value.indexOf('ERROR: Job failed:') > -1)) {
+      } else if (consoleTextArr.find(value =>
+        value.indexOf('ERROR: Job failed') > -1 ||
+        value.indexOf('Finished: FAILURE') > -1)) {
         this.isBuildImageWIP = false;
         this.isUploadFileWIP = false;
         this.cancelButtonDisable = true;
@@ -369,7 +375,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           operation_action: 'create',
           operation_status: 'Failed'
         }).subscribe();
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_FAILED', {
+        this.messageService.showGlobalMessage('IMAGE.CREATE_IMAGE_FAILED', {
           alertType: 'danger',
           view: this.alertView
         });
@@ -383,7 +389,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   buildImageResole() {
-    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}:30080/api/v1/jenkins-job/console`;
+    const boardHost = this.appInitService.systemInfo.boardHost;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${boardHost}:${window.location.port}/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.projectName}&token=${this.appInitService.token}`;
     try {
       this.ws = new WebSocket(`${wsHost}?${wsParams}`);
@@ -415,16 +422,18 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       }
     } else if (this.imageBuildMethod === CreateImageMethod.DockerFile) {
       if (this.verifyInputExValid()) {
-        buildImageInit();
-        this.buildImageByDockerFile().subscribe(
-          () => this.buildImageResole(),
-          (error: HttpErrorResponse) => this.cleanImageConfig(error)
-        );
-      } else {
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {
-          alertType: 'warning',
-          view: this.alertView
-        });
+        if (this.isSelectedDockerFile) {
+          buildImageInit();
+          this.buildImageByDockerFile().subscribe(
+            () => this.buildImageResole(),
+            (error: HttpErrorResponse) => this.cleanImageConfig(error)
+          );
+        } else {
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {
+            alertType: 'warning',
+            view: this.alertView
+          });
+        }
       }
     } else if (this.imageBuildMethod === CreateImageMethod.ImagePackage) {
       if (this.verifyInputExValid()) {
@@ -467,6 +476,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           if (err.status === 401) {
             this.modalOpened = false;
           } else {
+            this.messageService.cleanNotification();
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {
               alertType: 'danger',
               view: this.alertView
@@ -494,21 +504,18 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         });
       } else {
         this.selectedDockerFile = file;
-        const reader = new FileReader();
-        reader.onload = (ev: ProgressEvent) => {
-          this.jobLogComponent.clear();
-          this.jobLogComponent.appendContent((ev.target as FileReader).result as string);
-        };
-        reader.readAsText(this.selectedDockerFile);
         this.uploadDockerFile().subscribe((res: string) => {
           this.isSelectedDockerFile = true;
           this.jobLogComponent.clear();
           this.jobLogComponent.appendContent(res);
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_UPLOAD_SUCCESS', {view: this.alertView});
-        }, (err: HttpErrorResponse) => this.messageService.showAlert(err.error, {
-          alertType: 'danger',
-          view: this.alertView
-        }));
+        }, (err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          this.messageService.showAlert(err.error, {
+            alertType: 'danger',
+            view: this.alertView
+          });
+        });
       }
     } else {
       (event.target as HTMLInputElement).value = '';
@@ -550,6 +557,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             (event.target as HTMLInputElement).value = '';
             const newImageErrReason = (error.error as Error).message;
             this.translateService.get('IMAGE.CREATE_IMAGE_UPLOAD_FAILED').subscribe((msg: string) => {
+              this.messageService.cleanNotification();
               this.messageService.showAlert(`${msg}:${newImageErrReason}`, {
                 alertType: 'danger',
                 view: this.alertView
@@ -572,6 +580,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           if (err.status === 401) {
             this.modalOpened = false;
           } else {
+            this.messageService.cleanNotification();
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_DOCKER_FILE_FAILED', {
               alertType: 'danger',
               view: this.alertView
@@ -606,6 +615,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         if (err.status === 401) {
           this.modalOpened = false;
         } else {
+          this.messageService.cleanNotification();
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_REMOVE_FILE_FAILED', {
             alertType: 'danger',
             view: this.alertView
