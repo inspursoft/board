@@ -498,6 +498,7 @@ export const LANG_EN_US = {
     "CREATE_CONFIG_MAP_TITLE":"Create config map",
     "CREATE_CONFIG_MAP_SUCCESS":"Create config map successfully.",
     "CREATE_CONFIG_MAP_NAME":"Name",
+    "CREATE_CONFIG_MAP_NAME_PATTERN":"Start with lowercase letter or number, made of numbers, lowercase letter , '.' , '?'",
     "CREATE_CONFIG_MAP_KEY":"Key",
     "CREATE_CONFIG_MAP_VALUE":"Value",
     "CREATE_CONFIG_MAP_PROJECT":"Select project",
