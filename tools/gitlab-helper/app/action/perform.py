@@ -4,7 +4,7 @@ import service.http
 import logging
 import re, time
 from os import path
-import sys, getopt
+import sys
 
 log = logging.getLogger(__name__)
 
@@ -115,32 +115,17 @@ def register_gitlab_shared_runner(gitlab_runner_token, executor):
   return SSHUtil.exec_command(cmd_runner_register)
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.INFO)
-  try:      
-    opts, args = getopt.getopt(sys.argv[1:], "hr:",["reset-token-only=",])
-    reset_token_only = False
-    for opt, arg in opts:
-      if opt in ("-r", "--reset-token-only"):
-        if arg and arg.lower() == "true":
-          reset_token_only = True
-    log.info("Obtaining Gitlab admin access token...")
-    admin_access_token = service.config.generate_token()
-    if reset_token_only:
-      log.info("Resetting token only...")
-      setting_access_token(admin_access_token)
-      update_access_token(admin_access_token)
-    else:
-      log.info("Start normally...")
-      detect_gitlab_status()
-      gitlab_docker_run()
-      setting_access_token(admin_access_token)
-      update_access_token(admin_access_token)
-      update_allow_local_webhook_request(admin_access_token)
-      runner_token = obtain_shared_runner_token()
-      if runner_token:
-        reset_gitlab_runner_config()
-        clean_up_stale_runner(admin_access_token)
-        register_gitlab_shared_runner(runner_token, "docker")
-        register_gitlab_shared_runner(runner_token, "shell")
-  except getopt.GetoptError:
-    log.info("action/perform.py -ro | --reset-token-only=[true]")
+  logging.basicConfig(level=logging.INFO)    
+  log.info("Obtaining Gitlab admin access token...")
+  admin_access_token = service.config.generate_token()
+  detect_gitlab_status()
+  gitlab_docker_run()
+  setting_access_token(admin_access_token)
+  update_access_token(admin_access_token)
+  update_allow_local_webhook_request(admin_access_token)
+  runner_token = obtain_shared_runner_token()
+  if runner_token:
+    reset_gitlab_runner_config()
+    clean_up_stale_runner(admin_access_token)
+    register_gitlab_shared_runner(runner_token, "docker")
+    register_gitlab_shared_runner(runner_token, "shell")
