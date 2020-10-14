@@ -123,10 +123,13 @@ export class HttpClientInterceptor implements HttpInterceptor {
                 this.messageService.showAlert(alertMsg, {alertType: 'danger'});
               });
             } else if (this.appTokenService.token !== '') {
-              this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
-                globalAlertType: GlobalAlertType.gatShowDetail,
-                errorObject: err
-              });
+              console.log(err);
+              if (err.status > 0) {// hide start with 'net::' errors
+                this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
+                  globalAlertType: GlobalAlertType.gatShowDetail,
+                  errorObject: err
+                });
+              }
             }
           } else {
             this.messageService.showGlobalMessage(`ERROR.HTTP_TIME_OUT`, {
