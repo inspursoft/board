@@ -58,6 +58,7 @@ export const LANG_ZH_CN = {
     "HTTP_404":"资源未找到:404",
     "HTTP_412": "请求内容不满足应提供的前置条件:412",
     "HTTP_422": "无法处理实体:422",
+    "NETWORK_FAILURE": "网络故障，请检查网络。",
     "HTTP_UNK":"未知错误",
     "HTTP_TIME_OUT":"Http请求超时",
     "INVALID_TOKEN": "无效的Token，请把该url发给开发人员",

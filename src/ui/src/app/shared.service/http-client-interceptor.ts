@@ -124,11 +124,22 @@ export class HttpClientInterceptor implements HttpInterceptor {
               });
             } else if (this.appTokenService.token !== '') {
               console.log(err);
-              if (err.status > 0) {// hide start with 'net::' errors
-                this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
-                  globalAlertType: GlobalAlertType.gatShowDetail,
-                  errorObject: err
+              if (err.status === 0) {
+                this.messageService.showGlobalMessage(err.message, {
+                  globalAlertType: GlobalAlertType.gatNormal
                 });
+              } else {
+                if (window.navigator.onLine) {
+                  this.messageService.showGlobalMessage(`ERROR.HTTP_UNK`, {
+                    globalAlertType: GlobalAlertType.gatShowDetail,
+                    errorObject: err
+                  });
+                } else if (!window.navigator.onLine) {
+                  this.messageService.showGlobalMessage(`ERROR.NETWORK_FAILURE`, {
+                    globalAlertType: GlobalAlertType.gatNormal,
+                    alertType: 'warning'
+                  });
+                }
               }
             }
           } else {
