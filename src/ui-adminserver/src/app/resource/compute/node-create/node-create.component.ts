@@ -34,7 +34,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   refreshingLog = false;
   autoRefreshLogSubscription: Subscription;
   curNodeLogStatus: NodeLogStatus;
-  newNodeList: Array<{ nodeIp: string, nodePassword: string }>;
+  newNodeList: Array<{ nodeIp: string, nodePassword: string, checked: boolean }>;
 
   constructor(private messageService: MessageService,
               private translateService: TranslateService,
@@ -42,11 +42,11 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     super();
     this.preparationData = new NodePreparationData({});
     this.postData = new NodePostData();
-    this.newNodeList = new Array<{ nodeIp: string, nodePassword: string }>();
+    this.newNodeList = new Array<{ nodeIp: string, nodePassword: string, checked: boolean }>();
   }
 
   ngOnInit() {
-    this.newNodeList.push({nodePassword: '', nodeIp: ''});
+    this.newNodeList.push({nodePassword: '', nodeIp: '', checked: false});
     this.autoRefreshLogSubscription = interval(3000).subscribe(() => {
       if (this.actionStatus === ActionStatus.Executing) {
         this.refreshLog();
@@ -96,7 +96,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
 
   checkIpExistFun(control: AbstractControl): Observable<ValidationErrors | null> {
     const ip = control.value;
-    if (this.newNodeList.find(value => value.nodeIp === ip)) {
+    if (this.newNodeList.find(value => value.nodeIp === ip && value.checked === false)) {
       return this.translateService.get('Node.Node_Detail_Error_Node_Repeat').pipe(
         map(msg => {
           return {ipExists: msg};
@@ -125,7 +125,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   }
 
   addNodeInfo(): void {
-    this.newNodeList.push({nodeIp: '', nodePassword: ''});
+    this.newNodeList.push({nodeIp: '', nodePassword: '', checked: false});
   }
 
   getLogStyle(status: NodeLogStatus): { [key: string]: string } {
@@ -161,6 +161,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     this.postData.nodeIp = '';
     this.postData.nodePassword = '';
     this.newNodeList.forEach((nodeInfo) => {
+      nodeInfo.checked = true;
       this.postData.nodeIp += `${nodeInfo.nodeIp}_`;
       this.postData.nodePassword += `${nodeInfo.nodePassword}_`;
     });
