@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"git/inspursoft/board/src/apiserver/service"
+	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
 
 	"strconv"
 
@@ -401,7 +402,7 @@ func (b *BaseController) CollaborateWithPullRequest(headBranch, baseBranch strin
 	repoName := b.Project.Name
 	ownerName := b.Project.OwnerName
 	if ownerName == username {
-		logs.Info("User %s is the owner to the current repo: %s", username, repoName)
+		logs.Info("Skip to create Merge Request as the user %s is the source repo: %s", username, repoName)
 		return
 	}
 
@@ -428,8 +429,8 @@ func (b *BaseController) RemoveItemsToRepo(items ...string) {
 }
 
 func (b *BaseController) MergeCollaborativePullRequest() {
-	if b.CurrentUser.Username == b.Project.OwnerName {
-		logs.Info("User %s is the owner to the current repo: %s", b.CurrentUser.Username, b.Project.Name)
+	if b.CurrentUser.Username != b.Project.OwnerName {
+		logs.Info("Skip to merge as the user %s is not the source repo: %s", b.CurrentUser.Username, b.Project.Name)
 		return
 	}
 	projectOwner, err := service.GetUserByName(b.Project.OwnerName)
@@ -437,7 +438,13 @@ func (b *BaseController) MergeCollaborativePullRequest() {
 		logs.Error("Failed to get project owner by user ID: %d, error: %+v", b.Project.OwnerID, err)
 		b.InternalError(err)
 	}
-	service.CurrentDevOps().MergePullRequest(b.Project.Name, projectOwner.RepoToken)
+	err = service.CurrentDevOps().MergePullRequest(b.Project.Name, projectOwner.RepoToken)
+	if err != nil {
+		logs.Warning("Failed to merge request with error: %+v", err)
+		if err == gitlab.ErrBranchCannotBeMerged {
+			b.CustomAbort(http.StatusNotAcceptable, "Branch has conflicts than cannot be merged.")
+		}
+	}
 }
 
 func (b *BaseController) GeneratePodLogOptions() *model.PodLogOptions {

@@ -13,8 +13,10 @@ export abstract class ResponseBase {
     });
   }
 
-  constructor(public res: object) {
-    this.init();
+  constructor(public res?: object) {
+    if (res) {
+      this.init();
+    }
   }
 }
 

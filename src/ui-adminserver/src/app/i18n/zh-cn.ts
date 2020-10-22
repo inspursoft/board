@@ -147,8 +147,11 @@ export const LANG_ZH_CN = {
     Node_Detail_Node_Password_Hint: '请输入节点密码',
     Node_Detail_Error_Invalid_Password: '无效密码',
     Node_Detail_Error_Bad_Input: '输入信息错误',
+    Node_Detail_Error_Node_Limit: '至少输入一个节点信息',
     Node_Detail_Error_Node_Locked: '节点被锁定，请在节点列表中查看状态',
-    Node_Detail_Error_Failed_Request: '获取数据错误'
+    Node_Detail_Error_Failed_Request: '获取数据错误',
+    Node_Detail_Error_Node_Repeat: '不能重复',
+    Node_Detail_Error_Node_Reserve: '字符 \'_\' 被保留'
   },
   CONFIGURATIONS: {
     BOARD: {
@@ -561,6 +564,7 @@ export const LANG_ZH_CN = {
       SAVE: '保存成功',
       COMMENT: '新配置已经成功保存，是否在Board中应用该配置？生效配置需要花费一些时间来重启系统，确认生效请输入该主机的管理员账户及密码。',
       ACCOUNT: {
+        SSH_PORT: 'SSH端口',
         NAME: '账户',
         PASSWORD: '密码',
         REQUIRED: '必填项'
@@ -644,6 +648,7 @@ export const LANG_ZH_CN = {
       PASSWORD: '密码',
       PASSWORD_CONFIRM: '确认密码',
       ACCOUNT: '账户',
+      LOG: '日志',
     },
     HELPER: {
       REQUIRED: '必填项！',

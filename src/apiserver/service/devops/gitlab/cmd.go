@@ -173,8 +173,27 @@ type commonRespMessage struct {
 	Message string `json:"message"`
 }
 
+type PipelineStatus struct {
+	ID        int    `json:"id"`
+	Status    string `json:"status"`
+	Ref       string `json:"ref"`
+	Sha       string `json:"sha"`
+	BeforeSha string `json:"before_sha"`
+	Tag       bool   `json:"tag"`
+}
+
+type VariableCreation struct {
+	Key              string `json:"key"`
+	Value            string `json:"value"`
+	Protected        bool   `json:"protected"`
+	VariableType     string `json:"variable_type"`
+	Masked           bool   `json:"masked"`
+	EnvironmentScope string `json:"environment_scope"`
+}
+
 var ErrFileAlreadyExists = errors.New("A file with this name already exists")
 var ErrFileDoesNotExists = errors.New("A file with this name doesn't exist")
+var ErrBranchCannotBeMerged = errors.New("Branch has conflicts that cannot be merged.")
 
 func (f FileInfo) EscapedPath() string {
 	return strings.ReplaceAll(url.PathEscape(f.Path), ".", "%2E")
@@ -186,6 +205,7 @@ type CommitRepoData struct {
 	AuthorName    string `json:"author_name"`
 	Content       string `json:"content"`
 	CommitMessage string `json:"commit_message"`
+	FilePath      string `json:"file_path"`
 }
 
 type FileCreation struct {
@@ -294,7 +314,8 @@ func (g *gitlabHandler) CreateHook(project model.Project, hookURL string) (h Hoo
 			req.Header = g.getAccessHeader()
 			formData := url.Values{}
 			formData.Add("url", hookURL)
-			formData.Add("push_events", "true")
+			formData.Add("push_events", "false")
+			formData.Add("pipeline_events", "true")
 			req.URL.RawQuery = formData.Encode()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
@@ -461,11 +482,14 @@ func (g *gitlabHandler) CreateMR(assignee model.User, sourceProject model.Projec
 }
 
 func (g *gitlabHandler) AcceptMR(sourceProject model.Project, mergeRequestID int) (m MRCreation, err error) {
-	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/%d/merge", g.gitlabAPIBaseURL, sourceProject.ID, mergeRequestID),
+	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/merge_requests/%d/merge", g.gitlabAPIBaseURL, sourceProject.ID, mergeRequestID),
 		func(req *http.Request) error {
 			req.Header = g.getAccessHeader()
 			return nil
 		}, nil, func(req *http.Request, resp *http.Response) error {
+			if resp.StatusCode == http.StatusNotAcceptable {
+				return ErrBranchCannotBeMerged
+			}
 			return utils.UnmarshalToJSON(resp.Body, &m)
 		})
 	return
@@ -477,4 +501,58 @@ func (g *gitlabHandler) DeleteProject(projectID int) error {
 
 func (g *gitlabHandler) DeleteUser(userID int) error {
 	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/users/%d", g.gitlabAPIBaseURL, userID), g.getAccessHeader())
+}
+
+func (g *gitlabHandler) CancelPipeline(projectID int, pipelineID int) (p PipelineStatus, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/pipelines/%d/cancel", g.gitlabAPIBaseURL, projectID, pipelineID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &p)
+		})
+	return
+}
+
+func (g *gitlabHandler) ListVariables(projectID int) (v []VariableCreation, err error) {
+	err = utils.RequestHandle(http.MethodGet, fmt.Sprintf("%s/projects/%d/variables", g.gitlabAPIBaseURL, projectID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &v)
+		})
+	return
+}
+
+func (g *gitlabHandler) CreateVariable(projectID int, key string, value string) (v VariableCreation, err error) {
+	err = utils.RequestHandle(http.MethodPost, fmt.Sprintf("%s/projects/%d/variables", g.gitlabAPIBaseURL, projectID),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			formData := url.Values{}
+			formData.Add("key", key)
+			formData.Add("value", value)
+			req.URL.RawQuery = formData.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &v)
+		})
+	return
+}
+func (g *gitlabHandler) UpdateVariable(projectID int, key string, value string) (v VariableCreation, err error) {
+	err = utils.RequestHandle(http.MethodPut, fmt.Sprintf("%s/projects/%d/variables/%s", g.gitlabAPIBaseURL, projectID, key),
+		func(req *http.Request) error {
+			req.Header = g.getAccessHeader()
+			formData := url.Values{}
+			formData.Add("value", value)
+			req.URL.RawQuery = formData.Encode()
+			return nil
+		}, nil, func(req *http.Request, resp *http.Response) error {
+			return utils.UnmarshalToJSON(resp.Body, &v)
+		})
+	return
+}
+
+func (g *gitlabHandler) DeleteVariable(projectID int, key string) (err error) {
+	return utils.SimpleDeleteRequestHandle(fmt.Sprintf("%s/projects/%d/variables/%s", g.gitlabAPIBaseURL, projectID, key), g.getAccessHeader())
 }

@@ -102,6 +102,17 @@
                   [inputPlaceholder]="'eg. 1024Mi'"
                   (commitEvent)="container.memLimit = $event">
     </lib-input-ex>
+    <lib-input-ex *ngIf="curContainerType === 0"
+                  [inputLabel]="'SERVICE.STEP_2_GPU_LIMIT' | translate"
+                  [inputCategory]="2"
+                  [validatorFns]="[validContainerGpuLimitFun]"
+                  [validatorMessage]="[
+                  {key:'resourceRequestInvalid',
+                  message: 'SERVICE.STEP_2_CONTAINER_GPU_LIMIT_ERROR' | translate}
+                  ]"
+                  [inputDefaultValue]="container.gpuLimitValue"
+                  (commitEvent)="container.gpuLimitValue = $event">
+    </lib-input-ex>
   </div>
   <div class="modal-footer">
     <button class="btn btn-default" (click)="modalOpened = false">{{"BUTTON.CLOSE" | translate}}</button>

@@ -147,8 +147,11 @@ export const LANG_EN_US = {
     Node_Detail_Node_Password_Hint: 'Please input the password of the node.',
     Node_Detail_Error_Invalid_Password: 'Invalid password',
     Node_Detail_Error_Bad_Input: 'Wrong input',
+    Node_Detail_Error_Node_Limit: 'Please input one node info at least.',
     Node_Detail_Error_Node_Locked: 'The node was locked, please to check its status in node list.',
-    Node_Detail_Error_Failed_Request: 'Failed to get data from backend'
+    Node_Detail_Error_Failed_Request: 'Failed to get data from backend',
+    Node_Detail_Error_Node_Repeat: 'Node ip exists.',
+    Node_Detail_Error_Node_Reserve: 'The character \'_\' was reserved.'
   },
   CONFIGURATIONS: {
     BOARD: {
@@ -562,6 +565,7 @@ export const LANG_EN_US = {
       SAVE: 'Save successfully',
       COMMENT: 'The new configuration has been saved successfully. Is the configuration applied in the Board?It takes some time to restart the system for the configuration to take effect. To confirm the effect, enter the administrator account of the host.',
       ACCOUNT: {
+        SSH_PORT: 'SSH Port',
         NAME: 'Account',
         PASSWORD: 'Password',
         REQUIRED: 'This field is required'
@@ -645,6 +649,7 @@ export const LANG_EN_US = {
       PASSWORD: 'Password',
       PASSWORD_CONFIRM: 'Confirm Password',
       ACCOUNT: 'Account',
+      LOG: 'LOG',
     },
     HELPER: {
       REQUIRED: 'This field is required!',

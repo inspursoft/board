@@ -2,19 +2,20 @@
  * Created by liyanq on 21/11/2017.
  */
 
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ValidationErrors } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpProgressEvent } from '@angular/common/http';
-import { interval, Observable, of, Subscription } from 'rxjs';
+import { interval, Observable, of, Subject, Subscription } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ImageService } from '../image.service';
 import { MessageService } from '../../shared.service/message.service';
 import { AppInitService } from '../../shared.service/app-init.service';
 import { WebsocketService } from '../../shared.service/websocket.service';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
-import { BUTTON_STYLE, GlobalAlertType, RETURN_STATUS, SharedEnvType, Tools } from '../../shared/shared.types';
+import { BUTTON_STYLE, RETURN_STATUS, SharedEnvType, Tools } from '../../shared/shared.types';
 import { BuildImageData, CreateImageMethod, Image, ImageCopy, ImageDetail, ImageEnv } from '../image.types';
+import { JobLogComponent } from '../job-log/job-log.component';
 
 const AUTO_REFRESH_IMAGE_LIST = 2000;
 
@@ -24,8 +25,8 @@ const AUTO_REFRESH_IMAGE_LIST = 2000;
   styleUrls: ['./image-create.component.css']
 })
 export class CreateImageComponent extends CsModalChildBase implements OnInit, OnDestroy {
-  boardHost: string;
-  @ViewChild('areaStatus') areaStatus: ElementRef;
+  @Output() refreshNotification: Subject<any>;
+  @ViewChild(JobLogComponent) jobLogComponent: JobLogComponent;
   imageBuildMethod: CreateImageMethod = CreateImageMethod.Template;
   createImageMethod = CreateImageMethod;
   isOpenEnvironment = false;
@@ -48,7 +49,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   isUploadFileWIP = false;
   isGetImageDetailListWip = false;
   customerNewImage: BuildImageData;
-  consoleText = '';
   uploadCopyToPath = '/tmp';
   uploadProgressValue: HttpProgressEvent;
   imageList: Array<Image>;
@@ -56,13 +56,13 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   selectedImage: Image;
   baseImageSource = 1;
   boardRegistry = '';
-  processImageSubscription: Subscription;
   announceUserSubscription: Subscription;
   cancelButtonDisable = true;
   cancelInfo: { isShow: boolean, isForce: boolean, title: string, message: string };
   uploadTarPackageName = '';
   waitingMessage = '';
   waitingPoints = '';
+  ws: WebSocket;
 
   constructor(private imageService: ImageService,
               private messageService: MessageService,
@@ -71,10 +71,10 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
               private appInitService: AppInitService) {
     super();
     this.filesList = new Map<string, Array<{ path: string, file_name: string, size: number }>>();
-    this.boardHost = this.appInitService.systemInfo.boardHost;
     this.imageList = Array<Image>();
     this.imageDetailList = Array<ImageDetail>();
     this.cancelInfo = {isShow: false, isForce: false, title: '', message: ''};
+    this.refreshNotification = new Subject<any>();
   }
 
   ngOnInit() {
@@ -100,8 +100,13 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             const newImageName = `${this.customerNewImage.projectName}/${this.customerNewImage.imageName}`;
             if (value.imageName === newImageName) {
               this.isNeedAutoRefreshImageList = false;
-              this.closeNotification.next(newImageName);
-              this.modalOpened = false;
+              this.refreshNotification.next(newImageName);
+              this.messageService.showGlobalMessage('IMAGE.CREATE_IMAGE_SUCCESS', {
+                alertType: 'success',
+                view: this.alertView
+              });
+              this.waitingMessage = '';
+              this.isBuildImageWIP = false;
             }
           });
         }, () => this.modalOpened = false);
@@ -113,8 +118,9 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   ngOnDestroy() {
-    if (this.processImageSubscription) {
-      this.processImageSubscription.unsubscribe();
+    if (this.ws && (this.ws.readyState === WebSocket.OPEN ||
+      this.ws.readyState === WebSocket.CONNECTING)) {
+      this.ws.close();
     }
     if (this.announceUserSubscription) {
       this.announceUserSubscription.unsubscribe();
@@ -201,13 +207,14 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   get cancelCaption() {
-    return this.consoleText === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE' ?
+    return this.waitingMessage === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE' ?
       'IMAGE.CREATE_IMAGE_CANCEL_WAIT' :
       'IMAGE.CREATE_IMAGE_BUILD_CANCEL';
   }
 
   checkImageTag(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    if (this.customerNewImage.imageName === '') {
+    if (this.customerNewImage.imageName === '' ||
+      control.value === this.customerNewImage.imageTag) {
       return of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.projectName, this.customerNewImage.imageName, control.value)
@@ -227,7 +234,8 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   checkImageName(control: HTMLInputElement): Observable<ValidationErrors | null> {
-    if (this.customerNewImage.imageTag === '') {
+    if (this.customerNewImage.imageTag === '' ||
+      control.value === this.customerNewImage.imageName) {
       return of(null);
     }
     return this.imageService.checkImageExist(this.customerNewImage.projectName, control.value, this.customerNewImage.imageTag)
@@ -247,14 +255,14 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   }
 
   cancelBuildImage() {
-    if (this.consoleText === 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE') {
-      this.cancelInfo.isForce = true;
-      this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
-      this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
-    } else {
+    if (this.waitingMessage === 'IMAGE.CREATE_IMAGE_WAITING_BUILD') {
       this.cancelInfo.isForce = false;
       this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL';
       this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_BUILD_CANCEL_MSG';
+    } else {
+      this.cancelInfo.isForce = true;
+      this.cancelInfo.title = 'IMAGE.CREATE_IMAGE_FORCE_QUIT';
+      this.cancelInfo.message = 'IMAGE.CREATE_IMAGE_FORCE_QUIT_MSG';
     }
     this.cancelInfo.isShow = true;
   }
@@ -304,61 +312,94 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     this.isUploadFileWIP = false;
     this.isNeedAutoRefreshImageList = false;
     if (err) {
-      const reason = err ? ((err as HttpErrorResponse).error as Error).message : '';
-      this.translateService.get(`IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED`).subscribe((msg: string) => {
-        this.messageService.showAlert(`${msg}:${reason}`, {alertType: 'danger', view: this.alertView});
-      });
+      const reason = err ? err.error as string : '';
+      this.translateService.get(`IMAGE.CREATE_IMAGE_BUILD_IMAGE_FAILED`).subscribe(
+        (msg: string) => {
+          this.messageService.cleanNotification();
+          this.messageService.showGlobalMessage(`${msg}:${reason}`, {
+            alertType: 'danger',
+            view: this.alertView
+          });
+        }
+      );
     }
     this.imageService.deleteImageConfig(this.customerNewImage.projectName).subscribe();
   }
 
+  mountWebSocket() {
+    this.ws.onopen = (ev: Event): any => {
+      this.jobLogComponent.clear();
+    };
+
+    this.ws.onmessage = (ev: MessageEvent): any => {
+      this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_BUILD';
+      this.cancelButtonDisable = false;
+      const receivedMessage = ev.data as string;
+      let consoleTextArr = Array<string>();
+      if (receivedMessage && receivedMessage.length > 0) {
+        consoleTextArr = receivedMessage.split(/\r\n|\r|\n/);
+        this.jobLogComponent.appendContentArray(consoleTextArr);
+      }
+      if (consoleTextArr.find(value =>
+        value.indexOf('Job succeeded') > -1 ||
+        value.indexOf('Finished: SUCCESS') > -1)) {
+        this.isNeedAutoRefreshImageList = true;
+        this.announceUserSubscription = interval(30 * 60 * 1000).subscribe(() => {
+          if (this.isBuildImageWIP) {
+            this.messageService.showDialog('IMAGE.CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT', {
+              title: 'IMAGE.CREATE_IMAGE_TIMEOUT',
+              view: this.alertView,
+              buttonStyle: BUTTON_STYLE.YES_NO
+            }).subscribe(message => {
+              if (message.returnStatus === RETURN_STATUS.rsCancel) {
+                this.refreshNotification.next({});
+                this.modalOpened = false;
+              }
+            });
+          }
+        });
+      } else if (consoleTextArr.find(value =>
+        value.indexOf('ERROR: Job failed') > -1 ||
+        value.indexOf('Finished: FAILURE') > -1)) {
+        this.isBuildImageWIP = false;
+        this.isUploadFileWIP = false;
+        this.cancelButtonDisable = true;
+        this.isNeedAutoRefreshImageList = false;
+        this.appInitService.setAuditLog({
+          operation_user_id: this.appInitService.currentUser.userId,
+          operation_user_name: this.appInitService.currentUser.userName,
+          operation_project_id: this.customerNewImage.projectId,
+          operation_project_name: this.customerNewImage.projectName,
+          operation_object_type: 'images',
+          operation_object_name: '',
+          operation_action: 'create',
+          operation_status: 'Failed'
+        }).subscribe();
+        this.messageService.showGlobalMessage('IMAGE.CREATE_IMAGE_FAILED', {
+          alertType: 'danger',
+          view: this.alertView
+        });
+      }
+    };
+
+    this.ws.onerror = (ev: Event): any => {
+      this.messageService.showGlobalMessage('websocket connect error');
+      this.modalOpened = false;
+    };
+  }
+
   buildImageResole() {
-    const wsHost = `${this.appInitService.getWebsocketPrefix}://${this.boardHost}/api/v1/jenkins-job/console`;
+    const boardHost = this.appInitService.systemInfo.boardHost;
+    const wsHost = `${this.appInitService.getWebsocketPrefix}://${boardHost}:${window.location.port}/api/v1/jenkins-job/console`;
     const wsParams = `job_name=${this.customerNewImage.projectName}&token=${this.appInitService.token}`;
-    this.processImageSubscription = this.webSocketService.connect(`${wsHost}?${wsParams}`)
-      .subscribe((obs: MessageEvent) => {
-        this.consoleText = obs.data as string;
-        this.waitingMessage = 'IMAGE.CREATE_IMAGE_WAITING_BUILD';
-        this.cancelButtonDisable = false;
-        this.areaStatus.nativeElement.scrollTop = this.areaStatus.nativeElement.scrollHeight;
-        const consoleTextArr: Array<string> = this.consoleText.split(/[\n]/g);
-        if (consoleTextArr.find(value => value.indexOf('Finished: SUCCESS') > -1)) {
-          this.isNeedAutoRefreshImageList = true;
-          this.announceUserSubscription = interval(5 * 60 * 1000).subscribe(() => {
-            this.messageService.showDialog('IMAGE.CREATE_IMAGE_UPLOAD_IMAGE_TIMEOUT',
-              {title: 'IMAGE.CREATE_IMAGE_TIMEOUT', view: this.alertView, buttonStyle: BUTTON_STYLE.YES_NO})
-              .subscribe(message => {
-                if (message.returnStatus === RETURN_STATUS.rsCancel) {
-                  this.closeNotification.next({});
-                  this.modalOpened = false;
-                }
-              });
-          });
-          this.processImageSubscription.unsubscribe();
-        }
-        if (consoleTextArr.find(value => value.indexOf('Finished: FAILURE') > -1)) {
-          this.isBuildImageWIP = false;
-          this.isUploadFileWIP = false;
-          this.cancelButtonDisable = true;
-          this.isNeedAutoRefreshImageList = false;
-          this.appInitService.setAuditLog({
-            operation_user_id: this.appInitService.currentUser.userId,
-            operation_user_name: this.appInitService.currentUser.userName,
-            operation_project_id: this.customerNewImage.projectId,
-            operation_project_name: this.customerNewImage.projectName,
-            operation_object_type: 'images',
-            operation_object_name: '',
-            operation_action: 'create',
-            operation_status: 'Failed'
-          }).subscribe();
-          this.processImageSubscription.unsubscribe();
-        }
-      }, err => {
-        this.messageService.showGlobalMessage('websocket connect error',
-          {globalAlertType: GlobalAlertType.gatShowDetail, errorObject: err}
-        );
-        this.modalOpened = false;
-      }, () => this.modalOpened = false);
+    try {
+      this.ws = new WebSocket(`${wsHost}?${wsParams}`);
+      this.mountWebSocket();
+    } catch (e) {
+      this.isBuildImageWIP = false;
+      this.waitingMessage = '';
+      this.messageService.showGlobalMessage(e.toString(), {view: this.alertView});
+    }
   }
 
   buildImage() {
@@ -366,7 +407,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       this.cancelButtonDisable = true;
       this.isBuildImageWIP = true;
       this.waitingMessage = 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE';
-      this.consoleText = 'IMAGE.CREATE_IMAGE_JENKINS_PREPARE';
       setTimeout(() => this.cancelButtonDisable = false, 10000);
     };
     if (this.imageBuildMethod === CreateImageMethod.Template) {
@@ -382,16 +422,18 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
       }
     } else if (this.imageBuildMethod === CreateImageMethod.DockerFile) {
       if (this.verifyInputExValid()) {
-        buildImageInit();
-        this.buildImageByDockerFile().subscribe(
-          () => this.buildImageResole(),
-          (error: HttpErrorResponse) => this.cleanImageConfig(error)
-        );
-      } else {
-        this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {
-          alertType: 'warning',
-          view: this.alertView
-        });
+        if (this.isSelectedDockerFile) {
+          buildImageInit();
+          this.buildImageByDockerFile().subscribe(
+            () => this.buildImageResole(),
+            (error: HttpErrorResponse) => this.cleanImageConfig(error)
+          );
+        } else {
+          this.messageService.showAlert('IMAGE.CREATE_IMAGE_SELECT_DOCKER_FILE', {
+            alertType: 'warning',
+            view: this.alertView
+          });
+        }
       }
     } else if (this.imageBuildMethod === CreateImageMethod.ImagePackage) {
       if (this.verifyInputExValid()) {
@@ -434,6 +476,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
           if (err.status === 401) {
             this.modalOpened = false;
           } else {
+            this.messageService.cleanNotification();
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_IMAGE_LIST_FAILED', {
               alertType: 'danger',
               view: this.alertView
@@ -461,19 +504,18 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         });
       } else {
         this.selectedDockerFile = file;
-        const reader = new FileReader();
-        reader.onload = (ev: ProgressEvent) => {
-          this.consoleText = (ev.target as FileReader).result as string;
-        };
-        reader.readAsText(this.selectedDockerFile);
         this.uploadDockerFile().subscribe((res: string) => {
           this.isSelectedDockerFile = true;
-          this.consoleText = res;
+          this.jobLogComponent.clear();
+          this.jobLogComponent.appendContent(res);
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_FILE_UPLOAD_SUCCESS', {view: this.alertView});
-        }, (err: HttpErrorResponse) => this.messageService.showAlert(err.error, {
-          alertType: 'danger',
-          view: this.alertView
-        }));
+        }, (err: HttpErrorResponse) => {
+          this.messageService.cleanNotification();
+          this.messageService.showAlert(err.error, {
+            alertType: 'danger',
+            view: this.alertView
+          });
+        });
       }
     } else {
       (event.target as HTMLInputElement).value = '';
@@ -515,6 +557,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
             (event.target as HTMLInputElement).value = '';
             const newImageErrReason = (error.error as Error).message;
             this.translateService.get('IMAGE.CREATE_IMAGE_UPLOAD_FAILED').subscribe((msg: string) => {
+              this.messageService.cleanNotification();
               this.messageService.showAlert(`${msg}:${newImageErrReason}`, {
                 alertType: 'danger',
                 view: this.alertView
@@ -529,11 +572,15 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
   getDockerFilePreviewInfo() {
     if (this.customerNewImage.imageDockerFile.imageBase !== '') {
       this.imageService.getDockerFilePreview(this.customerNewImage).subscribe(
-        res => this.consoleText = res,
+        res => {
+          this.jobLogComponent.clear();
+          this.jobLogComponent.appendContent(res);
+        },
         (err: HttpErrorResponse) => {
           if (err.status === 401) {
             this.modalOpened = false;
           } else {
+            this.messageService.cleanNotification();
             this.messageService.showAlert('IMAGE.CREATE_IMAGE_UPDATE_DOCKER_FILE_FAILED', {
               alertType: 'danger',
               view: this.alertView
@@ -568,6 +615,7 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
         if (err.status === 401) {
           this.modalOpened = false;
         } else {
+          this.messageService.cleanNotification();
           this.messageService.showAlert('IMAGE.CREATE_IMAGE_REMOVE_FILE_FAILED', {
             alertType: 'danger',
             view: this.alertView
@@ -581,7 +629,6 @@ export class CreateImageComponent extends CsModalChildBase implements OnInit, On
     if ((this.baseImageSource === 1 && isGetBoardRegistry) ||
       (this.baseImageSource === 2 && !isGetBoardRegistry)) {
       this.selectedImage = null;
-      this.consoleText = '';
       this.imageDetailList.splice(0, this.imageDetailList.length);
       this.customerNewImage.imageDockerFile.imageBase = '';
     }

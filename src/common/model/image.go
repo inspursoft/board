@@ -75,6 +75,7 @@ type TagDetail struct {
 	ImageSize         int    `json:"image_size_number"`
 	ImageSizeUnit     string `json:"image_size_unit"`
 	ImageDetail       string `json:"-"`
+	ImageArch         string `json:"image_arch"`
 	ImageTagDeleted   int    `json:"image_tag_deleted"`
 }
 

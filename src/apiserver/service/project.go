@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
 	"git/inspursoft/board/src/common/dao"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
@@ -22,7 +21,7 @@ var repoServeURL = utils.GetConfig("REPO_SERVE_URL")
 const (
 	k8sAPIversion1 = "v1"
 	adminUserID    = 1
-	adminUserName  = "admin"
+	adminUserName  = "boardadmin"
 	projectPrivate = 0
 	kubeNamespace  = "kube-system"
 	istioNamespace = "istio-system"
@@ -191,13 +190,6 @@ func DeleteProject(userID, projectID int64) (bool, error) {
 			return false, err
 		}
 	}
-	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
-	if err != nil {
-		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
-		if err == utils.ErrUnprocessableEntity {
-			return false, err
-		}
-	}
 	//Delete namespace in cluster
 	_, err = DeleteNamespace(project.Name)
 	if err != nil {
@@ -314,6 +306,8 @@ func SyncProjectsWithK8s() error {
 			reqProject.OwnerID = adminUserID
 			reqProject.OwnerName = adminUserName
 			reqProject.Public = projectPrivate
+			reqProject.CreationTime = namespace.CreationTimestamp
+			reqProject.UpdateTime = namespace.CreationTimestamp
 			if namespace.Labels != nil && namespace.Labels[istioLabel] == "enabled" {
 				reqProject.IstioSupport = true
 			}

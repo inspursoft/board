@@ -3,6 +3,6 @@ div.alert-container {
   position: fixed;
   z-index: 10;
   top: 5px;
-  left: 35%;
-  right: 35%;
+  left: 20%;
+  right: 20%;
 }

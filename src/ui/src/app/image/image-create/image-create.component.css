@@ -1,7 +1,7 @@
 
 div.modal-body-container {
   display: flex;
-  height: 500px;
+  height: 420px;
 }
 
 .base-margin-left {
@@ -30,7 +30,7 @@ div.build-method-container {
 }
 
 div.from-temp-container {
-  padding: 10px;
+  padding: 0 10px;
 }
 
 div.from-docker-file-container {
@@ -69,6 +69,7 @@ div.console-container {
   flex-basis: 100%;
   padding: 10px;
   height: 100%;
+  overflow-x: hidden;
 }
 
 input.upload-file-input {
@@ -82,15 +83,6 @@ legend.legend-default {
   border: 0;
   width: auto;
   margin-left: 30px;
-}
-
-textarea.area-status {
-  padding: 5px;
-  flex-basis: 100%;
-  color: black;
-  font-size: 12px;
-  line-height: 16px;
-  overflow-y: auto;
 }
 
 button.default-primary {

@@ -129,11 +129,6 @@ jenkins_node_ssh_port = rcp.get("configuration", "jenkins_node_ssh_port")
 jenkins_node_username = rcp.get("configuration", "jenkins_node_username")
 jenkins_node_password = rcp.get("configuration", "jenkins_node_password")
 jenkins_node_volume = rcp.get("configuration", "jenkins_node_volume")
-jenkins_execution_mode = rcp.get("configuration", "jenkins_execution_mode")
-
-kvm_registry_size = rcp.get("configuration", "kvm_registry_size")
-kvm_registry_port = rcp.get("configuration", "kvm_registry_port")
-kvm_toolkits_path = rcp.get("configuration", "kvm_toolkits_path")
 
 tiller_port = rcp.get("configuration", "tiller_port")
 
@@ -176,25 +171,14 @@ ldap_timeout = rcp.get("configuration", "ldap_timeout")
 
 #Setting Directory
 apiserver_config_dir = os.path.join(config_dir,"apiserver")
-collector_config_dir = os.path.join(config_dir,"collector")
 if not os.path.exists(apiserver_config_dir):
     os.makedirs(os.path.join(config_dir, "apiserver"))
-if not os.path.exists(collector_config_dir):
-    os.makedirs(os.path.join(config_dir, "collector"))
 apiserver_env= os.path.join(config_dir, "apiserver", "env")
-if not os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
-    os.makedirs(os.path.join(apiserver_config_dir, "kvmregistry"))
-apiserver_kvm = os.path.join(apiserver_config_dir, "kvmregistry")
 
 tokenserver_config_dir = os.path.join(config_dir,"tokenserver")
 if not os.path.exists(tokenserver_config_dir):
     os.makedirs(os.path.join(config_dir, "tokenserver"))
 tokenserver_env = os.path.join(config_dir, "tokenserver", "env")
-
-collector_config_dir = os.path.join(config_dir,"collector")
-if not os.path.exists(collector_config_dir):
-    os.makedirs(os.path.join(config_dir, "collector"))
-collector_conf_env = os.path.join(config_dir, "collector", "env")
 
 db_config_dir = os.path.join(config_dir, "db")
 if not os.path.exists(db_config_dir):
@@ -207,15 +191,17 @@ proxy_config_dir = os.path.join(config_dir, "proxy")
 if not os.path.exists(proxy_config_dir):
     os.makedirs(os.path.join(config_dir, "proxy"))
 
-jenkins_config_dir = os.path.join(config_dir, "jenkins")
-if not os.path.exists(jenkins_config_dir):
-    os.makedirs(os.path.join(config_dir, "jenkins"))
-jenkins_env = os.path.join(config_dir, "jenkins", "env")
 
-gogits_config_dir = os.path.join(config_dir, "gogits")
-if not os.path.exists(gogits_config_dir):
-    os.makedirs(os.path.join(config_dir, "gogits"))
-gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
+if devops_opt == "legacy":
+    jenkins_config_dir = os.path.join(config_dir, "jenkins")
+    if not os.path.exists(jenkins_config_dir):
+        os.makedirs(os.path.join(config_dir, "jenkins"))
+    jenkins_env = os.path.join(config_dir, "jenkins", "env")
+
+    gogits_config_dir = os.path.join(config_dir, "gogits")
+    if not os.path.exists(gogits_config_dir):
+        os.makedirs(os.path.join(config_dir, "gogits"))
+    gogits_conf = os.path.join(config_dir, "gogits", "conf", "app.ini")
 
 grafana_config_dir = os.path.join(config_dir, "grafana")
 if not os.path.exists(grafana_config_dir):
@@ -291,14 +277,10 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_node_password=jenkins_node_password,
         jenkins_node_ssh_port=jenkins_node_ssh_port,
         jenkins_node_volume=jenkins_node_volume,
-        jenkins_execution_mode=jenkins_execution_mode,
-        kvm_registry_size=kvm_registry_size,
-        kvm_registry_port=kvm_registry_port,
-        kvm_toolkits_path=kvm_toolkits_path,
         tiller_port=tiller_port)
 
 if kube_http_scheme == "http":
-	for name in ["apiserver", "collector"]:
+	for name in ["apiserver"]:
 		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
 				os.path.join(config_dir, name, "kubeconfig"),
 				kube_http_scheme=kube_http_scheme,
@@ -314,7 +296,7 @@ if kube_http_scheme == "http":
 elif kube_http_scheme == "https":
 	if not os.path.exists("/data/board/cert"):
 		os.makedirs("/data/board/cert")
-	for name in ["apiserver", "collector", "grafana", "proxy"]:
+	for name in ["apiserver", "grafana", "proxy"]:
 		openssl_path=os.path.join(config_dir, name, "openssl.conf")
 		key_path=os.path.join("/data/board/cert", name+'-key.pem')
 		cert_path=os.path.join("/data/board/cert", name+'.pem')
@@ -346,31 +328,9 @@ elif kube_http_scheme == "https":
 					kube_master_port=kube_master_port,
 					name=name)
 
-
-if os.path.exists(os.path.join(apiserver_config_dir, "kvm")):
-    shutil.rmtree(os.path.join(apiserver_config_dir, "kvm"))
-shutil.copytree(os.path.join(templates_dir, "apiserver", "kvm"), os.path.join(apiserver_config_dir, "kvm"))
-
-if os.path.exists(os.path.join(apiserver_config_dir, "kvmregistry")):
-    shutil.rmtree(os.path.join(apiserver_config_dir, "kvmregistry"))
-
-if jenkins_execution_mode != "single":
-    subprocess.call("docker run --rm -v `pwd`/templates/apiserver/kvmregistry:/go/src -w=/go/src golang:1.9.6 go build -o kvmregistry", shell=True)
-    os.mkdir(os.path.join(apiserver_config_dir, "kvmregistry"))
-    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "kvmregistry"), os.path.join(apiserver_config_dir, "kvmregistry", "kvmregistry"))
-    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "affinity.ini"), os.path.join(apiserver_config_dir, "kvmregistry", "affinity.ini"))
-    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "register.sh"), os.path.join(apiserver_config_dir, "kvmregistry", "register.sh"))
-    shutil.copyfile(os.path.join(templates_dir, "apiserver", "kvmregistry", "release.sh"), os.path.join(apiserver_config_dir, "kvmregistry", "release.sh"))
-
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env,
         token_expire_seconds=token_expire_seconds)
-
-render(os.path.join(templates_dir, "collector", "env"),
-        collector_conf_env,
-        kube_master_ip=kube_master_ip,
-        kube_master_port=kube_master_port,
-        db_password=db_password)
 
 render(os.path.join(templates_dir, "db", "env"),
         db_conf_env,
@@ -395,21 +355,22 @@ else:
 		proxy_conf,
 		basic_auth=basic_auth.strip())
 
-render(os.path.join(templates_dir, "jenkins", "env"),
-        jenkins_env,
-        jenkins_host_ip=jenkins_host_ip,
-        jenkins_host_port=jenkins_host_port,
-        jenkins_node_ip=jenkins_node_ip,
-        jenkins_node_ssh_port=jenkins_node_ssh_port,
-        jenkins_node_username=jenkins_node_username,
-        jenkins_node_password=jenkins_node_password,
-        jenkins_node_volume=jenkins_node_volume)
-    
-render(os.path.join(templates_dir, "gogits", "app.ini"),
-        gogits_conf,
-        gogits_host_ip=gogits_host_ip,
-        gogits_host_port=gogits_host_port,
-        gogits_ssh_port=gogits_ssh_port)
+if devops_opt == "legacy":
+    render(os.path.join(templates_dir, "jenkins", "env"),
+            jenkins_env,
+            jenkins_host_ip=jenkins_host_ip,
+            jenkins_host_port=jenkins_host_port,
+            jenkins_node_ip=jenkins_node_ip,
+            jenkins_node_ssh_port=jenkins_node_ssh_port,
+            jenkins_node_username=jenkins_node_username,
+            jenkins_node_password=jenkins_node_password,
+            jenkins_node_volume=jenkins_node_volume)
+        
+    render(os.path.join(templates_dir, "gogits", "app.ini"),
+            gogits_conf,
+            gogits_host_ip=gogits_host_ip,
+            gogits_host_port=gogits_host_port,
+            gogits_ssh_port=gogits_ssh_port)
 
 
 render(os.path.join(templates_dir, "grafana", "prometheus-datasource.json"),

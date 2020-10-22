@@ -1,4 +1,7 @@
-<app-status *ngIf="service" [service]="service"></app-status>
+<app-status *ngIf="service"
+            [service]="service"
+            (errorEvent)="errorEvent.emit($event)">
+</app-status>
 <table class="table">
   <thead>
   <tr>

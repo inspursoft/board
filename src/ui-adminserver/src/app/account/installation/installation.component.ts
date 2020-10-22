@@ -20,6 +20,7 @@ import { Message, ReturnStatus } from 'src/app/shared/message/message.types';
 })
 export class InstallationComponent implements OnInit {
   debugMode = false;
+  status = 'status1';
 
   newDate = new Date('2016-01-01 09:00:00');
 
@@ -47,7 +48,15 @@ export class InstallationComponent implements OnInit {
   responsibility = false;
   isEditable = true;
   submitBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  editBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  startBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  uninstallBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  isEdit = false;
+  isStart = false;
+  isUninstall = false;
   user: User;
+  startLog = '';
+  modalSize = '';
 
   @ViewChild('UUID') uuidInput: VariableInputComponent;
   @ViewChildren(VariableInputComponent) myInputTemplateComponents: QueryList<VariableInputComponent>;
@@ -105,37 +114,18 @@ export class InstallationComponent implements OnInit {
 
   onNext() {
     // for test
-    // test status1
-    // this.config = new Configuration();
-    // setTimeout(() => {
-    //   this.ignoreStep1 = true;
-    //   this.installStep = 2;
-    //   this.installProgress = 50;
-    // }, 1000)
-
-    // test status2
-    // this.installStep++;
-    // this.installProgress += 33;
-
-    // test status3
-    // this.ignoreStep1 = true;
-    // this.ignoreStep2 = true;
-    // this.installStep = 3;
-    // this.installProgress = 100;
-    // this.messageService.showOnlyOkDialog('INITIALIZATION.ALERTS.ALREADY_START');
     if (this.debugMode) {
-      let status = 'status1';
-      if ('status1' === status) {
+      if ('status1' === this.status) {
         this.config = new Configuration();
         setTimeout(() => {
           this.ignoreStep1 = true;
           this.installStep = 2;
           this.installProgress = 50;
         }, 1000);
-      } else if ('status2' === status) {
+      } else if ('status2' === this.status) {
         this.installStep++;
         this.installProgress += 33;
-      } else if ('status3' === status) {
+      } else if ('status3' === this.status) {
         this.ignoreStep1 = true;
         this.ignoreStep2 = true;
         this.installStep = 3;
@@ -150,7 +140,7 @@ export class InstallationComponent implements OnInit {
     this.uuidInput.checkSelf();
     if (this.uuidInput.isValid) {
       this.submitBtnState = ClrLoadingState.LOADING;
-      this.user.username = 'admin';
+      this.user.username = 'boardadmin';
       this.user.password = this.uuid;
       this.accountService.signIn(this.user).subscribe(
         () => {
@@ -215,17 +205,20 @@ export class InstallationComponent implements OnInit {
 
   onEditCfg() {
     // for test
-    // this.installStep++;
-    // this.installProgress += 33;
     if (this.debugMode) {
-      this.installStep++;
-      this.installProgress += 33;
-      this.config = new Configuration();
+      this.editBtnState = ClrLoadingState.LOADING;
+      this.isEdit = true;
+      setTimeout(() => {
+        this.installStep++;
+        this.installProgress += 33;
+        this.config = new Configuration();
+        this.editBtnState = ClrLoadingState.DEFAULT;
+      }, 5000);
       return;
     }
 
-
-    this.submitBtnState = ClrLoadingState.LOADING;
+    this.editBtnState = ClrLoadingState.LOADING;
+    this.isEdit = true;
     this.configurationService.getConfig().subscribe(
       (res: Configuration) => {
         this.config = new Configuration(res);
@@ -237,7 +230,7 @@ export class InstallationComponent implements OnInit {
               this.isEditable = this.config.isInit;
               this.installStep++;
               this.installProgress += 33;
-              this.submitBtnState = ClrLoadingState.DEFAULT;
+              this.editBtnState = ClrLoadingState.DEFAULT;
             },
             (err: HttpErrorResponse) => {
               if (err.status === 401) {
@@ -249,7 +242,7 @@ export class InstallationComponent implements OnInit {
                 this.isEditable = this.config.isInit;
                 this.installStep++;
                 this.installProgress += 33;
-                this.submitBtnState = ClrLoadingState.DEFAULT;
+                this.editBtnState = ClrLoadingState.DEFAULT;
               }
             }
           );
@@ -258,11 +251,12 @@ export class InstallationComponent implements OnInit {
           this.isEditable = this.config.isInit;
           this.installStep++;
           this.installProgress += 33;
-          this.submitBtnState = ClrLoadingState.DEFAULT;
+          this.editBtnState = ClrLoadingState.DEFAULT;
         }
       },
       (err: HttpErrorResponse) => {
         // COMMON
+        this.isEdit = false;
         this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
     );
@@ -270,29 +264,37 @@ export class InstallationComponent implements OnInit {
 
   onStartBoard() {
     // for test
-    // this.openSSH = false;
-    // this.installStep += 2;
-    // this.ignoreStep2 = true;
-    // this.installProgress = 100;
     if (this.debugMode) {
-      this.openSSH = false;
-      this.installStep += 2;
-      this.ignoreStep2 = true;
-      this.installProgress = 100;
-      return;
-    }
-
-    this.submitBtnState = ClrLoadingState.LOADING;
-    this.openSSH = false;
-    this.boardService.start(this.user).subscribe(
-      () => {
+      this.startBtnState = ClrLoadingState.LOADING;
+      this.submitBtnState = ClrLoadingState.LOADING;
+      this.isStart = true;
+      setTimeout(() => {
+        this.openSSH = false;
         this.installStep += 2;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.startBtnState = ClrLoadingState.DEFAULT;
+        this.submitBtnState = ClrLoadingState.DEFAULT;
+      }, 20000);
+      return;
+    }
+
+    this.startBtnState = ClrLoadingState.LOADING;
+    this.submitBtnState = ClrLoadingState.LOADING;
+    this.isStart = true;
+    this.boardService.start(this.user).subscribe(
+      () => {
+        this.openSSH = false;
+        this.installStep += 2;
+        this.ignoreStep2 = true;
+        this.installProgress = 100;
+        this.startBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
         // COMMON
+        this.openSSH = false;
+        this.isStart = false;
         this.commonError(err, {}, 'INITIALIZATION.ALERTS.START_BOARD_FAILED');
       },
     );
@@ -300,32 +302,39 @@ export class InstallationComponent implements OnInit {
 
   onUninstallBoard() {
     // for test
-    // this.openSSH = false;
-    // this.installStep = 4;
-    // this.ignoreStep1 = true;
-    // this.ignoreStep2 = true;
-    // this.installProgress = 100;
     if (this.debugMode) {
-      this.openSSH = false;
-      this.installStep = 4;
-      this.ignoreStep1 = true;
-      this.ignoreStep2 = true;
-      this.installProgress = 100;
-      return;
-    }
-
-    this.submitBtnState = ClrLoadingState.LOADING;
-    this.openSSH = false;
-    this.boardService.shutdown(this.user, this.clearDate).subscribe(
-      () => {
+      this.uninstallBtnState = ClrLoadingState.LOADING;
+      this.submitBtnState = ClrLoadingState.LOADING;
+      this.isUninstall = true;
+      setTimeout(() => {
+        this.openSSH = false;
         this.installStep = 4;
         this.ignoreStep1 = true;
         this.ignoreStep2 = true;
         this.installProgress = 100;
+        this.uninstallBtnState = ClrLoadingState.DEFAULT;
+        this.submitBtnState = ClrLoadingState.DEFAULT;
+      }, 20000);
+      return;
+    }
+
+    this.uninstallBtnState = ClrLoadingState.LOADING;
+    this.submitBtnState = ClrLoadingState.LOADING;
+    this.isUninstall = true;
+    this.boardService.shutdown(this.user, this.clearDate).subscribe(
+      () => {
+        this.openSSH = false;
+        this.installStep = 4;
+        this.ignoreStep1 = true;
+        this.ignoreStep2 = true;
+        this.installProgress = 100;
+        this.uninstallBtnState = ClrLoadingState.DEFAULT;
         this.submitBtnState = ClrLoadingState.DEFAULT;
       },
       (err: HttpErrorResponse) => {
         // COMMON
+        this.openSSH = false;
+        this.isUninstall = false;
         this.commonError(err, { 503: 'INITIALIZATION.ALERTS.ALREADY_UNINSTALL' }, 'INITIALIZATION.ALERTS.UNINSTALL_BOARD_FAILED');
       },
     );
@@ -333,26 +342,63 @@ export class InstallationComponent implements OnInit {
 
   onApplyAndStartBoard() {
     // for test
-    // this.openSSH = false;
-    // this.installStep++;
-    // this.installProgress = 100;
     if (this.debugMode) {
-      this.openSSH = false;
-      this.installStep++;
-      this.installProgress = 100;
+      this.submitBtnState = ClrLoadingState.LOADING;
+      let helloTime = 0;
+      const outPutLog = setInterval(() => {
+        this.startLog += `hello world! ${helloTime++}\n`;
+        if (!this.modalSize) {
+          this.modalSize = 'xl';
+        }
+      }, 1000);
+      setTimeout(() => {
+        this.openSSH = false;
+        this.installStep++;
+        this.installProgress = 100;
+        this.submitBtnState = ClrLoadingState.DEFAULT;
+        this.modalSize = '';
+        clearInterval(outPutLog);
+      }, 60 * 1000);
       return;
     }
 
 
     this.submitBtnState = ClrLoadingState.LOADING;
-    this.openSSH = false;
+    let maxTry = 100;
+    const installStepNow = this.installStep;
     this.configurationService.putConfig(this.config).subscribe(
       () => {
         this.boardService.applyCfg(this.user).subscribe(
           () => {
-            this.installStep++;
-            this.installProgress = 100;
-            this.submitBtnState = ClrLoadingState.DEFAULT;
+            const initProcess = setInterval(() => {
+              this.appInitService.getSystemStatus().subscribe(
+                (res: InitStatus) => {
+                  if (InitStatusCode.InitStatusThird === res.status) {
+                    if (this.installStep === installStepNow) {
+                      this.installStep++;
+                    }
+                    this.installProgress = 100;
+                    this.openSSH = false;
+                    this.submitBtnState = ClrLoadingState.DEFAULT;
+                    this.modalSize = '';
+                    this.startLog = '';
+                    clearInterval(initProcess);
+                  } else {
+                    this.startLog = res.log;
+                    if (!this.modalSize) {
+                      this.modalSize = 'xl';
+                    }
+                  }
+                },
+                (err: HttpErrorResponse) => {
+                  console.error(err.message);
+                  if (maxTry-- < 0) {
+                    this.getSysStatusFailed();
+                    clearInterval(initProcess);
+                  }
+                },
+              );
+            }, 5 * 1000);
           },
           (err: HttpErrorResponse) => {
             // COMMON
@@ -369,7 +415,8 @@ export class InstallationComponent implements OnInit {
 
   goToBoard() {
     if (this.config) {
-      window.open('http://' + this.config.board.hostname);
+      const protocol = this.config.board.mode === 'normal' ? 'http' : 'https';
+      window.open(`${protocol}://${this.config.board.hostname}`);
     } else {
       const boardURL = window.location.hostname;
       window.open('http://' + boardURL);
@@ -403,7 +450,7 @@ export class InstallationComponent implements OnInit {
 
   checkInput(): boolean {
     let result = true;
-    for (let item of this.myInputTemplateComponents.toArray()) {
+    for (const item of this.myInputTemplateComponents.toArray()) {
       item.checkSelf();
       if (!item.disabled && !item.isValid) {
         item.element.nativeElement.scrollIntoView();
@@ -418,6 +465,9 @@ export class InstallationComponent implements OnInit {
     console.error(err.message);
     this.refresh = true;
     this.submitBtnState = ClrLoadingState.DEFAULT;
+    this.editBtnState = ClrLoadingState.DEFAULT;
+    this.startBtnState = ClrLoadingState.DEFAULT;
+    this.uninstallBtnState = ClrLoadingState.DEFAULT;
     if (err.status === 401) {
       this.tokenError();
       return;

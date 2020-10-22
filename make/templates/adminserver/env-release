@@ -1,4 +1,5 @@
 BOARD_COMPOSE=__CURDIR__/../docker-compose.yml
+BOARD_COMPOSE_LEGACY=__CURDIR__/../archive/docker-compose.yml
 PREPARE_FILE=__CURDIR__/../prepare
 MAKE_PATH=__CURDIR__/../
 IMAGE_PREFIX=board

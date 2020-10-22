@@ -150,12 +150,13 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.board.apiServerPort = $event">
               </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.LABEL' | translate"
                               [type]="'enum'"
                               [required]="true"
                               [defaultValue]="config.board.devopsOpt"
                               [enumType]="'text'"
-                              [enumItem]="{Gogs:'legacy',Gitlab:'gitlab'}"
+                              [enumItem]="{Gitlab:'gitlab',Gogs:'legacy'}"
                               [enumInline]="true"
                               [helper]="'CONFIGURATIONS.BOARD.DEVOPS_OPT.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
@@ -217,18 +218,16 @@
                               (commitEvent)="config.k8s.kubeHttpScheme = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.LABEL' | translate"
-                              [type]="'enum'"
+                              [type]="'number'"
                               [required]="true"
-                              [defaultValue]="config.k8s.kubeHttpScheme === 'http' ? 8080 : 6443"
-                              [enumType]="'number'"
-                              [enumItem]="{'8080':8080,'6443':6443}"
-                              [enumInline]="true"
-                              [enableCustomItem]="true"
-                              [customItemPlaceholder]="'1~65535'"
-                              [customItemWidth]="'3.5rem'"
+                              [min]="1"
+                              [max]="65535"
+                              [defaultValue]="config.k8s.kubeMasterPort"
+                              [placeholder]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.PLACEHOLDER' | translate"
                               [helper]="'CONFIGURATIONS.K8S.KUBE_MASTER_PORT.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [inputUpdateOn]="'change'"
+                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
+                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.k8s.kubeMasterPort = $event">
               </variable-input>
               <variable-input [label]="'CONFIGURATIONS.K8S.REGISTRY_IP.LABEL' | translate"
@@ -302,7 +301,7 @@
                 Gogs:
               </div>
 
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_IP.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
@@ -312,7 +311,7 @@
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.gogs.hostIP = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.HOST_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -326,7 +325,7 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.gogs.hostPort = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'legacy'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GOGS.SSH_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -348,7 +347,7 @@
               <div class="card-title">
                 Gitlab:
               </div>
-              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GITLAB.HOST_IP.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
@@ -358,7 +357,7 @@
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.gitlab.hostIP = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GITLAB.HOST_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -372,7 +371,7 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.gitlab.hostPort = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+              <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GITLAB.SSH_PORT.LABEL' | translate"
                               [type]="'number'"
                               [required]="true"
@@ -386,7 +385,7 @@
                               [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
                               (commitEvent)="config.gitlab.sshPort = $event">
               </variable-input>
-              <variable-input [disabled]="config.board.devopsOpt != 'gitlab'"
+              <!-- <variable-input [disabled]="!isEditable"
                               [label]="'CONFIGURATIONS.GITLAB.ADMIN_TOKEN.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
@@ -395,8 +394,9 @@
                               [helper]="'CONFIGURATIONS.GITLAB.ADMIN_TOKEN.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.gitlab.adminToken = $event">
-              </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.LABEL' | translate"
+              </variable-input> -->
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.GITLAB.SSH_USERNAME.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
                               [defaultValue]="config.gitlab.sshUsername"
@@ -417,27 +417,9 @@
               </variable-input>
             </div>
 
-            <hr>
+            <hr *ngIf="config.board.devopsOpt == 'legacy'">
 
-            <div>
-              <div class="card-title">
-                Prometheus:
-              </div>
-              <variable-input [label]="'CONFIGURATIONS.PROMETHEUS.URL.LABEL' | translate"
-                              [type]="'text'"
-                              [required]="true"
-                              [defaultValue]="config.prometheus.url"
-                              [placeholder]="'CONFIGURATIONS.PROMETHEUS.URL.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.PROMETHEUS.URL.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              (commitEvent)="config.prometheus.url = $event">
-              </variable-input>
-
-            </div>
-
-            <hr>
-
-            <div>
+            <div *ngIf="config.board.devopsOpt == 'legacy'">
               <div class="card-title">
                 Jenkins:
               </div>
@@ -515,17 +497,23 @@
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
                               (commitEvent)="config.jenkins.nodeVolume = $event">
               </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.JENKINS.EXECUTION_MODE.LABEL' | translate"
-                              [type]="'enum'"
+            </div>
+
+            <hr>
+
+            <div>
+              <div class="card-title">
+                Prometheus:
+              </div>
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.PROMETHEUS.URL.LABEL' | translate"
+                              [type]="'text'"
                               [required]="true"
-                              [defaultValue]="config.jenkins.executionMode"
-                              [enumType]="'text'"
-                              [enumItem]="{Single:'single',Multi:'multi'}"
-                              [enumInline]="true"
-                              [helper]="'CONFIGURATIONS.JENKINS.EXECUTION_MODE.HELPER' | translate"
+                              [defaultValue]="config.prometheus.url"
+                              [placeholder]="'CONFIGURATIONS.PROMETHEUS.URL.PLACEHOLDER' | translate"
+                              [helper]="'CONFIGURATIONS.PROMETHEUS.URL.HELPER' | translate"
                               [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [inputUpdateOn]="'change'"
-                              (commitEvent)="config.jenkins.executionMode = $event">
+                              (commitEvent)="config.prometheus.url = $event">
               </variable-input>
             </div>
 
@@ -583,47 +571,6 @@
               </variable-input>
             </div>
 
-            <hr *ngIf="!simpleMode">
-
-            <div *ngIf="!simpleMode">
-              <div class="card-title">
-                Kvm:
-              </div>
-              <variable-input [label]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.LABEL' | translate"
-                              [type]="'number'"
-                              [required]="true"
-                              [min]="1"
-                              [defaultValue]="config.kvm.registrySize"
-                              [placeholder]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.KVM.REGISTRY_SIZE.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
-                              (commitEvent)="config.kvm.registrySize = $event">
-              </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.KVM.REGISTRY_PORT.LABEL' | translate"
-                              [type]="'number'"
-                              [required]="true"
-                              [min]="1"
-                              [max]="65535"
-                              [defaultValue]="config.kvm.registryPort"
-                              [placeholder]="'CONFIGURATIONS.KVM.REGISTRY_PORT.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.KVM.REGISTRY_PORT.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              [minMsg]="('ERROR.INPUT_MIN_VALUE' | translate)+': 1'"
-                              [maxMsg]="('ERROR.INPUT_MAX_VALUE' | translate)+': 65535'"
-                              (commitEvent)="config.kvm.registryPort = $event">
-              </variable-input>
-              <variable-input [label]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.LABEL' | translate"
-                              [type]="'text'"
-                              [required]="true"
-                              [defaultValue]="config.kvm.toolkitsPath"
-                              [placeholder]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.KVM.TOOLKITS_PATH.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              (commitEvent)="config.kvm.toolkitsPath = $event">
-              </variable-input>
-            </div>
-
             <hr *ngIf="false">
 
             <div *ngIf="false">
@@ -654,36 +601,6 @@
                               (commitEvent)="config.es.password = $event">
               </variable-input>
             </div>
-
-            <!-- <hr>
-
-            <div>
-              <div class="card-title">
-                Indata:
-              </div>
-              <variable-input *ngIf="!simpleMode"
-                              [disabled]="simpleMode"
-                              [label]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.LABEL' | translate"
-                              [type]="'text'"
-                              [required]="true"
-                              [defaultValue]="config.indata.verificationUrl"
-                              [placeholder]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.INDATA.VERIFICATION_URL.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              (commitEvent)="config.indata.verificationUrl = $event">
-              </variable-input>
-              <variable-input *ngIf="!simpleMode"
-                              [disabled]="simpleMode"
-                              [label]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.LABEL' | translate"
-                              [type]="'text'"
-                              [required]="true"
-                              [defaultValue]="config.indata.redirectionUrl"
-                              [placeholder]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.PLACEHOLDER' | translate"
-                              [helper]="'CONFIGURATIONS.INDATA.REDIRECTION_URL.HELPER' | translate"
-                              [requiredMsg]="'ERROR.INPUT_REQUIRED' | translate"
-                              (commitEvent)="config.indata.redirectionUrl = $event">
-              </variable-input>
-            </div> -->
 
             <hr *ngIf="config.board.authMode == 'ldap_auth'">
 
@@ -934,7 +851,8 @@
           </button>
 
           <button class="btn"
-                  [clrLoading]="submitBtnState"
+                  [clrLoading]="editBtnState"
+                  [disabled]="isStart || isUninstall"
                   (click)="onEditCfg()"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -943,7 +861,8 @@
           </button>
 
           <button class="btn"
-                  [clrLoading]="submitBtnState"
+                  [clrLoading]="startBtnState"
+                  [disabled]="isEdit || isUninstall"
                   (click)="openSSH = true; uninstallConfirm = false; user.password = '';"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -952,7 +871,8 @@
           </button>
 
           <button class="btn btn-warning"
-                  [clrLoading]="submitBtnState"
+                  [clrLoading]="uninstallBtnState"
+                  [disabled]="isEdit || isStart"
                   (click)="openSSH = true; uninstallConfirm = true; clearDate = false; responsibility = false; user.password = '';"
                   *ngIf="installStep === 1">
             <clr-icon shape="angle-double"
@@ -1008,7 +928,8 @@
                 [visibilityHeight]="450"></app-back-top>
 </div>
 
-<clr-modal [(clrModalOpen)]="openSSH">
+<clr-modal [(clrModalOpen)]="openSSH"
+           [clrModalSize]="modalSize">
   <h3 class="modal-title">{{ 'INITIALIZATION.PAGE_TITLE.SSH_ACCOUNT' | translate }}</h3>
   <div class="modal-body">
     <div>
@@ -1023,16 +944,30 @@
                  name="clearDate"
                  value="true"
                  [(ngModel)]="clearDate"
-                 [disabled]="!uninstallConfirm" />
+                 [disabled]="submitBtnState != 0" />
           <label>{{'INITIALIZATION.CONTENTS.CLEAR_DATA' | translate}}</label>
         </clr-checkbox-wrapper>
       </clr-checkbox-container>
+
+      <clr-input-container>
+        <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.SSH_PORT' | translate }}</label>
+        <input clrInput
+               required
+               type="number"
+               [(ngModel)]="user.port"
+               [disabled]="submitBtnState != 0"
+               name=sshPort />
+        <clr-control-error>
+          {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
 
       <clr-input-container>
         <label>{{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.NAME' | translate }}</label>
         <input clrInput
                required
                [(ngModel)]="user.username"
+               [disabled]="submitBtnState != 0"
                name=sshUsername />
         <clr-control-error>
           {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
@@ -1044,6 +979,7 @@
         <input clrPassword
                required
                [(ngModel)]="user.password"
+               [disabled]="submitBtnState != 0"
                name="sshPassword" />
         <clr-control-error *clrIfError="'required'">
           {{ 'CONFIGURATIONPAGE.SAVECONFIGURATION.ACCOUNT.REQUIRED' | translate }}
@@ -1057,11 +993,19 @@
                required
                value="true"
                [(ngModel)]="responsibility"
-               [disabled]="!uninstallConfirm" />
+               [disabled]="submitBtnState != 0" />
         <label>{{'INITIALIZATION.CONTENTS.RESPONSIBILITY' | translate}}</label>
       </clr-checkbox-wrapper>
 
     </form>
+
+    <label *ngIf="startLog"
+           class="clr-control-label"
+           style="padding-left: .25rem; margin-top: 1rem;">{{'INITIALIZATION.LABELS.LOG' | translate}}</label>
+    <pre *ngIf="startLog"
+         style="border: solid;margin-top: 0.3rem;padding: 0.3rem;max-height: 10rem;overflow-y: auto;"
+         [innerHtml]="startLog">
+    </pre>
   </div>
   <div class="modal-footer">
     <button class="btn"

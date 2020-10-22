@@ -6,6 +6,8 @@ import { SharedModule } from '../shared/shared.module';
 import { ImageService } from './image.service';
 import { CreateImageComponent } from './image-create/image-create.component';
 import { CoreModule } from '../core/core.module';
+import { JobLogComponent } from './job-log/job-log.component';
+import { ImageCreateOldComponent } from './image-create-old/image-create-old.component';
 
 @NgModule({
   imports: [
@@ -22,7 +24,9 @@ import { CoreModule } from '../core/core.module';
   declarations: [
     ImageListComponent,
     CreateImageComponent,
-    ImageDetailComponent
+    ImageDetailComponent,
+    JobLogComponent,
+    ImageCreateOldComponent
   ]
 })
 export class ImageModule {

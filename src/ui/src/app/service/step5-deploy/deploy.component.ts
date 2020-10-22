@@ -14,7 +14,6 @@ import { ServiceType } from '../service.types';
   styleUrls: ['./deploy.component.css']
 })
 export class DeployComponent extends ServiceStepComponentBase implements OnInit {
-  boardHost = '';
   isDeployed = false;
   isDeploySuccess = false;
   isInDeployWIP = false;
@@ -25,7 +24,6 @@ export class DeployComponent extends ServiceStepComponentBase implements OnInit 
 
   constructor(protected injector: Injector) {
     super(injector);
-    this.boardHost = this.appInitService.systemInfo.boardHost;
   }
 
   ngOnInit(): void {

@@ -36,6 +36,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   @Output() updateProgressEvent: EventEmitter<HttpProgressEvent>;
   @Input() isActionInWIP: boolean;
   @Output() isActionInWIPChange: EventEmitter<boolean>;
+  @Output() errorEvent: EventEmitter<any>;
   term: Terminal;
   fitAddon: FitAddon;
   webLinkAddon: WebLinksAddon;
@@ -62,6 +63,7 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.actionIsEnabledEvent = new EventEmitter<boolean>();
     this.updateProgressEvent = new EventEmitter<HttpProgressEvent>();
     this.isActionInWIPChange = new EventEmitter<boolean>();
+    this.errorEvent = new EventEmitter<any>();
   }
 
   ngOnInit() {
@@ -77,7 +79,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
           this.buildSocketConnect(this.serviceDetailInfo.serviceContainers[0], 0);
         }
         this.changeRef.detectChanges();
-      }
+      },
+      (err) => this.errorEvent.emit(err)
     );
     this.resizeListener = this.resizeListener.bind(this);
     this.actionIsEnabledEvent.emit(true);
@@ -103,7 +106,8 @@ export class ConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get wsUrl(): string {
-    const host = `${this.appInitService.getWebsocketPrefix}://${this.appInitService.systemInfo.boardHost}`;
+    const boardHost = this.appInitService.systemInfo.boardHost;
+    const host = `${this.appInitService.getWebsocketPrefix}://${boardHost}:${window.location.port}`;
     const path = `/api/v1/pods/${this.service.serviceProjectId}/${this.curPodName}/shell`;
     const params = `?token=${this.appInitService.token}&container=${this.curContainerName}`;
     return `${host}${path}${params}`;

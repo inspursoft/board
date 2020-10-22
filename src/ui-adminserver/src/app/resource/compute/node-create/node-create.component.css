@@ -1,0 +1,77 @@
+div.modal-body{
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+div.alert {
+  height: 30px;
+  line-height: 30px;
+}
+
+div.alert-item{
+  margin-left: 5px;
+}
+
+div.logs-container {
+  background-color: black;
+  overflow-y: auto;
+  margin-top: 10px;
+  border: 1px solid silver;
+  border-radius: 5px;
+  padding: 3px;
+  flex-basis: 100%;
+}
+
+div.modal-footer {
+  align-items: center;
+}
+
+div.dynamic-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+div.dynamic-icon-container {
+  flex-basis: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+clr-icon.dynamic-icon {
+  color: white;
+  background: green;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+div.plus-container {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+div.dynamic-line-container {
+  display: flex;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  align-items: center;
+}
+
+div.dynamic-line-container lib-input-ex {
+  width: 100%;
+}
+
+span.title {
+  flex-basis: 50%;
+  text-align: center;
+  line-height: 16px;
+  font-size: 14px;
+}
+
+div.title-container {
+  margin-top: 20px;
+}

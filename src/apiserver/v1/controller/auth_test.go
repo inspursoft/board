@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	AdminUsername = "admin"
+	AdminUsername = "boardadmin"
 	AdminPassword = "MTIzNDU2YT8="
 )
 
@@ -119,7 +119,7 @@ func TestCurrentUserAction(t *testing.T) {
 
 	err := json.Unmarshal(w.Body.Bytes(), &user)
 	assert.Nil(err, "Unmarshal user error.")
-	assert.Equal("admin", user.Username, "Get current user error.")
+	assert.Equal(AdminUsername, user.Username, "Get current user error.")
 }
 
 func TestUserExists(t *testing.T) {
@@ -128,7 +128,7 @@ func TestUserExists(t *testing.T) {
 	defer signOut(AdminUsername)
 	assert.NotEmpty(token, "signIn error")
 
-	reqURL := "/api/v1/user-exists?token=" + token + "&target=username&value=admin"
+	reqURL := "/api/v1/user-exists?token=" + token + "&target=username&value=boardadmin"
 	r, _ := http.NewRequest("GET", reqURL, nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)

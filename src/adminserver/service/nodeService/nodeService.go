@@ -95,7 +95,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 }
 
 func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.SecureShell) error {
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		envStr := fmt.Sprintf(`--env MASTER_PASS=%s \
 --env MASTER_IP=%s \
 --env NODE_IP=%s \
@@ -125,7 +125,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 -v %s:/tmp/log \
 -v %s:/tmp/hosts_dir \
 -v %s:/ansible_k8s/pre-env \
-%s k8s_install:1.18 `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
+%s k8s_install:1.19 `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
 		if err := secure.ExecuteCommand(cmdStr); err != nil {
 			return err
@@ -354,7 +354,10 @@ func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 	addHosts.WriteString("[etcd]\n")
 	addHosts.WriteString(fmt.Sprintf("%s\n", masterIp))
 	addHosts.WriteString("[nodes]\n")
-	addHosts.WriteString(fmt.Sprintf("%s\n", nodeIp))
+	nodes := strings.Split(nodeIp, "_")
+	for _, node := range nodes {
+		addHosts.WriteString(fmt.Sprintf("%s\n", node))
+	}
 	addHosts.WriteString("[registry]\n")
 	addHosts.WriteString(fmt.Sprintf("%s\n", registryIp))
 	return nil
@@ -399,7 +402,7 @@ func deleteActionFromApiServer(urlPath string) error {
 	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		err := utils.RequestHandle(http.MethodDelete, url, func(req *http.Request) error {
 			req.Header = http.Header{
 				"Content-Type": []string{"application/json"},
@@ -432,7 +435,7 @@ func getResponseJsonFromApiServer(urlPath string, res interface{}) error {
 	port := allConfig.Board.APIServerPort
 	url := fmt.Sprintf("http://%s:%s/%s", host, port, urlPath)
 
-	if currentToken, ok := dao.GlobalCache.Get("admin").(string); ok {
+	if currentToken, ok := dao.GlobalCache.Get("boardadmin").(string); ok {
 		err := utils.RequestHandle(http.MethodGet, url, func(req *http.Request) error {
 			req.Header = http.Header{
 				"Content-Type": []string{"application/json"},

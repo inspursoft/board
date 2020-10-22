@@ -142,7 +142,7 @@ type NodeClientInterface interface {
 	UpdateStatus(*model.Node) (*model.Node, error)
 	Delete(name string) error
 	Get(name string) (*model.Node, error)
-	List() (*model.NodeList, error)
+	List(args ...string) (*model.NodeList, error)
 	//Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *v1.Node, err error)
 }
 

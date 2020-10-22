@@ -65,7 +65,7 @@ export class NodeServiceControlComponent implements OnInit, OnDestroy {
         this.retrieve({page: {from: 0, to: 5}});
       },
       ((error1: HttpErrorResponse) => {
-        if (error1.status === 500) {
+        if (error1.status === 404) {
           this.messageService.cleanNotification();
           this.closeEvent.emit(true);
         }

@@ -72,6 +72,7 @@ export class Container extends HttpBase {
   @HttpBind('mem_request') memRequest = '';
   @HttpBind('cpu_limit') cpuLimit = '';
   @HttpBind('mem_limit') memLimit = '';
+  @HttpBind('gpu_limit') gpuLimit = '';
   @HttpBindArray('volume_mounts', Volume) volumeMounts: Array<Volume>;
   @HttpBindArray('env', EnvStruct) env: Array<EnvStruct>;
   @HttpBindObject('image', ImageIndex) image: ImageIndex;
@@ -82,6 +83,14 @@ export class Container extends HttpBase {
     this.volumeMounts = Array<Volume>();
     this.env = Array<EnvStruct>();
     this.containerPort = Array<number>();
+  }
+
+  get gpuLimitValue(): number {
+    return Number(this.gpuLimit);
+  }
+
+  set gpuLimitValue(value) {
+    this.gpuLimit = `${value}`;
   }
 }
 

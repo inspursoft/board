@@ -65,6 +65,7 @@
         <clr-tab-content *clrIfActive>
           <app-console [service]="service"
                        [(isActionInWIP)]="isActionInWIP"
+                       (errorEvent)="defaultDispatchErr($event)"
                        (updateProgressEvent)="defaultHandleProgress($event)"
                        (actionIsEnabledEvent)="defaultHandleActionEnabled($event)">
           </app-console>

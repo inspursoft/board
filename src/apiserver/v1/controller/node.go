@@ -220,6 +220,19 @@ func (n *NodeController) GetNodeStatusAction() {
 	}
 	nodeName := strings.TrimSpace(n.Ctx.Input.Param(":nodename"))
 	logs.Debug("Get node status %s", nodeName)
+
+	nExists, err := service.NodeExists(nodeName)
+	if err != nil {
+		logs.Debug("Failed to list nodes for %s", nodeName)
+		n.InternalError(err)
+		return
+	}
+	if !nExists {
+		logs.Info("Node name %s not existing in cluster.", nodeName)
+		n.CustomAbortAudit(http.StatusNotFound, "Node name not found.")
+		return
+	}
+
 	nodestatus, err := service.GetNodeControlStatus(nodeName)
 	if err != nil {
 		logs.Debug("Failed to get node status %s", nodeName)

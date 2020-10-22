@@ -69,6 +69,15 @@
                   [inputPattern]="patternMemLimit"
                   [inputPlaceholder]="'eg. 1024Mi'"
                   (commitEvent)="container.memLimit = $event"></lib-input-ex>
+    <lib-input-ex [inputLabel]="'JOB.JOB_CREATE_GPU_LIMIT' | translate"
+                  [inputCategory]="2"
+                  [validatorFns]="[validContainerGpuLimitFun]"
+                  [validatorMessage]="[
+                  {key:'resourceRequestInvalid',
+                  message: 'JOB.JOB_CREATE_GPU_LIMIT_ERROR' | translate}
+                  ]"
+                  [inputDefaultValue]="container.gpuLimitValue"
+                  (commitEvent)="container.gpuLimitValue = $event"></lib-input-ex>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline" (click)="modalOpened = false">

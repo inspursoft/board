@@ -36,14 +36,12 @@ const (
 	defaultAuthMode                           = "db_auth"
 	defaultMode                               = "normal"
 	adminUserID                               = 1
-	adminUsername                             = "admin"
-	adminEmail                                = "admin@inspur.com"
+	adminUsername                             = "boardadmin"
+	adminEmail                                = "boardadmin@inspur.com"
 	defaultInitialPassword                    = "123456a?"
 	BaseRepoPath                              = "/repos"
 	sshKeyPath                                = "/keys"
 	defaultProject                            = "library"
-	kvmToolsPath                              = "/root/kvm"
-	kvmRegistryPath                           = "/root/kvmregistry"
 )
 
 var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
@@ -72,9 +70,6 @@ func setConfigurations() {
 
 	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
-
-	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
-	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
 
 	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
@@ -159,17 +154,6 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
 	logs.Info("Finished to create initial project and repo.")
 }
 
-func prepareKVMHost(ctx context.Context, cancel context.CancelFunc) {
-	if jenkinsExecutionMode() == "single" {
-		logs.Info("Skip preparing KVM host as it set as single slave node.")
-		return
-	}
-	if err := service.PrepareKVMHost(); err != nil {
-		logs.Error("Failed to prepare KVM host, error: %+v", err)
-		cancel()
-	}
-}
-
 func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc) {
 	logs.Info("Initializing Kubernetes info")
 	info, err := service.GetKubernetesInfo()
@@ -246,15 +230,13 @@ func main() {
 				utils.SetConfig("INIT_STATUS", "NOT_READY")
 				ctx = context.WithValue(ctx, systemInfo, info)
 				initBoardVersion(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
+				utils.SetConfig("INIT_STATUS", "4_1_UPDATE_ADMIN_PASSWORD")
 				updateAdminPassword(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
+				utils.SetConfig("INIT_STATUS", "4_2_INIT_PROJECT_REPO")
 				initProjectRepo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_3_PREPARE_KVM_HOST")
-				prepareKVMHost(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
+				utils.SetConfig("INIT_STATUS", "4_3_INIT_KUBERNETES_INFO")
 				initKubernetesInfo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
+				utils.SetConfig("INIT_STATUS", "4_4_SYNC_UP_K8S")
 				syncUpWithK8s(ctx, cancel)
 				for {
 					select {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"io"
@@ -57,23 +56,6 @@ var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
 
 type ServiceController struct {
 	c.BaseController
-}
-
-func (p *ServiceController) generateDeploymentTravis(serviceName, deploymentURL, serviceURL string) error {
-	userID := p.CurrentUser.ID
-	var travisCommand travis.TravisCommand
-	travisCommand.Script.Commands = []string{}
-	items := []string{
-		fmt.Sprintf("curl \"%s/jenkins-job/%d/$BUILD_NUMBER\"", c.BoardAPIBaseURL(), userID),
-	}
-	if deploymentURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/deployment.yaml %s", serviceName, deploymentURL))
-	}
-	if serviceURL != "" {
-		items = append(items, fmt.Sprintf("#curl -X POST -H 'Content-Type: application/yaml' --data-binary @%s/service.yaml %s", serviceName, serviceURL))
-	}
-	travisCommand.Script.Commands = items
-	return travisCommand.GenerateCustomTravis(p.RepoPath)
 }
 
 func (p *ServiceController) getKey() string {
@@ -144,7 +126,6 @@ func (p *ServiceController) DeployServiceAction() {
 	items := []string{deploymentFile, serviceFile}
 	p.PushItemsToRepo(items...)
 	p.CollaborateWithPullRequest("master", "master", items...)
-	p.MergeCollaborativePullRequest()
 
 	updateService := model.ServiceStatus{ID: serviceInfo.ID, Status: uncompleted, ServiceYaml: string(deployInfo.ServiceFileInfo),
 		DeploymentYaml: string(deployInfo.DeploymentFileInfo)}
@@ -496,16 +477,19 @@ func (p *ServiceController) ToggleServiceAction() {
 	} else {
 		// start service
 		logs.Debug("Deploy service by YAML with project name: %s", s.ProjectName)
+		// Push deployment to Git repo
+		p.MergeCollaborativePullRequest()
 		err := service.DeployServiceByYaml(s.ProjectName, p.RepoServicePath)
 		if err != nil {
 			p.ParseError(err, c.ParsePostK8sError)
 			return
 		}
-		// Push deployment to Git repo
-		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
-		p.PushItemsToRepo(items...)
-		p.CollaborateWithPullRequest("master", "master", items...)
-		p.MergeCollaborativePullRequest()
+		if s.OwnerName == p.CurrentUser.Username {
+			//Commit changes only for the user is the owner of the service.
+			items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
+			p.PushItemsToRepo(items...)
+			p.CollaborateWithPullRequest("master", "master", items...)
+		}
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {

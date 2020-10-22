@@ -7,6 +7,7 @@ import (
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego/logs"
@@ -102,4 +103,70 @@ func (n *NodeGroupController) DeleteNodeGroupAction() {
 		return
 	}
 	logs.Info("Removed nodegroup %s", groupName)
+}
+
+// Get nodegroup detail
+func (n *NodeGroupController) GetNodeGroupAction() {
+	var nodegroupdetail model.NodeGroupDetail
+	var nodegroup *model.NodeGroup
+	var err error
+	groupName := n.GetString("groupname")
+	logs.Debug("Get nodegroup %s", groupName)
+
+	if groupName == "" {
+		nodegroupID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
+		if err != nil {
+			n.InternalError(err)
+			return
+		}
+		nodegroup, err = service.GetNodeGroup(model.NodeGroup{ID: int64(nodegroupID)}, "id")
+		groupName = nodegroup.GroupName
+	} else {
+		nodegroup, err = service.GetNodeGroup(model.NodeGroup{GroupName: groupName}, "name")
+	}
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	if nodegroup == nil && nodegroup.ID == 0 {
+		n.CustomAbortAudit(http.StatusBadRequest, "Node Group name not exists.")
+		return
+	}
+	nodegroupdetail.NodeGroup = *nodegroup
+
+	// Get the node list of the nodegroup
+	nodelist, err := service.GetNodeListbyLabel(groupName)
+	if err != nil {
+		logs.Error("Failed to get nodelist: %s, error: %+v", groupName, err)
+		n.InternalError(err)
+		return
+	}
+	for _, nodeitem := range nodelist.Items {
+		nodegroupdetail.NodeList = append(nodegroupdetail.NodeList, nodeitem.Name)
+	}
+	logs.Debug("Get nodegroup %v", nodegroupdetail)
+	n.RenderJSON(nodegroupdetail)
+}
+
+// Update node group comments
+func (n *NodeGroupController) UpdateNodeGroupAction() {
+	nodegroupID, err := strconv.Atoi(n.Ctx.Input.Param(":id"))
+	if err != nil {
+		n.InternalError(err)
+		return
+	}
+	var reqNodegroup model.NodeGroup
+	err = n.ResolveBody(&reqNodegroup)
+	if err != nil {
+		logs.Error("Failed to get request nodegroup: %d, error: %+v", nodegroupID, err)
+		n.CustomAbortAudit(http.StatusBadRequest, "Node group update failed.")
+		return
+	}
+	res, err := service.UpdateNodeGroup(reqNodegroup, "comment")
+	if err != nil {
+		logs.Error("Failed to update nodegroup: %v, error: %+v", reqNodegroup, err)
+		n.InternalError(err)
+		return
+	}
+	logs.Debug("Update nodegroup %v %b", reqNodegroup, res)
 }
