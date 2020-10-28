@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
@@ -85,6 +86,7 @@ func initBoardVersion(ctx context.Context, cancel context.CancelFunc, e chan err
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
+		e <- fmt.Errorf("Failed to read VERSION file: %+v", err)
 		cancel()
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
@@ -111,6 +113,7 @@ func updateAdminPassword(ctx context.Context, cancel context.CancelFunc, e chan 
 	isSuccess, err := service.UpdateUser(user, "password", "salt")
 	if err != nil {
 		logs.Error("Failed to update user password: %+v", err)
+		e <- fmt.Errorf("Failed to update user password: %+v", err)
 		cancel()
 	}
 	if isSuccess {
@@ -142,11 +145,13 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc, e chan erro
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
 		logs.Error("Failed to create admin user on current DevOps: %+v", err)
+		e <- fmt.Errorf("Failed to create admin user on current DevOps: %+v", err)
 		cancel()
 	}
 	token, err := devops.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)
+		e <- fmt.Errorf("Failed to create access token for admin user: %+v", err)
 		cancel()
 	}
 	user := model.User{ID: adminUserID, RepoToken: token}
@@ -162,6 +167,7 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc, e chan erro
 	err = devops.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
+		e <- fmt.Errorf("Failed to create default repo %s: %+v", defaultProject, err)
 		cancel()
 	}
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -180,6 +186,7 @@ func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc, e chan e
 	if err != nil {
 		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
 		utils.SetConfig("KUBERNETES_VERSION", "NA")
+		e <- fmt.Errorf("Failed to initialize kubernetes info, err: %+v", err)
 		cancel()
 	}
 	utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
@@ -200,7 +207,6 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc, e chan error)
 			return
 		}
 	}
-
 	logs.Info("Initialize to sync up with K8s status ...")
 	defer func() {
 		utils.SetConfig("SYNC_K8S", "finished")
@@ -217,6 +223,7 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc, e chan error)
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
 		logs.Error("Failed to sync projects with K8s: %+v", err)
+		e <- fmt.Errorf("Failed to sync projects with K8s: %+v", err)
 		cancel()
 	}
 	logs.Info("Successful sync up with projects with K8s.")
@@ -255,7 +262,7 @@ func main() {
 			info, err := service.GetSystemInfo()
 			if err != nil {
 				logs.Error("Failed to set system config: %+v", err)
-				e <- err
+				e <- fmt.Errorf("Failed to set system config: %+v", err)
 				cancel()
 			}
 			utils.SetConfig("INIT_STATUS", "NOT_READY")
