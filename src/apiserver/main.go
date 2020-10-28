@@ -216,7 +216,8 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc, e chan error)
 	err := service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
-		return
+		e <- fmt.Errorf("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
+		cancel()
 	}
 	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
