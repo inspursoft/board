@@ -135,11 +135,11 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc, e chan erro
 		logs.Info("Skip initializing project repo as it has been created.")
 		return
 	}
-
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
+
 	service.SetSystemInfo("DEVOPS_OPT", false)
 	devops := service.CurrentDevOps()
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
@@ -251,7 +251,6 @@ func main() {
 		e := make(chan error)
 		go func() {
 			defer close(e)
-
 			dao.InitDB()
 			service.SetSystemInfo("DNS_SUFFIX", true)
 			service.SetSystemInfo("MODE", true)
@@ -274,13 +273,6 @@ func main() {
 			initKubernetesInfo(ctx, cancel, e)
 			syncUpWithK8s(ctx, cancel, e)
 			close(done)
-
-			select {
-			case <-done:
-				return
-			case <-e:
-				return
-			}
 		}()
 		return e
 	}
