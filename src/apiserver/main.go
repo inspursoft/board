@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"sync"
+	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
@@ -76,7 +76,12 @@ func setConfigurations() {
 	utils.SetConfig("AUTH_MODE", defaultAuthMode)
 }
 
-func initBoardVersion(ctx context.Context, cancel context.CancelFunc) {
+func initBoardVersion(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_1_INIT_BOARD_VERSION")
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
@@ -86,7 +91,12 @@ func initBoardVersion(ctx context.Context, cancel context.CancelFunc) {
 	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
-func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
+func updateAdminPassword(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_2_UPDATE_ADMIN_PASSWORD")
 	if ctx.Value(systemInfo).(*model.SystemInfo).SetAdminPassword == "updated" {
 		logs.Info("Skip updating admin user as it has been updated.")
 		return
@@ -112,7 +122,12 @@ func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
 	}
 }
 
-func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
+func initProjectRepo(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_3_INIT_PROJECT_REPO")
 	if ctx.Value(systemInfo).(*model.SystemInfo).InitProjectRepo == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		return
@@ -154,20 +169,30 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
 	logs.Info("Finished to create initial project and repo.")
 }
 
-func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc) {
+func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
 	logs.Info("Initializing Kubernetes info")
 	info, err := service.GetKubernetesInfo()
 	if err != nil {
 		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
 		utils.SetConfig("KUBERNETES_VERSION", "NA")
-		return
+		cancel()
 	}
 	utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
 	service.SetSystemInfo("KUBERNETES_VERSION", true)
 	logs.Info("Finished to initialize Kubernetes info.")
 }
 
-func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
+func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
 	if ctx.Value(systemInfo).(*model.SystemInfo).SyncK8s == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		if k8sForceInitSync() == "false" {
@@ -185,7 +210,7 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 	err := service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
-		cancel()
+		return
 	}
 	logs.Info("Successful sync up with namespaces for admin user.")
 	// Sync projects from cluster namespaces
@@ -197,6 +222,15 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 	logs.Info("Successful sync up with projects with K8s.")
 }
 
+func detectContextStatus(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(time.Millisecond * 500):
+		return nil
+	}
+}
+
 func main() {
 	setConfigurations()
 	c.InitController()
@@ -205,54 +239,47 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	done := make(chan bool)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		initializer := func() <-chan error {
-			e := make(chan error)
-			go func() {
-				defer close(e)
-				dao.InitDB()
-				service.SetSystemInfo("DNS_SUFFIX", true)
-				service.SetSystemInfo("MODE", true)
-				service.SetSystemInfo("BOARD_HOST_IP", true)
-				service.SetSystemInfo("AUTH_MODE", false)
-				service.SetSystemInfo("REDIRECTION_URL", false)
-				service.SetSystemInfo("DEVOPS_OPT", false)
+	initializer := func(done chan bool) chan error {
+		e := make(chan error)
+		go func() {
+			defer close(e)
 
-				info, err := service.GetSystemInfo()
-				if err != nil {
-					logs.Error("Failed to set system config: %+v", err)
-					panic(err)
-				}
-				utils.SetConfig("INIT_STATUS", "NOT_READY")
-				ctx = context.WithValue(ctx, systemInfo, info)
-				initBoardVersion(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "4_1_UPDATE_ADMIN_PASSWORD")
-				updateAdminPassword(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "4_2_INIT_PROJECT_REPO")
-				initProjectRepo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "4_3_INIT_KUBERNETES_INFO")
-				initKubernetesInfo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "4_4_SYNC_UP_K8S")
-				syncUpWithK8s(ctx, cancel)
-				for {
-					select {
-					case <-ctx.Done():
-						e <- ctx.Err()
-					case <-done:
-						logs.Info("Finished as initialization has done.")
-						e <- nil
-					}
-				}
-			}()
-			return e
-		}
-		close(done)
+			dao.InitDB()
+			service.SetSystemInfo("DNS_SUFFIX", true)
+			service.SetSystemInfo("MODE", true)
+			service.SetSystemInfo("BOARD_HOST_IP", true)
+			service.SetSystemInfo("AUTH_MODE", false)
+			service.SetSystemInfo("REDIRECTION_URL", false)
+			service.SetSystemInfo("DEVOPS_OPT", false)
+
+			info, err := service.GetSystemInfo()
+			if err != nil {
+				logs.Error("Failed to set system config: %+v", err)
+				e <- err
+				cancel()
+			}
+			utils.SetConfig("INIT_STATUS", "NOT_READY")
+			ctx = context.WithValue(ctx, systemInfo, info)
+			initBoardVersion(ctx, cancel, e)
+			updateAdminPassword(ctx, cancel, e)
+			initProjectRepo(ctx, cancel, e)
+			initKubernetesInfo(ctx, cancel, e)
+			syncUpWithK8s(ctx, cancel, e)
+			close(done)
+
+			select {
+			case <-done:
+				return
+			case <-e:
+				return
+			}
+		}()
+		return e
+	}
+	done := make(chan bool)
+	go func() {
 		select {
-		case err := <-initializer():
+		case err := <-initializer(done):
 			if err != nil {
 				utils.SetConfig("INIT_STATUS", err.Error())
 				logs.Error("Failed to execute initialization with error: %+v", err)
@@ -262,9 +289,7 @@ func main() {
 			}
 		}
 	}()
-	go func() {
-		wg.Wait()
-	}()
+
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
