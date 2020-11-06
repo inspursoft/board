@@ -20,20 +20,9 @@ apiserver:
     requests:
      cpu: 100m
      memory: 128Mi
-  nodeSelector:
-    kubernetes.io/arch: amd64
-  tolerations:
-  - key: CriticalAddonsOnly
-    operator: Exists
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchFields:
-          - key: metadata.name
-            operator: In
-            values:
-            - 10.111.24.69
+  nodeSelector: {}
+  tolerations: {}
+  affinity: {}
   restartPolicy: Always
 chartmuseum:
   name: "chartmuseum"
