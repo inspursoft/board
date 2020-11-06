@@ -11,7 +11,7 @@ import (
 const (
 	registryAPIVersion        = "v2"
 	registryAPIBaseURL        = "%s/" + registryAPIVersion
-	registryCatalogURL        = registryAPIBaseURL + "/" + "_catalog"
+	registryCatalogURL        = registryAPIBaseURL + "/" + "_catalog?n=10000"
 	registryTagListURL        = registryAPIBaseURL + "/%s/tags/list"
 	registryManifestURL       = registryAPIBaseURL + "/%s/manifests/%s"
 	registryManifestDigestURL = registryAPIBaseURL + "/%s/manifests/%s"
