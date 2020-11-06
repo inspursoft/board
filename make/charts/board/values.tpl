@@ -8,7 +8,7 @@ apiserver:
   replicaCount: 1
   image:
     repository: board_apiserver
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -29,7 +29,7 @@ chartmuseum:
   replicaCount: 1
   image:
     repository: board_chartmuseum
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -56,7 +56,7 @@ db:
   replicaCount: 1
   image:
     repository: board_db
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -83,7 +83,7 @@ elasticsearch:
   replicaCount: 1
   image:
     repository: board_elasticsearch
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: NodePort
@@ -110,7 +110,7 @@ grafana:
   replicaCount: 1
   image:
     repository: board_grafana
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -149,7 +149,7 @@ kibana:
   replicaCount: 1
   image:
     repository: board_kibana
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -164,7 +164,7 @@ prometheus:
   replicaCount: 1
   image:
     repository: board_prometheus
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -191,7 +191,7 @@ proxy:
   replicaCount: 1
   image:
     repository: board_proxy
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: NodePort
@@ -208,7 +208,7 @@ tokenserver:
   replicaCount: 1
   image:
     repository: board_tokenserver
-    tag: ""
+    tag: "$tag"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
