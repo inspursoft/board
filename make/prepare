@@ -279,6 +279,43 @@ render(os.path.join(templates_dir, "apiserver", "env"),
         jenkins_node_volume=jenkins_node_volume,
         tiller_port=tiller_port)
 
+def create_component_cert(name, config_dir, templates_dir, grafana_k8s_ds='', **kw):
+	openssl_path=os.path.join(config_dir, name, "openssl.conf")
+	key_path=os.path.join("/data/board/cert", name+'-key.pem')
+	cert_path=os.path.join("/data/board/cert", name+'.pem')
+	render(os.path.join(templates_dir, "kube", "openssl.conf"),
+			openssl_path,
+			name='board-'+name,
+			**kw)
+	rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
+	if rc != 0:
+		print("Create the Board cert failed, please read the documents for Board.")
+		exit(1)
+	if name == "grafana":
+		render(os.path.join(templates_dir, name, "kubernetes-datasource-https.json"),
+				grafana_k8s_ds,
+				grafana_cert=json_encode(cert_path),
+				grafana_key=json_encode(key_path),
+				ca_cert=json_encode(),
+				**kw)
+		os.remove(cert_path)
+		os.remove(key_path)
+		os.remove(openssl_path)
+	else:
+		render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
+				os.path.join(config_dir, name, "kubeconfig"),
+				name=name,
+				**kw)
+
+if not os.path.exists("/data/board/cert"):
+	os.makedirs("/data/board/cert")
+create_component_cert(name="proxy", 
+					config_dir=config_dir, 
+					templates_dir=templates_dir, 
+					kube_http_scheme=kube_http_scheme,
+					kube_master_ip=kube_master_ip,
+					kube_master_port=kube_master_port)
+
 if kube_http_scheme == "http":
 	for name in ["apiserver"]:
 		render(os.path.join(templates_dir, "kube", "kubeconfig_http"),
@@ -294,39 +331,19 @@ if kube_http_scheme == "http":
 		kube_master_port=kube_master_port)
 
 elif kube_http_scheme == "https":
-	if not os.path.exists("/data/board/cert"):
-		os.makedirs("/data/board/cert")
-	for name in ["apiserver", "grafana", "proxy"]:
-		openssl_path=os.path.join(config_dir, name, "openssl.conf")
-		key_path=os.path.join("/data/board/cert", name+'-key.pem')
-		cert_path=os.path.join("/data/board/cert", name+'.pem')
-		render(os.path.join(templates_dir, "kube", "openssl.conf"),
-				openssl_path,
-				kube_master_ip=kube_master_ip,
-				name='board-'+name)
-		rc = create_cert(openssl_path, key_path=key_path, cert_path=cert_path)
-		if rc != 0:
-			print("Create the Board cert failed, please read the documents for Board.")
-			exit(1)
-		if name == "grafana":
-			render(os.path.join(templates_dir, name, "kubernetes-datasource-https.json"),
-					grafana_k8s_ds,
-					kube_http_scheme=kube_http_scheme,
-					kube_master_ip=kube_master_ip,
-					kube_master_port=kube_master_port,
-					grafana_cert=json_encode(cert_path),
-					grafana_key=json_encode(key_path),
-					ca_cert=json_encode())
-			os.remove(cert_path)
-			os.remove(key_path)
-			os.remove(openssl_path)
-		else:
-			render(os.path.join(templates_dir, "kube", "kubeconfig_https"),
-					os.path.join(config_dir, name, "kubeconfig"),
-					kube_http_scheme=kube_http_scheme,
-					kube_master_ip=kube_master_ip,
-					kube_master_port=kube_master_port,
-					name=name)
+	create_component_cert(name="apiserver", 
+						config_dir=config_dir, 
+						templates_dir=templates_dir, 
+						kube_http_scheme=kube_http_scheme,
+						kube_master_ip=kube_master_ip,
+						kube_master_port=kube_master_port)
+	create_component_cert(name="grafana", 
+						config_dir=config_dir, 
+						templates_dir=templates_dir, 
+						grafana_k8s_ds=grafana_k8s_ds,
+						kube_http_scheme=kube_http_scheme,
+						kube_master_ip=kube_master_ip,
+						kube_master_port=kube_master_port)
 
 render(os.path.join(templates_dir, "tokenserver", "env"),
         tokenserver_env,
