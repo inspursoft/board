@@ -218,7 +218,7 @@ tokenserver:
   tolerations: {}
   affinity: {}
   restartPolicy: Always
-elasticsearch:
+native-elasticsearch:
   image: $registry/elasticsearch/elasticsearch
   extraInitContainers:
   - command:
@@ -236,10 +236,10 @@ elasticsearch:
     volumeMounts:
     - mountPath: /usr/share/elasticsearch/data
       name: elasticsearch-master
-fluentd-elasticsearch:
+native-fluentd-elasticsearch:
   image:
     repository: $registry/fluentd_elasticsearch/fluentd
   hostLogDir:
     dockerContainers: $dockercontainers
-kibana:
+native-kibana:
   image: $registry/kibana/kibana

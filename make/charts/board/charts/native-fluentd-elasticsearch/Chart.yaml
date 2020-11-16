@@ -11,7 +11,7 @@ keywords:
 - multiline
 - detect-exceptions
 - logging
-name: fluentd-elasticsearch
+name: native-fluentd-elasticsearch
 sources:
 - https://github.com/kiwigrid/helm-charts/tree/master/charts/fluentd-elasticsearch
 - https://github.com/fluent/fluentd-kubernetes-daemonset
