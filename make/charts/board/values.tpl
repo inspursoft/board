@@ -7,7 +7,7 @@ apiserver:
   name: "apiserver"
   replicaCount: 1
   image:
-    repository: board_apiserver
+    repository: $registry/board_apiserver
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -28,7 +28,7 @@ chartmuseum:
   name: "chartmuseum"
   replicaCount: 1
   image:
-    repository: board_chartmuseum
+    repository: $registry/board_chartmuseum
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -55,7 +55,7 @@ db:
   name: "db"
   replicaCount: 1
   image:
-    repository: board_db
+    repository: $registry/board_db
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -82,7 +82,7 @@ elasticsearch:
   name: "elasticsearch"
   replicaCount: 1
   image:
-    repository: board_elasticsearch
+    repository: $registry/board_elasticsearch
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -109,7 +109,7 @@ grafana:
   name: "grafana"
   replicaCount: 1
   image:
-    repository: board_grafana
+    repository: $registry/board_grafana
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -148,7 +148,7 @@ kibana:
   name: "kibana"
   replicaCount: 1
   image:
-    repository: board_kibana
+    repository: $registry/board_kibana
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -163,7 +163,7 @@ prometheus:
   name: "prometheus"
   replicaCount: 1
   image:
-    repository: board_prometheus
+    repository: $registry/board_prometheus
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -190,7 +190,7 @@ proxy:
   name: "proxy"
   replicaCount: 1
   image:
-    repository: board_proxy
+    repository: $registry/board_proxy
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -207,7 +207,7 @@ tokenserver:
   name: "tokenserver"
   replicaCount: 1
   image:
-    repository: board_tokenserver
+    repository: $registry/board_tokenserver
     tag: "$tag"
     pullPolicy: IfNotPresent
   service:
@@ -218,3 +218,28 @@ tokenserver:
   tolerations: {}
   affinity: {}
   restartPolicy: Always
+elasticsearch:
+  image: $registry/elasticsearch/elasticsearch
+  extraInitContainers:
+  - command:
+    - chmod
+    - -R
+    - "777"
+    - /usr/share/elasticsearch/data
+    image: $registry/elasticsearch/elasticsearch:7.9.3
+    imagePullPolicy: IfNotPresent
+    name: chmod
+    resources: {}
+    securityContext:
+      privileged: true
+      runAsUser: 0
+    volumeMounts:
+    - mountPath: /usr/share/elasticsearch/data
+      name: elasticsearch-master
+fluentd-elasticsearch:
+  image:
+    repository: $registry/fluentd_elasticsearch/fluentd
+  hostLogDir:
+    dockerContainers: $dockercontainers
+kibana:
+  image: $registry/kibana/kibana
