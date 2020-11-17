@@ -66,13 +66,13 @@ if os.path.exists(chart_config_dir):
 shutil.copytree(config_dir, chart_config_dir)
 
 if kube_http_scheme == "https":
-    shutil.copy("/data/board/certs/apiserver-key.pem", os.path.join(chart_config_dir, "apiserver"))
-    shutil.copy("/data/board/certs/apiserver.pem", os.path.join(chart_config_dir, "apiserver"))
+    shutil.copy("/data/board/cert/apiserver-key.pem", os.path.join(chart_config_dir, "apiserver"))
+    shutil.copy("/data/board/cert/apiserver.pem", os.path.join(chart_config_dir, "apiserver"))
     shutil.copy("/etc/board/cert/ca.pem", os.path.join(chart_config_dir, "apiserver"))
     shutil.copy("/etc/board/cert/ca-key.pem", os.path.join(chart_config_dir, "apiserver"))
 
-    shutil.copy("/data/board/certs/proxy-key.pem", os.path.join(chart_config_dir, "proxy"))
-    shutil.copy("/data/board/certs/proxy.pem", os.path.join(chart_config_dir, "proxy"))
+    shutil.copy("/data/board/cert/proxy-key.pem", os.path.join(chart_config_dir, "proxy"))
+    shutil.copy("/data/board/cert/proxy.pem", os.path.join(chart_config_dir, "proxy"))
 
 alter(os.path.join(chart_config_dir, "proxy", "nginx.conf"), "127.0.0.11", "kube-dns.kube-system.svc.cluster.local")
 

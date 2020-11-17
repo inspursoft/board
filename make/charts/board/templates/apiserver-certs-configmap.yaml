@@ -9,6 +9,9 @@ metadata:
 data:
   {{- $files := .Files }}
   {{- range tuple "files/apiserver/apiserver-key.pem" "files/apiserver/apiserver.pem" }}
+  {{- $content := ($files.Get .) }}
+  {{- if $content }}
   {{ base . }}: |-
 {{ $files.Get . | trim | indent 4}}
+  {{- end -}}
   {{- end }}
