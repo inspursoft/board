@@ -45,9 +45,7 @@ chart_config_dir = os.path.join(chart_dir, "files")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
-parser.add_argument('--dockercontainers', dest='dockercontainers', default='/var/lib/docker/containers',type=str,help="the Docker container directory")
 requiredNamed = parser.add_argument_group('required named arguments')
-requiredNamed.add_argument('--registry', dest='registry', default='127.0.0.1:5000',type=str,help="the Board image registry",required=True)
 requiredNamed.add_argument('--tag', dest='tag', default='',type=str,help="the Board image tag",required=True)
 
 args = parser.parse_args()
@@ -60,6 +58,9 @@ conf.seek(0, os.SEEK_SET)
 rcp = ConfigParser.RawConfigParser()
 rcp.readfp(conf)
 kube_http_scheme = rcp.get("configuration", "kube_http_scheme")
+registry_ip = rcp.get("configuration", "registry_ip")
+registry_port = rcp.get("configuration", "registry_port")
+docker_containers = rcp.get("configuration", "docker_containers")
 
 if os.path.exists(chart_config_dir):
     shutil.rmtree(chart_config_dir)
@@ -76,6 +77,6 @@ if kube_http_scheme == "https":
 
 alter(os.path.join(chart_config_dir, "proxy", "nginx.conf"), "127.0.0.11", "kube-dns.kube-system.svc.cluster.local")
 
-render("charts/board/values.tpl", "charts/board/values.yaml", tag=args.tag, registry=args.registry, dockercontainers=args.dockercontainers)
+render("charts/board/values.tpl", "charts/board/values.yaml", tag=args.tag, registry=registry_ip+":"+registry_port, dockercontainers=docker_containers)
 
 print("The chart file are ready, please use helm command to deploy the service.")
