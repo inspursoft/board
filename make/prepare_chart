@@ -77,6 +77,6 @@ if kube_http_scheme == "https":
 
 alter(os.path.join(chart_config_dir, "proxy", "nginx.conf"), "127.0.0.11", "kube-dns.kube-system.svc.cluster.local")
 
-render("charts/board/values.tpl", "charts/board/values.yaml", tag=args.tag, registry=registry_ip+":"+registry_port, dockercontainers=docker_containers)
+render(os.path.join(chart_dir, "values.tpl"), os.path.join(chart_dir, "values.yaml"), tag=args.tag, registry=registry_ip+":"+registry_port, dockercontainers=docker_containers)
 
 print("The chart file are ready, please use helm command to deploy the service.")

@@ -85,7 +85,7 @@ PREPARECMD=prepare
 PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
 PREPARECHARTCMD=prepare_chart
-PREPARECHARTCMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)  --tag $(VERSIONTAG)
+PREPARECHARTCMD_PARAMETERS=--conf $(MAKEPATH)/board.cfg --tag $(VERSIONTAG)
 
 # swagger parameters
 SWAGGERTOOLPATH=$(TOOLSPATH)/swagger
@@ -193,7 +193,7 @@ prepare: version
 
 prepare_chart: prepare
 	@echo "preparing chart..."
-	@$(MAKEPATH)/$(PREPARECHARTCMD) $(PREPARECHARTCMD_PARA)
+	@$(MAKEPATH)/$(PREPARECHARTCMD) $(PREPARECHARTCMD_PARAMETERS)
 	@echo "Done."
 
 

@@ -1,14 +1,14 @@
 image:
-  registry: "10.111.24.131:5000"
-  tag: "7.4-150-g11a0d2d"
+  registry: "$registry"
+  tag: "$tag"
 localtime:
   path: /etc/localtime
 apiserver:
   name: "apiserver"
   replicaCount: 1
   image:
-    repository: $registry/board_apiserver
-    tag: "$tag"
+    repository: board_apiserver
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -28,8 +28,8 @@ chartmuseum:
   name: "chartmuseum"
   replicaCount: 1
   image:
-    repository: $registry/board_chartmuseum
-    tag: "$tag"
+    repository: board_chartmuseum
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -55,8 +55,8 @@ db:
   name: "db"
   replicaCount: 1
   image:
-    repository: $registry/board_db
-    tag: "$tag"
+    repository: board_db
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -82,8 +82,8 @@ elasticsearch:
   name: "elasticsearch"
   replicaCount: 1
   image:
-    repository: $registry/board_elasticsearch
-    tag: "$tag"
+    repository: board_elasticsearch
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: NodePort
@@ -109,8 +109,8 @@ grafana:
   name: "grafana"
   replicaCount: 1
   image:
-    repository: $registry/board_grafana
-    tag: "$tag"
+    repository: board_grafana
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -148,8 +148,8 @@ kibana:
   name: "kibana"
   replicaCount: 1
   image:
-    repository: $registry/board_kibana
-    tag: "$tag"
+    repository: board_kibana
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -163,8 +163,8 @@ prometheus:
   name: "prometheus"
   replicaCount: 1
   image:
-    repository: $registry/board_prometheus
-    tag: "$tag"
+    repository: board_prometheus
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -185,13 +185,13 @@ prometheus:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 8Gi
-    volumeName: prometheus
+    volumeName: board-prometheus
 proxy:
   name: "proxy"
   replicaCount: 1
   image:
-    repository: $registry/board_proxy
-    tag: "$tag"
+    repository: board_proxy
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: NodePort
@@ -207,8 +207,8 @@ tokenserver:
   name: "tokenserver"
   replicaCount: 1
   image:
-    repository: $registry/board_tokenserver
-    tag: "$tag"
+    repository: board_tokenserver
+    tag: "dev"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
