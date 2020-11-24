@@ -67,7 +67,7 @@ job_api_test:
     - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
     - docker pull $registry_ip/library/python:tavern2
     - docker tag $registry_ip/library/python:tavern2 python:tavern2
-    - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
+    - docker run --rm -v `pwd`:/data -v /etc/board/cert:/etc/board/cert python:tavern2 /data/make/prepare
   script:
     - pwd
     - docker images
