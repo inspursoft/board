@@ -1344,10 +1344,16 @@ func FromK8sNodeStatus(nodestatus v1.NodeStatus) model.NodeStatus {
 
 // adapt model node from k8s node
 func FromK8sNode(node *v1.Node) *model.Node {
-
+	nodeip := node.ObjectMeta.Name
+	for _, addr := range node.Status.Addresses {
+		if addr.Type == v1.NodeInternalIP {
+			nodeip = addr.Address
+			break
+		}
+	}
 	return &model.Node{
 		ObjectMeta:    FromK8sObjectMeta(node.ObjectMeta),
-		NodeIP:        node.ObjectMeta.Name,
+		NodeIP:        nodeip,
 		Unschedulable: node.Spec.Unschedulable,
 		Taints:        FromK8sNodeTaints(node.Spec.Taints),
 		Status:        FromK8sNodeStatus(node.Status),
