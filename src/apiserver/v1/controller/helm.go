@@ -201,7 +201,7 @@ func (hc *HelmController) InstallHelmChartAction() {
 
 	err = service.InstallChart(hc.resolveHelmRepositoryByID(release.RepositoryID), release)
 	if err != nil {
-		hc.InternalError(err)
+		hc.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprintf("%+v", err))
 		return
 	}
 }
