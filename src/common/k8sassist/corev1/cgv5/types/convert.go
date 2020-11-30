@@ -34,6 +34,7 @@ func ToK8sObjectMeta(meta model.ObjectMeta) metav1.ObjectMeta {
 		CreationTimestamp: metav1.NewTime(meta.CreationTimestamp),
 		DeletionTimestamp: deleteTime,
 		Labels:            meta.Labels,
+		Annotations:       meta.Annotations,
 	}
 }
 
@@ -578,6 +579,7 @@ func FromK8sObjectMeta(meta metav1.ObjectMeta) model.ObjectMeta {
 		CreationTimestamp: meta.CreationTimestamp.Time,
 		DeletionTimestamp: deleteTime,
 		Labels:            meta.Labels,
+		Annotations:       meta.Annotations,
 	}
 }
 
