@@ -316,7 +316,7 @@ func InitRouter() {
 				"get:ReleaseExists"),
 			beego.NSRouter("/helm/release",
 				&HelmController{},
-				"get:ListHelmReleaseAction;post:InstallHelmChartAction"),
+				"get:ListHelmReleaseAction;post:InstallHelmChartAction;delete:DeleteHelmReleaseByProjectAction"),
 			beego.NSRouter("/helm/release/:id([0-9]+)",
 				&HelmController{},
 				"delete:DeleteHelmReleaseAction;get:GetHelmReleaseAction"),

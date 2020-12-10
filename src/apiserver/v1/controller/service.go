@@ -329,6 +329,8 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 //get service list
 func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name")
+	source, _ := p.GetInt("service_source", -1)
+	sourceid, _ := p.GetInt("service_sourceid", -1)
 	pageIndex, _ := p.GetInt("page_index", 0)
 	pageSize, _ := p.GetInt("page_size", 0)
 	orderField := p.GetString("order_field", "creation_time")
@@ -341,7 +343,16 @@ func (p *ServiceController) GetServiceListAction() {
 	}
 
 	if pageIndex == 0 && pageSize == 0 {
-		serviceStatus, err := service.GetServiceList(serviceName, p.CurrentUser.ID)
+		var sourcePtr *int
+		if source != -1 {
+			sourcePtr = &source
+		}
+		var sourceidPtr *int64
+		if sourceid != -1 {
+			var sourceid64 int64 = int64(sourceid)
+			sourceidPtr = &sourceid64
+		}
+		serviceStatus, err := service.GetServiceList(serviceName, p.CurrentUser.ID, sourcePtr, sourceidPtr)
 		if err != nil {
 			p.InternalError(err)
 			return
