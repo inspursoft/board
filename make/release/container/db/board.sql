@@ -330,6 +330,7 @@ DROP TABLE IF EXISTS `log`;
         `creation_time` datetime DEFAULT NULL,
         `update_time` datetime DEFAULT NULL,
 		`source` SMALLINT(1) NOT NULL,
+        `source_id` INT NOT NULL DEFAULT 0,
         `service_yaml` TEXT,
         `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)

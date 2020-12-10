@@ -124,20 +124,42 @@ func GetAllHelmReleases() ([]model.ReleaseModel, error) {
 	return releases, nil
 }
 
+func GetAllHelmReleasesByProjectName(projectName string) ([]model.ReleaseModel, error) {
+	releases := make([]model.ReleaseModel, 0)
+	o := orm.NewOrm()
+	_, err := o.QueryTable("helm_release").Filter("project_name", projectName).OrderBy("-creation_time").All(&releases)
+
+	if err != nil {
+		return nil, err
+	}
+	return releases, nil
+}
+
 func GetHelmReleasesByUserID(userID int64) ([]model.ReleaseModel, error) {
-	sql, params := generateHelmReleasesSQL(userID)
+	sql, params := generateHelmReleasesSQL(userID, "")
 	return queryHelmReleases(sql, params)
 }
 
-func generateHelmReleasesSQL(userID int64) (string, []interface{}) {
+func GetHelmReleasesByUserIDAndProjectName(userID int64, projectName string) ([]model.ReleaseModel, error) {
+	sql, params := generateHelmReleasesSQL(userID, projectName)
+	return queryHelmReleases(sql, params)
+}
+
+func generateHelmReleasesSQL(userID int64, projectName string) (string, []interface{}) {
 	sql := `select distinct hr.id, hr.name, hr.project_id, hr.project_name, hr.repository_id, hr.repository, hr.workloads, hr.owner_id, hr.owner_name, hr.creation_time, hr.update_time
 	from helm_release hr 
 		left join project_member pm on hr.project_id = pm.project_id
 		left join project p on p.id = pm.project_id
 		left join user u on u.id = hr.owner_id
-	where hr.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
-		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?) order by creation_time desc`
-	return sql, []interface{}{userID, userID}
+	where hr.owner_id = ? and (hr.project_id in (select p.id from project p left join project_member pm on p.id = pm.project_id  left join user u on u.id = pm.user_id where p.deleted = 0 and u.deleted = 0 and u.id = ?)
+		or exists (select * from user u where u.deleted = 0 and u.system_admin = 1 and u.id = ?))`
+	values := []interface{}{userID, userID, userID}
+	if projectName != "" {
+		sql += " and hr.project_name= ?"
+		values = append(values, projectName)
+	}
+	sql += " order by creation_time desc"
+	return sql, values
 }
 
 func queryHelmReleases(sql string, params []interface{}) ([]model.ReleaseModel, error) {
