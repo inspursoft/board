@@ -1066,6 +1066,18 @@ paths:
           required: false
           type: integer
           format: int32
+        - name: service_source
+          in: query
+          description: Service source sign for filtering projects. default is -1 which means no filter.
+          required: false
+          type: integer
+          format: int32
+        - name: service_sourceid
+          in: query
+          description: Service sourceid sign for filtering projects. default is -1 which means no filter.
+          required: false
+          type: integer
+          format: int32
         - name: page_index
           in: query
           type: integer
@@ -4399,6 +4411,11 @@ paths:
           type: string
           required: true
           description: Current available token.
+        - name: project_name 
+          in: query
+          description: Project name for filtering results(exactly match).
+          required: false
+          type: string
       tags:
         - Products
       responses:
@@ -4410,6 +4427,34 @@ paths:
               $ref: '#/definitions/Release'
         401:
           description: User need to log in first.
+        500:
+          description: Internal errors.
+    delete:
+      summary: Delete releases by project name
+      description: |
+        This endpoint is aimed to delete release by project name.
+      parameters:
+        - name: token
+          in: header
+          type: string
+          required: true
+          description: Current available token.
+        - name: project_name
+          in: query
+          description: Project Name of release which will be deleted.
+          required: true
+          type: string
+      tags:
+        - Products
+      responses:
+        200:
+          description: Operation is deleted successfully.
+        400:
+          description: Invalid operation id.
+        403:
+          description: User need to log in first.
+        404:
+          description: Release does not exist.
         500:
           description: Internal errors.
   /v1/helm/release/{id}:
@@ -5391,6 +5436,10 @@ definitions:
         type: integer
         format: int32
         description: The creation way type of this service. 
+      service_sourceid:
+        type: integer
+        format: int32
+        description: The creation way type id of this service. 
       service_status:
         type: integer
         format: int32

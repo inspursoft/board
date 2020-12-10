@@ -126,6 +126,7 @@ INSERT INTO `board`.`role` (id, name, comment)
         `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
+        `source_id` INT NOT NULL DEFAULT 0,
         `service_yaml` TEXT,
         `deployment_yaml` TEXT,
         PRIMARY KEY (`id`)

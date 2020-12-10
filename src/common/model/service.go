@@ -30,8 +30,16 @@ type ServiceStatus struct {
 	CreationTime   time.Time `json:"service_creation_time" orm:"column(creation_time)"`
 	UpdateTime     time.Time `json:"service_update_time" orm:"column(update_time)"`
 	Source         int       `json:"service_source" orm:"column(source)"`
+	SourceID       int64     `json:"service_sourceid" orm:"column(source_id)"`
 	ServiceYaml    string    `json:"service_yaml" orm:"column(service_yaml)"`
 	DeploymentYaml string    `json:"deployment_yaml" orm:"column(deployment_yaml)"`
+}
+
+type ServiceStatusFilter struct {
+	Name      string
+	ProjectID int64
+	Source    *int
+	SourceID  *int64
 }
 
 type ServiceStatusMO struct {

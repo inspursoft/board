@@ -146,7 +146,7 @@ func searchNode(para string) (res []SearchNodeResult, err error) {
 	return
 }
 func searchService(searchPara string, userID int64) (res []SearchServiceResult, err error) {
-	serviceList, err := GetServiceList(searchPara, userID)
+	serviceList, err := GetServiceList(searchPara, userID, nil, nil)
 	for _, val := range serviceList {
 		var svr SearchServiceResult
 		svr.ServiceName = val.Name
