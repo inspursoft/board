@@ -1,69 +1,67 @@
-install:
-env:
-  - registry_ip=10.111.25.119
-  - golang_version=1.9.6
-  - mysql_version=5.6.35
-  - opendap_version=1.1.11
-  - last_version=latest
-  - boardDir=$workspace/src/git/inspursoft
-  - envFile=$boardDir/$base_repo_name/tests/env.cfg
-  - GOPATH=$workspace
-  - build_id=$BUILD_NUMBER
-  - access_token_jenkins=0aa0d1cabc926b5ee23780c6c817198fa31f9e96 
-before_script:
-  - source /etc/profile
-  - date -s $date_time
-  - echo "before script"
-  - echo "$head_repo_html_url"
-  - echo "$head_repo_name"
-  - echo "$base_repo_html_url"
-  - echo "$base_repo_name"
-  - echo "$comment_url"
-  - echo "$action"
-  - echo "$workspace"
-  - echo "$build_number"
-  - systemctl start docker
-  - docker pull $registry_ip/library/golang:$golang_version
-  - docker tag $registry_ip/library/golang:$golang_version golang:$golang_version
-  - docker pull $registry_ip/library/registry:2.6.2        
-  - docker tag $registry_ip/library/registry:2.6.2 registry:latest
-  - docker pull $registry_ip/library/mysql:$mysql_version
-  - docker tag $registry_ip/library/mysql:$mysql_version mysql:$mysql_version
-  - docker pull $registry_ip/library/openldap:$opendap_version
-  - docker tag $registry_ip/library/openldap:$opendap_version osixia/openldap:$opendap_version
-  - docker pull $registry_ip/board/board-gogits:$last_version
-  - docker tag $registry_ip/board/board-gogits:latest board-gogits:$last_version
-  - docker pull $registry_ip/board/dev_jenkins:dev
-  - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
-  - docker pull $registry_ip/board/dev_uibuilder:7.1
-  - docker tag $registry_ip/board/dev_uibuilder:7.1 uibuilder:$last_version
-  - docker pull $registry_ip/board/dev_jenkins:dev
-  - docker tag $registry_ip/board/dev_jenkins:dev dev_jenkins:dev
- 
-script:
-  - source /root/env.cfg
-  - echo $action
-  - cd $workspace/tests
-  - echo $build_id
-  - mkdir -p $boardDir
-  - sh getenv.sh
-  - cd $boardDir/$base_repo_name
-  - make prepare
-  - cd $boardDir/board/tests
-  - cp $boardDir/$base_repo_name/tests/docker-compose.test.yml  $boardDir/$base_repo_name/make/dev
-  - cp $boardDir/$base_repo_name/tests/ldap_test.ldif  $boardDir/$base_repo_name/make/dev
-  - cd $boardDir/$base_repo_name/make/dev
-  - docker-compose -f docker-compose.test.yml up -d
-  - ls
-  - cd $boardDir/board/tests
-  - source $boardDir/board/tests/env.cfg
-  - sh hosts.sh
-  - sh run.sh
-  - cd $boardDir/board/tests
-  - sh report.sh
-after_script:
-  - echo 'after_script'
+sudo: required
 
-branches:
-  only:
-    - dev
+services:
+- docker
+
+dist: trusty
+env:
+  golang_version: "1.14.0"
+  jenkins_version: "2.127"
+  last_version: "latest"
+  mysql_version: "5.7.31"
+  openldap_version: "1.1.11"
+  registry_ip: "dicker.io"
+stages:
+  - pre-merge-requests
+  - ui-test
+  - api-test
+  - report
+install:
+  - echo "install"
+  - curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.9.0/kind-linux-amd64
+  - chmod +x ./kind
+  - sudo mv ./kind /usr/local/bin/kind
+  - curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+  - chmod +x ./kubectl
+  - sudo mv ./kubectl /usr/local/bin/kubectl
+before_script:
+  - sudo /etc/init.d/mysql stop
+jobs:
+  - stage: ui-test
+    script:
+      - echo "uitest script"
+      - kind create cluster --config tests/kind-config.yaml
+      - kind get clusters
+      - kubectl create -f tests/board-apiserver-clusterrolebinding.yaml
+      - kubectl create ns library
+      - sudo mkdir -p /etc/board/cert
+      - sudo mkdir -p /data/board/cert
+      - sudo docker cp kind-control-plane:/etc/kubernetes/pki/ca.crt /etc/board/cert/ca.pem
+      - sudo docker cp kind-control-plane:/etc/kubernetes/pki/ca.key /etc/board/cert/ca-key.pem
+      - export KUBE_MASTER_PORT=6443
+      - export KUBE_MASTER_IP=$(docker inspect kind-control-plane  -f '{{.NetworkSettings.Networks.kind.IPAddress}}')
+      - echo $KUBE_MASTER_IP
+      - sed -i -e 's/KUBE_MASTER_IP=10.110.27.103/KUBE_MASTER_IP=${KUBE_MASTER_IP}/g' -e "s/KUBE_MASTER_PORT=51926/KUBE_MASTER_PORT=${KUBE_MASTER_PORT}/g" -e "s/NODE_IP=10.110.27.103/NODE_IP=kind-control-plane/g" tests/env.cfg
+      - docker pull inspursoft/dev_uibuilder:7.4
+      - docker tag inspursoft/dev_uibuilder:7.4 10.111.25.119/board/dev_uibuilder:7.4
+      - docker-compose -f tests/docker-compose.uibuilder.test.yml up
+      - bash -c 'function uitest(){ code=$(docker inspect tests_uibuilder7.4_1 -f "{{.State.ExitCode}}"); return $code; }; uitest'
+      - source /etc/profile
+      - docker pull registry:2.6.2        
+      - docker tag registry:2.6.2 registry:latest
+      - docker pull inspursoft/dev_gomail:dev  
+      - docker tag inspursoft/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
+      - docker pull inspursoft/python:tavern2
+      - docker tag inspursoft/python:tavern2 python:tavern2
+      - sed -i -e '/kube_http_scheme/c\kube_http_scheme=https' -e "/kube_master_ip/c\kube_master_ip=${KUBE_MASTER_IP}" -e "/kube_master_port/c\kube_master_port=${KUBE_MASTER_PORT}" make/board.cfg 
+      - sudo docker run --rm -v `pwd`:/data -v /etc/board/cert:/etc/board/cert -v /data/board/cert:/data/board/cert python:tavern2 /data/make/prepare
+      - source tests/env.cfg
+      - cp tests/docker-compose.test.yml make/dev
+      - cp tests/ldap_test.ldif make/dev
+      - docker pull inspursoft/dev_tokenserver:dev
+      - docker tag inspursoft/dev_tokenserver:dev 10.110.27.103:6000/board/dev_tokenserver:dev
+      - docker-compose -f make/dev/docker-compose.test.yml up -d
+      - sudo sh tests/hosts.gitlab.sh
+      - sudo docker run --rm -v `pwd`:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -v /data/board/cert:/cert -v /etc/board/cert:/etc/board/cert -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
+      - docker run --rm -v `pwd`/src:/go/src/git/inspursoft/board/src -v $CI_PROJECT_DIR/VERSION:/go/bin/VERSION -w /go/src/git/inspursoft/board/src/adminserver -e GO111MODULE=off golang:$golang_version go build -v -o /go/bin/adminserver
+ 
