@@ -60,17 +60,17 @@ func cleanUpUser() {
 }
 
 func cleanUpProjectMember() {
-	o := orm.NewOrm()
-	var affectedCount int64
-	var err error
-	affectedCount, err = o.Delete(&testMemberProject)
-	if err != nil {
-		logs.Error("Failed to delete project: %+v", err)
-	}
-	logs.Info("Deleted in project %d row(s) affected.", affectedCount)
-	affectedCount, err = o.Delete(&testMember)
-	if err != nil {
-		logs.Error("Failed to delete member: %+v", err)
-	}
-	logs.Info("Deleted in member %d row(s) affected.", affectedCount)
+// 	o := orm.NewOrm()
+// 	var affectedCount int64
+// 	var err error
+// 	affectedCount, err = o.Delete(&testMemberProject)
+// 	if err != nil {
+// 		logs.Error("Failed to delete project: %+v", err)
+// 	}
+// 	logs.Info("Deleted in project %d row(s) affected.", affectedCount)
+// 	affectedCount, err = o.Delete(&testMember)
+// 	if err != nil {
+// 		logs.Error("Failed to delete member: %+v", err)
+// 	}
+// 	logs.Info("Deleted in member %d row(s) affected.", affectedCount)
 }
