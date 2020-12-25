@@ -6,7 +6,6 @@ import (
 	t "git/inspursoft/board/src/common/token"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 )
@@ -37,32 +36,32 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	var message string
 	var info resolveInfo
 	//Check signin failed times
-	authCheck := auth.CheckAuthFailedTimes(principal)
-	info.Retries = authCheck.FailedTimes
-	if authCheck.IsTemporarilyBlocked {
-		message = "Temporarily blocked."
-		info.Type = temporaryBlock
-		info.Description = "Temporarily blocked."
-		info.Value = authCheck.TimeRemain
-		ca.ServeJSONOutput(http.StatusBadRequest, info)
-		return "", false
-	}
-	var validateCaptcha bool
-	if v, ok := MemoryCache.Get("validate_captcha").(bool); ok {
-		validateCaptcha = v
-	}
-	if authCheck.FailedTimes >= defaultFailedTimesForCaptcha && authCheck.FailedTimes < defaultFailedTimes || validateCaptcha {
-		MemoryCache.Put("validate_captcha", true, 300*time.Second)
-		captchaID := ca.GetString("captcha_id")
-		challenge := ca.GetString("captcha")
-		if !Cpt.Verify(captchaID, challenge) {
-			message = "Invalid captcha."
-			info.Type = invalidCaptcha
-			info.Description = message
-			ca.ServeJSONOutput(http.StatusBadRequest, info)
-			return "", false
-		}
-	}
+	// authCheck := auth.CheckAuthFailedTimes(principal)
+	// info.Retries = authCheck.FailedTimes
+	// if authCheck.IsTemporarilyBlocked {
+	// 	message = "Temporarily blocked."
+	// 	info.Type = temporaryBlock
+	// 	info.Description = "Temporarily blocked."
+	// 	info.Value = authCheck.TimeRemain
+	// 	ca.ServeJSONOutput(http.StatusBadRequest, info)
+	// 	return "", false
+	// }
+	// var validateCaptcha bool
+	// if v, ok := MemoryCache.Get("validate_captcha").(bool); ok {
+	// 	validateCaptcha = v
+	// }
+	// if authCheck.FailedTimes >= defaultFailedTimesForCaptcha && authCheck.FailedTimes < defaultFailedTimes || validateCaptcha {
+	// 	MemoryCache.Put("validate_captcha", true, 300*time.Second)
+	// 	captchaID := ca.GetString("captcha_id")
+	// 	challenge := ca.GetString("captcha")
+	// 	if !Cpt.Verify(captchaID, challenge) {
+	// 		message = "Invalid captcha."
+	// 		info.Type = invalidCaptcha
+	// 		info.Description = message
+	// 		ca.ServeJSONOutput(http.StatusBadRequest, info)
+	// 		return "", false
+	// 	}
+	// }
 
 	if principal == "admin" {
 		currentAuth, err = auth.GetAuth("db_auth")
@@ -94,7 +93,7 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 		ca.ServeJSONOutput(http.StatusBadRequest, info)
 		return "", false
 	}
-	MemoryCache.Delete("validate_captcha")
+	// MemoryCache.Delete("validate_captcha")
 	if existing := MemoryCache.IsExist(user.Username); existing {
 		if lastToken, ok := MemoryCache.Get(user.Username).(string); ok {
 			logs.Info("Found last token stored in cache, will be removing it ...")
