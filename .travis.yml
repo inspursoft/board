@@ -10,7 +10,7 @@ env:
   last_version: "latest"
   mysql_version: "5.7.31"
   openldap_version: "1.1.11"
-  registry_ip: "dicker.io"
+  registry: "piranhahu"
 stages:
   - pre-merge-requests
   - ui-test
@@ -24,6 +24,7 @@ install:
   - curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
   - chmod +x ./kubectl
   - sudo mv ./kubectl /usr/local/bin/kubectl
+  - python -V
 before_script:
   - sudo /etc/init.d/mysql stop
 jobs:
@@ -42,24 +43,22 @@ jobs:
       - export KUBE_MASTER_IP=$(docker inspect kind-control-plane  -f '{{.NetworkSettings.Networks.kind.IPAddress}}')
       - echo $KUBE_MASTER_IP
       - sed -i -e 's/KUBE_MASTER_IP=10.110.27.103/KUBE_MASTER_IP=${KUBE_MASTER_IP}/g' -e "s/KUBE_MASTER_PORT=51926/KUBE_MASTER_PORT=${KUBE_MASTER_PORT}/g" -e "s/NODE_IP=10.110.27.103/NODE_IP=kind-control-plane/g" tests/env.cfg
-      - docker pull inspursoft/dev_uibuilder:7.4
-      - docker tag inspursoft/dev_uibuilder:7.4 10.111.25.119/board/dev_uibuilder:7.4
+      - docker pull ${registry}/dev_uibuilder:7.4
+      - docker tag ${registry}/dev_uibuilder:7.4 10.111.25.119/board/dev_uibuilder:7.4
       - docker-compose -f tests/docker-compose.uibuilder.test.yml up
       - bash -c 'function uitest(){ code=$(docker inspect tests_uibuilder7.4_1 -f "{{.State.ExitCode}}"); return $code; }; uitest'
       - source /etc/profile
       - docker pull registry:2.6.2        
       - docker tag registry:2.6.2 registry:latest
-      - docker pull inspursoft/dev_gomail:dev  
-      - docker tag inspursoft/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
-      - docker pull inspursoft/python:tavern2
-      - docker tag inspursoft/python:tavern2 python:tavern2
+      - docker pull ${registry}/dev_gomail:dev  
+      - docker tag ${registry}/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
       - sed -i -e '/kube_http_scheme/c\kube_http_scheme=https' -e "/kube_master_ip/c\kube_master_ip=${KUBE_MASTER_IP}" -e "/kube_master_port/c\kube_master_port=${KUBE_MASTER_PORT}" make/board.cfg 
-      - sudo docker run --rm -v `pwd`:/data -v /etc/board/cert:/etc/board/cert -v /data/board/cert:/data/board/cert python:tavern2 /data/make/prepare
+      - sudo make prepare
       - source tests/env.cfg
       - cp tests/docker-compose.test.yml make/dev
       - cp tests/ldap_test.ldif make/dev
-      - docker pull inspursoft/dev_tokenserver:dev
-      - docker tag inspursoft/dev_tokenserver:dev 10.110.27.103:6000/board/dev_tokenserver:dev
+      - sudo make -e DEVFLAG=dev container/tokenserver_build
+      - docker tag dev_tokenserver:dev 10.110.27.103:6000/board/dev_tokenserver:dev
       - docker-compose -f make/dev/docker-compose.test.yml up -d
       - sudo sh tests/hosts.gitlab.sh
       - sudo docker run --rm -v `pwd`:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -v /data/board/cert:/cert -v /etc/board/cert:/etc/board/cert -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
