@@ -3,21 +3,21 @@ sudo: required
 services:
 - docker
 
+language: go
+go:
+- 1.14.x
+go_import_path: git/inspursoft/board
+
 dist: trusty
+
 env:
-  golang_version: "1.14.0"
-  jenkins_version: "2.127"
-  last_version: "latest"
+  GO111MODULE: "off"
   mysql_version: "5.7.31"
   openldap_version: "1.1.11"
-  registry: "piranhahu"
-stages:
-  - pre-merge-requests
-  - ui-test
-  - api-test
-  - report
+  registry: "quay.io/piranhahu"
+
 install:
-  - echo "install"
+  - echo "install kind k8s"
   - curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.9.0/kind-linux-amd64
   - chmod +x ./kind
   - sudo mv ./kind /usr/local/bin/kind
@@ -25,42 +25,51 @@ install:
   - chmod +x ./kubectl
   - sudo mv ./kubectl /usr/local/bin/kubectl
   - python -V
+  - echo "load docker images from quay.io instead of dockerhub(rate limit)."
+  - docker pull ${registry}/kindest-node:v1.19.1
+  - docker tag ${registry}/kindest-node:v1.19.1 kindest/node:v1.19.1
+  - docker pull ${registry}/openldap:1.1.11
+  - docker tag ${registry}/openldap:1.1.11 osixia/openldap:1.1.11
+  - docker pull ${registry}/registry
+  - docker tag ${registry}/registry registry
+  - docker pull ${registry}/dev_gomail:dev
+  - docker tag ${registry}/dev_gomail:dev dev_gomail:dev
+  - docker pull ${registry}/golang:1.14.0
+  - docker tag ${registry}/golang:1.14.0 golang:1.14.0
+  - docker pull ${registry}/mysql:5.7.31
+  - docker tag ${registry}/mysql:5.7.31 mysql:5.7.31
+  - docker pull ${registry}/dev_uibuilder:7.4
+  - docker tag ${registry}/dev_uibuilder:7.4 dev_uibuilder:7.4
+
 before_script:
   - sudo /etc/init.d/mysql stop
+  - export GOROOT=$(go env GOROOT)
+
 jobs:
   - stage: ui-test
     script:
-      - echo "uitest script"
-      - kind create cluster --config tests/kind-config.yaml
+      - kind create cluster --config tests/kind-config.yaml --image=kindest/node:v1.19.1
       - kind get clusters
       - kubectl create -f tests/board-apiserver-clusterrolebinding.yaml
       - kubectl create ns library
-      - sudo mkdir -p /etc/board/cert
-      - sudo mkdir -p /data/board/cert
+      - sudo mkdir -p /etc/board/cert /data/board/cert
       - sudo docker cp kind-control-plane:/etc/kubernetes/pki/ca.crt /etc/board/cert/ca.pem
       - sudo docker cp kind-control-plane:/etc/kubernetes/pki/ca.key /etc/board/cert/ca-key.pem
       - export KUBE_MASTER_PORT=6443
       - export KUBE_MASTER_IP=$(docker inspect kind-control-plane  -f '{{.NetworkSettings.Networks.kind.IPAddress}}')
       - echo $KUBE_MASTER_IP
       - sed -i -e 's/KUBE_MASTER_IP=10.110.27.103/KUBE_MASTER_IP=${KUBE_MASTER_IP}/g' -e "s/KUBE_MASTER_PORT=51926/KUBE_MASTER_PORT=${KUBE_MASTER_PORT}/g" -e "s/NODE_IP=10.110.27.103/NODE_IP=kind-control-plane/g" tests/env.cfg
-      - docker pull ${registry}/dev_uibuilder:7.4
-      - docker tag ${registry}/dev_uibuilder:7.4 10.111.25.119/board/dev_uibuilder:7.4
+      - sed -i -e '/kube_http_scheme/c\kube_http_scheme=https' -e "/kube_master_ip/c\kube_master_ip=${KUBE_MASTER_IP}" -e "/kube_master_port/c\kube_master_port=${KUBE_MASTER_PORT}" make/board.cfg 
       - docker-compose -f tests/docker-compose.uibuilder.test.yml up
       - bash -c 'function uitest(){ code=$(docker inspect tests_uibuilder7.4_1 -f "{{.State.ExitCode}}"); return $code; }; uitest'
-      - source /etc/profile
-      - docker pull registry:2.6.2        
-      - docker tag registry:2.6.2 registry:latest
-      - docker pull ${registry}/dev_gomail:dev  
-      - docker tag ${registry}/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
-      - sed -i -e '/kube_http_scheme/c\kube_http_scheme=https' -e "/kube_master_ip/c\kube_master_ip=${KUBE_MASTER_IP}" -e "/kube_master_port/c\kube_master_port=${KUBE_MASTER_PORT}" make/board.cfg 
       - sudo make prepare
       - source tests/env.cfg
       - cp tests/docker-compose.test.yml make/dev
       - cp tests/ldap_test.ldif make/dev
-      - sudo make -e DEVFLAG=dev container/tokenserver_build
-      - docker tag dev_tokenserver:dev 10.110.27.103:6000/board/dev_tokenserver:dev
       - docker-compose -f make/dev/docker-compose.test.yml up -d
       - sudo sh tests/hosts.gitlab.sh
-      - sudo docker run --rm -v `pwd`:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -v /data/board/cert:/cert -v /etc/board/cert:/etc/board/cert -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
-      - docker run --rm -v `pwd`/src:/go/src/git/inspursoft/board/src -v $CI_PROJECT_DIR/VERSION:/go/bin/VERSION -w /go/src/git/inspursoft/board/src/adminserver -e GO111MODULE=off golang:$golang_version go build -v -o /go/bin/adminserver
- 
+      - sudo ln -s /data/board/cert /cert
+      - source tests/run.sh
+      - cd src/adminserver && go build -v -o /adminserver
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
