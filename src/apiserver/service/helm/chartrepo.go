@@ -565,6 +565,10 @@ func installChart(name, namespace, rootDir, helmhost string, setValues ...string
 	commands = append([]string{"upgrade", "--install", "--namespace", namespace, name}, setValues...)
 	commands = append(commands, rootDir)
 	_, err := execHelmCommand(helmhost, commands...)
+	if err != nil {
+		//tiller maybe store the release, so we need to delete it manually.
+		execHelmCommand(helmhost, "delete", "--purge", name)
+	}
 	return err
 }
 
@@ -669,7 +673,7 @@ func execHelmCommand(helmhost string, args ...string) (string, error) {
 		} else {
 			logs.Error("Execute command 'helm %s' error: %+v", strings.Join(args, " "), err)
 		}
-		return "", err
+		return "", errors.New(fmt.Sprintf("%s: %v", combinedOutput, err))
 	}
 	return string(combinedOutput), nil
 }

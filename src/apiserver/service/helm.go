@@ -337,6 +337,7 @@ func addHelmReleaseToBoardService(r *model.ReleaseModel) error {
 				CreationTime:   r.CreateTime,
 				UpdateTime:     r.UpdateTime,
 				Source:         helm,
+				SourceID:       r.ID,
 				ServiceYaml:    matched[i].Service.Source,
 				DeploymentYaml: matched[i].Workload.Source,
 			})
@@ -432,16 +433,28 @@ func getServiceTypeFromYaml(k8sclient *k8sassist.K8sAssistClient, namespace, yam
 	return svcType, nil
 }
 
-func ListAllReleases() ([]model.Release, error) {
-	models, err := dao.GetAllHelmReleases()
+func ListAllReleases(projectName string) ([]model.Release, error) {
+	var err error
+	var models []model.ReleaseModel
+	if projectName == "" {
+		models, err = dao.GetAllHelmReleases()
+	} else {
+		models, err = dao.GetAllHelmReleasesByProjectName(projectName)
+	}
 	if err != nil {
 		return nil, err
 	}
 	return generateModelReleases(models)
 }
 
-func ListReleasesByUserID(userid int64) ([]model.Release, error) {
-	models, err := dao.GetHelmReleasesByUserID(userid)
+func ListReleasesByUserID(userid int64, projectName string) ([]model.Release, error) {
+	var err error
+	var models []model.ReleaseModel
+	if projectName == "" {
+		models, err = dao.GetHelmReleasesByUserID(userid)
+	} else {
+		models, err = dao.GetHelmReleasesByUserIDAndProjectName(userid, projectName)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -465,6 +478,10 @@ func DeleteRelease(releaseid int64) error {
 		logs.Error("the release with id %d does not exist", releaseid)
 		return NotExistError
 	}
+	return DeleteReleaseByReleaseModel(release)
+}
+
+func DeleteReleaseByReleaseModel(release *model.ReleaseModel) error {
 	helmhost, err := getHelmHost()
 	if err != nil {
 		return err
@@ -474,7 +491,7 @@ func DeleteRelease(releaseid int64) error {
 		return err
 	}
 	_, err = dao.DeleteHelmRelease(model.ReleaseModel{
-		ID: releaseid,
+		ID: release.ID,
 	})
 	if err != nil {
 		return err
@@ -492,7 +509,34 @@ func DeleteRelease(releaseid int64) error {
 		_, err = dao.DeleteServiceByNames(services)
 		return err
 	})
+}
 
+func DeleteReleaseByProjectName(projectName string) error {
+	models, err := dao.GetAllHelmReleasesByProjectName(projectName)
+	if err != nil {
+		return err
+	}
+	for _, m := range models {
+		err = DeleteReleaseByReleaseModel(&m)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func DeleteReleaseByUserIDAndProjectName(userid int64, projectName string) error {
+	models, err := dao.GetHelmReleasesByUserIDAndProjectName(userid, projectName)
+	if err != nil {
+		return err
+	}
+	for _, m := range models {
+		err = DeleteReleaseByReleaseModel(&m)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func GetReleaseDetail(releaseid int64) (*model.ReleaseDetail, error) {

@@ -88,8 +88,8 @@ func generateDeleteServiceByNamesSQL(services []model.ServiceStatus) (string, []
 	return sql, params
 }
 
-func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, []interface{}) {
-	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.update_time, s.status, s.type, s.public, s.source,
+func generateServiceStatusSQL(query model.ServiceStatusFilter, userID int64) (string, []interface{}) {
+	sql := `select distinct s.id, s.name, s.project_id, s.project_name, u.username as owner_name, s.owner_id, s.creation_time, s.update_time, s.status, s.type, s.public, s.source, s.source_id,
 	(select if(count(s0.id), 1, 0) from service_status s0 where s0.deleted = 0 and s0.id = s.id and s0.project_id in (
 		select p0.id
 		from project p0
@@ -119,6 +119,14 @@ func generateServiceStatusSQL(query model.ServiceStatus, userID int64) (string, 
 		params = append(params, "%"+query.Name+"%")
 		sql += ` and s.name like ? `
 	}
+	if query.Source != nil {
+		params = append(params, query.Source)
+		sql += ` and s.source = ? `
+	}
+	if query.SourceID != nil {
+		params = append(params, query.SourceID)
+		sql += ` and s.source_id = ? `
+	}
 	return sql, params
 }
 
@@ -131,12 +139,12 @@ func queryServiceStatus(sql string, params []interface{}) ([]*model.ServiceStatu
 	return serviceList, nil
 }
 
-func GetServiceData(query model.ServiceStatus, userID int64) ([]*model.ServiceStatusMO, error) {
+func GetServiceData(query model.ServiceStatusFilter, userID int64) ([]*model.ServiceStatusMO, error) {
 	sql, params := generateServiceStatusSQL(query, userID)
 	return queryServiceStatus(sql, params)
 }
 
-func GetPaginatedServiceData(query model.ServiceStatus, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
+func GetPaginatedServiceData(query model.ServiceStatusFilter, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
 	sql, params := generateServiceStatusSQL(query, userID)
 	var err error
 

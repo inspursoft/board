@@ -201,18 +201,19 @@ func (hc *HelmController) InstallHelmChartAction() {
 
 	err = service.InstallChart(hc.resolveHelmRepositoryByID(release.RepositoryID), release)
 	if err != nil {
-		hc.InternalError(err)
+		hc.CustomAbortAudit(http.StatusInternalServerError, fmt.Sprintf("%+v", err))
 		return
 	}
 }
 
 func (hc *HelmController) ListHelmReleaseAction() {
 	var err error
+	projectName := hc.GetString("project_name")
 	var releases interface{}
 	if hc.IsSysAdmin {
-		releases, err = service.ListAllReleases()
+		releases, err = service.ListAllReleases(projectName)
 	} else {
-		releases, err = service.ListReleasesByUserID(hc.CurrentUser.ID)
+		releases, err = service.ListReleasesByUserID(hc.CurrentUser.ID, projectName)
 	}
 	if err != nil {
 		hc.InternalError(err)
@@ -230,6 +231,23 @@ func (hc *HelmController) DeleteHelmReleaseAction() {
 		return
 	}
 	err := service.DeleteRelease(r.ID)
+	if err != nil {
+		hc.InternalError(err)
+		return
+	}
+
+}
+
+func (hc *HelmController) DeleteHelmReleaseByProjectAction() {
+	// get the project name
+	projectName := hc.GetString("project_name")
+	var err error
+	if hc.IsSysAdmin {
+		err = service.DeleteReleaseByProjectName(projectName)
+	} else {
+		err = service.DeleteReleaseByUserIDAndProjectName(hc.CurrentUser.ID, projectName)
+	}
+
 	if err != nil {
 		hc.InternalError(err)
 		return
