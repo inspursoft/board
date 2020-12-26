@@ -119,11 +119,11 @@ func (ca *BaseController) ProcessAuth(principal, password string) (string, bool)
 	ca.AuditUser, _ = service.GetUserByName(user.Username)
 
 	//Reset the user failed times
-	err = auth.ResetAuthFailedTimes(principal, ca.Ctx.Request.RemoteAddr)
-	if err != nil {
-		ca.InternalError(err)
-		return "", false
-	}
+	// err = auth.ResetAuthFailedTimes(principal, ca.Ctx.Request.RemoteAddr)
+	// if err != nil {
+	// 	ca.InternalError(err)
+	// 	return "", false
+	// }
 
 	return token.TokenString, true
 }
