@@ -32,11 +32,7 @@ Board is deployed as several Docker containers, and, therefore, can be deployed 
 * Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
 * Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
 
-
-### Install via online installer
-~~The installer downloads Board images from Docker hub. For this reason, the installer is very small in size.~~ (Coming soon.)
-
-### Install via offline installer
+### Install
 The installation steps boil down to the following
 
 1. Download the installer;
@@ -49,11 +45,17 @@ Note: If you need prepare Kubernetes and Registry environment, please refer to t
 
 The binary of the installer can be downloaded from the `release` page. Choose either online or offline installer. Use *tar* command to extract the package.
 
+The difference between online installer and offline installer is:
+* The online installation package directly pulls the image from dockerhub, the installer is very small in size.
+* The offline installation package contains all the images needed for this project, so the installation package is quite larger
+
 Online installer:
-    (Coming soon.)
+```sh
+    $ tar xvf board-online-installer-VERSION[-ARCH].tgz
+```
 Offline installer:
 ```sh
-    $ tar xvf board-offline-installer-latest.tgz.tgz
+    $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
 #### Configuring Board
@@ -73,7 +75,7 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Optional parameters
 
-* **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/123456a?** ._   
+* **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **boardadmin/123456a?** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
 For LDAP authentication, set this to **ldap_auth**.  
 
@@ -91,7 +93,51 @@ For LDAP authentication, set this to **ldap_auth**.
 #### Connecting Kubernetes cluster which authentication strategy with CA certification
 If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster's CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as 'ca-key.pem'(for private key) and 'ca.pem'(for public key).
 
-Then you should configure these items:
+You also need to deploy the following two files in your Kubernetes for Board to take over your Kubernetes cluster:
+```sh
+$ mkdir board-k8s-requires
+$ cd board-k8s-requires
+# board-clusterrolebinding.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/board-clusterrolebinding.yaml
+$ kubectl apply -f board-clusterrolebinding.yaml
+
+# cadvisor.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/cadvisor.yaml
+# You need to replace the {{docker_dir}} placeholder in the file before deploying. The docker directory defaults to /var/lib/docker
+$ kubectl apply -f cadvisor.yaml
+```
+
+In addition, there are some optional features:
+
+**Helm Chart:** The chart museum is integrated in the Board, which depends on helm2
+```sh
+# tiller.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller.yaml
+# tiller-service.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller-service.yaml
+$ kubectl apply tiller.yaml
+$ kubectl apply tiller-service.yaml
+```
+
+**EFK + Prometheus:** Board supports EFK+Prometheus log management
+```sh
+# fluentd.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/fluentd.yaml
+# Need to replace the {{board_ip_address}} {{docker_dir}} placeholder in the file before deploying
+$ kubectl apply -f fluentd.yaml
+
+# prometheus.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus.yaml
+# prometheus2.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus2.yaml
+# Need to replace the {{nfs_dir}} {{nsf_server_ip_address}} placeholder in the file before deploying, or replace this file with your own pv
+$ kubectl apply -f prometheus.yaml
+$ kubectl apply -f prometheus2.yaml
+```
+
+**Note:** If your kubernetes cluster is installed by the [inspursoft/board-installer](https://github.com/inspursoft/board-installer), you do not need to perform the above steps because the project’s automation script have been completed.
+
+Then you should configure these items in **board.cfg**:
 
 * **kube_http_scheme**: Set to 'https'. It means the requests Board send to Kubernetes cluster will be used via 'https' protocol.
 * **kube_master_ip**: The IP address of the Master of Kubernetes cluster.
@@ -106,22 +152,14 @@ Once **board.cfg** is configured, install and start Board using the ```install.s
     $ sudo ./install.sh
 ```
 
-If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```board.cfg```). Note that the default administrator username/password are admin/123456a? .
+#### After installation
+If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```board.cfg```). Note that the default administrator username/password are boardadmin/123456a? .
 
 Log in to the admin portal and create a new project, e.g. `myproject`. You can create your own service now.
 
 For information on how to use Board, please refer to **[User Guide of Board](docs/user_guide.md)** .
 
 For details on how to download and use the installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md).
-
-#### After installation
-_If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com. Note that the default administrator username/password are admin/Harbor12345._
-
-Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (by default, the registry server listens on port 80):
-```sh
-$ docker login reg.yourdomain.com
-$ docker push reg.yourdomain.com/myproject/myrepo:mytag
-```
 
 ## Upgrade
 
@@ -133,7 +171,7 @@ When upgrading your existing Board instance to a newer version, you may need  to
 1 Log in to the host that Board runs on, stop and remove existing Board instance if it is still running:
    
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 
@@ -141,18 +179,20 @@ When upgrading your existing Board instance to a newer version, you may need  to
    
    ```sh
    cd ..
-   mv board /my_backup_dir/board
+   mv Deploy /my_backup_dir/Deploy
+   mv /data/board /my_backup_dir/board
    ```
 
-3 Get the latest Board release package from Gogits:
+3 Get the latest Board release package from github:
    
    ```
-   http://10.111.25.100:10080/inspursoft/board
+   https://github.com/inspursoft/board
    ```
 
 4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.
    
    ```sh
+   git clone https://github.com/inspursoft/board.git
    cd board/tools/migration
    docker build -t board-migration .
    ```
@@ -183,7 +223,7 @@ For any reason, if you want to back to the previous version of Board, follow the
 1 Stop and remove the current Board service if it is still running.
  
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 

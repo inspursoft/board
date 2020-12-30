@@ -33,10 +33,7 @@ Board作为几个Docker容器部署，因此，Board可以部署在任何支持D
 * Docker engine的版本应为1.11.2或更高。有关安装说明，请参考：https://docs.docker.com/engine/installation/
 * Docker Compose的版本应为1.7.1或更高。有关安装说明，请参考：https://docs.docker.com/compose/install/
 
-### 在线安装
-（即将推出）
-
-### 离线安装
+### 安装
 安装步骤如下
 
 1. 下载安装程序；
@@ -47,11 +44,18 @@ Board作为几个Docker容器部署，因此，Board可以部署在任何支持D
 
 #### 下载安装程序
 安装程序的二进制文件可以从`release`页面下载，选择在线或离线安装程序，使用*tar*命令提取包。
+
+在线安装与离线安装的区别为：
+* 在线安装包直接从dockerhub上拉取镜像，安装包较小
+* 离线安装包内包含了本项目所需的所有镜像，安装包较大
+
 在线安装程序:
-（即将推出）
+```sh
+    $ tar xvf board-online-installer-VERSION[-ARCH].tgz
+```
 离线安装程序:
 ```sh
-    $ tar xvf board-offline-installer-latest.tgz.tgz
+    $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
 #### 配置Board
@@ -69,7 +73,7 @@ board.cfg中有两种类型的参数，**所需的参数**和**可选参数**。
 * **db_password**：MySQL数据库root密码用于**db_auth** 。 _任何生产使用请修改该密码！_
 
 ##### 可选参数
-* **board_admin_password**：管理员的初始密码。这个密码只在Board第一次发布的时候生效。在此之后，该设置将被忽略，管理员的密码应该在用户界面进行设置。 _注意，默认的用户名/密码是**admin/ 123456a？**。_
+* **board_admin_password**：管理员的初始密码。这个密码只在Board第一次发布的时候生效。在此之后，该设置将被忽略，管理员的密码应该在用户界面进行设置。 _注意，默认的用户名/密码是**boardadmin/ 123456a?**。_
 * **auth_mode**：所使用的身份验证的类型。默认情况下，它是**db_auth** ，即证书存储在数据库中。
 对于LDAP身份验证，将其设置为**ldap_auth**
 
@@ -86,9 +90,53 @@ board.cfg中有两种类型的参数，**所需的参数**和**可选参数**。
 * **token_expiration**：由令牌服务创建的令牌的到期时间（以分钟计），默认值是30分钟。
  
 #### 连接Kubernetes集群与CA认证的身份验证策略
-如果Board连接Kubernetes集群与CA认证的身份验证策略，必须将Kubernetes集群的CA文件复制到你安装Board的机器。你应该把CA文件放在/etc/board/cert目录，并将其命名为“CA-key.pem”（私钥）和“ca.pem”（公钥）。
+Board连接Kubernetes集群与CA认证的身份验证策略，必须将Kubernetes集群的CA文件复制到你安装Board的机器。你应该把CA文件放在/etc/board/cert目录，并将其命名为“ca-key.pem”（私钥）和“ca.pem”（公钥）。
 
-然后应该配置这些项目：
+您还需要在您的Kubernetes中部署下述两个文件，用于Board接管您的Kubernetes集群：
+```sh
+$ mkdir board-k8s-requires
+$ cd board-k8s-requires
+# board-clusterrolebinding.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/board-clusterrolebinding.yaml
+$ kubectl apply -f board-clusterrolebinding.yaml
+
+# cadvisor.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/cadvisor.yaml
+# 需要替换文件内的 {{docker_dir}} 的占位符后再部署。docker 目录默认在 /var/lib/docker
+$ kubectl apply -f cadvisor.yaml # 若cadvisor镜像无法拉取，您可以修改为其他来源
+```
+
+除此之外，还有一些可选的功能：
+
+**Helm Chart:** Board中集成了chart集市功能，该功能依赖于helm2
+```sh
+# tiller.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller.yaml
+# tiller-service.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller-service.yaml
+$ kubectl apply tiller.yaml
+$ kubectl apply tiller-service.yaml
+```
+
+**EFK + Prometheus:** Board支持 EFK+Prometheus 的日志管理
+```sh
+# fluentd.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/fluentd.yaml
+# 需要替换文件内的 {{board_ip_address}} {{docker_dir}} 的占位符后再部署
+$ kubectl apply -f fluentd.yaml
+
+# prometheus.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus.yaml
+# prometheus2.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus2.yaml
+# 需要替换文件内的 {{nfs_dir}} {{nsf_server_ip_address}} 的占位符后再部署，或者更换为自己的pv
+$ kubectl apply -f prometheus.yaml
+$ kubectl apply -f prometheus2.yaml
+```
+
+**注:** 如果您的kubernetes集群是 [inspursoft/board-installer](https://github.com/inspursoft/board-installer) 项目安装的，则无需进行上述步骤，因为该项目的自动化脚本已经完成了上述操作。
+
+然后应该配置**board.cfg**的这些项目：
 
 * **kube_http_scheme**：设置为“HTTPS”。这意味着Board发送到Kubernetes集群的请求将使用“https”协议。
 * **kube_master_ip**：Kubernetes集群主节点的IP地址。
@@ -104,24 +152,15 @@ board.cfg中有两种类型的参数，**所需的参数**和**可选参数**。
     $ sudo ./install.sh
 ```
 
-
-
-有关如何使用主板的信息，请参考**[Board用户指南](docs/user_guide.md)**。
-
-有关如何下载和使用安装包的详细信息，请参考**[安装和配置指南](docs/installation_guide.md)**。
-
 #### 安装后
 
-如果一切正常，你应该能够打开浏览器访问管理门户**http://reg.yourdomain.com**（替换*reg.yourdomain.com*为配置在``` board.cfg```中的主机名）。请注意，默认的管理员用户名/密码是admin / 123456a？ 。
+如果一切正常，你应该能够打开浏览器访问管理门户 **http://reg.yourdomain.com** （替换 *reg.yourdomain.com* 为配置在```board.cfg```中的主机名）。请注意，默认的管理员用户名/密码是 boardadmin/123456a? 。
 
 登录到管理门户，并创建一个新的项目，例如`myproject`。现在，可以创建自己的服务了。
 
-可以使用docker命令登录和拉取镜像（默认情况下，注册表服务器侦听端口80）：
+有关如何使用 Board 的信息，请参考 **[Board用户指南](docs/user_guide.md)**。
 
-```sh
-$ docker login reg.yourdomain.com
-$ docker push reg.yourdomain.com/myproject/myrepo:mytag
-```
+有关如何下载和使用安装包的详细信息，请参考 **[安装和配置指南](docs/installation_guide.md)**。
 
 ## 更新
 当升级现有Board的实例到更新的版本，则可能需要将数据迁移到数据库中。请参阅[更改日志](../tools/migration/changelog.md)以找出数据库中是否有任何改变。如果有，你应该进行数据库的迁移。由于迁移可能会改变数据库模式，你应该**总是**备份迁移之前的任何数据。
@@ -133,7 +172,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 1 登录Board运行的主机，如果Board仍在运行，停止和删除现有的Board。
 
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 
@@ -141,18 +180,20 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 
    ```sh
    cd ..
-   mv board /my_backup_dir/board
+   mv Deploy /my_backup_dir/Deploy
+   mv /data/board /my_backup_dir/board
    ```
 
-3 从gitlab上获取Board最新发布包。
+3 从github上获取Board最新发布包。
 
    ```
-   http://open.inspur.com/TechnologyCenter/board
+   https://github.com/inspursoft/board
    ```
 
 4 升级Board之前，先进行数据库迁移。迁移工具是一个Docker镜像，首先应该建立它。
 
    ```sh
+   git clone https://github.com/inspursoft/board.git
    cd board/tools/migration
    docker build -t board-migration .
    ```
@@ -185,7 +226,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 1 如果Board仍在运行，停止和删除现有的Board。
 
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 
