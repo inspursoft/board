@@ -269,6 +269,7 @@ offline_package: prepare_package
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
+	@echo "######################### Offline package done! #########################"
 
 offline_package_one_step: compile compile_ui build offline_package
 # packageonestep: compile compile_ui build package
@@ -278,7 +279,7 @@ online_package: prepare_package
 	@$(TARCMD) -zcvf $(PKGNAME)-online-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
-	@echo "######################### Online package is packaged! #########################"
+	@echo "######################### Online package done! #########################"
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage
