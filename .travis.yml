@@ -70,6 +70,6 @@ jobs:
       - sudo sh tests/hosts.gitlab.sh
       - sudo ln -s /data/board/cert /cert
       - source tests/run.sh
-      - cd src/adminserver && go build -v -o /adminserver
+      - cd src/adminserver && go build -v -o adminserver
 after_success:
   - bash <(curl -s https://codecov.io/bash)
