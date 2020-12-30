@@ -4,7 +4,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
+    image: openboard/dev_log:dev
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -17,7 +17,7 @@ services:
     build: 
       context: ../../../
       dockerfile: make/dev/container/db/Dockerfile
-    image: dev_db:dev
+    image: openboard/dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -44,7 +44,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/gogits/Dockerfile
-    image: dev_gogits:dev
+    image: openboard/dev_gogits:dev
     restart: always
     volumes:
       - ../../config/gogits/conf/app.ini:/tmp/conf/app.ini
@@ -66,7 +66,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/jenkins/Dockerfile
-    image: dev_jenkins:dev
+    image: openboard/dev_jenkins:dev
     restart: always
     networks:
       - board
@@ -92,7 +92,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/apiserver/Dockerfile
-    image: dev_apiserver:dev
+    image: openboard/dev_apiserver:dev
     restart: always
     volumes:
       - ../../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
@@ -122,7 +122,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: dev_tokenserver:dev
+    image: openboard/dev_tokenserver:dev
     env_file:
       - ../../config/tokenserver/env
     restart: always
@@ -141,7 +141,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/proxy/Dockerfile
-    image: dev_proxy:dev
+    image: openboard/dev_proxy:dev
     networks:
       - board
     restart: always
@@ -168,7 +168,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/grafana/Dockerfile
-    image: dev_grafana:dev
+    image: openboard/dev_grafana:dev
     restart: always
     volumes:
       - /data/board/grafana/data:/var/lib/grafana
@@ -190,7 +190,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/elasticsearch/Dockerfile
-    image: dev_elasticsearch:dev
+    image: openboard/dev_elasticsearch:dev
     restart: always
     env_file:
       - ../../config/elasticsearch/env
@@ -216,7 +216,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/kibana/Dockerfile
-    image: dev_kibana:dev
+    image: openboard/dev_kibana:dev
     restart: always
     env_file:
       - ../../config/kibana/env
@@ -236,7 +236,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/chartmuseum/Dockerfile
-    image: dev_chartmuseum:dev
+    image: openboard/dev_chartmuseum:dev
     restart: always
     networks:
       - board
@@ -256,7 +256,7 @@ services:
     build:
       context: ../../../
       dockerfile: make/dev/container/prometheus/Dockerfile
-    image: dev_prometheus:dev
+    image: openboard/dev_prometheus:dev
     restart: always
     networks:
       - board
