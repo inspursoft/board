@@ -8,7 +8,7 @@ Please use [releases] instead of the `master` branch in order to get stable bina
 
 |<img alt="notification" width="24" src="docs/img/bell.png">Community Meeting|
 |------------------|
-|The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](http://10.10.5.9/TechnologyCenter/board/wikis/community-meeting-schedule).|
+|The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/inspursoft/board/wiki/community-meeting-schedule).|
 
 <img alt="Board" src="docs/img/board_logo.png">
 
