@@ -21,10 +21,9 @@ services:
       - 389:389
       - 636:636
   tokenserver:
-    # build:
-    #   context: ../../
-    #   dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: 10.110.27.103:6000/board/dev_tokenserver:dev
+    build:
+      context: ../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -40,8 +39,8 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
     ports:
       - 5000:5000
-  gomail:    
-    image: 10.111.25.119/board/dev_gomail:dev
+  gomail:
+    image: dev_gomail:dev
     restart: always
     ports:
       - "12225:12225"

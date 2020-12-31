@@ -1,4 +1,5 @@
 # Board
+[![Go Report Card](https://goreportcard.com/badge/github.com/inspursoft/board)](https://goreportcard.com/report/github.com/inspursoft/board) [![Build Status](https://travis-ci.org/inspursoft/board.svg?branch=dev)](https://travis-ci.org/inspursoft/board) [![codecov](https://codecov.io/gh/inspursoft/board/branch/dev/graph/badge.svg?token=HIOWVOQ772)](https://codecov.io/gh/inspursoft/board)
 
 [English](README.md) | [中文](README_zh_CN.md)
 
