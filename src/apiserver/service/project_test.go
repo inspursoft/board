@@ -2,8 +2,8 @@ package service_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

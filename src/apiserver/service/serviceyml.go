@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"git/inspursoft/board/src/common/k8sassist"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/k8sassist"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"os"
 	"path/filepath"

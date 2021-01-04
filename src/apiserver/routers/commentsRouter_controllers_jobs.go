@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
         beego.ControllerComments{
             Method: "List",
             Router: `/`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
         beego.ControllerComments{
             Method: "Delete",
             Router: `/:job_id`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:CommonController"],
         beego.ControllerComments{
             Method: "Post",
             Router: `/deploy`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
         beego.ControllerComments{
             Method: "PodLogs",
             Router: `/:job_id/logs/:pod_name`,
@@ -43,7 +43,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
         beego.ControllerComments{
             Method: "Pods",
             Router: `/:job_id/pods`,
@@ -52,7 +52,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
         beego.ControllerComments{
             Method: "Status",
             Router: `/:job_id/status`,
@@ -61,7 +61,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
         beego.ControllerComments{
             Method: "Existing",
             Router: `/existing`,
@@ -70,7 +70,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/jobs:SupplementController"],
         beego.ControllerComments{
             Method: "Selectable",
             Router: `/selectable`,

@@ -6,7 +6,7 @@ services:
 language: go
 go:
 - 1.14.x
-go_import_path: git/inspursoft/board
+go_import_path: github.com/inspursoft/board
 
 dist: trusty
 

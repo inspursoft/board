@@ -2,7 +2,7 @@ package dao
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 	"strings"
 	"time"
 

@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 
 	"strconv"
 

@@ -2,9 +2,9 @@ FROM golang:1.14.0
 
 MAINTAINER huay@inspur.com
 
-COPY src/. /go/src/git/inspursoft/board/src/.
+COPY src/. /go/src/github.com/inspursoft/board/src/.
 
-WORKDIR /go/src/git/inspursoft/board/src/tokenserver
+WORKDIR /go/src/github.com/inspursoft/board/src/tokenserver
 
 ENV GO111MODULE=off
 

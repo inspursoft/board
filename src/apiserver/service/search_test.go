@@ -4,7 +4,7 @@ package service_test
 // 	"fmt"
 // 	"testing"
 
-// 	"git/inspursoft/board/src/common/model"
+// 	"github.com/inspursoft/board/src/common/model"
 // )
 
 // func TestSearchSource(t *testing.T) {

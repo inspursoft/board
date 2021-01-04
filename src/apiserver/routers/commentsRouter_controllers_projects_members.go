@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
         beego.ControllerComments{
             Method: "List",
             Router: `/:project_id`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
         beego.ControllerComments{
             Method: "Add",
             Router: `/:project_id`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
         beego.ControllerComments{
             Method: "Update",
             Router: `/:project_id`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/projects/members:CommonController"],
         beego.ControllerComments{
             Method: "Delete",
             Router: `/:project_id/:user_id`,

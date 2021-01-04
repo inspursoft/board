@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:CommonController"],
         beego.ControllerComments{
             Method: "Update",
             Router: `/`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:PasswordController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:PasswordController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:PasswordController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:PasswordController"],
         beego.ControllerComments{
             Method: "UpdatePassword",
             Router: `/password`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:ProbeController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:ProbeController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:ProbeController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:ProbeController"],
         beego.ControllerComments{
             Method: "Current",
             Router: `/current`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/users:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/users:SupplementController"],
         beego.ControllerComments{
             Method: "Exists",
             Router: `/existing`,

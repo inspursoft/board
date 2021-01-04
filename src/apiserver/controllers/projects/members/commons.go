@@ -1,12 +1,12 @@
 package members
 
 import (
-	"git/inspursoft/board/src/apiserver/models/vm"
-	"git/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/models/vm"
+	"github.com/inspursoft/board/src/apiserver/service"
 	"net/http"
 	"strconv"
 
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
 )
 
 // Operations about project members

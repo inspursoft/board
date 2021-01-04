@@ -2,9 +2,9 @@ package controller
 
 import (
 	"fmt"
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
 
-	//"git/inspursoft/board/src/apiserver/service"
+	//"github.com/inspursoft/board/src/apiserver/service"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"

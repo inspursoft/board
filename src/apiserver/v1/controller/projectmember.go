@@ -1,9 +1,9 @@
 package controller
 
 import (
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
 	"net/http"
 	"strconv"
 	"strings"

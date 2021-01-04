@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/searches:SearchController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/searches:SearchController"],
         beego.ControllerComments{
             Method: "Get",
             Router: `/`,

@@ -2,8 +2,8 @@ package dao_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 

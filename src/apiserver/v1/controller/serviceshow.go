@@ -1,7 +1,7 @@
 package controller
 
 import (
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
 	"net/http"
 	"strings"
 

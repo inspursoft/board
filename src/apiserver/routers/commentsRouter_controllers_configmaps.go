@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
         beego.ControllerComments{
             Method: "Add",
             Router: `/`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
         beego.ControllerComments{
             Method: "List",
             Router: `/:configmap_id`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/configmaps:CommonController"],
         beego.ControllerComments{
             Method: "Delete",
             Router: `/:configmap_id`,

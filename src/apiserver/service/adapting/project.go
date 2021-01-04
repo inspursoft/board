@@ -1,10 +1,10 @@
 package adapting
 
 import (
-	"git/inspursoft/board/src/apiserver/models/vm"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/models/vm"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 )

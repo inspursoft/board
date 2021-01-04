@@ -1,8 +1,8 @@
 package models
 
 import (
-	"git/inspursoft/board/src/adminserver/models/nodeModel"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/adminserver/models/nodeModel"
+	"github.com/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/orm"
 )

@@ -1,8 +1,8 @@
 package vm
 
 import (
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"time"
 
 	"github.com/astaxie/beego/logs"

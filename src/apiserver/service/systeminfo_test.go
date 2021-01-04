@@ -1,8 +1,8 @@
 package service_test
 
 import (
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

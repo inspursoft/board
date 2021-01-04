@@ -1,9 +1,9 @@
 package commons
 
 import (
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/auth"
-	t "git/inspursoft/board/src/common/token"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/service/auth"
+	t "github.com/inspursoft/board/src/common/token"
 	"net/http"
 	"strconv"
 	"time"

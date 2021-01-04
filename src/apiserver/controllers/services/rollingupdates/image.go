@@ -2,11 +2,11 @@ package rollingupdates
 
 import (
 	"fmt"
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
-	"git/inspursoft/board/src/apiserver/models/vm"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/apiserver/models/vm"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"net/http"
 	"path/filepath"
 	"strconv"

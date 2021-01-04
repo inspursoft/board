@@ -3,9 +3,9 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"git/inspursoft/board/src/adminserver/common"
-	"git/inspursoft/board/src/adminserver/models"
-	"git/inspursoft/board/src/adminserver/tools/secureShell"
+	"github.com/inspursoft/board/src/adminserver/common"
+	"github.com/inspursoft/board/src/adminserver/models"
+	"github.com/inspursoft/board/src/adminserver/tools/secureShell"
 	"os"
 	"os/exec"
 	"path"

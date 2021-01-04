@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
         beego.ControllerComments{
             Method: "Info",
             Router: `/info`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
         beego.ControllerComments{
             Method: "KubernetesInfo",
             Router: `/kubernetes-info`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/systems:SupplementController"],
         beego.ControllerComments{
             Method: "Resources",
             Router: `/resources`,

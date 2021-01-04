@@ -1,8 +1,8 @@
 package service_test
 
 import (
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 

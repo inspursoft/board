@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:AccController"],
         beego.ControllerComments{
             Method: "CreateUUID",
             Router: `/createUUID`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:AccController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:AccController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:AccController"],
         beego.ControllerComments{
             Method: "Login",
             Router: `/login`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"],
         beego.ControllerComments{
             Method: "Applycfg",
             Router: `/applycfg`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"],
         beego.ControllerComments{
             Method: "Shutdown",
             Router: `/shutdown`,
@@ -43,7 +43,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BoardController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BoardController"],
         beego.ControllerComments{
             Method: "Start",
             Router: `/start`,
@@ -52,7 +52,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:BootController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BootController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:BootController"],
         beego.ControllerComments{
             Method: "CheckSysStatus",
             Router: `/checksysstatus`,
@@ -61,7 +61,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:CfgController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:CfgController"],
         beego.ControllerComments{
             Method: "Put",
             Router: `/`,
@@ -70,7 +70,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:CfgController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:CfgController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:CfgController"],
         beego.ControllerComments{
             Method: "GetAll",
             Router: `/`,
@@ -79,7 +79,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MonitorController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/adminserver/controllers:MonitorController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:MonitorController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/adminserver/controllers:MonitorController"],
         beego.ControllerComments{
             Method: "Get",
             Router: `/`,

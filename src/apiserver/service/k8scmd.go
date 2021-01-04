@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 
@@ -14,9 +14,9 @@ import (
 	//"k8s.io/client-go/rest"
 	//apiCli "k8s.io/client-go/tools/clientcmd/api"
 
-	"git/inspursoft/board/src/common/k8sassist"
+	"github.com/inspursoft/board/src/common/k8sassist"
 
-	//"git/inspursoft/board/src/common/model"
+	//"github.com/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 	//"github.com/golang/glog"

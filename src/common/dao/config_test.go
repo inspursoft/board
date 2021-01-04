@@ -1,8 +1,8 @@
 package dao_test
 
 import (
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/model"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"

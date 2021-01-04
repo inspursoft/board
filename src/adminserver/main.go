@@ -1,9 +1,9 @@
 package main
 
 import (
-	"git/inspursoft/board/src/adminserver/dao"
-	"git/inspursoft/board/src/adminserver/models"
-	_ "git/inspursoft/board/src/adminserver/routers"
+	"github.com/inspursoft/board/src/adminserver/dao"
+	"github.com/inspursoft/board/src/adminserver/models"
+	_ "github.com/inspursoft/board/src/adminserver/routers"
 
 	"github.com/astaxie/beego"
 )

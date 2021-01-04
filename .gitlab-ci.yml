@@ -76,9 +76,9 @@ job_api_test:
     - cp tests/ldap_test.ldif make/dev
     - docker-compose -f make/dev/docker-compose.test.yml up -d
     - sh tests/hosts.gitlab.sh
-    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/git/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/git/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
+    - docker run --rm -v $CI_PROJECT_DIR:/data/workspace/board/src/github.com/inspursoft/board -v /tmp:/tmp -w /data/workspace/board/src/github.com/inspursoft/board/tests --network host  -e GOPATH=/data/workspace/board golang:$golang_version bash -c "source env.cfg && source run.sh"
     - echo "test adminserver"
-    - docker run --rm -v $CI_PROJECT_DIR/src:/go/src/git/inspursoft/board/src -v $CI_PROJECT_DIR/VERSION:/go/bin/VERSION -w /go/src/git/inspursoft/board/src/adminserver -e GO111MODULE=off golang:$golang_version go build -v -o /go/bin/adminserver
+    - docker run --rm -v $CI_PROJECT_DIR/src:/go/src/github.com/inspursoft/board/src -v $CI_PROJECT_DIR/VERSION:/go/bin/VERSION -w /go/src/github.com/inspursoft/board/src/adminserver -e GO111MODULE=off golang:$golang_version go build -v -o /go/bin/adminserver
   stage: api-test
   tags:
     - board-runner-wangkun_lc-vm

@@ -3,8 +3,8 @@ package gitlab
 import (
 	"errors"
 	"fmt"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"

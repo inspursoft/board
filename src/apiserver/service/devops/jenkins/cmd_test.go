@@ -1,9 +1,9 @@
 package jenkins_test
 
 import (
-	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/service/devops/jenkins"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 

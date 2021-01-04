@@ -1,8 +1,8 @@
 package k8sassist
 
 import (
-	v1 "git/inspursoft/board/src/common/k8sassist/corev1"
-	base "git/inspursoft/board/src/common/k8sassist/corev1/cgv5"
+	v1 "github.com/inspursoft/board/src/common/k8sassist/corev1"
+	base "github.com/inspursoft/board/src/common/k8sassist/corev1/cgv5"
 )
 
 type K8sAssistConfig struct {

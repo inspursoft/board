@@ -3,7 +3,7 @@ package controller_test
 import (
 	"bytes"
 	"encoding/json"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

@@ -77,7 +77,7 @@ GOTEST=$(GOCMD) test
 GOFMT=gofmt -w
 GOVET=$(GOCMD) vet
 GOLINT=golint
-GOIMGBASEPATH=/go/src/git/inspursoft/board
+GOIMGBASEPATH=/go/src/github.com/inspursoft/board
 
 # prepare parameters
 PREPAREPATH=$(TOOLSPATH)

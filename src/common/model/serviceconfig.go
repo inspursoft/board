@@ -1,6 +1,6 @@
 package model
 
-import "git/inspursoft/board/src/common/model/yaml"
+import "github.com/inspursoft/board/src/common/model/yaml"
 
 type ServiceConfig struct {
 	ServiceID      int64           `json:"service_id" orm:"column(id)"`

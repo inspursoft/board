@@ -1,16 +1,16 @@
 package commons
 
 import (
-	"git/inspursoft/board/src/common/model"
-	t "git/inspursoft/board/src/common/token"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/model"
+	t "github.com/inspursoft/board/src/common/token"
+	"github.com/inspursoft/board/src/common/utils"
 	"html/template"
 	"net/http"
 	"path/filepath"
 	"time"
 
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gitlab"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/service/devops/gitlab"
 
 	"strconv"
 

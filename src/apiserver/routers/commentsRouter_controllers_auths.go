@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
         beego.ControllerComments{
             Method: "SignIn",
             Router: `/sign-in`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
         beego.ControllerComments{
             Method: "SignOut",
             Router: `/sign-out`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
         beego.ControllerComments{
             Method: "SignUp",
             Router: `/sign-up`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:AuthController"],
         beego.ControllerComments{
             Method: "ThirdParty",
             Router: `/third-party`,
@@ -43,7 +43,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:PasswordController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/auths:PasswordController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:PasswordController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/auths:PasswordController"],
         beego.ControllerComments{
             Method: "Reset",
             Router: `/reset`,

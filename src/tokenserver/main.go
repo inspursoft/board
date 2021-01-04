@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "git/inspursoft/board/src/tokenserver/controller"
-	"git/inspursoft/board/src/tokenserver/service"
+	_ "github.com/inspursoft/board/src/tokenserver/controller"
+	"github.com/inspursoft/board/src/tokenserver/service"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"

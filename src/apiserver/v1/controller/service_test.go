@@ -1,8 +1,8 @@
 package controller_test
 
 import (
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"net/http"
 	"net/http/httptest"
 	"testing"

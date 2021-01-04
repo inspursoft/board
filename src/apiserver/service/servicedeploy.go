@@ -2,10 +2,10 @@ package service
 
 import (
 	"errors"
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/k8sassist"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/k8sassist"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"io"
 	"os"
 	"path/filepath"

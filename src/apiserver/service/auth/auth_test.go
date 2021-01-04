@@ -2,11 +2,11 @@ package auth_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/auth"
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/service/auth"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 

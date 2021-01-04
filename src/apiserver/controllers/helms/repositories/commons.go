@@ -3,8 +3,8 @@ package repositories
 import (
 	"github.com/astaxie/beego/logs"
 
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
-	"git/inspursoft/board/src/apiserver/service"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/apiserver/service"
 )
 
 // Operations about Helm repositories

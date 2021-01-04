@@ -1,7 +1,7 @@
 package utils_test
 
 import (
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"git/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/apiserver/controllers/commons"
 
 	"github.com/astaxie/beego"
 )

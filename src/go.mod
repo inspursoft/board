@@ -1,4 +1,4 @@
-module git/inspursoft/board/src
+module github.com/inspursoft/board/src
 
 go 1.14
 

@@ -7,8 +7,8 @@
 package routers
 
 import (
-	"git/inspursoft/board/src/adminserver/controllers"
-	"git/inspursoft/board/src/adminserver/controllers/nodeController"
+	"github.com/inspursoft/board/src/adminserver/controllers"
+	"github.com/inspursoft/board/src/adminserver/controllers/nodeController"
 
 	"github.com/astaxie/beego"
 )

@@ -1,7 +1,7 @@
 package service_test
 
 import (
-	//	"git/inspursoft/board/src/apiserver/service"
+	//	"github.com/inspursoft/board/src/apiserver/service"
 	//	"strconv"
 	"testing"
 

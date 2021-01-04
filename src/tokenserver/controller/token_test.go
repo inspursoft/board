@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego"
 	"github.com/stretchr/testify/assert"

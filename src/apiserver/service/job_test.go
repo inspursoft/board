@@ -3,9 +3,9 @@ package service_test
 import (
 	"testing"
 
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/stretchr/testify/assert"

@@ -80,7 +80,7 @@ INSERT INTO `board`.`role` (id, name, comment)
          (3, 'visitor', 'Visitor');
 
     -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/common/model/image`
+    --  Table Structure for `github.com/inspursoft/board/src/common/model/image`
     -- --------------------------------------------------
     CREATE TABLE `board`.`image` (
         `id` INT AUTO_INCREMENT NOT NULL,
@@ -98,7 +98,7 @@ INSERT INTO `board`.`role` (id, name, comment)
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
     -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/common/model/yaml/serviceconfig`
+    --  Table Structure for `github.com/inspursoft/board/src/common/model/yaml/serviceconfig`
     -- --------------------------------------------------
     CREATE TABLE `board`.`service_config` (
         `id` INT AUTO_INCREMENT NOT NULL,

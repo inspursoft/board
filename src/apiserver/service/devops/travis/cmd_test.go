@@ -1,7 +1,7 @@
 package travis_test
 
 import (
-	"git/inspursoft/board/src/apiserver/service/devops/travis"
+	"github.com/inspursoft/board/src/apiserver/service/devops/travis"
 	"os"
 	"testing"
 

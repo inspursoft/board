@@ -1,7 +1,7 @@
 package model
 
 import (
-	"git/inspursoft/board/src/common/model/dashboard"
+	"github.com/inspursoft/board/src/common/model/dashboard"
 
 	"github.com/astaxie/beego/orm"
 )

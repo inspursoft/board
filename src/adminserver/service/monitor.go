@@ -1,7 +1,7 @@
 package service
 
 import (
-	"git/inspursoft/board/src/adminserver/models"
+	"github.com/inspursoft/board/src/adminserver/models"
 	"regexp"
 	"strings"
 )

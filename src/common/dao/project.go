@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 
 	"time"
 

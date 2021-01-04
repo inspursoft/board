@@ -2,11 +2,11 @@ package controller
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/tokenserver/service"
+	"github.com/inspursoft/board/src/tokenserver/service"
 
 	"net/http"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 
 	"io/ioutil"
 

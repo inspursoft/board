@@ -2,12 +2,12 @@ package service
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/adminserver/common"
-	"git/inspursoft/board/src/adminserver/dao"
-	"git/inspursoft/board/src/adminserver/models"
-	"git/inspursoft/board/src/common/model"
-	t "git/inspursoft/board/src/common/token"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/adminserver/common"
+	"github.com/inspursoft/board/src/adminserver/dao"
+	"github.com/inspursoft/board/src/adminserver/models"
+	"github.com/inspursoft/board/src/common/model"
+	t "github.com/inspursoft/board/src/common/token"
+	"github.com/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"net/http"
 	"os"

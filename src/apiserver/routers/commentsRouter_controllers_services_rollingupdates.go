@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"],
         beego.ControllerComments{
             Method: "List",
             Router: `/:project_id/:service_id/images`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:ImageController"],
         beego.ControllerComments{
             Method: "Patch",
             Router: `/:project_id/:service_id/images`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"],
         beego.ControllerComments{
             Method: "List",
             Router: `/:project_id/:service_id/nodegroups`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/services/rollingupdates:NodeGroupController"],
         beego.ControllerComments{
             Method: "Patch",
             Router: `/:project_id/:service_id/nodegroups`,

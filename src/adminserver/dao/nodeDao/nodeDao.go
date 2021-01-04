@@ -1,7 +1,7 @@
 package nodeDao
 
 import (
-	"git/inspursoft/board/src/adminserver/models/nodeModel"
+	"github.com/inspursoft/board/src/adminserver/models/nodeModel"
 	"github.com/astaxie/beego/orm"
 )
 

@@ -10,7 +10,7 @@ import (
 	"github.com/Masterminds/semver"
 	"gopkg.in/yaml.v2"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 )
 
 var (

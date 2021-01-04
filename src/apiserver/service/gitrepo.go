@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/utils"
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"

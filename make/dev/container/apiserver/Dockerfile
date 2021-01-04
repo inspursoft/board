@@ -2,14 +2,14 @@ FROM golang:1.14.0
 
 MAINTAINER wangkun_lc@inspur.com
 
-COPY src/apiserver /go/src/git/inspursoft/board/src/apiserver
-COPY src/common /go/src/git/inspursoft/board/src/common
-COPY src/vendor /go/src/git/inspursoft/board/vendor
+COPY src/apiserver /go/src/github.com/inspursoft/board/src/apiserver
+COPY src/common /go/src/github.com/inspursoft/board/src/common
+COPY src/vendor /go/src/github.com/inspursoft/board/vendor
 COPY src/apiserver/templates /go/bin/templates
 COPY VERSION /go/bin/VERSION
 COPY helm-v2.11.0-linux-amd64.tar.gz /usr/bin/helm.tar.gz
 
-WORKDIR /go/src/git/inspursoft/board/src/apiserver
+WORKDIR /go/src/github.com/inspursoft/board/src/apiserver
 
 ENV GO111MODULE=off
 

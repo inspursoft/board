@@ -1,9 +1,9 @@
 package adapting
 
 import (
-	"git/inspursoft/board/src/apiserver/models/vm"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/models/vm"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/utils"
 )
 
 func GetUserByEmail(email string) (target *vm.User, err error) {

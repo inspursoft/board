@@ -23,7 +23,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"gopkg.in/yaml.v2"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 )
 
 const (

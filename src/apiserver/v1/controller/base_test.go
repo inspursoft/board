@@ -1,13 +1,13 @@
 package controller_test
 
 import (
-	"git/inspursoft/board/src/apiserver/controllers/commons"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/v1/controller"
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/model/dashboard"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/v1/controller"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model/dashboard"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"testing"
 

@@ -2,8 +2,8 @@ package apps
 
 import (
 	"encoding/json"
-	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
+	"github.com/inspursoft/board/src/common/model"
 	"io"
 	"io/ioutil"
 

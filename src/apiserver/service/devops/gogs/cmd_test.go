@@ -2,10 +2,10 @@ package gogs_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/apiserver/service/devops/gogs"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/apiserver/service/devops/gogs"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 	"path/filepath"
 	"testing"

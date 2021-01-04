@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/model"
 	"io"
 	"os"
 	"path/filepath"

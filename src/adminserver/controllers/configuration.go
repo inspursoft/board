@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"git/inspursoft/board/src/adminserver/models"
-	"git/inspursoft/board/src/adminserver/service"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/adminserver/models"
+	"github.com/inspursoft/board/src/adminserver/service"
+	"github.com/inspursoft/board/src/common/utils"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"

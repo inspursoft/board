@@ -4,16 +4,16 @@ import (
 	"errors"
 	"fmt"
 
-	"git/inspursoft/board/src/common/dao"
-	"git/inspursoft/board/src/common/model"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/utils"
 	"os"
 
 	"github.com/astaxie/beego/logs"
 
 	//modelK8s "k8s.io/client-go/pkg/api/v1"
 
-	"git/inspursoft/board/src/common/k8sassist"
+	"github.com/inspursoft/board/src/common/k8sassist"
 )
 
 var repoServeURL = utils.GetConfig("REPO_SERVE_URL")

@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/k8sassist/corev1/cgv5/types"
+	"github.com/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 	corev1 "k8s.io/api/core/v1"

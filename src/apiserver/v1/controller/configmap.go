@@ -3,15 +3,15 @@ package controller
 import (
 	//"encoding/json"
 	"fmt"
-	"git/inspursoft/board/src/apiserver/service"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/apiserver/service"
+	"github.com/inspursoft/board/src/common/model"
 
 	//"io/ioutil"
 	"net/http"
 	//"strconv"
 	//"strings"
-	c "git/inspursoft/board/src/apiserver/controllers/commons"
-	"git/inspursoft/board/src/common/utils"
+	c "github.com/inspursoft/board/src/apiserver/controllers/commons"
+	"github.com/inspursoft/board/src/common/utils"
 
 	"github.com/astaxie/beego/logs"
 )

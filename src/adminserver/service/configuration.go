@@ -1,8 +1,8 @@
 package service
 
 import (
-	"git/inspursoft/board/src/adminserver/encryption"
-	"git/inspursoft/board/src/adminserver/models"
+	"github.com/inspursoft/board/src/adminserver/encryption"
+	"github.com/inspursoft/board/src/adminserver/models"
 	"os"
 	"path"
 

@@ -3,7 +3,7 @@ package service
 import (
 	"archive/zip"
 	"fmt"
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 	"io"
 	"io/ioutil"
 	"os"

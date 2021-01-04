@@ -1,6 +1,6 @@
 package service
 
-import "git/inspursoft/board/src/common/utils"
+import "github.com/inspursoft/board/src/common/utils"
 
 func SendMail(from string, to []string, subject string, content string) error {
 	identity := utils.GetStringValue("EMAIL_IDENTITY")

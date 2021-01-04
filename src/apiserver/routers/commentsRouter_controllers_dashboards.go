@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
         beego.ControllerComments{
             Method: "Data",
             Router: `/data`,
@@ -16,7 +16,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
         beego.ControllerComments{
             Method: "Node",
             Router: `/nodes`,
@@ -25,7 +25,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
         beego.ControllerComments{
             Method: "ServerTime",
             Router: `/server_time`,
@@ -34,7 +34,7 @@ func init() {
             Filters: nil,
             Params: nil})
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
+    beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"] = append(beego.GlobalControllerRouter["github.com/inspursoft/board/src/apiserver/controllers/dashboards:DataController"],
         beego.ControllerComments{
             Method: "Service",
             Router: `/services`,

@@ -2,7 +2,7 @@ package dao_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/dao"
 	"testing"
 )
 

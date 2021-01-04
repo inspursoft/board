@@ -1,7 +1,7 @@
 package service
 
 import (
-	"git/inspursoft/board/src/common/dao"
+	"github.com/inspursoft/board/src/common/dao"
 
 	"github.com/astaxie/beego"
 )

@@ -1,8 +1,8 @@
 package encryption
 
 import (
-	"git/inspursoft/board/src/adminserver/rsaenc"
-	"git/inspursoft/board/src/adminserver/sm2enc"
+	"github.com/inspursoft/board/src/adminserver/rsaenc"
+	"github.com/inspursoft/board/src/adminserver/sm2enc"
 	"os"
 )
 

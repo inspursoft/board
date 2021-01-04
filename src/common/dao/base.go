@@ -2,9 +2,9 @@ package dao
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/common/utils"
+	"github.com/inspursoft/board/src/common/utils"
 
-	"git/inspursoft/board/src/common/model"
+	"github.com/inspursoft/board/src/common/model"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/orm"

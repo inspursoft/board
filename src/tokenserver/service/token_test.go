@@ -2,7 +2,7 @@ package service_test
 
 import (
 	"fmt"
-	"git/inspursoft/board/src/tokenserver/service"
+	"github.com/inspursoft/board/src/tokenserver/service"
 	"os"
 	"testing"
 	"time"
