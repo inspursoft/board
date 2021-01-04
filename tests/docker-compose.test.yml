@@ -40,7 +40,7 @@ services:
     ports:
       - 5000:5000
   gomail:
-    image: dev_gomail:dev
+    image: openboard/dev_gomail:dev
     restart: always
     ports:
       - "12225:12225"
