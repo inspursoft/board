@@ -176,7 +176,7 @@ $(BUILD_LIST): %_build:
 	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERRMIMAGE) -f openboard/$(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 
 #container/db_build:
 #	$(DOCKERBUILD) -f $(MAKEWORKPATH)/container/db/Dockerfile . -t $(IMAGEPREFIX)_mysql:latest
@@ -242,8 +242,7 @@ prepare_composefile:
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 
-package: prepare_composefile
-	@echo "packing offline package ..."
+prepare_package: prepare_composefile
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@if [ ! -d $(PKGTEMPPATH)/adminserver ] ; then mkdir -p $(PKGTEMPPATH)/adminserver ; fi
 	@if [ ! -d $(PKGTEMPPATH)/archive ] ; then mkdir -p $(PKGTEMPPATH)/archive ; fi
@@ -255,23 +254,32 @@ package: prepare_composefile
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
-	@cp $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/archive/docker-compose.yml
-	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
+	@mv $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
+	@mv $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/archive/docker-compose.yml
+	@mv $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
 	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/adminserver/env
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/archive/docker-compose.yml
 
+offline_package: prepare_package
 	@echo "package images ..."
 	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
+	@echo "######################### Offline package done! #########################"
 
-packageonestep: compile compile_ui build package
+offline_package_one_step: compile compile_ui build offline_package
+# packageonestep: compile compile_ui build package
 #packageonestep: compile build package
+
+online_package: prepare_package
+	@$(TARCMD) -zcvf $(PKGNAME)-online-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
+
+	@rm -rf $(PACKAGEPATH)
+	@echo "######################### Online package done! #########################"
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

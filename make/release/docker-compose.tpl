@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: board_log:__version__
+    image: openboard/board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -11,7 +11,7 @@ services:
     ports:
       - 1514:514
   db:
-    image: board_db:__version__
+    image: openboard/board_db:__version__
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -33,7 +33,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
   apiserver:
-    image: board_apiserver:__version__
+    image: openboard/board_apiserver:__version__
     restart: always
     volumes:
       - /data/board/cert:/cert:rw
@@ -56,7 +56,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    image: board_tokenserver:__version__
+    image: openboard/board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -72,7 +72,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   proxy:
-    image: board_proxy:__version__
+    image: openboard/board_proxy:__version__
     networks:
       - board
     restart: always
@@ -96,7 +96,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
   grafana:
-    image: board_grafana:__version__
+    image: openboard/board_grafana:__version__
     restart: always
     volumes:
       - /data/board/grafana/data:/var/lib/grafana
@@ -113,7 +113,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "grafana"
   elasticsearch:
-    image: board_elasticsearch:__version__
+    image: openboard/board_elasticsearch:__version__
     restart: always
     env_file:
       - ../config/elasticsearch/env
@@ -136,7 +136,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "elasticsearch"
   kibana:
-    image: board_kibana:__version__
+    image: openboard/board_kibana:__version__
     restart: always
     env_file:
       - ../config/kibana/env
@@ -153,7 +153,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "kibana"
   chartmuseum:
-    image: board_chartmuseum:__version__
+    image: openboard/board_chartmuseum:__version__
     restart: always
     networks:
       - board
@@ -170,7 +170,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
   prometheus:
-    image: board_prometheus:__version__
+    image: openboard/board_prometheus:__version__
     restart: always
     networks:
       - board

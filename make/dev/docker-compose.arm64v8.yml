@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/log/Dockerfile.arm64v8
-    image: dev_log:dev
+    image: openboard/dev_log:dev
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -17,7 +17,7 @@ services:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile.arm64v8
-    image: dev_db:dev
+    image: openboard/dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -39,7 +39,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/apiserver/Dockerfile.arm64v8
-    image: dev_apiserver:dev
+    image: openboard/dev_apiserver:dev
     restart: always
     volumes:
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
@@ -66,7 +66,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/tokenserver/Dockerfile.arm64v8
-    image: dev_tokenserver:dev
+    image: openboard/dev_tokenserver:dev
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -85,7 +85,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy/Dockerfile.arm64v8
-    image: dev_proxy:dev
+    image: openboard/dev_proxy:dev
     networks:
       - board
     restart: always
@@ -109,7 +109,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/prometheus/Dockerfile
-    image: dev_prometheus:dev
+    image: openboard/dev_prometheus:dev
     restart: always
     networks:
       - board
