@@ -33,13 +33,13 @@ install:
   - docker pull ${registry}/registry
   - docker tag ${registry}/registry registry
   - docker pull ${registry}/dev_gomail:dev
-  - docker tag ${registry}/dev_gomail:dev dev_gomail:dev
+  - docker tag ${registry}/dev_gomail:dev openboard/dev_gomail:dev
   - docker pull ${registry}/golang:1.14.0
   - docker tag ${registry}/golang:1.14.0 golang:1.14.0
   - docker pull ${registry}/mysql:5.7.31
   - docker tag ${registry}/mysql:5.7.31 mysql:5.7.31
   - docker pull ${registry}/dev_uibuilder:7.4
-  - docker tag ${registry}/dev_uibuilder:7.4 dev_uibuilder:7.4
+  - docker tag ${registry}/dev_uibuilder:7.4 openboard/dev_uibuilder:7.4
 
 before_script:
   - sudo /etc/init.d/mysql stop
