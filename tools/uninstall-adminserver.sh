@@ -150,5 +150,5 @@ fi
 echo ""
 
 echo $"----Adminserver uninstaller running complete.----
-For more information, please visit http://10.110.18.40:10080/inspursoft/board"
+For more information, please visit https://github.com/inspursoft/board"
 

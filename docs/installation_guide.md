@@ -6,7 +6,7 @@ Board can be installed by one of two approaches:
 - **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
 
 
-All installers can be downloaded from the **[official release](http://10.110.18.40:10080/inspursoft/board/releases)** page. 
+All installers can be downloaded from the **[official release](https://github.com/inspursoft/board/releases)** page. 
 
 This guide describes the steps to install and configure Board by using the online or offline installer. The installation processes are almost the same. 
 
@@ -38,7 +38,7 @@ Note: If you need prepare Kubernetes and Registry environment, please refer to t
 
 #### Downloading the installer:
 
-The binary of the installer can be downloaded from the [release](http://10.110.18.40:10080/inspursoft/board/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
+The binary of the installer can be downloaded from the [release](https://github.com/inspursoft/board/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
 
 Online installer:
     (Coming soon.)
@@ -517,18 +517,9 @@ reurn {"repositories":["mysql"]}
 ### Ansible One-step Install
 Get Ansible resources：
 ````
-git clone http://10.110.18.40:10080/guyingyan/ansible.git
+git clone https://github.com/inspursoft/board-installer.git
 ````
 Set up environment with ansible on-step:
-```
-To see README.md
-```
-### Anbari One-step Install
-Get Ambari resources：
-````
-git clone http://10.110.18.40:10080/guyingyan/Ambari.git
-````
-Set up enrionment with Ambari on-step:
 ```
 To see README.md
 ```

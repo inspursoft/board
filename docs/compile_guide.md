@@ -21,7 +21,7 @@ golang                | 1.9.6 +
 ## Step 2: Getting the source code
 
    ```sh
-      $ git clone http://10.110.18.40:10080/inspursoft/board.git
+      $ git clone https://github.com/inspursoft/board.git
    ```
 
 

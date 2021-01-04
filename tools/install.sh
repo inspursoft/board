@@ -150,5 +150,5 @@ echo ""
 echo $"----Board has been installed and started successfully.----
 
 Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
-For more details, please visit http://10.110.18.40:10080/inspursoft/board .
+For more details, please visit https://github.com/inspursoft/board .
 "

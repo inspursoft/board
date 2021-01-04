@@ -1,7 +1,7 @@
 # View and test Board REST API via Swagger
 A Swagger file is provided for viewing and testing Board REST API. First, you should get the source code of Board:
 ```sh
-   git clone http://10.110.18.40:10080/inspursoft/board.git
+   git clone https://github.com/inspursoft/board.git 
 ```
 ### Viewing Board REST APIBoard
 * Open the file **swagger.yaml** under the _docs_ directory in Board project;

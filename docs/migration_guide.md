@@ -22,7 +22,7 @@ When upgrading your existing Board instance to a newer version, you may need  to
 3 Get the latest Board release package from Gogits:
    
    ```
-   http://10.110.18.40:10080/inspursoft/board
+   https://github.com/inspursoft/board
    ```
 
 4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.
