@@ -448,6 +448,18 @@ func (p *ServiceController) DeleteServiceAction() {
 
 }
 
+func (p *ServiceController) ResolveServiceOwnerRepoServicePath(projectName string, serviceName string, serviceOwner string) {
+	repoName, err := service.ResolveRepoName(projectName, serviceOwner)
+	if err != nil {
+		p.CustomAbortAudit(http.StatusPreconditionFailed, fmt.Sprintf("Failed to generate repo path: %+v", err))
+		return
+	}
+	p.RepoName = repoName
+	p.RepoPath = service.ResolveRepoPath(repoName, serviceOwner)
+	p.RepoServicePath = filepath.Join(p.RepoPath, serviceName)
+	logs.Debug("Set repo path at file upload: %s and repo name: %s", p.RepoPath, p.RepoName)
+}
+
 // API to deploy service
 func (p *ServiceController) ToggleServiceAction() {
 	var err error
@@ -473,7 +485,7 @@ func (p *ServiceController) ToggleServiceAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, "Service already running.")
 		return
 	}
-	p.ResolveRepoServicePath(s.ProjectName, s.Name)
+	p.ResolveServiceOwnerRepoServicePath(s.ProjectName, s.Name, s.OwnerName)
 	if devOpsOpt() == "legacy" {
 		if _, err := os.Stat(p.RepoServicePath); os.IsNotExist(err) {
 			p.CustomAbortAudit(http.StatusPreconditionFailed, "Service restored from initialization, cannot be switched.")
@@ -502,10 +514,10 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 		// Push deployment to Git repo
-		items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
-		p.PushItemsToRepo(items...)
-		p.CollaborateWithPullRequest("master", "master", items...)
-		p.MergeCollaborativePullRequest()
+		// items := []string{filepath.Join(s.Name, deploymentFilename), filepath.Join(s.Name, serviceFilename)}
+		// p.PushItemsToRepo(items...)
+		// p.CollaborateWithPullRequest("master", "master", items...)
+		// p.MergeCollaborativePullRequest()
 		// Update service status DB
 		_, err = service.UpdateServiceStatus(s.ID, running)
 		if err != nil {
