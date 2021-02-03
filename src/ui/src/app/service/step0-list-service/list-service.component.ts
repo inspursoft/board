@@ -52,16 +52,12 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
     return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.PREPARING].indexOf(status) > -1;
   }
 
-  checkWithinWarningRunning(status: number): boolean {
-    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(status) > -1;
-  }
-
   isServiceCanPlay(service: Service): boolean {
     return service.serviceStatus === SERVICE_STATUS.STOPPED;
   }
 
   isServiceCanPause(service: Service): boolean {
-    return this.checkWithinWarningRunning(service.serviceStatus);
+    return [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(service.serviceStatus) > -1;
   }
 
   isServiceToggleDisabled(service: Service): boolean {
@@ -79,7 +75,7 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
 
   isUpdateDisable(service: Service): boolean {
     return this.isActionWIP.get(service.serviceId)
-      || service.serviceStatus !== SERVICE_STATUS.RUNNING
+      || [SERVICE_STATUS.RUNNING, SERVICE_STATUS.WARNING].indexOf(service.serviceStatus) === -1
       || service.serviceIsMember === 0
       || service.serviceType === ServiceType.ServiceTypeStatefulSet
       || service.serviceSource === ServiceSource.ServiceSourceHelm;
@@ -185,7 +181,10 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
       this.translateService.get('SERVICE.CONFIRM_TO_TOGGLE_SERVICE', [service.serviceName]).subscribe((msg: string) => {
         this.messageService.showConfirmationDialog(msg, 'SERVICE.TOGGLE_SERVICE').subscribe((message: Message) => {
           if (message.returnStatus === RETURN_STATUS.rsConfirm) {
-            this.k8sService.toggleServiceStatus(service.serviceId, service.serviceStatus === SERVICE_STATUS.RUNNING ? 0 : 1).subscribe(
+            const toggleValue =
+              service.serviceStatus === SERVICE_STATUS.RUNNING ? 0 :
+                service.serviceStatus === SERVICE_STATUS.WARNING ? 0 : 1;
+            this.k8sService.toggleServiceStatus(service.serviceId, toggleValue).subscribe(
               () => {
                 this.messageService.showAlert('SERVICE.SUCCESSFUL_TOGGLE');
                 this.isActionWIP.set(service.serviceId, false);

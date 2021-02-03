@@ -16,7 +16,7 @@ export class CreateConfigMapComponent extends CsModalChildBase implements OnInit
   newConfigMap: SharedConfigMap;
   projectList: Array<ConfigMapProject>;
   isLoadWip = false;
-  configMapNamePattern: RegExp = /^[a-z0-9][(.a-z0-9?)]*$/;
+  configMapNamePattern: RegExp = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
 
   constructor(private sharedService: SharedService,
               private change: ChangeDetectorRef,
