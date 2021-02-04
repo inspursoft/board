@@ -29,10 +29,23 @@ def ping_gitlab():
 def request_gitlab_api(method, token, api_url, **params):
   ping_gitlab()
   resp = requests.request(method=method, url="{}/{}".format(base_api_url, api_url), headers={"PRIVATE-TOKEN": token}, params=params)
-  log.info("Requested with URL: %s, status: %d, response: %s", api_url, resp.status_code, pprint.pprint(json.loads(resp.content)))
+  try:
+    json_data = resp.json()
+    log.info("Requested with URL: %s, status: %d, response: %s", api_url, resp.status_code, pprint.pprint(json_data))
+    return json_data
+  except json.JSONDecodeError as e:
+    log.error("Failed to decode JSON: %s", e)
+    return None
   
 def get_application_settings(token):
   request_gitlab_api("GET", token, "application/settings")
 
 def allow_local_request_webhooks(token):
   request_gitlab_api("PUT", token, "application/settings?{}={}".format("allow_local_requests_from_web_hooks_and_services", "true"))
+
+def get_shared_runners(token):
+  return request_gitlab_api("GET", token, "runners/all")
+
+def delete_shared_runners(token, runner_id):
+  log.info("Deleting shared runner with ID: %d", runner_id)
+  request_gitlab_api("DELETE", token, "runners/{}".format(runner_id))

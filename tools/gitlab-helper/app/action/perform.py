@@ -4,9 +4,18 @@ import service.http
 import logging
 import re, time
 from os import path
-import sys, getopt
+import sys
 
 log = logging.getLogger(__name__)
+
+def detect_gitlab_status():
+  gitlab = service.config.get_config_from_file("gitlab")
+  command_detection = f'''if [ -z $(docker ps -f name={gitlab['container_name']} --format {{{{.Names}}}}) ] && \
+[ ! -z $(docker ps -a -f name={gitlab['container_name']} --format {{{{.Names}}}}) ]; then \
+echo "Removing stopped Gitlab container...";\
+docker rm {gitlab['container_name']};\
+fi'''
+  return SSHUtil.exec_command(command_detection)
 
 def gitlab_docker_run():
   gitlab = service.config.get_config_from_file("gitlab")
@@ -65,6 +74,27 @@ def obtain_shared_runner_token():
     return None
   return token.strip()
 
+def reset_gitlab_runner_config():
+  log.info("Reset Gitlab runner config.toml")
+  default_config = '''concurrent = 1
+check_interval = 0
+[session_server]
+session_timeout = 1800'''
+  r = service.config.get_config_from_file("gitlab-runner")
+  cmd_reset_config = ""
+  for index, content in enumerate(default_config.splitlines()):
+    append_operator = ">>"
+    if index == 0:
+      append_operator = ">"
+    cmd_reset_config += f'''echo {content} {append_operator} {r["config_path"]};'''
+  return SSHUtil.exec_command(cmd_reset_config)
+
+def clean_up_stale_runner(token):
+  log.info("Clean up stale Gitlab shared runners...")
+  runner_list = service.http.get_shared_runners(token)
+  for runner in runner_list:
+    service.http.delete_shared_runners(token, int(runner["id"]))
+
 def command_to_register_runner(gitlab_url, gitlab_runner_token, executor, r):
   cmd = f'''gitlab-runner register --name "{r["runner_name"] + "-" + executor}" \
 --url="{gitlab_url}" \
@@ -85,30 +115,17 @@ def register_gitlab_shared_runner(gitlab_runner_token, executor):
   return SSHUtil.exec_command(cmd_runner_register)
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.INFO)
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], "hr:",["reset-token-only=",])
-    reset_token_only = False
-    for opt, arg in opts:
-      if opt in ("-r", "--reset-token-only"):
-        if arg and arg.lower() == "true":
-          reset_token_only = True
-    log.info("Obtaining Gitlab admin access token...")
-    admin_access_token = service.config.generate_token()
-    if reset_token_only:
-      log.info("Resetting token only...")
-      setting_access_token(admin_access_token)
-      update_access_token(admin_access_token)
-    else:
-      log.info("Start normally...")
-      gitlab_docker_run()
-      setting_access_token(admin_access_token)
-      update_access_token(admin_access_token)
-      update_allow_local_webhook_request(admin_access_token)
-      runner_token = obtain_shared_runner_token()
-      if runner_token:
-        register_gitlab_shared_runner(runner_token, "docker")
-        register_gitlab_shared_runner(runner_token, "shell")
-  except getopt.GetoptError:
-    log.info("action/perform.py -ro | --reset-token-only=[true]")
-  
+  logging.basicConfig(level=logging.INFO)    
+  log.info("Obtaining Gitlab admin access token...")
+  admin_access_token = service.config.generate_token()
+  detect_gitlab_status()
+  gitlab_docker_run()
+  setting_access_token(admin_access_token)
+  update_access_token(admin_access_token)
+  update_allow_local_webhook_request(admin_access_token)
+  runner_token = obtain_shared_runner_token()
+  if runner_token:
+    reset_gitlab_runner_config()
+    clean_up_stale_runner(admin_access_token)
+    register_gitlab_shared_runner(runner_token, "docker")
+    register_gitlab_shared_runner(runner_token, "shell")

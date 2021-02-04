@@ -128,7 +128,8 @@
                               [inputUpdateOn]="'change'"
                               (commitEvent)="config.board.accessProtocol = $event">
               </variable-input> -->
-              <variable-input [label]="'CONFIGURATIONS.BOARD.HOSTNAME.LABEL' | translate"
+              <variable-input [disabled]="!isEditable"
+                              [label]="'CONFIGURATIONS.BOARD.HOSTNAME.LABEL' | translate"
                               [type]="'text'"
                               [required]="true"
                               [defaultValue]="config.board.hostname"

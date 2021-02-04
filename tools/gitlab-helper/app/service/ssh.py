@@ -1,7 +1,7 @@
 from paramiko import SSHClient, AutoAddPolicy
 import service.config
 
-import logging
+import logging, sys
 
 log = logging.getLogger(__name__)
 
@@ -30,5 +30,6 @@ class SSHUtil:
       return stdout.read().decode('utf-8')
     except Exception as e:
       log.error("Failed to execute command via SSH: %s", e)
+      sys.exit(255)
     finally:
       cls.client.close()

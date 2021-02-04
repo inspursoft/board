@@ -37,10 +37,6 @@ func StartBoard(host *models.Account, buf *bytes.Buffer) error {
 			return err
 		}
 		cmdGitlabHelper = fmt.Sprintf("docker run --rm -v %s/board.cfg:/app/instance/board.cfg gitlab-helper:%s", models.MakePath, tag)
-		if err = CheckGitlab(); err == nil {
-			logs.Info("Gitlab is up")
-			cmdGitlabHelper += " python action/perform.py -r true"
-		}
 		cmdList = []string{cmdGitlabHelper, cmdPrepare, cmdComposeDown, cmdComposeUp}
 	}
 	go func(buf *bytes.Buffer) {
@@ -132,11 +128,4 @@ func GetFileFromDevopsOpt() (boardComposeFile, devopsOpt string, err error) {
 		boardComposeFile = models.Boardcompose
 	}
 	return
-}
-
-func CheckGitlab() error {
-	ip, _ := common.ReadCfgItem("gitlab_host_ip", "/go/cfgfile/board.cfg")
-	port, _ := common.ReadCfgItem("gitlab_host_port", "/go/cfgfile/board.cfg")
-	url := fmt.Sprintf("http://%s:%s", ip, port)
-	return utils.RequestHandle(http.MethodGet, url, nil, nil, nil)
 }
