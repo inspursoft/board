@@ -7,7 +7,7 @@ apiserver:
   name: "apiserver"
   replicaCount: 1
   image:
-    repository: board_apiserver
+    repository: openboard/board_apiserver
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -28,7 +28,7 @@ chartmuseum:
   name: "chartmuseum"
   replicaCount: 1
   image:
-    repository: board_chartmuseum
+    repository: openboard/board_chartmuseum
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -55,7 +55,7 @@ db:
   name: "db"
   replicaCount: 1
   image:
-    repository: board_db
+    repository: openboard/board_db
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -82,7 +82,7 @@ elasticsearch:
   name: "elasticsearch"
   replicaCount: 1
   image:
-    repository: board_elasticsearch
+    repository: openboard/board_elasticsearch
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -109,7 +109,7 @@ grafana:
   name: "grafana"
   replicaCount: 1
   image:
-    repository: board_grafana
+    repository: openboard/board_grafana
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -148,7 +148,7 @@ kibana:
   name: "kibana"
   replicaCount: 1
   image:
-    repository: board_kibana
+    repository: openboard/board_kibana
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -163,7 +163,7 @@ prometheus:
   name: "prometheus"
   replicaCount: 1
   image:
-    repository: board_prometheus
+    repository: openboard/board_prometheus
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -190,7 +190,7 @@ proxy:
   name: "proxy"
   replicaCount: 1
   image:
-    repository: board_proxy
+    repository: openboard/board_proxy
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
@@ -207,7 +207,7 @@ tokenserver:
   name: "tokenserver"
   replicaCount: 1
   image:
-    repository: board_tokenserver
+    repository: openboard/board_tokenserver
     tag: "dev"
     pullPolicy: IfNotPresent
   service:
