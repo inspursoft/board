@@ -16,6 +16,7 @@
 # Develop flag
 #
 DEVFLAG=release
+RELEASETYPE=Openboard
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=
@@ -142,6 +143,7 @@ golint: $(GOLINT_LIST)
 version:
 	@echo $(VERSIONTAG)
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
+	@echo -n "-$(RELEASETYPE)" >> $(VERSIONFILE)
 
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
