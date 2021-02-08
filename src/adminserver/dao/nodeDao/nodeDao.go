@@ -24,7 +24,7 @@ func GetNodeLog(id int) (*nodeModel.NodeLog, error) {
 	return log, nil
 }
 
-func UpdateNodeLog(nodeLog *nodeModel.NodeLog) (error) {
+func UpdateNodeLog(nodeLog *nodeModel.NodeLog) error {
 	o := orm.NewOrm()
 	if _, err := o.Update(nodeLog, "completed", "success"); err != nil {
 		return err
@@ -32,7 +32,7 @@ func UpdateNodeLog(nodeLog *nodeModel.NodeLog) (error) {
 	return nil
 }
 
-func DeleteNodeLog(creationTime int64) (error) {
+func DeleteNodeLog(creationTime int64) error {
 	o := orm.NewOrm()
 	log := &nodeModel.NodeLog{CreationTime: creationTime}
 	if _, err := o.Delete(log, "creation_time"); err != nil {
