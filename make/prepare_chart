@@ -1,0 +1,82 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals # We require Python 2.6 or later
+from string import Template
+import string
+import os
+import sys
+import shutil
+import argparse
+from io import open
+
+if sys.version_info[:3][0] == 2:
+    import ConfigParser as ConfigParser
+    import StringIO as StringIO
+
+if sys.version_info[:3][0] == 3:
+    import configparser as ConfigParser
+    from io import StringIO
+
+def alter(file, old_str, new_str):
+    replacefile(file, "%s.bak"% file, old_str, new_str)
+    os.remove(file)
+    os.rename("%s.bak" % file, file)
+
+def replacefile(src, dst, old_str, new_str):
+    with open(src, "r", encoding="utf-8") as f1, open(dst, "w", encoding="utf-8") as f2:
+        for line in f1:
+            if old_str in line:
+                line = line.replace(old_str, new_str)
+            f2.write(line)
+
+def render(src, dest, **kw):
+    if not os.path.exists(os.path.dirname(dest)):
+        os.makedirs(os.path.dirname(dest))
+    t = Template(open(src, 'r').read())
+    with open(dest, 'w') as f:
+        f.write(t.substitute(**kw))
+    os.chmod(dest, 0755)
+    print("Generated configuration file: %s" % dest)
+
+base_dir = os.path.dirname(__file__)
+config_dir = os.path.join(base_dir, "config")
+chart_dir = os.path.join(base_dir, "charts", "board")
+chart_config_dir = os.path.join(chart_dir, "files")
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--conf', dest='cfgfile', default=base_dir+'/board.cfg',type=str,help="the path of Board configuration file")
+requiredNamed = parser.add_argument_group('required named arguments')
+requiredNamed.add_argument('--tag', dest='tag', default='',type=str,help="the Board image tag",required=True)
+
+args = parser.parse_args()
+
+#Read Configurations
+conf = StringIO.StringIO()
+conf.write("[configuration]\n")
+conf.write(open(args.cfgfile).read())
+conf.seek(0, os.SEEK_SET)
+rcp = ConfigParser.RawConfigParser()
+rcp.readfp(conf)
+kube_http_scheme = rcp.get("configuration", "kube_http_scheme")
+registry_ip = rcp.get("configuration", "registry_ip")
+registry_port = rcp.get("configuration", "registry_port")
+docker_containers = rcp.get("configuration", "docker_containers")
+
+if os.path.exists(chart_config_dir):
+    shutil.rmtree(chart_config_dir)
+shutil.copytree(config_dir, chart_config_dir)
+
+if kube_http_scheme == "https":
+    shutil.copy("/data/board/cert/apiserver-key.pem", os.path.join(chart_config_dir, "apiserver"))
+    shutil.copy("/data/board/cert/apiserver.pem", os.path.join(chart_config_dir, "apiserver"))
+    shutil.copy("/etc/board/cert/ca.pem", os.path.join(chart_config_dir, "apiserver"))
+    shutil.copy("/etc/board/cert/ca-key.pem", os.path.join(chart_config_dir, "apiserver"))
+
+    shutil.copy("/data/board/cert/proxy-key.pem", os.path.join(chart_config_dir, "proxy"))
+    shutil.copy("/data/board/cert/proxy.pem", os.path.join(chart_config_dir, "proxy"))
+
+alter(os.path.join(chart_config_dir, "proxy", "nginx.conf"), "127.0.0.11", "kube-dns.kube-system.svc.cluster.local")
+
+render(os.path.join(chart_dir, "values.tpl"), os.path.join(chart_dir, "values.yaml"), tag=args.tag, registry=registry_ip+":"+registry_port, dockercontainers=docker_containers)
+
+print("The chart file are ready, please use helm command to deploy the service.")
