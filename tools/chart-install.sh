@@ -30,6 +30,23 @@ then
 	exit 1
 fi
 
+function confirm {
+	read -r -p "Please confirm whether you has been deleted claimRef in every pv about openboard manually. Are you sure to continue? [Y/n]" input
+	case $input in
+    		y|Y)
+			echo "Continue."
+                	;;
+    		n|N)
+			echo "Please deleted claimRef in pv."
+			exit 0
+                	;;
+    		*)
+        		echo "Invalid input..."
+        		exit 1
+        		;;
+	esac
+}
+
 function check_docker {
 	if ! docker --version &> /dev/null
 	then
@@ -116,7 +133,6 @@ function load_images {
 		echo "Can not find board*.tgz"
 		exit 1
 	fi
-	echo ""
 	# Parse image_registry_url
 	if [[ $(cat ./board.cfg) =~ image_registry_url[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
 	then
@@ -126,7 +142,6 @@ function load_images {
 		echo "Failed to parse image_registry_url in board.cfg"
 		exit 1
 	fi
-	echo ""
 	# Parse version_tag
 	if [[ $(cat ./board.cfg) =~ version_tag[[:blank:]]*=[[:blank:]]*([0-9a-z._-]*) ]]
 	then
@@ -136,12 +151,12 @@ function load_images {
 		echo "Failed to parse version_tag"
 		exit 1
 	fi
-	echo ""
-	# docker push images to registry
-	for image in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep $version_tag);
+	# docker tag and push images to registry
+	for image in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep $version_tag | grep -v $image_registry_url);
 	do
-		docker push $image;
-		echo ""
+		docker tag $image $image_registry_url/openboard/$image
+		docker push $image_registry_url/openboard/$image
+		echo "Push $image_registry_url/openboard/$image ok"
 	done
 }
 
@@ -152,7 +167,7 @@ check_helm
 load_images
 
 # Install gitlab
-option=legacy
+option=gitlab
 
 if [[ $(cat ./board.cfg) =~ devops_opt[[:blank:]]*=[[:blank:]]*(gitlab?) ]]
 then
@@ -165,8 +180,9 @@ echo "[Step $item]: preparing environment ...";  let item+=1
 #then
 #	sed "s/^hostname = .*/hostname = $host/g" -i ./board.cfg
 #fi
-./prepare
-echo ""
+
+#./prepare
+#echo ""
 
 protocol=http
 hostname=reg.mydomain.com
@@ -193,6 +209,9 @@ then
 	helm del --purge board
 fi
 echo ""
+
+# Confirm whether deleted claimRef in pv
+confirm
 
 echo "[Step $item]: starting Board ..."
 helm install --name board charts/board
