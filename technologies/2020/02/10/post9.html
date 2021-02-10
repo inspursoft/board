@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			tomcat container memory limit
+		</div>
+		<time class="post-date dt-published" datetime="2020-02-10T08:30:00+08:00" itemprop="datePublished">2020/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<h1 id="tomcat-evaluate-java_opts-environment-for-jvm-memory-setting">Tomcat evaluate <em>JAVA_OPTS</em> environment for jvm memory setting.</h1>
+
+<p>JAVA_OPTS=”-Xms4096m -Xmx4096m -XX:PermSize=512M -XX:MaxPermSize=1024m”</p>
+
+<h1 id="kubernetes-pod-use-requestlimit-for-memory-setting">Kubernetes Pod use <em>request/limit</em> for memory setting.</h1>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">resources</span><span class="pi">:</span>
+  <span class="na">limits</span><span class="pi">:</span>
+    <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+    <span class="na">memory</span><span class="pi">:</span> <span class="s">5Gi</span>
+  <span class="na">requests</span><span class="pi">:</span>
+    <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+    <span class="na">memory</span><span class="pi">:</span> <span class="s">2Gi</span>
+</code></pre></div></div>
+
+<h1 id="customize-tomcat-pod-should-be-like-this">Customize Tomcat Pod should be like this:</h1>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">apiVersion</span><span class="pi">:</span> <span class="s">v1</span>
+<span class="na">kind</span><span class="pi">:</span> <span class="s">Pod</span>
+<span class="na">metadata</span><span class="pi">:</span>
+  <span class="na">labels</span><span class="pi">:</span>
+    <span class="na">instance</span><span class="pi">:</span> <span class="s">t1</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">t1-nlp-segment</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">t1-nlp-segment</span>
+<span class="na">spec</span><span class="pi">:</span>
+  <span class="na">containers</span><span class="pi">:</span>
+  <span class="pi">-</span> <span class="na">env</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">JAVA_OPTS</span>
+      <span class="na">value</span><span class="pi">:</span> <span class="s">-Xms4096m -Xmx4096m -XX:PermSize=512M -XX:MaxPermSize=1024m</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">10.111.24.131:5000/library/nlp-cs-segment:1.1</span>
+    <span class="na">imagePullPolicy</span><span class="pi">:</span> <span class="s">IfNotPresent</span>
+    <span class="na">name</span><span class="pi">:</span> <span class="s">nlp</span>
+    <span class="na">ports</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">containerPort</span><span class="pi">:</span> <span class="m">8080</span>
+      <span class="na">name</span><span class="pi">:</span> <span class="s">http</span>
+      <span class="na">protocol</span><span class="pi">:</span> <span class="s">TCP</span>
+    <span class="na">resources</span><span class="pi">:</span>
+      <span class="na">limits</span><span class="pi">:</span>
+        <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+        <span class="na">memory</span><span class="pi">:</span> <span class="s">5Gi</span>
+      <span class="na">requests</span><span class="pi">:</span>
+        <span class="na">cpu</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+        <span class="na">memory</span><span class="pi">:</span> <span class="s">2Gi</span>
+</code></pre></div></div>
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>

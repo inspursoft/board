@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header home">
+		<div class="post-title">Category - <span id='category-name'></span></div>
+	</header>
+
+	<div class="post-content"><ul class="post-list"><li class="post-list-item post-category-Welcome">
+				<!----><span class="post-date">2021/02/10</span>
+				<a class="post-link" href="/welcome/2021/02/10/welcome-to-board.html">
+					Welcome to Board!
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post2.html">
+					1.9.9集群证书过期问题处理
+				</a></li><li class="post-list-item post-category-schedule">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/schedule/2020/02/10/post1.html">
+					Board Community Meetings Agenda and Notes
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post4.html">
+					board ports statement of situation
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post3.html">
+					board helm charts
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post5.html">
+					coding rules
+				</a></li><li class="post-list-item post-category-schedule">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/schedule/2020/02/10/post6.html">
+					community meeting schedule
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post7.html">
+					iptables for docker and kubernetes
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post8.html">
+					k8s api changes
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post9.html">
+					tomcat container memory limit
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post10.html">
+					V1.15 v1.17
+				</a></li><li class="post-list-item post-category-technologies">
+				<!----><span class="post-date">2020/02/10</span>
+				<a class="post-link" href="/technologies/2020/02/10/post11.html">
+					私网环境介绍
+				</a></li></ul></div>
+</article>
+
+<script src="/public/js/jquery-3.4.1.slim.min.js"></script>
+<script>
+	function removeCategory() {
+		if (window.location.hash) {
+			let hash = window.location.hash.substring(1);
+			$('#category-name').text(hash.substring(0, 1).toUpperCase() + hash.substring(1));
+			let category_class = '.post-category-' + hash;
+			let items = $('.post-list-item').each((i, e) => {
+				if (!$(e).hasClass('post-category-' + hash)) {
+					$(e).hide();
+				} else {
+					$(e).show();
+				}
+			});
+		}
+	}
+	$(window).on('hashchange', () => {
+		removeCategory();
+	});
+	$(document).ready(() => {
+		removeCategory();	
+	})
+	
+</script>
+
+		</div>
+	</div>
+  </body>
+</html>

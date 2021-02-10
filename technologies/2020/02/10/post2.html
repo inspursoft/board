@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			1.9.9集群证书过期问题处理
+		</div>
+		<time class="post-date dt-published" datetime="2020-02-10T18:20:23+08:00" itemprop="datePublished">2020/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<p>由于安装1.9.9集群时开启了8080端口，并且kube-proxy，flannel等组件都通过8080端口访问master，只有ServiceAccount相关的地方用到了证书，所以当证书过期后，整个集群的状态不会出错，仅使用ServiceAccount的Pod会出问题。也因为以上原因，1.9.9集群更新证书比较简单（以下操作都在master执行）：</p>
+
+<ol>
+  <li>使用/etc/kubernetes/certs目录下的make-certs.sh脚本生成新的证书，注意在其它目录运行（避免覆盖原文件），调整有效期；</li>
+  <li>把/etc/kubernetes/manifests/下的文件移出去，使master四个容器停止</li>
+  <li>把/etc/kubernetes/certs下的文件移出去，将新生成的证书放进去</li>
+  <li>把/etc/kubernetes/manifests下的文件移回去，使master容器启动</li>
+  <li>集群启动完成后，将集群中所有namespace下的secret删除，集群会自动重建secret</li>
+  <li>将集群中所有使用ServiceAccount的Pod重启</li>
+</ol>
+
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>

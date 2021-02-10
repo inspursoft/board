@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			Welcome to Board!
+		</div>
+		<time class="post-date dt-published" datetime="2021-02-10T00:50:23+08:00" itemprop="datePublished">2021/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<h1 id="board">Board</h1>
+<p><a href="https://goreportcard.com/report/github.com/inspursoft/board"><img src="https://goreportcard.com/badge/github.com/inspursoft/board" alt="Go Report Card" /></a> <a href="https://travis-ci.org/inspursoft/board"><img src="https://travis-ci.org/inspursoft/board.svg?branch=dev" alt="Build Status" /></a> <a href="https://codecov.io/gh/inspursoft/board"><img src="https://codecov.io/gh/inspursoft/board/branch/dev/graph/badge.svg?token=HIOWVOQ772" alt="codecov" /></a></p>
+
+<p><strong>Note</strong>: The <code class="language-plaintext highlighter-rouge">master</code> branch may be in an <em>unstable or even broken state</em> during development.
+Please use [releases] instead of the <code class="language-plaintext highlighter-rouge">master</code> branch in order to get stable binaries.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><img alt="notification" src="https://github.com/inspursoft/board/blob/dev/docs/img/bell.png" />Community Meeting</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the <a href="https://github.com/inspursoft/board/wiki/community-meeting-schedule">meeting schedule</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><img alt="Board" src="docs/img/board_logo.png" /></p>
+
+<p>The “Board” product is a container service platform based on docker + kubernetes, provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and development teams achieve fast business application delivery and continuous innovation.</p>
+
+<h2 id="features">Features</h2>
+<ul>
+  <li><strong>User Account</strong>: Board supports databse authentication modes and support LDAP mode.</li>
+  <li><strong>Project Based Access Control</strong>: Board manages services through projects on container service platform. Users can be added into system as a member with different roles.</li>
+  <li><strong>Manage Projects</strong>: A project in Board contains all services, images etc.</li>
+  <li><strong>Manage Services</strong>: Board supports creating container service. All services must be grouped by projects.</li>
+  <li><strong>Searching</strong>: Board search engine could search project, service, users and image.</li>
+  <li><strong>Monitoring Dashboard</strong>: Monitoring Dashboard collect logs from k8s master and nodes. It cover the machine indicators, such as cpu, memory usage, file system and k8s services runtime.</li>
+  <li><strong>Administrator Options</strong>: Administrator options provide user management which can add, change or remove user by an admin user.</li>
+</ul>
+
+<p><img alt="Board Overview" src="docs/img/Overview_20200101_en.png" /></p>
+
+<h2 id="install">Install</h2>
+
+<p><strong>System requirements:</strong>
+Board is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.</p>
+<ul>
+  <li>Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default</li>
+  <li>Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/</li>
+  <li>Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/</li>
+</ul>
+
+<h3 id="install-1">Install</h3>
+<p>The installation steps boil down to the following</p>
+
+<ol>
+  <li>Download the installer;</li>
+  <li>Configure <strong>board.cfg</strong>;</li>
+  <li>Run <strong>install.sh</strong> to install and start Board;
+Note: If you need prepare Kubernetes and Registry environment, please refer to the appendix part.</li>
+</ol>
+
+<h4 id="downloading-the-installer">Downloading the installer:</h4>
+
+<p>The binary of the installer can be downloaded from the <code class="language-plaintext highlighter-rouge">release</code> page. Choose either online or offline installer. Use <em>tar</em> command to extract the package.</p>
+
+<p>The difference between online installer and offline installer is:</p>
+<ul>
+  <li>The online installation package directly pulls the image from dockerhub, the installer is very small in size.</li>
+  <li>The offline installation package contains all the images needed for this project, so the installation package is quite larger</li>
+</ul>
+
+<p>Online installer:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nv">$ </span><span class="nb">tar </span>xvf board-online-installer-VERSION[-ARCH].tgz
+</code></pre></div></div>
+<p>Offline installer:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nv">$ </span><span class="nb">tar </span>xvf board-offline-installer-VERSION[-ARCH].tgz
+</code></pre></div></div>
+
+<h4 id="configuring-board">Configuring Board</h4>
+<p>Configuration parameters are located in the file <strong>board.cfg</strong>.</p>
+
+<p>There are two categories of parameters in board.cfg, <strong>required parameters</strong> and <strong>optional parameters</strong>.</p>
+
+<ul>
+  <li><strong>required parameters</strong>: These parameters are required to be set in the configuration file. They will take effect if a user updates them in <code class="language-plaintext highlighter-rouge">board.cfg</code> and run the <code class="language-plaintext highlighter-rouge">install.sh</code> script to reinstall Board.</li>
+  <li><strong>optional parameters</strong>: These parameters are optional for updating. Subsequent update to these parameters in <code class="language-plaintext highlighter-rouge">board.cfg</code> will be ignored.</li>
+</ul>
+
+<p>The parameters are described below - note that at the very least, you will need to change the <strong>hostname</strong> attribute.</p>
+
+<h5 id="required-parameters">Required parameters:</h5>
+
+<ul>
+  <li><strong>hostname</strong>: The target host’s hostname, which is used to access the UI and the apiserver service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., <code class="language-plaintext highlighter-rouge">192.168.1.10</code> or <code class="language-plaintext highlighter-rouge">reg.yourdomain.com</code>. <em>Do NOT use <code class="language-plaintext highlighter-rouge">localhost</code> or <code class="language-plaintext highlighter-rouge">127.0.0.1</code> for the hostname - the apiserver service needs to be accessible by external clients!</em></li>
+  <li><strong>db_password</strong>: The root password for the MySQL database used for <strong>db_auth</strong>. <em>Change this password for any production use!</em></li>
+</ul>
+
+<h5 id="optional-parameters">Optional parameters</h5>
+
+<ul>
+  <li><strong>board_admin_password</strong>: The administrator’s initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator’s password should be set in the UI. <em>Note that the default username/password are <strong>boardadmin/123456a?</strong> .</em></li>
+  <li>
+    <p><strong>auth_mode</strong>: The type of authentication that is used. By default, it is <strong>db_auth</strong>, i.e. the credentials are stored in a database. 
+For LDAP authentication, set this to <strong>ldap_auth</strong>.</p>
+
+    <p><strong>IMPORTANT:</strong> When upgrading from an existing Board instance, you must make sure <strong>auth_mode</strong> is the same in <code class="language-plaintext highlighter-rouge">board.cfg</code> before launching the new version of Board. Otherwise, users may not be able to log in after the upgrade.</p>
+  </li>
+  <li><strong>ldap_url</strong>: The LDAP endpoint URL (e.g. <code class="language-plaintext highlighter-rouge">ldaps://ldap.mydomain.com</code>). Only used when <strong>auth_mode</strong> is set to <em>ldap_auth</em> .</li>
+  <li><strong>ldap_searchdn</strong>: The DN of a user who has the permission to search an LDAP/AD server (e.g. <code class="language-plaintext highlighter-rouge">uid=admin,ou=people,dc=mydomain,dc=com</code>).</li>
+  <li><strong>ldap_search_pwd</strong>: The password of the user specified by <em>ldap_searchdn</em>.</li>
+  <li><strong>ldap_basedn</strong>: The base DN to look up a user, e.g. <code class="language-plaintext highlighter-rouge">ou=people,dc=mydomain,dc=com</code>. Only used when <strong>auth_mode</strong> is set to <em>ldap_auth</em> .</li>
+  <li><strong>ldap_filter</strong>:The search filter for looking up a user, e.g. <code class="language-plaintext highlighter-rouge">(objectClass=person)</code>.</li>
+  <li><strong>ldap_uid</strong>: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.</li>
+  <li><strong>ldap_scope</strong>: The scope to search for a user, LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE. Default is LDAP_SCOPE_SUBTREE.</li>
+  <li><strong>self_registration</strong>: (<strong>on</strong> or <strong>off</strong>. Default is <strong>on</strong>) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Board. <em>NOTE</em>: When <strong>auth_mode</strong> is set to <strong>ldap_auth</strong>, self-registration feature is <strong>always</strong> disabled, and this flag is ignored.</li>
+  <li><strong>token_expiration</strong>: The expiration time (in minutes) of a token created by token service, default is 30 minutes.</li>
+</ul>
+
+<h4 id="connecting-kubernetes-cluster-which-authentication-strategy-with-ca-certification">Connecting Kubernetes cluster which authentication strategy with CA certification</h4>
+<p>If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster’s CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as ‘ca-key.pem’(for private key) and ‘ca.pem’(for public key).</p>
+
+<p>You also need to deploy the following two files in your Kubernetes for Board to take over your Kubernetes cluster:</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">mkdir </span>board-k8s-requires
+<span class="nv">$ </span><span class="nb">cd </span>board-k8s-requires
+<span class="c"># board-clusterrolebinding.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/board-clusterrolebinding.yaml
+<span class="nv">$ </span>kubectl apply <span class="nt">-f</span> board-clusterrolebinding.yaml
+
+<span class="c"># cadvisor.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/cadvisor.yaml
+<span class="c"># You need to replace the  placeholder in the file before deploying. The docker directory defaults to /var/lib/docker</span>
+<span class="nv">$ </span>kubectl apply <span class="nt">-f</span> cadvisor.yaml
+</code></pre></div></div>
+
+<p>In addition, there are some optional features:</p>
+
+<p><strong>Helm Chart:</strong> The chart museum is integrated in the Board, which depends on helm2</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># tiller.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller.yaml
+<span class="c"># tiller-service.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller-service.yaml
+<span class="nv">$ </span>kubectl apply tiller.yaml
+<span class="nv">$ </span>kubectl apply tiller-service.yaml
+</code></pre></div></div>
+
+<p><strong>EFK + Prometheus:</strong> Board supports EFK+Prometheus log management</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># fluentd.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/fluentd.yaml
+<span class="c"># Need to replace the   placeholder in the file before deploying</span>
+<span class="nv">$ </span>kubectl apply <span class="nt">-f</span> fluentd.yaml
+
+<span class="c"># prometheus.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus.yaml
+<span class="c"># prometheus2.yaml</span>
+<span class="nv">$ </span>wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus2.yaml
+<span class="c"># Need to replace the   placeholder in the file before deploying, or replace this file with your own pv</span>
+<span class="nv">$ </span>kubectl apply <span class="nt">-f</span> prometheus.yaml
+<span class="nv">$ </span>kubectl apply <span class="nt">-f</span> prometheus2.yaml
+</code></pre></div></div>
+
+<p><strong>Note:</strong> If your kubernetes cluster is installed by the <a href="https://github.com/inspursoft/board-installer">inspursoft/board-installer</a>, you do not need to perform the above steps because the project’s automation script have been completed.</p>
+
+<p>Then you should configure these items in <strong>board.cfg</strong>:</p>
+
+<ul>
+  <li><strong>kube_http_scheme</strong>: Set to ‘https’. It means the requests Board send to Kubernetes cluster will be used via ‘https’ protocol.</li>
+  <li><strong>kube_master_ip</strong>: The IP address of the Master of Kubernetes cluster.</li>
+  <li><strong>kube_master_port</strong>: The port number of the Master of Kubernetes cluster(maybe 443 or 6443).</li>
+</ul>
+
+<h4 id="finishing-installation-and-starting-board">Finishing installation and starting Board</h4>
+<p>Once <strong>board.cfg</strong> is configured, install and start Board using the <code class="language-plaintext highlighter-rouge">install.sh</code> script.</p>
+
+<h5 id="default-installation">Default installation</h5>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nv">$ </span><span class="nb">sudo</span> ./install.sh
+</code></pre></div></div>
+
+<h4 id="after-installation">After installation</h4>
+<p>If everything worked properly, you should be able to open a browser to visit the admin portal at <strong>http://reg.yourdomain.com</strong> (change <em>reg.yourdomain.com</em> to the hostname configured in your <code class="language-plaintext highlighter-rouge">board.cfg</code>). Note that the default administrator username/password are boardadmin/123456a? .</p>
+
+<p>Log in to the admin portal and create a new project, e.g. <code class="language-plaintext highlighter-rouge">myproject</code>. You can create your own service now.</p>
+
+<p>For information on how to use Board, please refer to <strong><a href="docs/user_guide.md">User Guide of Board</a></strong> .</p>
+
+<p>For details on how to download and use the installation package, please refer to <a href="docs/installation_guide.md">Installation and Configuration Guide</a>.</p>
+
+<h2 id="upgrade">Upgrade</h2>
+
+<p>When upgrading your existing Board instance to a newer version, you may need  to migrate the data in your database. Refer to <a href="../tools/migration/changelog.md">change log</a> to find out  whether there is any change in the database. If there is, you should go through the database migration process. Since the migration may alter the database schema, you should <strong>always</strong> backup your data before any migration.</p>
+
+<p><em>If your install Board for the first time, or the database version is the same as that of the latest version, you do not need any database migration.</em></p>
+
+<h3 id="upgrading-board-and-migrating-data">Upgrading Board and migrating data</h3>
+<p>1 Log in to the host that Board runs on, stop and remove existing Board instance if it is still running:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nb">cd </span>Deploy
+   docker-compose down
+</code></pre></div></div>
+
+<p>2 Backup Board’s current files so that you can roll back to the current version when it is neccessary.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nb">cd</span> ..
+   <span class="nb">mv </span>Deploy /my_backup_dir/Deploy
+   <span class="nb">mv</span> /data/board /my_backup_dir/board
+</code></pre></div></div>
+
+<p>3 Get the latest Board release package from github:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   https://github.com/inspursoft/board
+</code></pre></div></div>
+
+<p>4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   git clone https://github.com/inspursoft/board.git
+   <span class="nb">cd </span>board/tools/migration
+   docker build <span class="nt">-t</span> board-migration <span class="nb">.</span>
+</code></pre></div></div>
+
+<p>5 You should start you current Board database by handy.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">-d</span> <span class="nt">-p</span> 3306:3306 <span class="nt">-v</span> /data/board/database:/var/lib/mysql <span class="nt">-e</span> <span class="nv">DB_PASSWORD</span><span class="o">=</span>root123 dev_db:dev
+</code></pre></div></div>
+
+<p>6 Backup database to a directory such as <code class="language-plaintext highlighter-rouge">/data/board-migration/backup</code>. You also need the IP address, port number,username and password to access the database are provided via environment variables “DB_IP”, “DB_PORT”, “DB_USR”, “DB_PWD”.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">--rm</span> <span class="nt">-v</span> /data/board-migration/backup:/board-migration/backup <span class="nt">-e</span> <span class="nv">DB_IP</span><span class="o">=</span>10.0.0.0 <span class="nt">-e</span> <span class="nv">DB_PORT</span><span class="o">=</span>3306 <span class="nt">-e</span> <span class="nv">DB_USR</span><span class="o">=</span>root <span class="nt">-e</span> <span class="nv">DB_PWD</span><span class="o">=</span>root123 board-migration backup
+</code></pre></div></div>
+<p>7 Upgrade database schema and migrate data.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">--rm</span> <span class="nt">-v</span> /data/board-migration/backup:/board-migration/backup <span class="nt">-e</span> <span class="nv">DB_IP</span><span class="o">=</span>10.0.0.0 <span class="nt">-e</span> <span class="nv">DB_PORT</span><span class="o">=</span>3306 <span class="nt">-e</span> <span class="nv">DB_USR</span><span class="o">=</span>root <span class="nt">-e</span> <span class="nv">DB_PWD</span><span class="o">=</span>root board-migration upgrade <span class="nb">head</span>
+</code></pre></div></div>
+
+<p><strong>NOTE:</strong>
+   If you execute this command in a short while after starting the Board database, you may meet errors as the database is not ready for connection. Please retry it after waiting for a while.</p>
+
+<h3 id="roll-back-from-an-upgrade">Roll back from an upgrade</h3>
+<p>For any reason, if you want to back to the previous version of Board, follow the below steps:</p>
+
+<p>1 Stop and remove the current Board service if it is still running.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="nb">cd </span>Deploy
+   docker-compose down
+</code></pre></div></div>
+
+<p>2 Start stand-alone container of Board database</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">-d</span> <span class="nt">-p</span> 3306:3306 <span class="nt">-v</span> /data/board/database:/var/lib/mysql <span class="nt">-e</span> <span class="nv">DB_PASSWORD</span><span class="o">=</span>root123 dev_db:dev
+</code></pre></div></div>
+
+<p>3 Restore database from backup file in <code class="language-plaintext highlighter-rouge">/data/board-migration/backup</code>.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">--rm</span> <span class="nt">-v</span> /data/board-migration/backup:/board-migration/backup <span class="nt">-e</span> <span class="nv">DB_IP</span><span class="o">=</span>10.0.0.0 <span class="nt">-e</span> <span class="nv">DB_PORT</span><span class="o">=</span>3306 <span class="nt">-e</span> <span class="nv">DB_USR</span><span class="o">=</span>root <span class="nt">-e</span> <span class="nv">DB_PWD</span><span class="o">=</span>root123 board-migration restore
+</code></pre></div></div>
+
+<p>4 You should use the corresponding version of Board to start with it.</p>
+
+<h3 id="migration-tool-reference">Migration tool reference</h3>
+<p>Use <code class="language-plaintext highlighter-rouge">help</code> command to show instruction of migration tool:
+<code class="language-plaintext highlighter-rouge">data/board-migration/backup</code>.</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   docker run <span class="nt">--rm</span> <span class="nt">-v</span> /data/board-migration/backup:/board-migration/backup <span class="nt">-e</span> <span class="nv">DB_IP</span><span class="o">=</span>10.0.0.0 <span class="nt">-e</span> <span class="nv">DB_PORT</span><span class="o">=</span>3306 <span class="nt">-e</span> <span class="nv">DB_USR</span><span class="o">=</span>root <span class="nt">-e</span> <span class="nv">DB_PWD</span><span class="o">=</span>root123 board-migration <span class="nb">help</span>
+</code></pre></div></div>
+
+<p>For more details, please refer to <a href="docs/migration_guide.md">Upgrade And Database Migration Guide</a>.</p>
+
+<h2 id="run">Run</h2>
+<p>For information on how to use BOARD, please take a look at <a href="docs/user_guide.md">User Guide</a>.</p>
+
+<h2 id="community">Community</h2>
+<p><a href="http://open.inspur.com/TechnologyCenter/board/wikis/Community%20meeting%20schedule">Online Community Meeting</a></p>
+
+<p><a href="http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule">Online Community Meeting (inspur internal link)</a></p>
+
+<h2 id="contribution">Contribution</h2>
+<p>…(Coming soon.)</p>
+
+<h2 id="license">License</h2>
+<p>Copyright (c) &lt;2020&gt; <inspur cloud="" service="" group=""></inspur></p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Board”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+
+<h2 id="partners">Partners</h2>
+<p>Shanxi Provincial Department of Land and Resources</p>
+
+<p>China Mobile Communications Group Co.,Ltd</p>
+
+<p>Ministry of Veterans Affairs of the People’s Republic of China</p>
+
+<p>etc.</p>
+
+<h2 id="users">Users</h2>
+<p>…(Coming soon.)</p>
+
+<h2 id="supporting-technologies">Supporting Technologies</h2>
+<p>…(Coming soon.)</p>
+
+<h2 id="about">About</h2>
+<p>…(Coming soon.)</p>
+
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>
