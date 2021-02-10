@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			V1.15 v1.17
+		</div>
+		<time class="post-date dt-published" datetime="2020-02-10T08:30:00+08:00" itemprop="datePublished">2020/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<h1 id="k8s-api-versions">K8S api-versions</h1>
+
+<p><code class="language-plaintext highlighter-rouge">kubectl api-versions</code> to get current api versions.</p>
+
+<h2 id="115x">1.15.x</h2>
+
+<ul>
+  <li>admissionregistration.k8s.io/v1beta1</li>
+  <li>apiextensions.k8s.io/v1beta1</li>
+  <li>apiregistration.k8s.io/v1</li>
+  <li>apiregistration.k8s.io/v1beta1</li>
+  <li>apps/v1</li>
+  <li>apps/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(deprecated since v1.6)</code></strong></li>
+  <li>apps/v1beta2 <strong><code class="language-plaintext highlighter-rouge">(deprecated since v1.6)</code></strong></li>
+  <li>authentication.k8s.io/v1</li>
+  <li>authentication.k8s.io/v1beta1</li>
+  <li>authorization.k8s.io/v1</li>
+  <li>authorization.k8s.io/v1beta1</li>
+  <li>autoscaling/v1</li>
+  <li>autoscaling/v2beta1</li>
+  <li>autoscaling/v2beta2</li>
+  <li>batch/v1</li>
+  <li>batch/v1beta1</li>
+  <li>certificates.k8s.io/v1beta1</li>
+  <li>coordination.k8s.io/v1</li>
+  <li>coordination.k8s.io/v1beta1</li>
+  <li>events.k8s.io/v1beta1</li>
+  <li>extensions/v1beta1</li>
+  <li>networking.k8s.io/v1</li>
+  <li>networking.k8s.io/v1beta1</li>
+  <li>node.k8s.io/v1beta1</li>
+  <li>policy/v1beta1</li>
+  <li>rbac.authorization.k8s.io/v1</li>
+  <li>rbac.authorization.k8s.io/v1beta1</li>
+  <li>scheduling.k8s.io/v1</li>
+  <li>scheduling.k8s.io/v1beta1</li>
+  <li>storage.k8s.io/v1</li>
+  <li>storage.k8s.io/v1beta1</li>
+  <li>v1</li>
+</ul>
+
+<h2 id="116x">1.16.x</h2>
+
+<ul>
+  <li>admissionregistration.k8s.io/v1 <strong><code class="language-plaintext highlighter-rouge">(new)</code></strong></li>
+  <li>admissionregistration.k8s.io/v1beta1</li>
+  <li>apiextensions.k8s.io/v1 <strong><code class="language-plaintext highlighter-rouge">(new)</code></strong></li>
+  <li>apiextensions.k8s.io/v1beta1</li>
+  <li>apiregistration.k8s.io/v1</li>
+  <li>apiregistration.k8s.io/v1beta1</li>
+  <li>apps/v1</li>
+  <li>authentication.k8s.io/v1</li>
+  <li>authentication.k8s.io/v1beta1</li>
+  <li>authorization.k8s.io/v1</li>
+  <li>authorization.k8s.io/v1beta1</li>
+  <li>autoscaling/v1</li>
+  <li>autoscaling/v2beta1</li>
+  <li>autoscaling/v2beta2</li>
+  <li>batch/v1</li>
+  <li>batch/v1beta1</li>
+  <li>certificates.k8s.io/v1beta1</li>
+  <li>coordination.k8s.io/v1</li>
+  <li>coordination.k8s.io/v1beta1</li>
+  <li>events.k8s.io/v1beta1</li>
+  <li>extensions/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(deprecated partly)</code></strong></li>
+  <li>networking.k8s.io/v1</li>
+  <li>networking.k8s.io/v1beta1</li>
+  <li>node.k8s.io/v1beta1</li>
+  <li>policy/v1beta1</li>
+  <li>rbac.authorization.k8s.io/v1</li>
+  <li>rbac.authorization.k8s.io/v1beta1</li>
+  <li>scheduling.k8s.io/v1</li>
+  <li>scheduling.k8s.io/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(deprecated partly)</code></strong></li>
+  <li>storage.k8s.io/v1</li>
+  <li>storage.k8s.io/v1beta1</li>
+  <li>v1</li>
+</ul>
+
+<h2 id="117x">1.17.x</h2>
+
+<ul>
+  <li>admissionregistration.k8s.io/v1</li>
+  <li>admissionregistration.k8s.io/v1beta1</li>
+  <li>apiextensions.k8s.io/v1</li>
+  <li>apiextensions.k8s.io/v1beta1</li>
+  <li>apiregistration.k8s.io/v1</li>
+  <li>apiregistration.k8s.io/v1beta1</li>
+  <li>apps/v1</li>
+  <li>authentication.k8s.io/v1</li>
+  <li>authentication.k8s.io/v1beta1</li>
+  <li>authorization.k8s.io/v1</li>
+  <li>authorization.k8s.io/v1beta1</li>
+  <li>autoscaling/v1</li>
+  <li>autoscaling/v2beta1</li>
+  <li>autoscaling/v2beta2</li>
+  <li>batch/v1</li>
+  <li>batch/v1beta1</li>
+  <li>certificates.k8s.io/v1beta1</li>
+  <li>coordination.k8s.io/v1</li>
+  <li>coordination.k8s.io/v1beta1</li>
+  <li>discovery.k8s.io/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(new)</code></strong></li>
+  <li>events.k8s.io/v1beta1</li>
+  <li>extensions/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(deprecated partly)</code></strong></li>
+  <li>networking.k8s.io/v1</li>
+  <li>networking.k8s.io/v1beta1</li>
+  <li>node.k8s.io/v1beta1</li>
+  <li>policy/v1beta1</li>
+  <li>rbac.authorization.k8s.io/v1</li>
+  <li>rbac.authorization.k8s.io/v1beta1</li>
+  <li>scheduling.k8s.io/v1</li>
+  <li>scheduling.k8s.io/v1beta1 <strong><code class="language-plaintext highlighter-rouge">(deprecated partly)</code></strong></li>
+  <li>storage.k8s.io/v1</li>
+  <li>storage.k8s.io/v1beta1</li>
+  <li>v1</li>
+</ul>
+
+<hr />
+
+<h2 id="k8s-api-v116-overview">K8S API v1.16 Overview</h2>
+
+<ul>
+  <li>WORKLOADS APIS
+    <ul>
+      <li>Container v1 core</li>
+      <li>CronJob v1beta1 batch</li>
+      <li>DaemonSet v1 apps</li>
+      <li>Deployment v1 apps</li>
+      <li>Job v1 batch</li>
+      <li>Pod v1 core</li>
+      <li>ReplicaSet v1 apps</li>
+      <li>ReplicationController v1 core</li>
+      <li>StatefulSet v1 apps</li>
+    </ul>
+  </li>
+  <li>SERVICE APIS
+    <ul>
+      <li>Endpoints v1 core</li>
+      <li>EndpointSlice v1alpha1 discovery.k8s.io</li>
+      <li>Ingress v1beta1 networking.k8s.io</li>
+      <li>Service v1 core</li>
+    </ul>
+  </li>
+  <li>CONFIG AND STORAGE APIS
+    <ul>
+      <li>ConfigMap v1 core</li>
+      <li>CSIDriver v1beta1 storage.k8s.io</li>
+      <li>CSINode v1beta1 storage.k8s.io</li>
+      <li>Secret v1 core</li>
+      <li>PersistentVolumeClaim v1 core</li>
+      <li>StorageClass v1 storage.k8s.io</li>
+      <li>Volume v1 core</li>
+      <li>VolumeAttachment v1 storage.k8s.io</li>
+    </ul>
+  </li>
+  <li>METADATA APIS
+    <ul>
+      <li>ControllerRevision v1 apps</li>
+      <li>CustomResourceDefinition v1 apiextensions.k8s.io</li>
+      <li>Event v1 core</li>
+      <li>LimitRange v1 core</li>
+      <li>HorizontalPodAutoscaler v1 autoscaling</li>
+      <li>MutatingWebhookConfiguration v1 admissionregistration.k8s.io</li>
+      <li>ValidatingWebhookConfiguration v1 admissionregistration.k8s.io</li>
+      <li>PodTemplate v1 core</li>
+      <li>PodDisruptionBudget v1beta1 policy</li>
+      <li>PriorityClass v1 scheduling.k8s.io</li>
+      <li>PodPreset v1alpha1 settings.k8s.io</li>
+      <li>PodSecurityPolicy v1beta1 policy</li>
+    </ul>
+  </li>
+  <li>CLUSTER APIS
+    <ul>
+      <li>APIService v1 apiregistration.k8s.io</li>
+      <li>AuditSink v1alpha1 auditregistration.k8s.io</li>
+      <li>Binding v1 core</li>
+      <li>CertificateSigningRequest v1beta1 certificates.k8s.io</li>
+      <li>ClusterRole v1 rbac.authorization.k8s.io</li>
+      <li>ClusterRoleBinding v1 rbac.authorization.k8s.io</li>
+      <li>ComponentStatus v1 core</li>
+      <li>Lease v1 coordination.k8s.io</li>
+      <li>LocalSubjectAccessReview v1 authorization.k8s.io</li>
+      <li>Namespace v1 core</li>
+      <li>Node v1 core</li>
+      <li>PersistentVolume v1 core</li>
+      <li>ResourceQuota v1 core</li>
+      <li>Role v1 rbac.authorization.k8s.io</li>
+      <li>RoleBinding v1 rbac.authorization.k8s.io</li>
+      <li>RuntimeClass v1beta1 node.k8s.io</li>
+      <li>SelfSubjectAccessReview v1 authorization.k8s.io</li>
+      <li>SelfSubjectRulesReview v1 authorization.k8s.io</li>
+      <li>ServiceAccount v1 core</li>
+      <li>SubjectAccessReview v1 authorization.k8s.io</li>
+      <li>TokenRequest v1 authentication.k8s.io</li>
+      <li>TokenReview v1 authentication.k8s.io</li>
+      <li>NetworkPolicy v1 networking.k8s.io</li>
+    </ul>
+  </li>
+  <li>DEFINITIONS</li>
+  <li>OLD API VERSIONS
+    <ul>
+      <li>APIService v1beta1 apiregistration.k8s.io</li>
+      <li>APIServiceCondition v1beta1 apiregistration.k8s.io</li>
+      <li>AggregationRule v1beta1 rbac.authorization.k8s.io</li>
+      <li>AggregationRule v1alpha1 rbac.authorization.k8s.io</li>
+      <li>AllowedCSIDriver v1beta1 extensions</li>
+      <li>AllowedFlexVolume v1beta1 extensions</li>
+      <li>AllowedHostPath v1beta1 extensions</li>
+      <li>ClusterRole v1beta1 rbac.authorization.k8s.io</li>
+      <li>ClusterRole v1alpha1 rbac.authorization.k8s.io</li>
+      <li>ClusterRoleBinding v1beta1 rbac.authorization.k8s.io</li>
+      <li>ClusterRoleBinding v1alpha1 rbac.authorization.k8s.io</li>
+      <li>ControllerRevision v1beta2 apps</li>
+      <li>ControllerRevision v1beta1 apps</li>
+      <li>CronJob v2alpha1 batch</li>
+      <li>CrossVersionObjectReference v2beta2 autoscaling</li>
+      <li>CrossVersionObjectReference v2beta1 autoscaling</li>
+      <li>CustomResourceColumnDefinition v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceConversion v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceDefinition v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceDefinitionCondition v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceDefinitionNames v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceDefinitionVersion v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceSubresourceScale v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceSubresourceStatus v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceSubresources v1beta1 apiextensions.k8s.io</li>
+      <li>CustomResourceValidation v1beta1 apiextensions.k8s.io</li>
+      <li>DaemonSet v1beta2 apps</li>
+      <li>DaemonSet v1beta1 extensions</li>
+      <li>DaemonSetCondition v1beta2 apps</li>
+      <li>DaemonSetCondition v1beta1 extensions</li>
+      <li>DaemonSetUpdateStrategy v1beta2 apps</li>
+      <li>DaemonSetUpdateStrategy v1beta1 extensions</li>
+      <li>Deployment v1beta2 apps</li>
+      <li>Deployment v1beta1 apps</li>
+      <li>Deployment v1beta1 extensions</li>
+      <li>DeploymentCondition v1beta2 apps</li>
+      <li>DeploymentCondition v1beta1 apps</li>
+      <li>DeploymentCondition v1beta1 extensions</li>
+      <li>EndpointPort v1alpha1 discovery.k8s.io</li>
+      <li>Event v1beta1 events.k8s.io</li>
+      <li>EventSeries v1beta1 events.k8s.io</li>
+      <li>ExternalDocumentation v1beta1 apiextensions.k8s.io</li>
+      <li>ExternalMetricSource v2beta1 autoscaling</li>
+      <li>ExternalMetricStatus v2beta1 autoscaling</li>
+      <li>FSGroupStrategyOptions v1beta1 extensions</li>
+      <li>HTTPIngressPath v1beta1 extensions</li>
+      <li>HTTPIngressRuleValue v1beta1 extensions</li>
+      <li>HorizontalPodAutoscaler v2beta2 autoscaling</li>
+      <li>HorizontalPodAutoscaler v2beta1 autoscaling</li>
+      <li>HorizontalPodAutoscalerCondition v2beta1 autoscaling</li>
+      <li>HostPortRange v1beta1 extensions</li>
+      <li>IDRange v1beta1 extensions</li>
+      <li>IPBlock v1beta1 extensions</li>
+      <li>Ingress v1beta1 extensions</li>
+      <li>IngressBackend v1beta1 extensions</li>
+      <li>IngressRule v1beta1 extensions</li>
+      <li>IngressTLS v1beta1 extensions</li>
+      <li>JSON v1beta1 apiextensions.k8s.io</li>
+      <li>JSONSchemaProps v1beta1 apiextensions.k8s.io</li>
+      <li>JSONSchemaPropsOrArray v1beta1 apiextensions.k8s.io</li>
+      <li>JSONSchemaPropsOrBool v1beta1 apiextensions.k8s.io</li>
+      <li>JobTemplateSpec v2alpha1 batch</li>
+      <li>Lease v1beta1 coordination.k8s.io</li>
+      <li>LocalSubjectAccessReview v1beta1 authorization.k8s.io</li>
+      <li>MetricSpec v2beta1 autoscaling</li>
+      <li>MetricStatus v2beta1 autoscaling</li>
+      <li>MutatingWebhook v1beta1 admissionregistration.k8s.io</li>
+      <li>MutatingWebhookConfiguration v1beta1 admissionregistration.k8s.io</li>
+      <li>NetworkPolicy v1beta1 extensions</li>
+      <li>NetworkPolicyEgressRule v1beta1 extensions</li>
+      <li>NetworkPolicyIngressRule v1beta1 extensions</li>
+      <li>NetworkPolicyPeer v1beta1 extensions</li>
+      <li>NetworkPolicyPort v1beta1 extensions</li>
+      <li>NonResourceAttributes v1beta1 authorization.k8s.io</li>
+      <li>NonResourceRule v1beta1 authorization.k8s.io</li>
+      <li>ObjectMetricSource v2beta1 autoscaling</li>
+      <li>ObjectMetricStatus v2beta1 autoscaling</li>
+      <li>Overhead v1alpha1 node.k8s.io</li>
+      <li>PodSecurityPolicy v1beta1 extensions</li>
+      <li>PodsMetricSource v2beta1 autoscaling</li>
+      <li>PodsMetricStatus v2beta1 autoscaling</li>
+      <li>PolicyRule v1beta1 rbac.authorization.k8s.io</li>
+      <li>PolicyRule v1alpha1 rbac.authorization.k8s.io</li>
+      <li>PriorityClass v1beta1 scheduling.k8s.io</li>
+      <li>PriorityClass v1alpha1 scheduling.k8s.io</li>
+      <li>ReplicaSet v1beta2 apps</li>
+      <li>ReplicaSet v1beta1 extensions</li>
+      <li>ReplicaSetCondition v1beta2 apps</li>
+      <li>ReplicaSetCondition v1beta1 extensions</li>
+      <li>ResourceAttributes v1beta1 authorization.k8s.io</li>
+      <li>ResourceMetricSource v2beta1 autoscaling</li>
+      <li>ResourceMetricStatus v2beta1 autoscaling</li>
+      <li>ResourceRule v1beta1 authorization.k8s.io</li>
+      <li>Role v1beta1 rbac.authorization.k8s.io</li>
+      <li>Role v1alpha1 rbac.authorization.k8s.io</li>
+      <li>RoleBinding v1beta1 rbac.authorization.k8s.io</li>
+      <li>RoleBinding v1alpha1 rbac.authorization.k8s.io</li>
+      <li>RoleRef v1beta1 rbac.authorization.k8s.io</li>
+      <li>RoleRef v1alpha1 rbac.authorization.k8s.io</li>
+      <li>RollbackConfig v1beta1 extensions</li>
+      <li>RollingUpdateStatefulSetStrategy v1beta2 apps</li>
+      <li>RollingUpdateStatefulSetStrategy v1beta1 apps</li>
+      <li>RuleWithOperations v1beta1 admissionregistration.k8s.io</li>
+      <li>RunAsGroupStrategyOptions v1beta1 extensions</li>
+      <li>RunAsUserStrategyOptions v1beta1 extensions</li>
+      <li>RuntimeClass v1alpha1 node.k8s.io</li>
+      <li>RuntimeClassStrategyOptions v1beta1 extensions</li>
+      <li>SELinuxStrategyOptions v1beta1 extensions</li>
+      <li>Scale v1 autoscaling</li>
+      <li>Scale v1beta1 apps</li>
+      <li>Scale v1beta1 extensions</li>
+      <li>Scheduling v1alpha1 node.k8s.io</li>
+      <li>SelfSubjectAccessReview v1beta1 authorization.k8s.io</li>
+      <li>SelfSubjectRulesReview v1beta1 authorization.k8s.io</li>
+      <li>ServiceReference v1 apiextensions.k8s.io</li>
+      <li>ServiceReference v1 apiregistration.k8s.io</li>
+      <li>ServiceReference v1beta1 admissionregistration.k8s.io</li>
+      <li>ServiceReference v1beta1 apiextensions.k8s.io</li>
+      <li>ServiceReference v1beta1 apiregistration.k8s.io</li>
+      <li>ServiceReference v1alpha1 auditregistration.k8s.io</li>
+      <li>StatefulSet v1beta2 apps</li>
+      <li>StatefulSet v1beta1 apps</li>
+      <li>StatefulSetCondition v1beta2 apps</li>
+      <li>StatefulSetCondition v1beta1 apps</li>
+      <li>StatefulSetUpdateStrategy v1beta2 apps</li>
+      <li>StatefulSetUpdateStrategy v1beta1 apps</li>
+      <li>StorageClass v1beta1 storage.k8s.io</li>
+      <li>Subject v1beta1 rbac.authorization.k8s.io</li>
+      <li>Subject v1alpha1 rbac.authorization.k8s.io</li>
+      <li>SubjectAccessReview v1beta1 authorization.k8s.io</li>
+      <li>SubjectRulesReviewStatus v1beta1 authorization.k8s.io</li>
+      <li>SupplementalGroupsStrategyOptions v1beta1 extensions</li>
+      <li>TokenReview v1beta1 authentication.k8s.io</li>
+      <li>UserInfo v1beta1 authentication.k8s.io</li>
+      <li>ValidatingWebhook v1beta1 admissionregistration.k8s.io</li>
+      <li>ValidatingWebhookConfiguration v1beta1 admissionregistration.k8s.io</li>
+      <li>VolumeAttachment v1beta1 storage.k8s.io</li>
+      <li>VolumeAttachment v1alpha1 storage.k8s.io</li>
+      <li>VolumeAttachmentSource v1beta1 storage.k8s.io</li>
+      <li>VolumeAttachmentSource v1alpha1 storage.k8s.io</li>
+      <li>VolumeError v1beta1 storage.k8s.io</li>
+      <li>VolumeError v1alpha1 storage.k8s.io</li>
+      <li>WebhookClientConfig v1 apiextensions.k8s.io</li>
+      <li>WebhookClientConfig v1beta1 admissionregistration.k8s.io</li>
+      <li>WebhookClientConfig v1beta1 apiextensions.k8s.io</li>
+      <li>WebhookClientConfig v1alpha1 auditregistration.k8s.io</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h2 id="k8s-api-v16-overview-sorted">K8S API v1.6 Overview (Sorted)</h2>
+
+<p><a href="https://v1-16.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/">official api documents</a>
+<a href="https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.16.md#deprecations-and-removals">official changelog</a></p>
+
+<h3 id="api-deprecations">API Deprecations</h3>
+
+<ul>
+  <li>
+    <p>The following APIs are no longer served by default:</p>
+
+    <ul>
+      <li>All resources under <code class="language-plaintext highlighter-rouge">apps/v1beta1</code> and <code class="language-plaintext highlighter-rouge">apps/v1beta2</code> - use <code class="language-plaintext highlighter-rouge">apps/v1</code> instead</li>
+      <li><code class="language-plaintext highlighter-rouge">daemonsets</code>, <code class="language-plaintext highlighter-rouge">deployments</code>, <code class="language-plaintext highlighter-rouge">replicasets</code> resources under <code class="language-plaintext highlighter-rouge">extensions/v1beta1</code> - use <code class="language-plaintext highlighter-rouge">apps/v1</code> instead</li>
+      <li><code class="language-plaintext highlighter-rouge">networkpolicies</code> resources under <code class="language-plaintext highlighter-rouge">extensions/v1beta1</code> - use <code class="language-plaintext highlighter-rouge">networking.k8s.io/v1</code> instead</li>
+      <li><code class="language-plaintext highlighter-rouge">podsecuritypolicies</code> resources under <code class="language-plaintext highlighter-rouge">extensions/v1beta1</code> - use <code class="language-plaintext highlighter-rouge">policy/v1beta1</code> instead</li>
+    </ul>
+
+    <p>Serving these resources can be temporarily re-enabled using the <code class="language-plaintext highlighter-rouge">--runtime-config</code> apiserver flag.</p>
+
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">apps/v1beta1=true</code></li>
+      <li><code class="language-plaintext highlighter-rouge">apps/v1beta2=true</code></li>
+      <li><code class="language-plaintext highlighter-rouge">extensions/v1beta1/daemonsets=true,extensions/v1beta1/deployments=true,extensions/v1beta1/replicasets=true,extensions/v1beta1/networkpolicies=true,extensions/v1beta1/podsecuritypolicies=true</code></li>
+    </ul>
+
+    <p>The ability to serve these resources will be completely removed in v1.18. (<a href="https://github.com/kubernetes/kubernetes/pull/70672">#70672</a>, <a href="https://github.com/liggitt">@liggitt</a>)</p>
+  </li>
+  <li>Ingress resources will no longer be served from <code class="language-plaintext highlighter-rouge">extensions/v1beta1</code> in v1.20. Migrate use to the <code class="language-plaintext highlighter-rouge">networking.k8s.io/v1beta1</code> API, available since v1.14. Existing persisted data can be retrieved via the <code class="language-plaintext highlighter-rouge">networking.k8s.io/v1beta1</code> API.</li>
+  <li>PriorityClass resources will no longer be served from <code class="language-plaintext highlighter-rouge">scheduling.k8s.io/v1beta1</code> and <code class="language-plaintext highlighter-rouge">scheduling.k8s.io/v1alpha1</code> in v1.17. Migrate to the <code class="language-plaintext highlighter-rouge">scheduling.k8s.io/v1</code> API, available since v1.14. Existing persisted data can be retrieved via the <code class="language-plaintext highlighter-rouge">scheduling.k8s.io/v1</code> API.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">export</code> query parameter for list API calls, deprecated since v1.14, will be removed in v1.18.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">series.state</code> field in the events.k8s.io/v1beta1 Event API is deprecated and will be removed in v1.18 (<a href="https://github.com/kubernetes/kubernetes/pull/75987">#75987</a>, <a href="https://github.com/yastij">@yastij</a>)</li>
+  <li>The <code class="language-plaintext highlighter-rouge">apiextensions.k8s.io/v1beta1</code> version of <code class="language-plaintext highlighter-rouge">CustomResourceDefinition</code> is deprecated and will no longer be served in v1.19. Use <code class="language-plaintext highlighter-rouge">apiextensions.k8s.io/v1</code> instead. (<a href="https://github.com/kubernetes/kubernetes/pull/79604">#79604</a>, <a href="https://github.com/liggitt">@liggitt</a>)</li>
+  <li>The <code class="language-plaintext highlighter-rouge">admissionregistration.k8s.io/v1beta1</code> versions of <code class="language-plaintext highlighter-rouge">MutatingWebhookConfiguration</code> and <code class="language-plaintext highlighter-rouge">ValidatingWebhookConfiguration</code> are deprecated and will no longer be served in v1.19. Use <code class="language-plaintext highlighter-rouge">admissionregistration.k8s.io/v1</code> instead. (<a href="https://github.com/kubernetes/kubernetes/pull/79549">#79549</a>, <a href="https://github.com/liggitt">@liggitt</a>)</li>
+  <li>The alpha <code class="language-plaintext highlighter-rouge">metadata.initializers</code> field, deprecated in 1.13, has been removed. (<a href="https://github.com/kubernetes/kubernetes/pull/79504">#79504</a>, <a href="https://github.com/yue9944882">@yue9944882</a>)</li>
+  <li>The deprecated node condition type <code class="language-plaintext highlighter-rouge">OutOfDisk</code> has been removed. Use the <code class="language-plaintext highlighter-rouge">DiskPressure</code> condition instead. (<a href="https://github.com/kubernetes/kubernetes/pull/72420">#72420</a>, <a href="https://github.com/Pingan2017">@Pingan2017</a>)</li>
+  <li>The <code class="language-plaintext highlighter-rouge">metadata.selfLink</code> field is deprecated in individual and list objects. It will no longer be returned starting in v1.20, and the field will be removed entirely in v1.21. (<a href="https://github.com/kubernetes/kubernetes/pull/80978">#80978</a>, <a href="https://github.com/wojtek-t">@wojtek-t</a>)</li>
+  <li>The deprecated cloud providers <code class="language-plaintext highlighter-rouge">ovirt</code>, <code class="language-plaintext highlighter-rouge">cloudstack</code> and <code class="language-plaintext highlighter-rouge">photon</code> have been removed (<a href="https://github.com/kubernetes/kubernetes/pull/72178">#72178</a>, <a href="https://github.com/dims">@dims</a>)</li>
+  <li>The <code class="language-plaintext highlighter-rouge">Cinder</code> and <code class="language-plaintext highlighter-rouge">ScaleIO</code> volume providers have been deprecated and will be removed in a future release. (<a href="https://github.com/kubernetes/kubernetes/pull/80099">#80099</a>, <a href="https://github.com/dims">@dims</a>)</li>
+  <li>The GA <code class="language-plaintext highlighter-rouge">PodPriority</code> feature gate is now on by default and cannot be disabled. The feature gate will be removed in v1.18. (<a href="https://github.com/kubernetes/kubernetes/pull/79262">#79262</a>, <a href="https://github.com/draveness">@draveness</a>)</li>
+  <li>Aggregated discovery requests can now timeout. Aggregated API servers must complete discovery calls within 5 seconds (other requests can take longer). Use the feature gate <code class="language-plaintext highlighter-rouge">EnableAggregatedDiscoveryTimeout=false</code> to temporarily revert behavior to the previous 30 second timeout if required (the temporary <code class="language-plaintext highlighter-rouge">EnableAggregatedDiscoveryTimeout</code> feature gate will be removed in v1.17). (<a href="https://github.com/kubernetes/kubernetes/pull/82146">#82146</a>, <a href="https://github.com/deads2k">@deads2k</a>)</li>
+  <li>the <code class="language-plaintext highlighter-rouge">scheduler.alpha.kubernetes.io/critical-pod</code> annotation is removed. Pod priority (<code class="language-plaintext highlighter-rouge">spec.priorityClassName</code>) should be used instead to mark pods as critical. (<a href="https://github.com/kubernetes/kubernetes/pull/80342">#80342</a>, <a href="https://github.com/draveness">@draveness</a>)</li>
+  <li>the NormalizeScore plugin set is removed from scheduler framework config API. Use ScorePlugin only. (<a href="https://github.com/kubernetes/kubernetes/pull/80930">#80930</a>, <a href="https://github.com/liu-cong">@liu-cong</a>)</li>
+  <li>the node label <code class="language-plaintext highlighter-rouge">alpha.service-controller.kubernetes.io/exclude-balancer</code> which excludes a node from cloud load balancers (using Service Type=LoadBalancer) is deprecated in favor of <code class="language-plaintext highlighter-rouge">node.kubernetes.io/exclude-balancer</code>. Support for <code class="language-plaintext highlighter-rouge">alpha.service-controller.kubernetes.io/exclude-balancer</code> will be removed in v1.18.</li>
+</ul>
+
+<h3 id="api-list">API list</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">API name</th>
+      <th style="text-align: center">Version</th>
+      <th style="text-align: center">Group</th>
+      <th style="text-align: center">Deprecated</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">AggregationRule</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">AggregationRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">AllowedCSIDriver</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">AllowedFlexVolume</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">AllowedHostPath</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">APIService</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apiregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">APIService</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">APIServiceCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">AuditSink</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">auditregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Binding</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CertificateSigningRequest</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">certificates.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRole</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRole</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRole</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRoleBinding</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRoleBinding</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ClusterRoleBinding</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ComponentStatus</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ConfigMap</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Container</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ControllerRevision</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ControllerRevision</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ControllerRevision</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CronJob</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">batch</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CronJob</td>
+      <td style="text-align: center">v2alpha1</td>
+      <td style="text-align: center">batch</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CrossVersionObjectReference</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CrossVersionObjectReference</td>
+      <td style="text-align: center">v2beta2</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CSIDriver</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CSINode</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceColumnDefinition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceConversion</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceDefinition</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceDefinition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceDefinitionCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceDefinitionNames</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceDefinitionVersion</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceSubresources</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceSubresourceScale</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceSubresourceStatus</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">CustomResourceValidation</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSet</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSet</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSet</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetCondition</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetCondition</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetUpdateStrategy</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetUpdateStrategy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DaemonSetUpdateStrategy</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Deployment</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Deployment</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Deployment</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Deployment</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DeploymentCondition</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DeploymentCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DeploymentCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">DeploymentCondition</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">EndpointPort</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">discovery.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Endpoints</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">EndpointSlice</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">discovery.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Event</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Event</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">events.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">EventSeries</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">events.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ExternalDocumentation</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ExternalMetricSource</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ExternalMetricStatus</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">FSGroupStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HorizontalPodAutoscaler</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HorizontalPodAutoscaler</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HorizontalPodAutoscaler</td>
+      <td style="text-align: center">v2beta2</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HorizontalPodAutoscalerCondition</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HostPortRange</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HTTPIngressPath</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">HTTPIngressRuleValue</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IDRange</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Ingress</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Ingress</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IngressBackend</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IngressRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IngressTLS</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">IPBlock</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Job</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">batch</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">JobTemplateSpec</td>
+      <td style="text-align: center">v2alpha1</td>
+      <td style="text-align: center">batch</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">JSON</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">JSONSchemaProps</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">JSONSchemaPropsOrArray</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">JSONSchemaPropsOrBool</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Lease</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">coordination.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Lease</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">coordination.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">LimitRange</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">LocalSubjectAccessReview</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">LocalSubjectAccessReview</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">MetricSpec</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">MetricStatus</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">MutatingWebhook</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">MutatingWebhookConfiguration</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">MutatingWebhookConfiguration</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Namespace</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicy</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyEgressRule</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyEgressRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyIngressRule</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyIngressRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyPeer</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyPeer</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyPort</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">networking.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NetworkPolicyPort</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Node</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NonResourceAttributes</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">NonResourceRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ObjectMetricSource</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ObjectMetricStatus</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Overhead</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">node.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PersistentVolume</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PersistentVolumeClaim</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Pod</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodDisruptionBudget</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">policy</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodPreset</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">settings.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodSecurityPolicy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodSecurityPolicy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">policy</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodsMetricSource</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodsMetricStatus</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PodTemplate</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PolicyRule</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PolicyRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PriorityClass</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">scheduling.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PriorityClass</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">scheduling.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">PriorityClass</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">scheduling.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSet</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSet</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSet</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSetCondition</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSetCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicaSetCondition</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ReplicationController</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ResourceAttributes</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ResourceMetricSource</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ResourceMetricStatus</td>
+      <td style="text-align: center">v2beta1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ResourceQuota</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ResourceRule</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Role</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Role</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Role</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RoleBinding</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RoleBinding</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RoleBinding</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RoleRef</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RoleRef</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RollbackConfig</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RollingUpdateStatefulSetStrategy</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RollingUpdateStatefulSetStrategy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RollingUpdateStatefulSetStrategy</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RuleWithOperations</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RunAsGroupStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RunAsUserStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RuntimeClass</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">node.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RuntimeClass</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">node.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">RuntimeClassStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Scale</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">autoscaling</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Scale</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Scale</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Scale</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Scheduling</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">node.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Secret</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SelfSubjectAccessReview</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SelfSubjectAccessReview</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SelfSubjectRulesReview</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SelfSubjectRulesReview</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SELinuxStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Service</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceAccount</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apiregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">auditregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ServiceReference</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSet</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSet</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSet</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetCondition</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetCondition</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetCondition</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetUpdateStrategy</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetUpdateStrategy</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StatefulSetUpdateStrategy</td>
+      <td style="text-align: center">v1beta2</td>
+      <td style="text-align: center">apps</td>
+      <td style="text-align: center">not served by default</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StorageClass</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">StorageClass</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Subject</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Subject</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">rbac.authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SubjectAccessReview</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SubjectAccessReview</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SubjectRulesReviewStatus</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authorization.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">SupplementalGroupsStrategyOptions</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">extensions</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">TokenRequest</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authentication.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">TokenReview</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">authentication.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">TokenReview</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authentication.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">UserInfo</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">authentication.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ValidatingWebhook</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ValidatingWebhookConfiguration</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">ValidatingWebhookConfiguration</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">Volume</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">core</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeAttachment</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeAttachment</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeAttachment</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeAttachmentSource</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeAttachmentSource</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeError</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">VolumeError</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">storage.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">WebhookClientConfig</td>
+      <td style="text-align: center">v1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">WebhookClientConfig</td>
+      <td style="text-align: center">v1alpha1</td>
+      <td style="text-align: center">auditregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">WebhookClientConfig</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">admissionregistration.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+    <tr>
+      <td style="text-align: left">WebhookClientConfig</td>
+      <td style="text-align: center">v1beta1</td>
+      <td style="text-align: center">apiextensions.k8s.io</td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>

@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-02-10T13:34:59+08:00</updated><id>/feed.xml</id><title type="html">Board</title><subtitle>A Container Service Platform</subtitle><entry><title type="html">Welcome to Board!</title><link href="/welcome/2021/02/10/welcome-to-board.html" rel="alternate" type="text/html" title="Welcome to Board!" /><published>2021-02-10T00:50:23+08:00</published><updated>2021-02-10T00:50:23+08:00</updated><id>/welcome/2021/02/10/welcome-to-board</id><content type="html" xml:base="/welcome/2021/02/10/welcome-to-board.html">&lt;h1 id=&quot;board&quot;&gt;Board&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&quot;https://goreportcard.com/report/github.com/inspursoft/board&quot;&gt;&lt;img src=&quot;https://goreportcard.com/badge/github.com/inspursoft/board&quot; alt=&quot;Go Report Card&quot; /&gt;&lt;/a&gt; &lt;a href=&quot;https://travis-ci.org/inspursoft/board&quot;&gt;&lt;img src=&quot;https://travis-ci.org/inspursoft/board.svg?branch=dev&quot; alt=&quot;Build Status&quot; /&gt;&lt;/a&gt; &lt;a href=&quot;https://codecov.io/gh/inspursoft/board&quot;&gt;&lt;img src=&quot;https://codecov.io/gh/inspursoft/board/branch/dev/graph/badge.svg?token=HIOWVOQ772&quot; alt=&quot;codecov&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;master&lt;/code&gt; branch may be in an &lt;em&gt;unstable or even broken state&lt;/em&gt; during development.
+Please use [releases] instead of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;master&lt;/code&gt; branch in order to get stable binaries.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;img alt=&quot;notification&quot; src=&quot;https://github.com/inspursoft/board/blob/dev/docs/img/bell.png&quot; /&gt;Community Meeting&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the &lt;a href=&quot;https://github.com/inspursoft/board/wiki/community-meeting-schedule&quot;&gt;meeting schedule&lt;/a&gt;.&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;img alt=&quot;Board&quot; src=&quot;docs/img/board_logo.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The “Board” product is a container service platform based on docker + kubernetes, provide cloud solutions for Inspur software group, including lightweight container virtualization, micro service, DevOps, continuous delivery, help enterprises and development teams achieve fast business application delivery and continuous innovation.&lt;/p&gt;
+
+&lt;h2 id=&quot;features&quot;&gt;Features&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;User Account&lt;/strong&gt;: Board supports databse authentication modes and support LDAP mode.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Project Based Access Control&lt;/strong&gt;: Board manages services through projects on container service platform. Users can be added into system as a member with different roles.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Manage Projects&lt;/strong&gt;: A project in Board contains all services, images etc.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Manage Services&lt;/strong&gt;: Board supports creating container service. All services must be grouped by projects.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Searching&lt;/strong&gt;: Board search engine could search project, service, users and image.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Monitoring Dashboard&lt;/strong&gt;: Monitoring Dashboard collect logs from k8s master and nodes. It cover the machine indicators, such as cpu, memory usage, file system and k8s services runtime.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Administrator Options&lt;/strong&gt;: Administrator options provide user management which can add, change or remove user by an admin user.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img alt=&quot;Board Overview&quot; src=&quot;docs/img/Overview_20200101_en.png&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;install&quot;&gt;Install&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;System requirements:&lt;/strong&gt;
+Board is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Python, Docker, and Docker Compose to be installed.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Python should be version 2.7 or higher.  Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default&lt;/li&gt;
+  &lt;li&gt;Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/&lt;/li&gt;
+  &lt;li&gt;Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;install-1&quot;&gt;Install&lt;/h3&gt;
+&lt;p&gt;The installation steps boil down to the following&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Download the installer;&lt;/li&gt;
+  &lt;li&gt;Configure &lt;strong&gt;board.cfg&lt;/strong&gt;;&lt;/li&gt;
+  &lt;li&gt;Run &lt;strong&gt;install.sh&lt;/strong&gt; to install and start Board;
+Note: If you need prepare Kubernetes and Registry environment, please refer to the appendix part.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;downloading-the-installer&quot;&gt;Downloading the installer:&lt;/h4&gt;
+
+&lt;p&gt;The binary of the installer can be downloaded from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;release&lt;/code&gt; page. Choose either online or offline installer. Use &lt;em&gt;tar&lt;/em&gt; command to extract the package.&lt;/p&gt;
+
+&lt;p&gt;The difference between online installer and offline installer is:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;The online installation package directly pulls the image from dockerhub, the installer is very small in size.&lt;/li&gt;
+  &lt;li&gt;The offline installation package contains all the images needed for this project, so the installation package is quite larger&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Online installer:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;tar &lt;/span&gt;xvf board-online-installer-VERSION[-ARCH].tgz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Offline installer:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;tar &lt;/span&gt;xvf board-offline-installer-VERSION[-ARCH].tgz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;configuring-board&quot;&gt;Configuring Board&lt;/h4&gt;
+&lt;p&gt;Configuration parameters are located in the file &lt;strong&gt;board.cfg&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are two categories of parameters in board.cfg, &lt;strong&gt;required parameters&lt;/strong&gt; and &lt;strong&gt;optional parameters&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;required parameters&lt;/strong&gt;: These parameters are required to be set in the configuration file. They will take effect if a user updates them in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;board.cfg&lt;/code&gt; and run the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;install.sh&lt;/code&gt; script to reinstall Board.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;optional parameters&lt;/strong&gt;: These parameters are optional for updating. Subsequent update to these parameters in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;board.cfg&lt;/code&gt; will be ignored.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The parameters are described below - note that at the very least, you will need to change the &lt;strong&gt;hostname&lt;/strong&gt; attribute.&lt;/p&gt;
+
+&lt;h5 id=&quot;required-parameters&quot;&gt;Required parameters:&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;hostname&lt;/strong&gt;: The target host’s hostname, which is used to access the UI and the apiserver service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;192.168.1.10&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;reg.yourdomain.com&lt;/code&gt;. &lt;em&gt;Do NOT use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;localhost&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;127.0.0.1&lt;/code&gt; for the hostname - the apiserver service needs to be accessible by external clients!&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;db_password&lt;/strong&gt;: The root password for the MySQL database used for &lt;strong&gt;db_auth&lt;/strong&gt;. &lt;em&gt;Change this password for any production use!&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;optional-parameters&quot;&gt;Optional parameters&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;board_admin_password&lt;/strong&gt;: The administrator’s initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator’s password should be set in the UI. &lt;em&gt;Note that the default username/password are &lt;strong&gt;boardadmin/123456a?&lt;/strong&gt; .&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;auth_mode&lt;/strong&gt;: The type of authentication that is used. By default, it is &lt;strong&gt;db_auth&lt;/strong&gt;, i.e. the credentials are stored in a database. 
+For LDAP authentication, set this to &lt;strong&gt;ldap_auth&lt;/strong&gt;.&lt;/p&gt;
+
+    &lt;p&gt;&lt;strong&gt;IMPORTANT:&lt;/strong&gt; When upgrading from an existing Board instance, you must make sure &lt;strong&gt;auth_mode&lt;/strong&gt; is the same in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;board.cfg&lt;/code&gt; before launching the new version of Board. Otherwise, users may not be able to log in after the upgrade.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_url&lt;/strong&gt;: The LDAP endpoint URL (e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ldaps://ldap.mydomain.com&lt;/code&gt;). Only used when &lt;strong&gt;auth_mode&lt;/strong&gt; is set to &lt;em&gt;ldap_auth&lt;/em&gt; .&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_searchdn&lt;/strong&gt;: The DN of a user who has the permission to search an LDAP/AD server (e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uid=admin,ou=people,dc=mydomain,dc=com&lt;/code&gt;).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_search_pwd&lt;/strong&gt;: The password of the user specified by &lt;em&gt;ldap_searchdn&lt;/em&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_basedn&lt;/strong&gt;: The base DN to look up a user, e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ou=people,dc=mydomain,dc=com&lt;/code&gt;. Only used when &lt;strong&gt;auth_mode&lt;/strong&gt; is set to &lt;em&gt;ldap_auth&lt;/em&gt; .&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_filter&lt;/strong&gt;:The search filter for looking up a user, e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(objectClass=person)&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_uid&lt;/strong&gt;: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ldap_scope&lt;/strong&gt;: The scope to search for a user, LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE. Default is LDAP_SCOPE_SUBTREE.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;self_registration&lt;/strong&gt;: (&lt;strong&gt;on&lt;/strong&gt; or &lt;strong&gt;off&lt;/strong&gt;. Default is &lt;strong&gt;on&lt;/strong&gt;) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Board. &lt;em&gt;NOTE&lt;/em&gt;: When &lt;strong&gt;auth_mode&lt;/strong&gt; is set to &lt;strong&gt;ldap_auth&lt;/strong&gt;, self-registration feature is &lt;strong&gt;always&lt;/strong&gt; disabled, and this flag is ignored.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;token_expiration&lt;/strong&gt;: The expiration time (in minutes) of a token created by token service, default is 30 minutes.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;connecting-kubernetes-cluster-which-authentication-strategy-with-ca-certification&quot;&gt;Connecting Kubernetes cluster which authentication strategy with CA certification&lt;/h4&gt;
+&lt;p&gt;If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster’s CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as ‘ca-key.pem’(for private key) and ‘ca.pem’(for public key).&lt;/p&gt;
+
+&lt;p&gt;You also need to deploy the following two files in your Kubernetes for Board to take over your Kubernetes cluster:&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;mkdir &lt;/span&gt;board-k8s-requires
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;board-k8s-requires
+&lt;span class=&quot;c&quot;&gt;# board-clusterrolebinding.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/board-clusterrolebinding.yaml
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; board-clusterrolebinding.yaml
+
+&lt;span class=&quot;c&quot;&gt;# cadvisor.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/cadvisor.yaml
+&lt;span class=&quot;c&quot;&gt;# You need to replace the  placeholder in the file before deploying. The docker directory defaults to /var/lib/docker&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; cadvisor.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In addition, there are some optional features:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Helm Chart:&lt;/strong&gt; The chart museum is integrated in the Board, which depends on helm2&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# tiller.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller.yaml
+&lt;span class=&quot;c&quot;&gt;# tiller-service.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller-service.yaml
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply tiller.yaml
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply tiller-service.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;EFK + Prometheus:&lt;/strong&gt; Board supports EFK+Prometheus log management&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# fluentd.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/fluentd.yaml
+&lt;span class=&quot;c&quot;&gt;# Need to replace the   placeholder in the file before deploying&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; fluentd.yaml
+
+&lt;span class=&quot;c&quot;&gt;# prometheus.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus.yaml
+&lt;span class=&quot;c&quot;&gt;# prometheus2.yaml&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus2.yaml
+&lt;span class=&quot;c&quot;&gt;# Need to replace the   placeholder in the file before deploying, or replace this file with your own pv&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus.yaml
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus2.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; If your kubernetes cluster is installed by the &lt;a href=&quot;https://github.com/inspursoft/board-installer&quot;&gt;inspursoft/board-installer&lt;/a&gt;, you do not need to perform the above steps because the project’s automation script have been completed.&lt;/p&gt;
+
+&lt;p&gt;Then you should configure these items in &lt;strong&gt;board.cfg&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;kube_http_scheme&lt;/strong&gt;: Set to ‘https’. It means the requests Board send to Kubernetes cluster will be used via ‘https’ protocol.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;kube_master_ip&lt;/strong&gt;: The IP address of the Master of Kubernetes cluster.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;kube_master_port&lt;/strong&gt;: The port number of the Master of Kubernetes cluster(maybe 443 or 6443).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;finishing-installation-and-starting-board&quot;&gt;Finishing installation and starting Board&lt;/h4&gt;
+&lt;p&gt;Once &lt;strong&gt;board.cfg&lt;/strong&gt; is configured, install and start Board using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;install.sh&lt;/code&gt; script.&lt;/p&gt;
+
+&lt;h5 id=&quot;default-installation&quot;&gt;Default installation&lt;/h5&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; ./install.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;after-installation&quot;&gt;After installation&lt;/h4&gt;
+&lt;p&gt;If everything worked properly, you should be able to open a browser to visit the admin portal at &lt;strong&gt;http://reg.yourdomain.com&lt;/strong&gt; (change &lt;em&gt;reg.yourdomain.com&lt;/em&gt; to the hostname configured in your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;board.cfg&lt;/code&gt;). Note that the default administrator username/password are boardadmin/123456a? .&lt;/p&gt;
+
+&lt;p&gt;Log in to the admin portal and create a new project, e.g. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myproject&lt;/code&gt;. You can create your own service now.&lt;/p&gt;
+
+&lt;p&gt;For information on how to use Board, please refer to &lt;strong&gt;&lt;a href=&quot;docs/user_guide.md&quot;&gt;User Guide of Board&lt;/a&gt;&lt;/strong&gt; .&lt;/p&gt;
+
+&lt;p&gt;For details on how to download and use the installation package, please refer to &lt;a href=&quot;docs/installation_guide.md&quot;&gt;Installation and Configuration Guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;upgrade&quot;&gt;Upgrade&lt;/h2&gt;
+
+&lt;p&gt;When upgrading your existing Board instance to a newer version, you may need  to migrate the data in your database. Refer to &lt;a href=&quot;../tools/migration/changelog.md&quot;&gt;change log&lt;/a&gt; to find out  whether there is any change in the database. If there is, you should go through the database migration process. Since the migration may alter the database schema, you should &lt;strong&gt;always&lt;/strong&gt; backup your data before any migration.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;If your install Board for the first time, or the database version is the same as that of the latest version, you do not need any database migration.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;upgrading-board-and-migrating-data&quot;&gt;Upgrading Board and migrating data&lt;/h3&gt;
+&lt;p&gt;1 Log in to the host that Board runs on, stop and remove existing Board instance if it is still running:&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;Deploy
+   docker-compose down
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2 Backup Board’s current files so that you can roll back to the current version when it is neccessary.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   &lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; ..
+   &lt;span class=&quot;nb&quot;&gt;mv &lt;/span&gt;Deploy /my_backup_dir/Deploy
+   &lt;span class=&quot;nb&quot;&gt;mv&lt;/span&gt; /data/board /my_backup_dir/board
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3 Get the latest Board release package from github:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   https://github.com/inspursoft/board
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   git clone https://github.com/inspursoft/board.git
+   &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;board/tools/migration
+   docker build &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; board-migration &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;5 You should start you current Board database by handy.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 3306:3306 &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board/database:/var/lib/mysql &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PASSWORD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root123 dev_db:dev
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;6 Backup database to a directory such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/board-migration/backup&lt;/code&gt;. You also need the IP address, port number,username and password to access the database are provided via environment variables “DB_IP”, “DB_PORT”, “DB_USR”, “DB_PWD”.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board-migration/backup:/board-migration/backup &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_IP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.0.0.0 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PORT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3306 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_USR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root123 board-migration backup
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;7 Upgrade database schema and migrate data.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board-migration/backup:/board-migration/backup &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_IP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.0.0.0 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PORT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3306 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_USR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root board-migration upgrade &lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;NOTE:&lt;/strong&gt;
+   If you execute this command in a short while after starting the Board database, you may meet errors as the database is not ready for connection. Please retry it after waiting for a while.&lt;/p&gt;
+
+&lt;h3 id=&quot;roll-back-from-an-upgrade&quot;&gt;Roll back from an upgrade&lt;/h3&gt;
+&lt;p&gt;For any reason, if you want to back to the previous version of Board, follow the below steps:&lt;/p&gt;
+
+&lt;p&gt;1 Stop and remove the current Board service if it is still running.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   &lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;Deploy
+   docker-compose down
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2 Start stand-alone container of Board database&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 3306:3306 &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board/database:/var/lib/mysql &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PASSWORD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root123 dev_db:dev
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3 Restore database from backup file in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/data/board-migration/backup&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board-migration/backup:/board-migration/backup &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_IP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.0.0.0 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PORT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3306 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_USR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root123 board-migration restore
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;4 You should use the corresponding version of Board to start with it.&lt;/p&gt;
+
+&lt;h3 id=&quot;migration-tool-reference&quot;&gt;Migration tool reference&lt;/h3&gt;
+&lt;p&gt;Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;help&lt;/code&gt; command to show instruction of migration tool:
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;data/board-migration/backup&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; /data/board-migration/backup:/board-migration/backup &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_IP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.0.0.0 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PORT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;3306 &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_USR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DB_PWD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;root123 board-migration &lt;span class=&quot;nb&quot;&gt;help&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For more details, please refer to &lt;a href=&quot;docs/migration_guide.md&quot;&gt;Upgrade And Database Migration Guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;run&quot;&gt;Run&lt;/h2&gt;
+&lt;p&gt;For information on how to use BOARD, please take a look at &lt;a href=&quot;docs/user_guide.md&quot;&gt;User Guide&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;community&quot;&gt;Community&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&quot;http://open.inspur.com/TechnologyCenter/board/wikis/Community%20meeting%20schedule&quot;&gt;Online Community Meeting&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule&quot;&gt;Online Community Meeting (inspur internal link)&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;contribution&quot;&gt;Contribution&lt;/h2&gt;
+&lt;p&gt;…(Coming soon.)&lt;/p&gt;
+
+&lt;h2 id=&quot;license&quot;&gt;License&lt;/h2&gt;
+&lt;p&gt;Copyright (c) &amp;lt;2020&amp;gt; &lt;inspur cloud=&quot;&quot; service=&quot;&quot; group=&quot;&quot;&gt;&lt;/inspur&gt;&lt;/p&gt;
+
+&lt;p&gt;Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Board”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:&lt;/p&gt;
+
+&lt;p&gt;The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.&lt;/p&gt;
+
+&lt;p&gt;THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.&lt;/p&gt;
+
+&lt;h2 id=&quot;partners&quot;&gt;Partners&lt;/h2&gt;
+&lt;p&gt;Shanxi Provincial Department of Land and Resources&lt;/p&gt;
+
+&lt;p&gt;China Mobile Communications Group Co.,Ltd&lt;/p&gt;
+
+&lt;p&gt;Ministry of Veterans Affairs of the People’s Republic of China&lt;/p&gt;
+
+&lt;p&gt;etc.&lt;/p&gt;
+
+&lt;h2 id=&quot;users&quot;&gt;Users&lt;/h2&gt;
+&lt;p&gt;…(Coming soon.)&lt;/p&gt;
+
+&lt;h2 id=&quot;supporting-technologies&quot;&gt;Supporting Technologies&lt;/h2&gt;
+&lt;p&gt;…(Coming soon.)&lt;/p&gt;
+
+&lt;h2 id=&quot;about&quot;&gt;About&lt;/h2&gt;
+&lt;p&gt;…(Coming soon.)&lt;/p&gt;</content><author><name></name></author><category term="Welcome" /><summary type="html">Board</summary></entry><entry><title type="html">1.9.9集群证书过期问题处理</title><link href="/technologies/2020/02/10/post2.html" rel="alternate" type="text/html" title="1.9.9集群证书过期问题处理" /><published>2020-02-10T18:20:23+08:00</published><updated>2020-02-10T18:20:23+08:00</updated><id>/technologies/2020/02/10/post2</id><content type="html" xml:base="/technologies/2020/02/10/post2.html">&lt;p&gt;由于安装1.9.9集群时开启了8080端口，并且kube-proxy，flannel等组件都通过8080端口访问master，只有ServiceAccount相关的地方用到了证书，所以当证书过期后，整个集群的状态不会出错，仅使用ServiceAccount的Pod会出问题。也因为以上原因，1.9.9集群更新证书比较简单（以下操作都在master执行）：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;使用/etc/kubernetes/certs目录下的make-certs.sh脚本生成新的证书，注意在其它目录运行（避免覆盖原文件），调整有效期；&lt;/li&gt;
+  &lt;li&gt;把/etc/kubernetes/manifests/下的文件移出去，使master四个容器停止&lt;/li&gt;
+  &lt;li&gt;把/etc/kubernetes/certs下的文件移出去，将新生成的证书放进去&lt;/li&gt;
+  &lt;li&gt;把/etc/kubernetes/manifests下的文件移回去，使master容器启动&lt;/li&gt;
+  &lt;li&gt;集群启动完成后，将集群中所有namespace下的secret删除，集群会自动重建secret&lt;/li&gt;
+  &lt;li&gt;将集群中所有使用ServiceAccount的Pod重启&lt;/li&gt;
+&lt;/ol&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">由于安装1.9.9集群时开启了8080端口，并且kube-proxy，flannel等组件都通过8080端口访问master，只有ServiceAccount相关的地方用到了证书，所以当证书过期后，整个集群的状态不会出错，仅使用ServiceAccount的Pod会出问题。也因为以上原因，1.9.9集群更新证书比较简单（以下操作都在master执行）： 使用/etc/kubernetes/certs目录下的make-certs.sh脚本生成新的证书，注意在其它目录运行（避免覆盖原文件），调整有效期； 把/etc/kubernetes/manifests/下的文件移出去，使master四个容器停止 把/etc/kubernetes/certs下的文件移出去，将新生成的证书放进去 把/etc/kubernetes/manifests下的文件移回去，使master容器启动 集群启动完成后，将集群中所有namespace下的secret删除，集群会自动重建secret 将集群中所有使用ServiceAccount的Pod重启</summary></entry><entry><title type="html">Board Community Meetings Agenda and Notes</title><link href="/schedule/2020/02/10/post1.html" rel="alternate" type="text/html" title="Board Community Meetings Agenda and Notes" /><published>2020-02-10T18:20:23+08:00</published><updated>2020-02-10T18:20:23+08:00</updated><id>/schedule/2020/02/10/post1</id><content type="html" xml:base="/schedule/2020/02/10/post1.html">&lt;p&gt;This doc is meant to serve as the “one doc to rule them all” for Harbor community meetings and open discussions.&lt;/p&gt;
+
+&lt;p&gt;&lt;del&gt;You can find slides of previous meetings on balabala.&lt;/del&gt; &lt;em&gt;Visit the &lt;a href=&quot;community-meeting-schedule&quot;&gt;community details page&lt;/a&gt; for schedule, meeting recordings, and additional details.&lt;/em&gt;
+If you have anything you’d like to put on the agenda, please do so below for the next meeting:&lt;/p&gt;
+
+&lt;h2 id=&quot;4132020&quot;&gt;4/13/2020&lt;/h2&gt;
+&lt;h3 id=&quot;agenda&quot;&gt;Agenda&lt;/h3&gt;
+
+&lt;p&gt;1 Review last month status (10 min, Owner: Yong)&lt;/p&gt;
+
+&lt;p&gt;2 Plan for next month tasks (30 min, Owner: core team)&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Urgent issue
+
+New feature
+
+Enhancement
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;3 Discuss important matters(10 min)&lt;/p&gt;
+
+&lt;p&gt;4 Open Q&amp;amp;A (10 min)&lt;/p&gt;</content><author><name></name></author><category term="schedule" /><summary type="html">This doc is meant to serve as the “one doc to rule them all” for Harbor community meetings and open discussions.</summary></entry><entry><title type="html">board ports statement of situation</title><link href="/technologies/2020/02/10/post4.html" rel="alternate" type="text/html" title="board ports statement of situation" /><published>2020-02-10T09:20:24+08:00</published><updated>2020-02-10T09:20:24+08:00</updated><id>/technologies/2020/02/10/post4</id><content type="html" xml:base="/technologies/2020/02/10/post4.html">&lt;p&gt;There are some ports which Board and Kubernetes installation will be used, these ports should be accepted by firewall of the servers.&lt;/p&gt;
+
+&lt;p&gt;Board:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Component&lt;/th&gt;
+      &lt;th&gt;Port Numbers&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-log&lt;/td&gt;
+      &lt;td&gt;1514&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-gogits&lt;/td&gt;
+      &lt;td&gt;10022, 10080&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-apiserver&lt;/td&gt;
+      &lt;td&gt;8088&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-ui&lt;/td&gt;
+      &lt;td&gt;80&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-graphite&lt;/td&gt;
+      &lt;td&gt;2003&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;board-elasticsearch&lt;/td&gt;
+      &lt;td&gt;9200&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;jenkins&lt;/td&gt;
+      &lt;td&gt;8888&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Kubernetes master:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Component&lt;/th&gt;
+      &lt;th&gt;Port Numbers&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kube-apiserver&lt;/td&gt;
+      &lt;td&gt;8080, 6443&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kube-scheduler&lt;/td&gt;
+      &lt;td&gt;10251&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kube-controller-manager&lt;/td&gt;
+      &lt;td&gt;10252&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;etcd&lt;/td&gt;
+      &lt;td&gt;2379, 2380&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Kubernetes node(s):&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Component&lt;/th&gt;
+      &lt;th&gt;Port Numbers&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kubelet&lt;/td&gt;
+      &lt;td&gt;10248, 10250, 10255&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;kube-proxy&lt;/td&gt;
+      &lt;td&gt;10256&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;cAdvisor&lt;/td&gt;
+      &lt;td&gt;4194&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">There are some ports which Board and Kubernetes installation will be used, these ports should be accepted by firewall of the servers.</summary></entry><entry><title type="html">board helm charts</title><link href="/technologies/2020/02/10/post3.html" rel="alternate" type="text/html" title="board helm charts" /><published>2020-02-10T09:20:23+08:00</published><updated>2020-02-10T09:20:23+08:00</updated><id>/technologies/2020/02/10/post3</id><content type="html" xml:base="/technologies/2020/02/10/post3.html">&lt;p&gt;&lt;a href=&quot;https://github.com/inspursoft/charts&quot;&gt;Charts&lt;/a&gt; repository stores board helm charts.&lt;/p&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">Charts repository stores board helm charts.</summary></entry><entry><title type="html">coding rules</title><link href="/technologies/2020/02/10/post5.html" rel="alternate" type="text/html" title="coding rules" /><published>2020-02-10T09:00:24+08:00</published><updated>2020-02-10T09:00:24+08:00</updated><id>/technologies/2020/02/10/post5</id><content type="html" xml:base="/technologies/2020/02/10/post5.html">&lt;h1 id=&quot;some-useful-links&quot;&gt;Some useful links:&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://restfulapi.net/resource-naming/&quot;&gt;https://restfulapi.net/resource-naming/&lt;/a&gt;   — this is a restful naming tips&lt;br /&gt;
+&lt;a href=&quot;https://openapi.tools/#documentation&quot;&gt;https://openapi.tools/#documentation&lt;/a&gt;    — some tools for restful api build&lt;br /&gt;
+&lt;a href=&quot;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#daemonset-v1beta2-apps&quot;&gt;https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#daemonset-v1beta2-apps&lt;/a&gt;  —- kubernetes restful api paths&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;some-suggestions&quot;&gt;Some suggestions:&lt;/h1&gt;
+
+&lt;h2 id=&quot;1-remove-tailing-&quot;&gt;1.	Remove tailing ‘/’&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;b&gt;POST /storages/nfs/&lt;/b&gt; should be &lt;b&gt;POST /storages/nfs&lt;/b&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;2-according-to-httpsrestfulapinetresource-naming--use---instead-of-_-or-camelcase&quot;&gt;2.	According to https://restfulapi.net/resource-naming/ , use ‘-’ instead of ‘_’., or CamelCase&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;b&gt;GET /projects/{project_id}&lt;/b&gt; should be &lt;b&gt;GET /projects/{project-id}&lt;/b&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;3-adjust-the-url-path&quot;&gt;3.	Adjust the url path.&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Our ‘Project’ Resource is equals to ‘Namespace’ in kuberenetes and Service in board maps Service+Deployment in k8s.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The api url in kubernetes:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;POST   /api/v1/namespaces/{namespace}/services  
+PATCH  /api/v1/namespaces/{namespace}/services/{name}  
+PUT    /api/v1/namespaces/{namespace}/services/{name}  
+DELETE /api/v1/namespaces/{namespace}/services/{name}  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The board api url:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GET    /services/supplements/{project_id}/{service_id}/info
+PUT    /services/supplements/{project_id}/{service_id}/publicity
+POST   /services/supplements/{project_id}/{service_id}/route
+GET    /services/supplements/{project_id}/{service_id}/selectable
+GET    /services/supplements/{project_id}/{service_id}/status
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;I think the service is the subsource of project, so the url should be like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;GET    /projects/{project-id}/service/{service-id}/{route/status/test}.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There are lots of resource which are differents from k8s. e.g: pvc, autoscale, configmap.&lt;/p&gt;
+
+&lt;h1 id=&quot;internal-rules-for-board-api&quot;&gt;Internal rules for Board API:&lt;/h1&gt;
+
+&lt;h2 id=&quot;1-the-parameters-for-post-put-get-delete&quot;&gt;1. The parameters for POST, PUT, GET, DELETE&lt;/h2&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; For the methods POST,PUT mainly use a body as the parameters, query parameters are for some simple parameters.
+ For GET，DELETE use the query parameters for accuracy and concision
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">Some useful links:</summary></entry><entry><title type="html">community meeting schedule</title><link href="/schedule/2020/02/10/post6.html" rel="alternate" type="text/html" title="community meeting schedule" /><published>2020-02-10T09:00:00+08:00</published><updated>2020-02-10T09:00:00+08:00</updated><id>/schedule/2020/02/10/post6</id><content type="html" xml:base="/schedule/2020/02/10/post6.html">&lt;h1 id=&quot;community-meeting-schedule&quot;&gt;Community Meeting Schedule&lt;/h1&gt;
+
+&lt;p&gt;We have monthly Board community conference calls Zoom. We will use this meetings to communicate updates to the project, listen to feedback from the Board community, and also collect requirements/use cases for new features. Sometimes, we may also host adhoc meetings with a specific agenda. Use the calendar link below to add the recurring meetings to your calendar.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Meeting Link&lt;/strong&gt;: &lt;a href=&quot;https://zoom.us/j/96741810931?pwd=akFxVW05NG9GekJDdTBJeUpNc3dHQT09&quot;&gt;https://zoom.us/j/96741810931?pwd=akFxVW05NG9GekJDdTBJeUpNc3dHQT09&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Meeting number: 967 4181 0931&lt;/p&gt;
+
+&lt;p&gt;Meeting password: 123456&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Meeting Agenda&lt;/strong&gt;: Read, comment, or add agenda items on the &lt;a href=&quot;Board Community Meetings Agenda and Notes&quot;&gt;meeting notes&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Calendar Link&lt;/strong&gt;: coming soon&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Recordings&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Scheduled Time&lt;/th&gt;
+      &lt;th&gt;Holder&lt;/th&gt;
+      &lt;th&gt;Attendees&lt;/th&gt;
+      &lt;th&gt;Conf Recording&lt;/th&gt;
+      &lt;th&gt;Main Topic&lt;/th&gt;
+      &lt;th&gt;Followup&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200414&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200414&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Release Board 7.0 and prepare rel 7.1, Board for Edge, Board on Kubernetes, Board ARM installer, Core team announcement&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200512&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200512&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Review Admin Server, Collector/ Gogs replacement, edge poc preparation&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200609&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200609&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Edge POC status, move Board to K8s, Gogs-&amp;gt;Gitlab, promuthus collector, edge ARM package supporting&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200714&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200714&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Release 7.3 pospond to July 16th, UI console security, all in kubernetes, Edge POC and VM support&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200811&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200811&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Release 7.3, gogs-&amp;gt;gitlab, collector-&amp;gt;Prometheus Edge ARM support&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20200908&lt;/td&gt;
+      &lt;td&gt;@yhua123&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20200908&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Edge POC, all in kubernetes technical varify, update kubernetes to 18 discussion&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20201110&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;Meeting_Notes_20201110&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Fix security issue, GPU support, all in Kubernetes coding status update&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20201209&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/placeholder&quot;&gt;placeholder&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20210106 10:00&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;open board&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20210203 10:00&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;coming soon&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20210303 10:00&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;coming soon&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20210407 10:00&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;coming soon&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;20210505 10:00&lt;/td&gt;
+      &lt;td&gt;@luotian-guthub&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;coming soon&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</content><author><name></name></author><category term="schedule" /><summary type="html">Community Meeting Schedule</summary></entry><entry><title type="html">iptables for docker and kubernetes</title><link href="/technologies/2020/02/10/post7.html" rel="alternate" type="text/html" title="iptables for docker and kubernetes" /><published>2020-02-10T08:50:00+08:00</published><updated>2020-02-10T08:50:00+08:00</updated><id>/technologies/2020/02/10/post7</id><content type="html" xml:base="/technologies/2020/02/10/post7.html">&lt;p&gt;&lt;a href=&quot;https://docs.docker.com/network/iptables/&quot;&gt;https://docs.docker.com/network/iptables/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies&quot;&gt;https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">https://docs.docker.com/network/iptables/</summary></entry><entry><title type="html">k8s api changes</title><link href="/technologies/2020/02/10/post8.html" rel="alternate" type="text/html" title="k8s api changes" /><published>2020-02-10T08:40:00+08:00</published><updated>2020-02-10T08:40:00+08:00</updated><id>/technologies/2020/02/10/post8</id><content type="html" xml:base="/technologies/2020/02/10/post8.html">&lt;p&gt;&lt;a href=&quot;https://github.com/inspursoft/board/wiki/k8s-api-changes&quot;&gt;k8s api changes v1.15-v1.17&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">k8s api changes v1.15-v1.17</summary></entry><entry><title type="html">tomcat container memory limit</title><link href="/technologies/2020/02/10/post9.html" rel="alternate" type="text/html" title="tomcat container memory limit" /><published>2020-02-10T08:30:00+08:00</published><updated>2020-02-10T08:30:00+08:00</updated><id>/technologies/2020/02/10/post9</id><content type="html" xml:base="/technologies/2020/02/10/post9.html">&lt;h1 id=&quot;tomcat-evaluate-java_opts-environment-for-jvm-memory-setting&quot;&gt;Tomcat evaluate &lt;em&gt;JAVA_OPTS&lt;/em&gt; environment for jvm memory setting.&lt;/h1&gt;
+
+&lt;p&gt;JAVA_OPTS=”-Xms4096m -Xmx4096m -XX:PermSize=512M -XX:MaxPermSize=1024m”&lt;/p&gt;
+
+&lt;h1 id=&quot;kubernetes-pod-use-requestlimit-for-memory-setting&quot;&gt;Kubernetes Pod use &lt;em&gt;request/limit&lt;/em&gt; for memory setting.&lt;/h1&gt;
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;resources&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;limits&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;cpu&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1&quot;&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;5Gi&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;cpu&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1&quot;&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;2Gi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;customize-tomcat-pod-should-be-like-this&quot;&gt;Customize Tomcat Pod should be like this:&lt;/h1&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;v1&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Pod&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;instance&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;t1&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;t1-nlp-segment&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;t1-nlp-segment&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;containers&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;env&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;JAVA_OPTS&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;-Xms4096m -Xmx4096m -XX:PermSize=512M -XX:MaxPermSize=1024m&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;10.111.24.131:5000/library/nlp-cs-segment:1.1&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;imagePullPolicy&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;IfNotPresent&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;nlp&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;containerPort&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;http&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;TCP&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;resources&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;limits&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;cpu&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1&quot;&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;5Gi&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;requests&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;cpu&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1&quot;&lt;/span&gt;
+        &lt;span class=&quot;na&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;2Gi&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name></name></author><category term="technologies" /><summary type="html">Tomcat evaluate JAVA_OPTS environment for jvm memory setting.</summary></entry></feed>

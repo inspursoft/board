@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			coding rules
+		</div>
+		<time class="post-date dt-published" datetime="2020-02-10T09:00:24+08:00" itemprop="datePublished">2020/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<h1 id="some-useful-links">Some useful links:</h1>
+
+<blockquote>
+  <p><a href="https://restfulapi.net/resource-naming/">https://restfulapi.net/resource-naming/</a>   — this is a restful naming tips<br />
+<a href="https://openapi.tools/#documentation">https://openapi.tools/#documentation</a>    — some tools for restful api build<br />
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#daemonset-v1beta2-apps">https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#daemonset-v1beta2-apps</a>  —- kubernetes restful api paths</p>
+</blockquote>
+
+<h1 id="some-suggestions">Some suggestions:</h1>
+
+<h2 id="1-remove-tailing-">1.	Remove tailing ‘/’</h2>
+<blockquote>
+  <p><b>POST /storages/nfs/</b> should be <b>POST /storages/nfs</b></p>
+</blockquote>
+
+<h2 id="2-according-to-httpsrestfulapinetresource-naming--use---instead-of-_-or-camelcase">2.	According to https://restfulapi.net/resource-naming/ , use ‘-’ instead of ‘_’., or CamelCase</h2>
+<blockquote>
+  <p><b>GET /projects/{project_id}</b> should be <b>GET /projects/{project-id}</b></p>
+</blockquote>
+
+<h2 id="3-adjust-the-url-path">3.	Adjust the url path.</h2>
+<blockquote>
+  <p>Our ‘Project’ Resource is equals to ‘Namespace’ in kuberenetes and Service in board maps Service+Deployment in k8s.</p>
+</blockquote>
+
+<p>The api url in kubernetes:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>POST   /api/v1/namespaces/{namespace}/services  
+PATCH  /api/v1/namespaces/{namespace}/services/{name}  
+PUT    /api/v1/namespaces/{namespace}/services/{name}  
+DELETE /api/v1/namespaces/{namespace}/services/{name}  
+</code></pre></div></div>
+
+<p>The board api url:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET    /services/supplements/{project_id}/{service_id}/info
+PUT    /services/supplements/{project_id}/{service_id}/publicity
+POST   /services/supplements/{project_id}/{service_id}/route
+GET    /services/supplements/{project_id}/{service_id}/selectable
+GET    /services/supplements/{project_id}/{service_id}/status
+</code></pre></div></div>
+
+<p>I think the service is the subsource of project, so the url should be like this:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET    /projects/{project-id}/service/{service-id}/{route/status/test}.
+</code></pre></div></div>
+
+<p>There are lots of resource which are differents from k8s. e.g: pvc, autoscale, configmap.</p>
+
+<h1 id="internal-rules-for-board-api">Internal rules for Board API:</h1>
+
+<h2 id="1-the-parameters-for-post-put-get-delete">1. The parameters for POST, PUT, GET, DELETE</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> For the methods POST,PUT mainly use a body as the parameters, query parameters are for some simple parameters.
+ For GET，DELETE use the query parameters for accuracy and concision
+</code></pre></div></div>
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>

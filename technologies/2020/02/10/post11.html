@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="Board" /></head>
+<style>@import url(/public/css/syntax/monokai.css);</style>
+  <title>Board</title>
+  <!-- <link href="/public/css/bootstrap.min.css" rel="stylesheet"> -->
+
+  <link href="/public/css/style.css" rel="stylesheet">
+  <body>
+  	<div class="container"> 
+		<div class="sidebar">
+			<div class="sidebar-item sidebar-header">
+	<div class='sidebar-brand'>
+		<a href="/about/">Board</a>
+	</div>
+	<p class="lead">A Container Service Platform</p></div>
+
+<div class="sidebar-item sidebar-nav">
+	<ul class="nav">
+      <li class="nav-title">Pages</li>
+	  <li>
+	  	<a class="nav-item" href="/">Articles</a>
+	  </li>
+	  
+	  
+	    
+	  
+	    
+	      
+	        <li>
+	        	<a class="nav-item" href="/about/">
+	            	About
+	            </a>
+	        </li>
+	      
+	    
+	  
+	    
+	      
+	    
+	  
+	    
+	  
+	    
+	  
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-nav">
+  	<ul class="nav">
+			<li class="nav-title">Categories</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#technologies">
+				<span class="name">technologies</span>
+				<span class="badge">9</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#schedule">
+				<span class="name">schedule</span>
+				<span class="badge">2</span>
+	    	</a>
+ 		</li>
+	    
+	    <li>
+	    	<a class="nav-item" href="/category/#Welcome">
+				<span class="name">Welcome</span>
+				<span class="badge">1</span>
+	    	</a>
+ 		</li>
+	    
+	  </nav>
+	</ul>
+</div>
+
+<div class="sidebar-item sidebar-footer">
+	<p>Powered by <a href="https://github.com/jekyll/jekyll">Jekyll</a></p>
+</div>
+		</div>
+		<div class="content">
+			<article class="post">
+	<header class="post-header">
+		<div class="post-title"> 
+			私网环境介绍
+		</div>
+		<time class="post-date dt-published" datetime="2020-02-10T08:20:00+08:00" itemprop="datePublished">2020/02/10
+		</time>		
+	</header>
+
+	<div class="post-content">
+		<p>私网环境由一台路由器、一台交换机及若干台服务器组成。</p>
+
+<p>路由器负责提供DHCP服务和无线WIFI服务。私网内所有机器的IP地址由路由器分配。所有工作人员通过无线WIFI连接私网（由于端口紧张，不建议占用物理端口连接）。路由器有1个WAN口和4个LAN口，连线时WAN口不接线，选择任意LAN口连线交换机。私网网段为196.222.222.0/24，路由器IP为196.222.222.1，路由器后台管理密码为（不包含【】）：【BOARD123456a?】。无线WIFI名字为：BOARD和BOARD_5G，无线WIFI密码为（不包含【】）：【BOARD123456a?】。</p>
+
+<p>交换机有8个网口，用来扩充私网物理端口数量。连线时选择任一端口与路由器连接，其余端口连接服务器。
+目前私网共有3+7个物理端口可以连接服务器等设备。</p>
+
+<p>私网内目前有四台服务器，其IP地址已经与MAC地址绑定。分别为：</p>
+
+<p>board1 196.222.222.10</p>
+
+<p>board2 196.222.222.20</p>
+
+<p>board3 196.222.222.30</p>
+
+<p>board4 196.222.222.40</p>
+
+<p>以上所有服务器的root密码为（不包含【】）：【BOARD123456a?】</p>
+
+	</div>
+</article>
+		</div>
+	</div>
+  </body>
+</html>
