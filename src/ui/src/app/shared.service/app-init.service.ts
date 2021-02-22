@@ -74,6 +74,10 @@ export class AppInitService {
     return this.systemInfo.mode === 'normal';
   }
 
+  get isOpenBoard(): boolean {
+    return this.systemInfo.boardVersion.endsWith('Openboard');
+  }
+
   get getWebsocketPrefix(): string {
     return window.location.protocol === 'https:' ? 'wss' : 'ws';
   }

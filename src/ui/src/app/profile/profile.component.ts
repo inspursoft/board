@@ -20,4 +20,8 @@ export class ProfileComponent {
   get isShowProcessorType(): boolean {
     return this.processorType !== '' && !this.processorType.startsWith('unknown');
   }
+
+  get logoPath(): string {
+    return this.appInitService.isOpenBoard ? '../../images/board-logo.png' : '../../images/iboard-logo.png';
+  }
 }
