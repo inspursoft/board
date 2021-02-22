@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ include "board.grafana.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+  name: {{ include "board.grafana.fullname" . }}
+data:
+  {{- $files := .Files }}
+  {{- range tuple "files/grafana/prometheus-datasource.json" "files/grafana/notifications.json" "files/grafana/kubernetes-datasource.json" "files/grafana/kubernetes.json" "files/grafana/kubernetes-dashboard.json" }}
+  {{ base . }}: |-
+{{ $files.Get . | trim | indent 4}}
+  {{- end }}

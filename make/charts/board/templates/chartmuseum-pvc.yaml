@@ -1,0 +1,26 @@
+{{- if and .Values.chartmuseum.persistence.enabled (not .Values.chartmuseum.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "board.chartmuseum.fullname" . }}
+  labels:
+    app: {{ include "board.chartmuseum.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.chartmuseum.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.chartmuseum.persistence.size | quote }}
+{{- if .Values.chartmuseum.persistence.storageClass }}
+{{- if (eq "-" .Values.chartmuseum.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.chartmuseum.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.chartmuseum.persistence.volumeName }}
+  volumeName: "{{ .Values.chartmuseum.persistence.volumeName }}"
+{{- end }}
+{{- end }}

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ include "board.apiserver.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+  name: {{ include "board.apiserver.fullname" . }}-certs
+data:
+  {{- $files := .Files }}
+  {{- range tuple "files/apiserver/apiserver-key.pem" "files/apiserver/apiserver.pem" }}
+  {{- $content := ($files.Get .) }}
+  {{- if $content }}
+  {{ base . }}: |-
+{{ $files.Get . | trim | indent 4}}
+  {{- end -}}
+  {{- end }}

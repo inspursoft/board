@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.tokenserver.fullname" . }}
+  labels:
+    app: {{ include "board.tokenserver.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.tokenserver.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.tokenserver.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.tokenserver.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ include "board.tokenserver.fullname" . }}-env
+        image: {{ include "board.tokenserver.image.image" . }}
+        imagePullPolicy: {{ .Values.tokenserver.image.pullPolicy }}
+        name: tokenserver
+        ports:
+        - containerPort: 4000
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      restartPolicy: '{{.Values.tokenserver.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.apiserver.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiserver.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiserver.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

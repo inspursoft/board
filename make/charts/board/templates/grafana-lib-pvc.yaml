@@ -1,0 +1,26 @@
+{{- if and .Values.grafana.persistence.enabled (not .Values.grafana.persistence.lib.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "board.grafana.fullname" . }}-lib
+  labels:
+    app: {{ include "board.grafana.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.grafana.persistence.lib.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.persistence.lib.size | quote }}
+{{- if .Values.grafana.persistence.lib.storageClass }}
+{{- if (eq "-" .Values.grafana.persistence.lib.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.grafana.persistence.lib.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.grafana.persistence.lib.volumeName }}
+  volumeName: "{{ .Values.grafana.persistence.lib.volumeName }}"
+{{- end }}
+{{- end }}

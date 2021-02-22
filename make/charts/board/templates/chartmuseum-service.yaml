@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chartmuseum  # board db metadata hardcodes default helm repository name to 'chartmuseum', so here is service name chartmuseum.
+  labels:
+    app: {{ include "board.chartmuseum.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.chartmuseum.service.type }}
+  ports:
+  - port: {{ .Values.chartmuseum.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: {{ include "board.chartmuseum.fullname" . }}
+    instance: {{ .Release.Name }}

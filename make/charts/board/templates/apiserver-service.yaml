@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apiserver  # board proxy hardcodes apiserver name to 'apiserver', so here is service name apiserver.
+  labels:
+    app: {{ include "board.apiserver.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.apiserver.service.type }}
+  ports:
+  - port: {{ .Values.apiserver.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: {{ include "board.apiserver.fullname" . }}
+    instance: {{ .Release.Name }}
