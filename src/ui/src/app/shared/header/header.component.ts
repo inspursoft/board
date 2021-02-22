@@ -24,7 +24,11 @@ export class HeaderComponent implements OnInit {
   redirectionURL = '';
 
   get brandLogoUrl(): string {
-    return this.isSignIn ? '../../images/board-blue.jpg' : '../../../images/board.png';
+    if (this.appInitService.isOpenBoard) {
+      return this.isSignIn ? '../../images/board-blue.jpg' : '../../../images/board.png';
+    } else {
+      return this.isSignIn ? '../../images/iboard-blue.jpg' : '../../../images/iboard.png';
+    }
   }
 
   get mipsLogoUrl(): string {
