@@ -258,17 +258,21 @@ prepare_package: prepare_composefile
 	@if [ ! -d $(PKGTEMPPATH)/adminserver ] ; then mkdir -p $(PKGTEMPPATH)/adminserver ; fi
 	@if [ ! -d $(PKGTEMPPATH)/archive ] ; then mkdir -p $(PKGTEMPPATH)/archive ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/chart-install.sh $(PKGTEMPPATH)/chart-install.sh
 	@cp $(TOOLSPATH)/install-adminserver.sh $(PKGTEMPPATH)/adminserver/install-adminserver.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
 	@cp $(TOOLSPATH)/uninstall-adminserver.sh $(PKGTEMPPATH)/adminserver/uninstall-adminserver.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
+	@cp $(MAKEPATH)/prepare_chart $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
+	@cp -rf $(MAKEPATH)/charts $(PKGTEMPPATH)/.
 	@mv $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
 	@mv $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/archive/docker-compose.yml
 	@mv $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
 	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/adminserver/env
+	@cp $(VERSIONFILE) $(PKGTEMPPATH)/.
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml

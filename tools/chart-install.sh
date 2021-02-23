@@ -1,9 +1,12 @@
 #!/bin/bash
 
 #docker version: 17.0
-
+#docker-compose version: 1.7.1 
+#Board version: 0.8.0
 
 set -e
+
+version_tag=$(cat VERSION | head -n 1)
 
 usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
 item=0
@@ -31,7 +34,7 @@ then
 fi
 
 function confirm {
-	read -r -p "Please confirm whether you has been deleted claimRef in every pv about openboard manually. Are you sure to continue? [Y/n]" input
+	read -r -p "Please confirm whether you has been deleted claimRef in every pv about Board manually. Are you sure to continue? [Y/n]" input
 	case $input in
     		y|Y)
 			echo "Continue."
@@ -122,7 +125,6 @@ For more details, please visit: https://v2.helm.sh/docs/"
     fi
 }
 
-
 function load_images {
 	# Check if the tar package exists
 	if [ -f board*.tgz ]
@@ -142,20 +144,11 @@ function load_images {
 		echo "Failed to parse image_registry_url in board.cfg"
 		exit 1
 	fi
-	# Parse version_tag
-	if [[ $(cat ./board.cfg) =~ version_tag[[:blank:]]*=[[:blank:]]*([0-9a-z._-]*) ]]
-	then
-		version_tag=${BASH_REMATCH[1]}
-		echo "Parse version_tag = $version_tag"
-	else
-		echo "Failed to parse version_tag"
-		exit 1
-	fi
 	# docker tag and push images to registry
 	for image in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep $version_tag | grep -v $image_registry_url);
 	do
-		docker tag $image $image_registry_url/openboard/$image
-		docker push $image_registry_url/openboard/$image
+		docker tag $image $image_registry_url/openboard/$image &> /dev/null
+		docker push $image_registry_url/openboard/$image &> /dev/null
 		echo "Push $image_registry_url/openboard/$image ok"
 	done
 }
@@ -181,8 +174,9 @@ echo "[Step $item]: preparing environment ...";  let item+=1
 #	sed "s/^hostname = .*/hostname = $host/g" -i ./board.cfg
 #fi
 
-#./prepare
-#echo ""
+./prepare
+./prepare_chart --conf board.cfg --tag $version_tag
+echo ""
 
 protocol=http
 hostname=reg.mydomain.com
@@ -221,5 +215,5 @@ echo ""
 echo $"----Board has been installed and started successfully.----
 
 Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
-For more details, please visit http://open.inspur.com/TechnologyCenter/board .
+For more details, please visit https://github.com/inspursoft/board .
 "
