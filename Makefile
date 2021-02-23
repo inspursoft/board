@@ -261,6 +261,7 @@ prepare_package: prepare_composefile
 	@cp $(TOOLSPATH)/chart-install.sh $(PKGTEMPPATH)/chart-install.sh
 	@cp $(TOOLSPATH)/install-adminserver.sh $(PKGTEMPPATH)/adminserver/install-adminserver.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
+	@cp $(TOOLSPATH)/chart-uninstall.sh $(PKGTEMPPATH)/chart-uninstall.sh
 	@cp $(TOOLSPATH)/uninstall-adminserver.sh $(PKGTEMPPATH)/adminserver/uninstall-adminserver.sh
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
