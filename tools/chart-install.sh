@@ -161,6 +161,9 @@ function load_images {
 		docker push $image_registry_url/openboard/$image &> /dev/null
 		echo "Push $image_registry_url/openboard/$image ok"
 	done
+	docker tag docker.elastic.co/elasticsearch/elasticsearch:7.9.3 $image_registry_url/elasticsearch/elasticsearch:7.9.3
+	docker tag docker.elastic.co/kibana/kibana:7.9.3 $image_registry_url/kibana/kibana:7.9.3
+	docker tag quay.io/fluentd_elasticsearch/fluentd:v3.0.4 $image_registry_url/fluentd_elasticsearch/fluentd:v3.0.4
 }
 
 echo "[Step $item]: checking installation environment ..."; let item+=1
