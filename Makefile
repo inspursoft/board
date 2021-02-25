@@ -281,7 +281,10 @@ prepare_package: prepare_composefile
 
 offline_package: prepare_package
 	@echo "package images ..."
-	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0
+	@$(DOCKERPULL) docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+	@$(DOCKERPULL) docker.elastic.co/kibana/kibana:7.9.3
+	@$(DOCKERPULL) quay.io/fluentd_elasticsearch/fluentd:v3.0.4
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0 docker.elastic.co/elasticsearch/elasticsearch:7.9.3 docker.elastic.co/kibana/kibana:7.9.3 quay.io/fluentd_elasticsearch/fluentd:v3.0.4
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
