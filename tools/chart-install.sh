@@ -136,14 +136,24 @@ function load_images {
 		exit 1
 	fi
 	# Parse image_registry_url
-	if [[ $(cat ./board.cfg) =~ image_registry_url[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
+	if [[ $(cat ./board.cfg) =~ registry_ip[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
 	then
-		image_registry_url=${BASH_REMATCH[1]}
-		echo "Parse image_registry_url = $image_registry_url"
+		registry_ip=${BASH_REMATCH[1]}
+		echo "Parse registry_ip = $registry_ip"
 	else
-		echo "Failed to parse image_registry_url in board.cfg"
+		echo "Failed to parse registry_ip in board.cfg"
 		exit 1
 	fi
+	if [[ $(cat ./board.cfg) =~ registry_port[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
+	then
+		registry_port=${BASH_REMATCH[1]}
+		echo "Parse registry_port = $registry_port"
+	else
+		echo "Failed to parse registry_port in board.cfg"
+		exit 1
+	fi
+	image_registry_url=$registry_ip:$registry_port
+	echo "image_registry_url = $image_registry_url"
 	# docker tag and push images to registry
 	for image in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep $version_tag | grep -v $image_registry_url);
 	do
