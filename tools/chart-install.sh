@@ -6,6 +6,8 @@
 
 set -e
 
+namespace=$1
+namespace=${namespace:-board}
 version_tag=$(cat VERSION | head -n 1)
 
 usage=$'Please set hostname and other necessary attributes in board.cfg first. DO NOT use localhost or 127.0.0.1 for hostname, because Board needs to be accessed by external clients.'
@@ -34,20 +36,20 @@ then
 fi
 
 function confirm {
-	read -r -p "Please confirm whether you has been deleted claimRef in every pv about Board manually. Are you sure to continue? [Y/n]" input
-	case $input in
-    		y|Y)
-			echo "Continue."
-                	;;
-    		n|N)
-			echo "Please deleted claimRef in pv."
-			exit 0
-                	;;
-    		*)
-        		echo "Invalid input..."
-        		exit 1
-        		;;
-	esac
+        read -r -p "$1" input
+        case $input in
+                y|Y)
+                        echo "$2"
+                        ;;
+                n|N)
+                        echo "$3"
+                        exit 0
+                        ;;
+                *)
+                        echo "Invalid input..."
+                        exit 1
+                        ;;
+        esac
 }
 
 function check_docker {
@@ -164,6 +166,32 @@ function load_images {
 	docker tag docker.elastic.co/elasticsearch/elasticsearch:7.9.3 $image_registry_url/elasticsearch/elasticsearch:7.9.3
 	docker tag docker.elastic.co/kibana/kibana:7.9.3 $image_registry_url/kibana/kibana:7.9.3
 	docker tag quay.io/fluentd_elasticsearch/fluentd:v3.0.4 $image_registry_url/fluentd_elasticsearch/fluentd:v3.0.4
+	docker push $image_registry_url/elasticsearch/elasticsearch:7.9.3 &> /dev/null
+	docker push $image_registry_url/kibana/kibana:7.9.3 &> /dev/null
+	docker push $image_registry_url/fluentd_elasticsearch/fluentd:v3.0.4 &> /dev/null
+}
+
+function create_pv {
+        if [[ $(cat ./board.cfg) =~ nfs_path[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
+        then
+                nfs_path=${BASH_REMATCH[1]}
+                echo "Parse nfs_path = $nfs_path"
+        else
+                echo "Failed to parse nfs_path in board.cfg"
+                exit 1
+        fi
+        if [[ $(cat ./board.cfg) =~ nfs_server[[:blank:]]*=[[:blank:]]*([0-9a-zA-Z._/:-]*) ]]
+        then
+                nfs_server=${BASH_REMATCH[1]}
+                echo "Parse nfs_server = $nfs_server"
+        else
+                echo "Failed to parse nfs_server in board.cfg"
+                exit 1
+        fi
+
+	sed "s#__nfs_path__#$nfs_path#g" pv.tpl > pv.yaml
+	sed "s#__nfs_server__#$nfs_server#g" -i pv.yaml
+	kubectl create -f pv.yaml
 }
 
 echo "[Step $item]: checking installation environment ..."; let item+=1
@@ -217,11 +245,34 @@ then
 fi
 echo ""
 
+echo "[Step $item]: checking nfs server active ..."; let item+=1
+confirm "Please confirm NFS is configured. Are you sure to continue? [Y/n]" "Continue." "Please start and configure NFS server."
+if [[ $(systemctl status nfs | grep Active) =~ Active[[:blank:]]*:[[:blank:]]*(active?) ]]
+then
+        read -r -p "Do you need to create pv? [Y/n]" input
+        case $input in
+                y|Y)
+                        echo "Creating..."
+                        create_pv
+                        ;;
+                n|N)
+                        ;;
+                *)
+                        echo "Invalid input..."
+                        exit 1
+                        ;;
+        esac
+else
+	echo "NFS serve is not active."
+	exit 1
+fi
+
 # Confirm whether deleted claimRef in pv
-confirm
+confirm "Please confirm that the status of each pv is Available. Are you sure to continue? [Y/n]" "Continue."
 
 echo "[Step $item]: starting Board ..."
-helm install --name board charts/board
+echo "namespace = $namespace"
+helm install --name board --namespace $namespace charts/board
 
 echo ""
 

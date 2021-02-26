@@ -263,6 +263,7 @@ prepare_package: prepare_composefile
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
 	@cp $(TOOLSPATH)/chart-uninstall.sh $(PKGTEMPPATH)/chart-uninstall.sh
 	@cp $(TOOLSPATH)/uninstall-adminserver.sh $(PKGTEMPPATH)/adminserver/uninstall-adminserver.sh
+	@cp $(MAKEPATH)/pv.tpl $(PKGTEMPPATH)/pv.tpl
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
