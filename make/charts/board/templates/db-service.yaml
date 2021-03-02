@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: db  # board apiserver hardcodes database name to 'db', so here is service name db.
+  labels:
+    app: {{ include "board.db.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.db.service.type }}
+  ports:
+  - port: {{ .Values.db.service.port }}
+    targetPort: db
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: {{ include "board.db.fullname" . }}
+    instance: {{ .Release.Name }}

@@ -16,6 +16,7 @@
 # Develop flag
 #
 DEVFLAG=release
+RELEASETYPE=Openboard
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=
@@ -84,6 +85,9 @@ PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
+PREPARECHARTCMD=prepare_chart
+PREPARECHARTCMD_PARAMETERS=--conf $(MAKEPATH)/board.cfg --tag $(VERSIONTAG)
+
 # swagger parameters
 SWAGGERTOOLPATH=$(TOOLSPATH)/swagger
 SWAGGERFILEPATH=$(BUILDPATH)/docs
@@ -142,6 +146,7 @@ golint: $(GOLINT_LIST)
 version:
 	@echo $(VERSIONTAG)
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
+	@echo -n "-$(RELEASETYPE)" >> $(VERSIONFILE)
 
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
@@ -187,6 +192,12 @@ prepare: version
 	@echo "preparing..."
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 	@echo "Done."
+
+prepare_chart: prepare
+	@echo "preparing chart..."
+	@$(MAKEPATH)/$(PREPARECHARTCMD) $(PREPARECHARTCMD_PARAMETERS)
+	@echo "Done."
+
 
 start:
 	@echo "loading Board images..."
@@ -247,17 +258,23 @@ prepare_package: prepare_composefile
 	@if [ ! -d $(PKGTEMPPATH)/adminserver ] ; then mkdir -p $(PKGTEMPPATH)/adminserver ; fi
 	@if [ ! -d $(PKGTEMPPATH)/archive ] ; then mkdir -p $(PKGTEMPPATH)/archive ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/chart-install.sh $(PKGTEMPPATH)/chart-install.sh
 	@cp $(TOOLSPATH)/install-adminserver.sh $(PKGTEMPPATH)/adminserver/install-adminserver.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
+	@cp $(TOOLSPATH)/chart-uninstall.sh $(PKGTEMPPATH)/chart-uninstall.sh
 	@cp $(TOOLSPATH)/uninstall-adminserver.sh $(PKGTEMPPATH)/adminserver/uninstall-adminserver.sh
+	@cp $(MAKEPATH)/pv.tpl $(PKGTEMPPATH)/pv.tpl
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
+	@cp $(MAKEPATH)/prepare_chart $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
+	@cp -rf $(MAKEPATH)/charts $(PKGTEMPPATH)/.
 	@mv $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
 	@mv $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/archive/docker-compose.yml
 	@mv $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
 	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/adminserver/env
+	@cp $(VERSIONFILE) $(PKGTEMPPATH)/.
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
@@ -265,7 +282,10 @@ prepare_package: prepare_composefile
 
 offline_package: prepare_package
 	@echo "package images ..."
-	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0
+	@$(DOCKERPULL) docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+	@$(DOCKERPULL) docker.elastic.co/kibana/kibana:7.9.3
+	@$(DOCKERPULL) quay.io/fluentd_elasticsearch/fluentd:v3.0.4
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0 docker.elastic.co/elasticsearch/elasticsearch:7.9.3 docker.elastic.co/kibana/kibana:7.9.3 quay.io/fluentd_elasticsearch/fluentd:v3.0.4
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)

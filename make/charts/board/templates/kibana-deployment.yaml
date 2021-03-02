@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.kibana.fullname" . }}
+  labels:
+    app: {{ include "board.kibana.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.kibana.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.kibana.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.kibana.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ include "board.kibana.fullname" . }}-env
+        image: {{ include "board.kibana.image.image" . }}
+        imagePullPolicy: {{ .Values.kibana.image.pullPolicy }}
+        name: kibana
+        ports:
+        - containerPort: 5601
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /config
+          name: config
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          items:
+{{- range $path, $_ := .Files.Glob  "files/kibana/**.json" }}
+          - key: {{ printf "%s_%s" (base (dir $path)) (base $path) }}
+            path: {{ printf "%s/%s" (base (dir $path)) (base $path) -}}
+{{ end }}
+          name: {{ include "board.kibana.fullname" . }}
+        name: config
+      restartPolicy: '{{.Values.kibana.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.kibana.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.kibana.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.kibana.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

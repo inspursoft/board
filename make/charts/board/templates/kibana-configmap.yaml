@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ include "board.kibana.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+  name: {{ include "board.kibana.fullname" . }}
+data:
+{{- $currentScope := .}}
+{{- range $path, $_ := .Files.Glob  "files/kibana/**.json" }}
+{{ printf "%s_%s" (base (dir $path)) (base $path) | indent 2 }}: |-
+  {{- with $currentScope}}
+{{ .Files.Get $path | indent 4 }}
+  {{- end -}}
+{{ end }}

@@ -523,12 +523,12 @@ Set up environment with ansible on-step:
 ```
 To see README.md
 ```
-### Anbari One-step Install
-Get Ambari resources：
+### install with ansible script One-step Install
+Get Ansible resources：
 ````
-git clone http://10.110.18.40:10080/guyingyan/Ambari.git
+git clone https://github.com/inspursoft/board-installer.git
 ````
-Set up enrionment with Ambari on-step:
+Set up enrionment with Ansible on-step:
 ```
 To see README.md
 ```
@@ -536,8 +536,8 @@ To see README.md
 ### Limitation
 When you need install, please note the limitations:
 
-1. If you want to use CentOS or Redhat, you need install CentOS, Redhat 7.2 or higher version.
-2. To install Board, the host should with Docker 17.02 or higher version.
+1. If you want to use CentOS、Redhat and Ubuntu, you need install CentOS, Redhat 7.4 or higher version, install Ubuntu 18.04.
+2. To install Board, the host should with Docker 19.03 or higher version.
 
 ### Ports Reservation
 There are some ports which Board and Kubernetes installation will be used, these ports should be accepted by firewall of the servers.

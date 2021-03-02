@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.chartmuseum.fullname" . }}
+  labels:
+    app: {{ include "board.chartmuseum.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.chartmuseum.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.chartmuseum.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.chartmuseum.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{ include "board.chartmuseum.image.image" . }}
+        imagePullPolicy: {{ .Values.chartmuseum.image.pullPolicy }}
+        name: chartmuseum
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /storage
+          name: data
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - name: data
+      {{- if .Values.chartmuseum.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.chartmuseum.persistence.existingClaim | default (include "board.chartmuseum.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: '{{.Values.chartmuseum.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.chartmuseum.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.chartmuseum.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.chartmuseum.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

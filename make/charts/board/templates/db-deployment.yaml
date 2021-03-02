@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.db.fullname" . }}
+  labels:
+    app: {{ include "board.db.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.db.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.db.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.db.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+      - name: "remove-lost-found"
+        image: {{ include "board.db.image.image" . }}
+        imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+        command:  ["rm", "-fr", "/var/lib/mysql/lost+found"]
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ include "board.db.fullname" . }}-env
+        image: {{ include "board.db.image.image" . }}
+        imagePullPolicy: {{ .Values.db.image.pullPolicy }}
+        name: apiserver
+        ports:
+        - containerPort: 3306
+          name: db
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        - mountPath: /etc/mysql/conf.d/my.cnf
+          name: config
+          subPath: my.cnf
+        - mountPath: /var/lib/mysql
+          name: data
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: my.cnf
+            path: my.cnf
+          name: {{ include "board.db.fullname" . }}-config
+        name: config
+      - name: data
+      {{- if .Values.db.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.db.persistence.existingClaim | default (include "board.db.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: '{{.Values.db.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.db.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.db.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.db.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

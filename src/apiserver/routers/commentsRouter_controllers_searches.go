@@ -7,13 +7,13 @@ import (
 
 func init() {
 
-    beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"],
-        beego.ControllerComments{
-            Method: "Get",
-            Router: `/`,
-            AllowHTTPMethods: []string{"get"},
-            MethodParams: param.Make(),
-            Filters: nil,
-            Params: nil})
+	beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"] = append(beego.GlobalControllerRouter["git/inspursoft/board/src/apiserver/controllers/searches:SearchController"],
+		beego.ControllerComments{
+			Method:           "Get",
+			Router:           `/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
 
 }
