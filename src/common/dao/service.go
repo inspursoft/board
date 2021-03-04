@@ -127,6 +127,10 @@ func generateServiceStatusSQL(query model.ServiceStatusFilter, userID int64) (st
 		params = append(params, query.SourceID)
 		sql += ` and s.source_id = ? `
 	}
+	if query.ProjectID != 0 {
+		params = append(params, query.ProjectID)
+		sql += ` and s.project_id = ? `
+	}
 	return sql, params
 }
 
