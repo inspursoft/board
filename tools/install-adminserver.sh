@@ -7,17 +7,25 @@
 set -e
 
 item=0
+usage=$"
+################ Usage ################
+./install-adminserver.sh                     # The relevant folders of /data/pre-env are ready
+./install-adminserver.sh pre-env.tar.gz      # The relevant folders of /data/pre-env are not ready, but you have the source file compression package: pre-env.tar.gz
+
+If none of the above two files are available, please contact us for help: https://github.com/inspursoft/board
+"
 
 if [[ -n $1 && -f $1 ]];then
 tar zxvf $1 -C /data
 else
 	if [[ ! -e "/data/pre-env" ]]
 	then
-		echo "Please add the file pre-env.tar.gz file for add node to the directory Deploy!"
+		echo "Cannot find /data/pre-env in the path. Please use the pre-env.tar.gz file to try again!"
+		echo "$usage"
 		exit 1
 	fi
-	echo "Welcome to Adminserver!"
 fi
+echo "################ The installation begins! ################"
 
 workdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $workdir
@@ -107,5 +115,5 @@ echo $"----Board-adminserver has been installed and started successfully.----
 
 You can visit it on http://your-IP:8082 .
 
-For more details, please visit http://open.inspur.com/TechnologyCenter/board .
+For more details, please visit https://github.com/inspursoft/board .
 "
