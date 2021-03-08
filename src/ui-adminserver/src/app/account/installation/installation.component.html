@@ -80,6 +80,12 @@
             </label>
           </clr-toggle-wrapper>
         </div>
+        <!-- 
+          ##################################################
+          #   Here is the Board configuration.             #
+          #   Click here to collapse all configurations    #
+          ##################################################
+        -->
         <div class="card-block"
              *ngIf="installStep >= 2 && !ignoreStep2">
           <form clrForm>
@@ -873,9 +879,9 @@
 
           <button class="btn btn-warning"
                   [clrLoading]="uninstallBtnState"
-                  [disabled]="isEdit || isStart"
+                  [disabled]="(isEdit || isStart) && (!isKeepUninstall || disableUninstall)"
                   (click)="openSSH = true; uninstallConfirm = true; clearDate = false; responsibility = false; user.password = '';"
-                  *ngIf="installStep === 1">
+                  *ngIf="installStep === 1 || isKeepUninstall">
             <clr-icon shape="angle-double"
                       style="transform: rotate(180deg);"></clr-icon>
             <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
@@ -1011,7 +1017,7 @@
   <div class="modal-footer">
     <button class="btn"
             [clrLoading]="submitBtnState"
-            (click)="onStartBoard()"
+            (click)="onStartBoard(); isKeepUninstall=false;"
             [disabled]='!sshForm.valid'
             *ngIf="installStep === 1 && !uninstallConfirm">
       <clr-icon shape="angle-double"
@@ -1021,9 +1027,9 @@
 
     <button class="btn btn-warning"
             [clrLoading]="submitBtnState"
-            (click)="onUninstallBoard()"
+            (click)="onUninstallBoard(); isKeepUninstall=false;"
             [disabled]='!sshForm.valid'
-            *ngIf="installStep === 1 && uninstallConfirm">
+            *ngIf="(installStep === 1 || installStep === 2 ) && uninstallConfirm">
       <clr-icon shape="angle-double"
                 style="transform: rotate(180deg);"></clr-icon>
       <span> {{'INITIALIZATION.BUTTONS.UNINSTALL' | translate}}</span>
@@ -1032,8 +1038,8 @@
     <button class="btn"
             [clrLoading]="submitBtnState"
             [disabled]='!sshForm.valid'
-            (click)="onApplyAndStartBoard()"
-            *ngIf="installStep === 2">
+            (click)="onApplyAndStartBoard(); isKeepUninstall=false;"
+            *ngIf="installStep === 2 && !uninstallConfirm">
       <clr-icon shape="angle-double"
                 style="transform: rotate(180deg);"></clr-icon>
       <span> {{'INITIALIZATION.BUTTONS.APPLY_AND_START_BOARD' | translate}}</span>
