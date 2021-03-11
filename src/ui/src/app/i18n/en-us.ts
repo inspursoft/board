@@ -679,6 +679,7 @@ export const LANG_EN_US = {
     "STATUS_DELETED": "Deleted",
     "STATUS_UNKNOWN": "Unknown",
     "STATUS_EDGE": "Autonomous Offline",
+    "STATUS_STOPPING": "Stopping",
     "TOGGLE_SERVICE": "Change Service Status",
     "CONFIRM_TO_TOGGLE_SERVICE": "Confirm to change service {{0}} status?",
     "DELETE_SERVICE": "Delete Service",

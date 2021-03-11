@@ -14,7 +14,8 @@ export enum SERVICE_STATUS {
   DELETED,
   UnKnown = 8,
   AutonomousOffline = 9,
-  PartAutonomousOffline
+  PartAutonomousOffline,
+  STOPPING
 }
 
 export enum GUIDE_STEP {
