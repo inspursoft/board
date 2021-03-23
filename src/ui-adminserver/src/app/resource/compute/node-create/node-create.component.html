@@ -19,15 +19,6 @@
       </div>
     </div>
     <div *ngIf="actionStatus < 2">
-      <lib-input-ex [inputLabel]="masterTitle | async | translate"
-                    [inputLabelWidth]="240"
-                    [inputIsRequired]="true"
-                    [inputCategory]="3"
-                    [inputDisabled]="actionStatus === 1"
-                    [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Master_Hint' | translate}]"
-                    (commitEvent)="postData.masterPassword = $event">
-      </lib-input-ex>
-
       <lib-input-ex [inputLabel]="hostUsernameTitle | async | translate"
                     [inputIsRequired]="true"
                     [inputLabelWidth]="240"
@@ -45,6 +36,41 @@
                     [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Host_Password_Hint' | translate}]"
                     (commitEvent)="postData.hostPassword = $event">
       </lib-input-ex>
+      <div class="dynamic-line-container title-container">
+        <span class="title">{{'Node.Node_Detail_Master_Ip' | translate}}</span>
+        <span class="title">{{'Node.Node_Detail_Master_Password' | translate}}</span>
+      </div>
+      <div *ngFor="let master of newMasterList;index as i" class="dynamic-container">
+        <div class="dynamic-line-container">
+          <div class="dynamic-icon-container">
+            <clr-icon *ngIf="i > 0"
+                      class="dynamic-icon"
+                      shape="minus"
+                      (click)="removeMasterInfo(i)">
+            </clr-icon>
+          </div>
+          <lib-input-ex [inputIsRequired]="true"
+                        [inputLabelWidth]="240"
+                        [toolTipPosition]="'bottom-right'"
+                        [inputDisabled]="executing || i == 0"
+                        [validatorAsyncFn]="checkMasterIpExist"
+                        [inputDefaultValue]="master.masterIp"
+                        [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Master_Ip_Hint' | translate}]"
+                        (commitEvent)="master.masterIp = $event">
+          </lib-input-ex>
+          <lib-input-ex [inputLabelWidth]="240"
+                        [inputIsRequired]="true"
+                        [inputCategory]="3"
+                        [validatorAsyncFn]="checkPassword"
+                        [inputDisabled]="executing"
+                        [validatorMessage]="[{key:'required', message:'Node.Node_Detail_Master_Password_Hint' | translate}]"
+                        (commitEvent)="master.masterPassword = $event">
+          </lib-input-ex>
+        </div>
+      </div>
+      <div class="plus-container">
+        <clr-icon class="dynamic-icon" shape="plus" (click)="addMasterInfo()"></clr-icon>
+      </div>
       <div class="dynamic-line-container title-container">
         <span class="title">{{'Node.Node_Detail_Node_Ip' | translate}}</span>
         <span class="title">{{'Node.Node_Detail_Node_Password' | translate}}</span>
