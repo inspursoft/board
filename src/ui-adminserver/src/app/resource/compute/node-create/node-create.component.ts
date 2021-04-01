@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import {
   ActionStatus,
-  NodeDetails,
+  NodeDetails, NodeList,
   NodeLog,
   NodeLogStatus,
   NodePostData,
@@ -26,6 +26,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   @ViewChild('logTemplate') logTmp: TemplateRef<any>;
   @ViewChild('divElement') divElement: ElementRef;
   @ViewChild('msgViewContainer', {read: ViewContainerRef}) view: ViewContainerRef;
+  nodeList: NodeList;
   preparationData: NodePreparationData;
   postData: NodePostData;
   title = 'Node.Node_Detail_Title_Add';
@@ -35,7 +36,6 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   autoRefreshLogSubscription: Subscription;
   curNodeLogStatus: NodeLogStatus;
   newNodeList: Array<{ nodeIp: string, nodePassword: string, checked: boolean }>;
-  newMasterList: Array<{ masterIp: string, masterPassword: string, checked: boolean }>;
 
   constructor(private messageService: MessageService,
               private translateService: TranslateService,
@@ -44,7 +44,6 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     this.preparationData = new NodePreparationData({});
     this.postData = new NodePostData();
     this.newNodeList = new Array<{ nodeIp: string, nodePassword: string, checked: boolean }>();
-    this.newMasterList = new Array<{ masterIp: string, masterPassword: string, checked: boolean }>();
   }
 
   ngOnInit() {
@@ -96,27 +95,10 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     return this.checkPasswordFun.bind(this);
   }
 
-  get checkMasterIpExist() {
-    return this.checkMasterIpExistFun.bind(this);
-  }
-
   checkIpExistFun(control: AbstractControl): Observable<ValidationErrors | null> {
     const ip = control.value;
     if (this.newNodeList.find(value => value.nodeIp === ip && value.checked === false)) {
       return this.translateService.get('Node.Node_Detail_Error_Node_Repeat').pipe(
-        map(msg => {
-          return {ipExists: msg};
-        })
-      );
-    } else {
-      return of(null);
-    }
-  }
-
-  checkMasterIpExistFun(control: AbstractControl): Observable<ValidationErrors | null> {
-    const ip = control.value;
-    if (this.newMasterList.find(value => value.masterIp === ip && value.checked === false)) {
-      return this.translateService.get('Node.Node_Detail_Error_Master_Repeat').pipe(
         map(msg => {
           return {ipExists: msg};
         })
@@ -143,16 +125,8 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     this.newNodeList.splice(index, 1);
   }
 
-  removeMasterInfo(index: number): void {
-    this.newMasterList.splice(index, 1);
-  }
-
   addNodeInfo(): void {
     this.newNodeList.push({nodeIp: '', nodePassword: '', checked: false});
-  }
-
-  addMasterInfo(): void {
-    this.newMasterList.push({masterIp: '', masterPassword: '', checked: false});
   }
 
   getLogStyle(status: NodeLogStatus): { [key: string]: string } {
@@ -176,10 +150,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
 
   getPreparationData() {
     this.resourceService.getNodePreparation().subscribe(
-      (res: NodePreparationData) => {
-        this.preparationData = res;
-        this.newMasterList.push({masterIp: this.preparationData.masterIp, masterPassword: '', checked: false});
-      },
+      (res: NodePreparationData) => this.preparationData = res,
       () => {
         this.messageService.cleanNotification();
         this.messageService.showGlobalMessage('Node.Node_Detail_Error_Failed_Request', {view: this.view});
@@ -190,6 +161,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   generatePostData(): void {
     this.postData.nodeIp = '';
     this.postData.nodePassword = '';
+    this.postData.masterIp = '';
     this.newNodeList.forEach((nodeInfo) => {
       nodeInfo.checked = true;
       this.postData.nodeIp += `${nodeInfo.nodeIp}_`;
@@ -198,15 +170,12 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     this.postData.nodeIp = this.postData.nodeIp.substr(0, this.postData.nodeIp.length - 1);
     this.postData.nodePassword = this.postData.nodePassword.substr(0, this.postData.nodePassword.length - 1);
 
-    this.postData.masterIp = '';
-    this.postData.masterPassword = '';
-    this.newMasterList.forEach((masterInfo) => {
-      masterInfo.checked = true;
-      this.postData.masterIp += `${masterInfo.masterIp}_`;
-      this.postData.masterPassword += `${masterInfo.masterPassword}_`;
+    this.nodeList.data.forEach(node => {
+      if (node.isMaster) {
+        this.postData.masterIp += `${node.ip}_`;
+      }
     });
     this.postData.masterIp = this.postData.masterIp.substr(0, this.postData.masterIp.length - 1);
-    this.postData.masterPassword = this.postData.masterPassword.substr(0, this.postData.masterPassword.length - 1);
   }
 
   execute() {
