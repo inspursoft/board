@@ -59,6 +59,8 @@ Offline installer:
     $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
+**If you want to have a quick preview, you can follow this guide: [Quick start with kind](./docs/quick_start_with_kind.md)**
+
 #### Configuring Board
 Configuration parameters are located in the file **board.cfg**. 
 

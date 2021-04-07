@@ -58,6 +58,8 @@ Board作为几个Docker容器部署，因此，Board可以部署在任何支持D
     $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
+**如果您只想做一个快速预览，您可以按照这个的教程进行操作: [Quick start with kind](./docs/quick_start_with_kind.md)**
+
 #### 配置Board
 配置参数所在文件为**board.cfg**。
 
