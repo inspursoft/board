@@ -125,7 +125,7 @@ TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
 FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
 VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
 GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
-PKG_LIST = $(foreach int, $(IMG_LIST), $(IMAGEPREFIX)_$(int):$(VERSIONTAG))
+PKG_LIST = $(foreach int, $(IMG_LIST), openboard/$(IMAGEPREFIX)_$(int):$(VERSIONTAG))
 
 BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
 BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
@@ -178,7 +178,7 @@ build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t openboard/$(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
 	$(DOCKERRMIMAGE) -f openboard/$(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
