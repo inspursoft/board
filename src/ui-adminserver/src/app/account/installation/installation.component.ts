@@ -57,6 +57,8 @@ export class InstallationComponent implements OnInit {
   user: User;
   startLog = '';
   modalSize = '';
+  isKeepUninstall = false;
+  disableUninstall = false;
 
   @ViewChild('UUID') uuidInput: VariableInputComponent;
   @ViewChildren(VariableInputComponent) myInputTemplateComponents: QueryList<VariableInputComponent>;
@@ -123,6 +125,7 @@ export class InstallationComponent implements OnInit {
           this.installProgress = 50;
         }, 1000);
       } else if ('status2' === this.status) {
+        this.isKeepUninstall = true;
         this.installStep++;
         this.installProgress += 33;
       } else if ('status3' === this.status) {
@@ -169,6 +172,7 @@ export class InstallationComponent implements OnInit {
                 }
                 // 未起Board但更改过cfg
                 case InitStatusCode.InitStatusSecond: {
+                  this.isKeepUninstall = true;
                   this.installStep++;
                   this.installProgress += 33;
                   this.submitBtnState = ClrLoadingState.DEFAULT;
@@ -207,17 +211,20 @@ export class InstallationComponent implements OnInit {
     // for test
     if (this.debugMode) {
       this.editBtnState = ClrLoadingState.LOADING;
+      this.disableUninstall = true;
       this.isEdit = true;
       setTimeout(() => {
         this.installStep++;
         this.installProgress += 33;
         this.config = new Configuration();
         this.editBtnState = ClrLoadingState.DEFAULT;
+        this.disableUninstall = false;
       }, 5000);
       return;
     }
 
     this.editBtnState = ClrLoadingState.LOADING;
+    this.disableUninstall = true;
     this.isEdit = true;
     this.configurationService.getConfig().subscribe(
       (res: Configuration) => {
@@ -259,6 +266,9 @@ export class InstallationComponent implements OnInit {
         this.isEdit = false;
         this.commonError(err, {}, 'INITIALIZATION.ALERTS.GET_CFG_FAILED');
       },
+      () => {
+        this.disableUninstall = false;
+      }
     );
   }
 
