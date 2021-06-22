@@ -1,5 +1,7 @@
 # Board
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/inspursoft/board)](https://goreportcard.com/report/github.com/inspursoft/board) [![Build Status](https://travis-ci.org/inspursoft/board.svg?branch=dev)](https://travis-ci.org/inspursoft/board) [![codecov](https://codecov.io/gh/inspursoft/board/branch/dev/graph/badge.svg?token=HIOWVOQ772)](https://codecov.io/gh/inspursoft/board)
+
 [English](README.md) | [中文](README_zh_CN.md)
 
 **注意**：开发过程中，`master`分支可能处于*不稳定的甚至中断的状态*。
@@ -88,7 +90,7 @@ board.cfg中有两种类型的参数，**所需的参数**和**可选参数**。
 * **ldap_scope**：搜索用户的范围，LDAP_SCOPE_BASE, LDAP_SCOPE_ONELEVEL, LDAP_SCOPE_SUBTREE，默认为LDAP_SCOPE_SUBTREE。
 * **self_registration**：(**on** 或者 **off**， 默认为 **on**)启用/禁用用户注册自己的功能。禁用时，新用户只能由管理员用户创建，只有一个管理员用户可以创建Board的新用户。_注意_：当**auth_mode**设置为**ldap_auth**时，自注册功能是**总是**禁用，并且这个标志被忽略。
 * **token_expiration**：由令牌服务创建的令牌的到期时间（以分钟计），默认值是30分钟。
- 
+
 #### 连接Kubernetes集群与CA认证的身份验证策略
 Board连接Kubernetes集群与CA认证的身份验证策略，必须将Kubernetes集群的CA文件复制到你安装Board的机器。你应该把CA文件放在/etc/board/cert目录，并将其命名为“ca-key.pem”（私钥）和“ca.pem”（公钥）。
 
@@ -265,7 +267,7 @@ $ kubectl apply -f prometheus2.yaml
 [在线沟通会议 (内部链接)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## 贡献
-（即将推出）
+Board 是一个全部开源的项目，依赖我们的**用户、贡献者和维护者**不断贡献和改进。 正是因为您的女里，我们才能为社区带来出色的软件。 如果您有兴趣为Board项目做出贡献，请阅读此[贡献指南文档](CONTRIBUTING.md)。 
 
 ## 许可
 （即将推出）
