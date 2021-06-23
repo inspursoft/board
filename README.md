@@ -6,9 +6,9 @@
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases] instead of the `master` branch in order to get stable binaries.
 
-|<img alt="notification" width="24" src="docs/img/bell.png">Community Meeting|
-|------------------|
-|The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/inspursoft/board/wiki/community-meeting-schedule).|
+| <img alt="notification" width="24" src="docs/img/bell.png">Community Meeting |
+| ------------------------------------------------------------ |
+| The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/inspursoft/board/wiki/community-meeting-schedule). |
 
 <img alt="Board" src="docs/img/board_logo.png">
 
@@ -59,8 +59,6 @@ Offline installer:
     $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
-**If you want to have a quick preview, you can follow this guide: [Quick start with kind](./docs/quick_start_with_kind.md)**
-
 #### Configuring Board
 Configuration parameters are located in the file **board.cfg**. 
 
@@ -80,7 +78,7 @@ The parameters are described below - note that at the very least, you will need 
 
 * **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **boardadmin/123456a?** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
-For LDAP authentication, set this to **ldap_auth**.  
+  For LDAP authentication, set this to **ldap_auth**.  
 
    **IMPORTANT:** When upgrading from an existing Board instance, you must make sure **auth_mode** is the same in ```board.cfg``` before launching the new version of Board. Otherwise, users may not be able to log in after the upgrade.
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`). Only used when **auth_mode** is set to *ldap_auth* .
@@ -172,14 +170,14 @@ When upgrading your existing Board instance to a newer version, you may need  to
 
 ### Upgrading Board and migrating data
 1 Log in to the host that Board runs on, stop and remove existing Board instance if it is still running:
-   
+
    ```sh
    cd Deploy
    docker-compose down
    ```
 
 2 Backup Board's current files so that you can roll back to the current version when it is neccessary.
-   
+
    ```sh
    cd ..
    mv Deploy /my_backup_dir/Deploy
@@ -187,13 +185,13 @@ When upgrading your existing Board instance to a newer version, you may need  to
    ```
 
 3 Get the latest Board release package from github:
-   
+
    ```
    https://github.com/inspursoft/board
    ```
 
 4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.
-   
+
    ```sh
    git clone https://github.com/inspursoft/board.git
    cd board/tools/migration
@@ -201,43 +199,43 @@ When upgrading your existing Board instance to a newer version, you may need  to
    ```
 
 5 You should start you current Board database by handy.
- 
+
    ```sh
    docker run -d -p 3306:3306 -v /data/board/database:/var/lib/mysql -e DB_PASSWORD=root123 dev_db:dev
    ```
 
 6 Backup database to a directory such as `/data/board-migration/backup`. You also need the IP address, port number,username and password to access the database are provided via environment variables "DB_IP", "DB_PORT", "DB_USR", "DB_PWD".
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration backup
    ```
 7 Upgrade database schema and migrate data.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root board-migration upgrade head
    ```
 
    **NOTE:**
    If you execute this command in a short while after starting the Board database, you may meet errors as the database is not ready for connection. Please retry it after waiting for a while.
-   
+
 ### Roll back from an upgrade
 For any reason, if you want to back to the previous version of Board, follow the below steps:
 
 1 Stop and remove the current Board service if it is still running.
- 
+
    ```sh
    cd Deploy
    docker-compose down
    ```
 
 2 Start stand-alone container of Board database
- 
+
    ```sh
    docker run -d -p 3306:3306 -v /data/board/database:/var/lib/mysql -e DB_PASSWORD=root123 dev_db:dev
    ```
 
 3 Restore database from backup file in `/data/board-migration/backup`.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration restore
    ```
@@ -247,7 +245,7 @@ For any reason, if you want to back to the previous version of Board, follow the
 ### Migration tool reference
 Use `help` command to show instruction of migration tool:
 `data/board-migration/backup`.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration help
    ```
@@ -263,7 +261,9 @@ For information on how to use BOARD, please take a look at [User Guide](docs/use
 [Online Community Meeting (inspur internal link)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## Contribution
-...(Coming soon.)
+Board is developed in the open, and is constantly being improved by our **users, contributors, and maintainers**. It is because of you that we can bring great software to the community.
+
+If you are interested in contributing to board projects, please read this [Contribution Guide Document](CONTRIBUTING.md). 
 
 ## License
 Copyright (c) <2020> <inspur cloud service group>
@@ -303,5 +303,3 @@ etc.
 
 ## About
 ...(Coming soon.)
-
-

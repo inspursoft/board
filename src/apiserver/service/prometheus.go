@@ -203,12 +203,15 @@ func nodeDataTypeConvert(data, which string) interface{} {
 	var err error
 	switch which {
 	case "storageUsed", "storageCap":
-		num, err = strconv.Atoi(data)
+		var num1 float64
+		num1, err = strconv.ParseFloat(data, 64)
+		num = int(num1)
 	case "CPU", "memory":
 		num, err = strconv.ParseFloat(data, 64)
 	}
 	if err != nil {
-		return nil
+		fmt.Println("got an error when converting to float:", err)
+		return 0
 	}
 	return num
 }
