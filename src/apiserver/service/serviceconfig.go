@@ -476,12 +476,11 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	if serviceConfig == nil {
 		return nil
 	}
-	var spectype = "ClusterIP"
+
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
 		// NodePort 0 is for auto nodeport
 		if port.NodeConfig != (model.NodeType{}) {
-			spectype = "NodePort"
 			ports = append(ports, model.ServicePort{
 				Name:     "port" + strconv.Itoa(index),
 				Port:     int32(port.NodeConfig.TargetPort),
@@ -491,11 +490,16 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	}
 
 	return &model.Service{
-		ObjectMeta:          model.ObjectMeta{Name: serviceConfig.ServiceName},
-		Ports:               ports,
-		Selector:            map[string]string{"app": serviceConfig.ServiceName},
-		ClusterIP:           serviceConfig.ClusterIP,
-		Type:                spectype,
+		ObjectMeta: model.ObjectMeta{Name: serviceConfig.ServiceName},
+		Ports:      ports,
+		Selector:   map[string]string{"app": serviceConfig.ServiceName},
+		ClusterIP:  serviceConfig.ClusterIP,
+		Type: func(svcType int) string {
+			if svcType == model.ServiceTypeNormalNodePort {
+				return "NodePort"
+			}
+			return "ClusterIP"
+		}(serviceConfig.ServiceType),
 		SessionAffinityFlag: serviceConfig.SessionAffinityFlag,
 		SessionAffinityTime: serviceConfig.SessionAffinityTime,
 	}
