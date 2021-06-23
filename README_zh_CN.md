@@ -267,7 +267,7 @@ $ kubectl apply -f prometheus2.yaml
 [在线沟通会议 (内部链接)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## 贡献
-Board 是一个全部开源的项目，依赖我们的**用户、贡献者和维护者**不断贡献和改进。 正是因为您的女里，我们才能为社区带来出色的软件。 如果您有兴趣为Board项目做出贡献，请阅读此[贡献指南文档](CONTRIBUTING.md)。 
+Board 是一个全部开源的项目，依赖各位**用户、贡献者和维护者**不断贡献和改进。 正是因为您的努力，我们才能为社区带来出色的软件。 如果您有兴趣为Board项目做出贡献，请阅读此[贡献指南文档](CONTRIBUTING.md)。 
 
 ## 许可
 （即将推出）
