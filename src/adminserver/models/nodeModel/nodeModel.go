@@ -36,6 +36,7 @@ type Pagination struct {
 }
 
 type AddNodePostData struct {
+	MasterIp       string `json:"master_ip"`
 	NodeIp         string `json:"node_ip"`
 	NodePassword   string `json:"node_password"`
 	HostUsername   string `json:"host_username"`

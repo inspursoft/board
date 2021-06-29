@@ -42,6 +42,7 @@ export class NodeListComponent implements OnInit, OnDestroy {
   addNodeAction() {
     const factory = this.resolver.resolveComponentFactory(NodeCreateComponent);
     const ref = this.view.createComponent(factory);
+    ref.instance.nodeList = this.nodeLists;
     ref.instance.openModal().subscribe(
       () => this.view.remove(this.view.indexOf(ref.hostView))
     );

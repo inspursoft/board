@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import {
   ActionStatus,
-  NodeDetails,
+  NodeDetails, NodeList,
   NodeLog,
   NodeLogStatus,
   NodePostData,
@@ -26,6 +26,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   @ViewChild('logTemplate') logTmp: TemplateRef<any>;
   @ViewChild('divElement') divElement: ElementRef;
   @ViewChild('msgViewContainer', {read: ViewContainerRef}) view: ViewContainerRef;
+  nodeList: NodeList;
   preparationData: NodePreparationData;
   postData: NodePostData;
   title = 'Node.Node_Detail_Title_Add';
@@ -160,6 +161,7 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
   generatePostData(): void {
     this.postData.nodeIp = '';
     this.postData.nodePassword = '';
+    this.postData.masterIp = '';
     this.newNodeList.forEach((nodeInfo) => {
       nodeInfo.checked = true;
       this.postData.nodeIp += `${nodeInfo.nodeIp}_`;
@@ -167,6 +169,13 @@ export class NodeCreateComponent extends ModalChildBase implements OnInit, OnDes
     });
     this.postData.nodeIp = this.postData.nodeIp.substr(0, this.postData.nodeIp.length - 1);
     this.postData.nodePassword = this.postData.nodePassword.substr(0, this.postData.nodePassword.length - 1);
+
+    this.nodeList.data.forEach(node => {
+      if (node.isMaster) {
+        this.postData.masterIp += `${node.ip}_`;
+      }
+    });
+    this.postData.masterIp = this.postData.masterIp.substr(0, this.postData.masterIp.length - 1);
   }
 
   execute() {

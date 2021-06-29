@@ -156,6 +156,8 @@ export class ListServiceComponent extends ServiceStepComponentBase implements On
         return 'SERVICE.STATUS_UNKNOWN';
       case SERVICE_STATUS.AutonomousOffline:
         return 'SERVICE.STATUS_EDGE';
+      case SERVICE_STATUS.STOPPING:
+        return 'SERVICE.STATUS_STOPPING';
     }
   }
 
