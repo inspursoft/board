@@ -123,8 +123,8 @@ func DeleteServiceByID(serviceID int64) (int64, error) {
 	return num, nil
 }
 
-func GetServiceList(name string, userID int64, source *int, sourceid *int64) ([]*model.ServiceStatusMO, error) {
-	query := model.ServiceStatusFilter{Name: name, Source: source, SourceID: sourceid}
+func GetServiceList(name string, projectID int64, userID int64, source *int, sourceid *int64) ([]*model.ServiceStatusMO, error) {
+	query := model.ServiceStatusFilter{Name: name, ProjectID: projectID, Source: source, SourceID: sourceid}
 	serviceList, err := dao.GetServiceData(query, userID)
 	if err != nil {
 		return nil, err
@@ -132,8 +132,8 @@ func GetServiceList(name string, userID int64, source *int, sourceid *int64) ([]
 	return serviceList, err
 }
 
-func GetPaginatedServiceList(name string, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
-	query := model.ServiceStatusFilter{Name: name}
+func GetPaginatedServiceList(name string, projectID int64, userID int64, pageIndex int, pageSize int, orderField string, orderAsc int) (*model.PaginatedServiceStatus, error) {
+	query := model.ServiceStatusFilter{Name: name, ProjectID: projectID}
 	paginatedServiceStatus, err := dao.GetPaginatedServiceData(query, userID, pageIndex, pageSize, orderField, orderAsc)
 	if err != nil {
 		return nil, err

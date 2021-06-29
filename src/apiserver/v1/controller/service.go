@@ -50,6 +50,7 @@ const (
 	unknown
 	autonomousOffline
 	partAutonomousOffline
+	stopping	
 )
 
 var devOpsOpt = utils.GetConfig("DEVOPS_OPT")
@@ -170,19 +171,26 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 			// Check the deployment status
 			deployment, _, _ := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 			if deployment == nil && serviceStatus.Name != k8sServices {
-				logs.Info("Failed to get deployment", err)
-				var reason = "The deployment is not established in cluster system"
-				(*serviceStatus).Status = uncompleted
-				// TODO create a new field in serviceStatus for reason
-				(*serviceStatus).Comment = "Reason: " + reason
+				logs.Info("The deployment is not established in cluster system", err)
+				if (*serviceStatus).Status == stopping {
+					(*serviceStatus).Status = stopped
+				}else{
+					var reason = "The deployment is not established in cluster system"
+					(*serviceStatus).Comment = "Reason: " + reason
+					(*serviceStatus).Status = uncompleted	
+				}	
+
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 				if err != nil {
-					logs.Error("Failed to update deployment.")
+					logs.Error("Failed to update deployment in db.")
 					break
 				}
 				continue
 			} else {
-				if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+				if (*serviceStatus).Status == stopping {
+                   continue
+				}
+				if  deployment.Status.Replicas > deployment.Status.AvailableReplicas {
 					logs.Debug("The desired replicas number is not available",
 						deployment.Status.Replicas, deployment.Status.AvailableReplicas)
 					(*serviceStatus).Status = uncompleted
@@ -208,17 +216,22 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 			deployment, _, _ := service.GetDeployment((*serviceStatus).ProjectName, (*serviceStatus).Name)
 			if deployment == nil && serviceStatus.Name != k8sServices {
 				logs.Info("Failed to get deployment", err)
-				var reason = "The deployment is not established in cluster system"
-				(*serviceStatus).Status = uncompleted
-				// TODO create a new field in serviceStatus for reason
-				(*serviceStatus).Comment = "Reason: " + reason
+				if (*serviceStatus).Status == stopping {
+					(*serviceStatus).Status = stopped
+				}else{
+					var reason = "The deployment is not established in cluster system"
+					(*serviceStatus).Comment = "Reason: " + reason
+					(*serviceStatus).Status = uncompleted	
+				}	
 				_, err = service.UpdateService(*serviceStatus, "status", "Comment")
 				if err != nil {
-					logs.Error("Failed to update deployment.")
+					logs.Error("Failed to update deployment to db.")
 					break
 				}
 				continue
-			} else if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
+			} else if (*serviceStatus).Status == stopping {
+                continue
+			}else if deployment.Status.Replicas > deployment.Status.AvailableReplicas {
 				logs.Debug("The desired replicas number is not available",
 					deployment.Status.Replicas, deployment.Status.AvailableReplicas)
 				//Get the nodes which the pod were deployed.
@@ -310,6 +323,7 @@ func syncK8sStatus(serviceList []*model.ServiceStatusMO) error {
 //get service list
 func (p *ServiceController) GetServiceListAction() {
 	serviceName := p.GetString("service_name")
+	projectName := p.GetString("project_name")
 	source, _ := p.GetInt("service_source", -1)
 	sourceid, _ := p.GetInt("service_sourceid", -1)
 	pageIndex, _ := p.GetInt("page_index", 0)
@@ -322,6 +336,16 @@ func (p *ServiceController) GetServiceListAction() {
 		p.CustomAbortAudit(http.StatusBadRequest, err.Error())
 		return
 	}
+	
+	var projectInfo *model.Project
+	var projectID int64 = 0
+	if projectName != "" {
+		projectInfo, err = service.GetProjectByName(projectName)
+		if err != nil{
+			p.CustomAbortAudit(http.StatusBadRequest, err.Error())
+		}	
+		projectID = (*projectInfo).ID				
+	}
 
 	if pageIndex == 0 && pageSize == 0 {
 		var sourcePtr *int
@@ -333,7 +357,7 @@ func (p *ServiceController) GetServiceListAction() {
 			var sourceid64 int64 = int64(sourceid)
 			sourceidPtr = &sourceid64
 		}
-		serviceStatus, err := service.GetServiceList(serviceName, p.CurrentUser.ID, sourcePtr, sourceidPtr)
+		serviceStatus, err := service.GetServiceList(serviceName, projectID, p.CurrentUser.ID, sourcePtr, sourceidPtr)
 		if err != nil {
 			p.InternalError(err)
 			return
@@ -345,7 +369,7 @@ func (p *ServiceController) GetServiceListAction() {
 		}
 		p.RenderJSON(serviceStatus)
 	} else {
-		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, p.CurrentUser.ID, pageIndex, pageSize, orderFieldValue, orderAsc)
+		paginatedServiceStatus, err := service.GetPaginatedServiceList(serviceName, projectID, p.CurrentUser.ID, pageIndex, pageSize, orderFieldValue, orderAsc)
 		if err != nil {
 			p.InternalError(err)
 			return
@@ -480,7 +504,7 @@ func (p *ServiceController) ToggleServiceAction() {
 			return
 		}
 		// Update service status DB
-		_, err = service.UpdateServiceStatus(s.ID, stopped)
+		_, err = service.UpdateServiceStatus(s.ID, stopping)
 		if err != nil {
 			p.InternalError(err)
 			return
