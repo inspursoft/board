@@ -28,12 +28,26 @@ func NewSecureShell(output io.Writer, host, username, password string, port ...i
 	if port != nil {
 		sshPort = port[0]
 	}
+
+	keyboardInteractiveChallenge := func(
+		user,
+		instruction string,
+		questions []string,
+		echos []bool,
+	) (answers []string, err error) {
+		if len(questions) == 0 {
+			return []string{}, nil
+		}
+		return []string{password}, nil
+	}
+
 	// Retry few times if ssh connection fails
 	for i := 0; i < maxSSHRetries; i++ {
 		client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host, sshPort), &ssh.ClientConfig{
 			User: username,
 			Auth: []ssh.AuthMethod{
 				ssh.Password(password),
+				ssh.KeyboardInteractive(keyboardInteractiveChallenge),
 			},
 			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		})
