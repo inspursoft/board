@@ -13,6 +13,7 @@ import { NodeServiceControlComponent } from './node-service-control/node-service
 import { NodeGroupControlComponent } from './node-group-control/node-group-control.component';
 import { NodeCreateNewComponent } from './node-create-new/node-create-new.component';
 import { NodeCreateNewGuideComponent } from './node-create-new-guide/node-create-new-guide.component';
+import { NodeGroupEditComponent } from './node-group-edit/node-group-edit.component';
 
 @NgModule({
   imports: [
@@ -30,14 +31,16 @@ import { NodeCreateNewGuideComponent } from './node-create-new-guide/node-create
     NodeServiceControlComponent,
     NodeGroupControlComponent,
     NodeCreateNewComponent,
-    NodeCreateNewGuideComponent
+    NodeCreateNewGuideComponent,
+    NodeGroupEditComponent
   ],
   entryComponents: [
     NodeControlComponent,
     NodeGroupControlComponent,
     NodeCreateGroupComponent,
     NodeServiceControlComponent,
-    NodeCreateNewComponent
+    NodeCreateNewComponent,
+    NodeGroupEditComponent
   ],
   providers: [
     NodeService

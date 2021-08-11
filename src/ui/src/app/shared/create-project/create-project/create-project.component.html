@@ -19,6 +19,7 @@
       <lib-input-ex [inputLabel]="'PROJECT.COMMENT' | translate"
                     [inputDefaultValue]="createProject.comment"
                     [inputDisabled]="isCreateProjectWIP"
+                    [inputMaxlength]="200"
                     [inputLabelWidth]="110"
                     (commitEvent)="createProject.comment = $event">
       </lib-input-ex>

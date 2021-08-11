@@ -99,15 +99,5 @@ func InitDbTables(dbFileName string) error {
 	}
 	logs.Info("create token table successfully")
 
-	accountTable := `create table if not exists account(
-		id integer primary key autoincrement,
-		username varchar(255) not null,
-		password varchar(255) not null
-		);`
-	if _, err := db.Exec(accountTable); err != nil {
-		return err
-	}
-	logs.Info("create account table successfully")
-
 	return nil
 }

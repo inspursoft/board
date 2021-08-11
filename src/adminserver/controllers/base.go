@@ -19,6 +19,7 @@ func (b *BaseController) Prepare() {
 	}
 
 	if err := service.CheckBoard(); err != nil {
+		logs.Info(err)
 		result, err := service.VerifyUUIDToken(token)
 		if err != nil {
 			logs.Error(err)

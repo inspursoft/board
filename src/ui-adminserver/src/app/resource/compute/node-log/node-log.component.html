@@ -1,0 +1,25 @@
+<clr-modal [(clrModalOpen)]="modalOpened" [clrModalSize]="'md'" [clrModalClosable]="false">
+  <h3 class="modal-title">
+    <b>{{"Node.Node_Detail_Title_Log" | translate}}</b>:{{logInfo.ip}}
+  </h3>
+  <div class="modal-body">
+    <div #msgViewContainer></div>
+    <div #divElement class="logs-container" >
+      <div #consoleLogs></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" (click)="refreshLog()">
+      {{"Node.Node_Detail_Refresh" | translate}}
+    </button>
+    <button class="btn btn-primary" (click)="modalOpened = false">
+      {{"BUTTON.OK" | translate}}
+    </button>
+    <span *ngIf="refreshingLog" class="spinner spinner-sm"></span>
+  </div>
+</clr-modal>
+
+<ng-template #logTemplate let-message="message" let-status="status">
+  <span [ngStyle]="getLogStyle(status)">{{message}}<br></span>
+</ng-template>
+

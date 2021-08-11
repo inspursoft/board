@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ComponentFactoryResolver, Input, OnInit, ViewContainerRef } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { ValidationErrors } from '@angular/forms';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { map } from 'rxjs/operators';
 import { CsModalChildBase } from '../../shared/cs-modal-base/cs-modal-child-base';
 import { JobContainer, JobEnv, JobNodeAvailableResources, JobVolumeMounts } from '../job.type';
@@ -125,6 +125,10 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
     return this.checkSetMemRequest.bind(this);
   }
 
+  get validContainerGpuLimitFun() {
+    return this.validContainerGpuLimit.bind(this);
+  }
+
   checkSetCpuRequest(control: HTMLInputElement): Observable<ValidationErrors | null> {
     return this.isAfterViewInit ? this.jobService.getNodesAvailableSources()
       .pipe(map((res: Array<JobNodeAvailableResources>) => {
@@ -188,5 +192,10 @@ export class JobContainerConfigComponent extends CsModalChildBase implements OnI
 
   setContainerPort(ports: any) {
     this.container.containerPort = ports;
+  }
+
+
+  validContainerGpuLimit(control: AbstractControl): ValidationErrors | null {
+    return Number(control.value) >= 0 ? null : {resourceRequestInvalid: 'resourceRequestInvalid'};
   }
 }

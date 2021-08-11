@@ -1,4 +1,4 @@
-import { HttpBase, HttpBind, HttpBindArray } from '../shared/ui-model/model-types';
+import { HttpBase, HttpBind, HttpBindArray, HttpBindObject } from '../shared/ui-model/model-types';
 
 export enum NodeStatusType {
   Schedulable = 1, Unschedulable, Unknown, AutonomousOffline
@@ -48,8 +48,9 @@ export class NodeGroupStatus extends HttpBase {
   @HttpBind('nodegroup_update_time') updateTime = '';
   @HttpBind('nodegroup_deleted') deleted = 0;
 
-  postBody(): { [p: string]: string } {
+  postBody(): { [p: string]: any } {
     return {
+      nodegroup_id: this.id,
       nodegroup_project: this.projectName,
       nodegroup_name: this.name,
       nodegroup_comment: this.comment
@@ -85,6 +86,16 @@ export class NodeDetail extends HttpBase {
   @HttpBind('memory_usage') memoryUsage: number;
   @HttpBind('storage_total') storageTotal: string;
   @HttpBind('storage_use') storageUse: string;
+}
+
+export class NodeGroupDetail extends HttpBase {
+  @HttpBindObject('nodegroup', NodeGroupStatus) nodeGroup: NodeGroupStatus;
+  @HttpBind('nodelist') nodeList: Array<string>;
+
+  protected prepareInit() {
+    this.nodeGroup = new NodeGroupStatus();
+    this.nodeList = new Array<string>();
+  }
 }
 
 export class EdgeNode extends HttpBase {

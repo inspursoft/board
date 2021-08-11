@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/adminserver/Dockerfile
-    image: dev_adminserver:dev
+    image: openboard/dev_adminserver:dev
     restart: always
     volumes:
       - ../:/go/cfgfile
@@ -24,7 +24,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy_adminserver/Dockerfile
-    image: dev_proxy_adminserver:dev
+    image: openboard/dev_proxy_adminserver:dev
     depends_on: 
       - adminserver
     restart: always

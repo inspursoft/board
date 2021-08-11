@@ -1,0 +1,26 @@
+{{- if and .Values.db.persistence.enabled (not .Values.db.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "board.db.fullname" . }}
+  labels:
+    app: {{ include "board.db.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  accessModes:
+    - {{ .Values.db.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.db.persistence.size | quote }}
+{{- if .Values.db.persistence.storageClass }}
+{{- if (eq "-" .Values.db.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.db.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.db.persistence.volumeName }}
+  volumeName: "{{ .Values.db.persistence.volumeName }}"
+{{- end }}
+{{- end }}

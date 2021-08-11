@@ -14,8 +14,13 @@ type nodes struct {
 	node v1.NodeInterface
 }
 
-func (n *nodes) List() (*model.NodeList, error) {
-	k8sNodeList, err := n.node.List(metav1.ListOptions{})
+// Support a string as label selector parameter, default null
+func (n *nodes) List(args ...string) (*model.NodeList, error) {
+	var listOption = metav1.ListOptions{}
+	if len(args) > 0 {
+		listOption.LabelSelector = args[0]
+	}
+	k8sNodeList, err := n.node.List(listOption)
 	if err != nil {
 		logs.Error("List Nodes failed. Err:%+v", err)
 		return nil, err

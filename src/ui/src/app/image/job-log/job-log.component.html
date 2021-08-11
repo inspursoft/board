@@ -1,0 +1,29 @@
+<div class="term-container">
+  <div class="left-container">
+    <div *ngFor="let section of sections">
+      <clr-icon *ngIf="section.isNormalSection"
+                shape="angle"
+                class="angle"
+                [style.top.px]="section.startTop"
+                [class.open]="section.showContent"
+                [class.close]="!section.showContent"
+                (click)="toggleContent(section)">
+      </clr-icon>
+      <span *ngFor="let num of section.contentNum" class="number"
+            [style.top.px]="section.getTopByIndex(num)">
+        {{section.startNum + num}}
+      </span>
+    </div>
+  </div>
+  <div #terminalContainer></div>
+  <div class="right-container">
+    <div *ngFor="let section of sections">
+      <span *ngIf="section.isNormalSection"
+            style="position: absolute"
+            class="time"
+            [style.top.px]="section.startTop">
+        {{section.getJobTime()}}
+      </span>
+    </div>
+  </div>
+</div>

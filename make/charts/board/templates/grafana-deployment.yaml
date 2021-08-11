@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.grafana.fullname" . }}
+  labels:
+    app: {{ include "board.grafana.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.grafana.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.grafana.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.grafana.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - image: {{ include "board.grafana.image.image" . }}
+        imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: lib
+        - mountPath: /var/log/grafana
+          name: log
+        - mountPath: /etc/grafana/config
+          name: config
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          name: {{ include "board.grafana.fullname" . }}
+        name: config
+      - name: lib
+      {{- if .Values.grafana.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.grafana.persistence.lib.existingClaim | default (printf "%s-lib" (include "board.grafana.fullname" .)) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: log
+      {{- if .Values.grafana.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.grafana.persistence.log.existingClaim | default (printf "%s-log" (include "board.grafana.fullname" .)) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      restartPolicy: '{{.Values.grafana.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.grafana.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.grafana.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.grafana.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

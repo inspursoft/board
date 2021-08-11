@@ -13,6 +13,7 @@ type Container struct {
 	MemRequest    string              `json:"mem_request"`
 	CPULimit      string              `json:"cpu_limit"`
 	MemLimit      string              `json:"mem_limit"`
+	GPULimit      string              `json:"gpu_limit"`
 }
 
 type EnvStructCont struct {

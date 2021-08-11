@@ -4,7 +4,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/log/Dockerfile
-    image: dev_log:dev
+    image: openboard/dev_log:dev
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -17,7 +17,7 @@ services:
     build: 
       context: ../../
       dockerfile: make/dev/container/db/Dockerfile
-    image: dev_db:dev
+    image: openboard/dev_db:dev
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -40,67 +40,15 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
-  gogits:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/gogits/Dockerfile
-    image: dev_gogits:dev
-    restart: always
-    volumes:
-      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
-      - /data/board/gogits:/data:rw
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "10022:22"
-      - "10080:3000"
-    networks:
-      - board  
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "gogits"
-  jenkins:
-    build:
-      context: ../../
-      dockerfile: make/dev/container/jenkins/Dockerfile
-    image: dev_jenkins:dev
-    restart: always
-    networks:
-      - board
-    volumes:
-      - /data/board/jenkins_home:/var/jenkins_home
-      - ../config/ssh_keys:/root/.ssh
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/bin/docker
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - ../config/jenkins/env
-    ports:
-      - 8888:8080
-      - 50000:50000
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "jenkins"
   apiserver:
     build:
       context: ../../
       dockerfile: make/dev/container/apiserver/Dockerfile
-    image: dev_apiserver:dev
+    image: openboard/dev_apiserver:dev
     restart: always
     volumes:
       - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
-      - /data/board/repos:/repos:rw
-      - /data/board/keys:/keys:rw
       - /data/board/cert:/cert:rw
-      - ../config/apiserver/kvm:/root/kvm
-      - ../config/apiserver/kvmregistry:/root/kvmregistry
       - /etc/board/cert:/etc/board/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
       - /etc/localtime:/etc/localtime:ro
@@ -114,7 +62,6 @@ services:
       - 8088:8088
     depends_on:
       - log
-      - jenkins
     logging:
       driver: "syslog"
       options:
@@ -124,7 +71,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/tokenserver/Dockerfile
-    image: dev_tokenserver:dev
+    image: openboard/dev_tokenserver:dev
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -143,7 +90,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/proxy/Dockerfile
-    image: dev_proxy:dev
+    image: openboard/dev_proxy:dev
     networks:
       - board
     restart: always
@@ -170,7 +117,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/grafana/Dockerfile
-    image: dev_grafana:dev
+    image: openboard/dev_grafana:dev
     restart: always
     volumes:
       - /data/board/grafana/data:/var/lib/grafana
@@ -192,7 +139,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/elasticsearch/Dockerfile
-    image: dev_elasticsearch:dev
+    image: openboard/dev_elasticsearch:dev
     restart: always
     env_file:
       - ../config/elasticsearch/env
@@ -218,7 +165,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/kibana/Dockerfile
-    image: dev_kibana:dev
+    image: openboard/dev_kibana:dev
     restart: always
     env_file:
       - ../config/kibana/env
@@ -238,7 +185,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/chartmuseum/Dockerfile
-    image: dev_chartmuseum:dev
+    image: openboard/dev_chartmuseum:dev
     restart: always
     networks:
       - board
@@ -258,7 +205,7 @@ services:
     build:
       context: ../../
       dockerfile: make/dev/container/prometheus/Dockerfile
-    image: dev_prometheus:dev
+    image: openboard/dev_prometheus:dev
     restart: always
     networks:
       - board

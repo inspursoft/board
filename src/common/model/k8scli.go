@@ -119,6 +119,7 @@ type ObjectMeta struct {
 	CreationTimestamp time.Time         `json:"creation_time,omitempty"`
 	DeletionTimestamp *time.Time        `json:"deletion_time,omitempty"`
 	Labels            map[string]string `json:"labels,omitempty"`
+	Annotations       map[string]string `json:"annotations,omitempty"`
 }
 
 type GroupResource struct {

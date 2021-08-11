@@ -23,7 +23,7 @@ const (
 	defaultProjectName = "library"
 	defaultProjectID   = 1
 	defaultOwnerID     = 1
-	defaultOwnerName   = "admin"
+	defaultOwnerName   = "boardadmin"
 	defaultPublic      = 0
 	defaultComment     = "init service"
 	defaultDeleted     = 0
@@ -476,12 +476,11 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	if serviceConfig == nil {
 		return nil
 	}
-	var spectype = "ClusterIP"
+
 	ports := make([]model.ServicePort, 0)
 	for index, port := range serviceConfig.ExternalServiceList {
 		// NodePort 0 is for auto nodeport
 		if port.NodeConfig != (model.NodeType{}) {
-			spectype = "NodePort"
 			ports = append(ports, model.ServicePort{
 				Name:     "port" + strconv.Itoa(index),
 				Port:     int32(port.NodeConfig.TargetPort),
@@ -491,11 +490,16 @@ func MarshalService(serviceConfig *model.ConfigServiceStep) *model.Service {
 	}
 
 	return &model.Service{
-		ObjectMeta:          model.ObjectMeta{Name: serviceConfig.ServiceName},
-		Ports:               ports,
-		Selector:            map[string]string{"app": serviceConfig.ServiceName},
-		ClusterIP:           serviceConfig.ClusterIP,
-		Type:                spectype,
+		ObjectMeta: model.ObjectMeta{Name: serviceConfig.ServiceName},
+		Ports:      ports,
+		Selector:   map[string]string{"app": serviceConfig.ServiceName},
+		ClusterIP:  serviceConfig.ClusterIP,
+		Type: func(svcType int) string {
+			if svcType == model.ServiceTypeNormalNodePort {
+				return "NodePort"
+			}
+			return "ClusterIP"
+		}(serviceConfig.ServiceType),
 		SessionAffinityFlag: serviceConfig.SessionAffinityFlag,
 		SessionAffinityTime: serviceConfig.SessionAffinityTime,
 	}
@@ -615,6 +619,10 @@ func setDeploymentContainers(containerList []model.Container, registryURI string
 			container.Resources.Limits["memory"] = model.QuantityStr(cont.MemLimit)
 		}
 
+		if cont.GPULimit != "" {
+			container.Resources.Limits["nvidia.com/gpu"] = model.QuantityStr(cont.GPULimit)
+		}
+
 		k8sContainerList = append(k8sContainerList, container)
 	}
 	return k8sContainerList
@@ -709,6 +717,9 @@ func GetDeploymentContainers(containerList []model.K8sContainer, volumeList []mo
 		}
 		if _, ok := cont.Resources.Limits["memory"]; ok {
 			container.MemLimit = string(cont.Resources.Limits["memory"])
+		}
+		if _, ok := cont.Resources.Limits["nvidia.com/gpu"]; ok {
+			container.GPULimit = string(cont.Resources.Limits["nvidia.com/gpu"])
 		}
 		viewContainerList = append(viewContainerList, container)
 	}

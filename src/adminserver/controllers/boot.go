@@ -21,11 +21,11 @@ func (b *BootController) Prepare() {}
 // @Failure 500 Internal Server Error
 // @router /checksysstatus [get]
 func (b *BootController) CheckSysStatus() {
-	this, err := service.CheckSysStatus()
+	this, log, err := service.CheckSysStatus()
 	if err != nil {
 		logs.Error(err)
 		b.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
-	b.Data["json"] = models.InitSysStatus{Status: this}
+	b.Data["json"] = models.InitSysStatus{Status: this, Log: log}
 	b.ServeJSON()
 }

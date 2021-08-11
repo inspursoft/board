@@ -1,0 +1,183 @@
+version: '2'
+services:
+  log:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/log/Dockerfile.mips
+    image: openboard/dev_log:dev
+    restart: always
+    volumes:
+      - /var/log/board/:/var/log/docker/
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - board
+    ports:
+      - 1514:514
+  db:
+    build: 
+      context: ../../../
+      dockerfile: make/dev/container/db/Dockerfile.mips
+    image: openboard/dev_db:dev
+    restart: always
+    volumes:
+      - /data/board/database:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - ../../config/db/env
+    networks:
+      - board
+    ports:
+      - 3306:3306
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:  
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "db"
+  gogits:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/gogits/Dockerfile.mips
+    image: openboard/dev_gogits:dev
+    restart: always
+    volumes:
+      - ../../config/gogits/conf/app.ini:/tmp/conf/app.ini
+      - /data/board/gogits:/data:rw
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "10022:22"
+      - "10080:3000"
+    networks:
+      - board  
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "gogits"
+  jenkins:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/jenkins/Dockerfile.mips
+    image: openboard/dev_jenkins:dev
+    restart: always
+    networks:
+      - board
+    volumes:
+      - /data/board/jenkins_home:/var/jenkins_home
+      - ../../config/ssh_keys:/root/.ssh
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/bin/docker
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - ../config/jenkins/env
+    ports:
+      - 8888:8080
+      - 50000:50000
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "jenkins"
+  apiserver:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/apiserver/Dockerfile.mips
+    image: openboard/dev_apiserver:dev
+    restart: always
+    volumes:
+      - ../../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/go/bin/swagger:z
+      - /data/board/repos:/repos:rw
+      - /data/board/keys:/keys:rw
+      - /data/board/cert:/cert:rw
+      - ../../config/apiserver/kvm:/root/kvm
+      - ../../config/apiserver/kvmregistry:/root/kvmregistry
+      - /etc/board/cert:/etc/board/cert:rw
+      - ../../config/apiserver/kubeconfig:/root/kubeconfig
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - ../../config/apiserver/env
+    networks:
+      - board
+    links:
+      - db
+    ports: 
+      - 8088:8088
+    depends_on:
+      - log
+      - jenkins
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "apiserver"
+  tokenserver:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/tokenserver/Dockerfile.mips
+    image: openboard/dev_tokenserver:dev
+    env_file:
+      - ../../config/tokenserver/env
+    restart: always
+    networks:
+      - board
+    depends_on:
+      - log
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "tokenserver"
+  proxy:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/proxy/Dockerfile.mips
+    image: openboard/dev_proxy:dev
+    networks:
+      - board
+    restart: always
+    volumes:
+      - ../../config/proxy/nginx.conf:/etc/nginx/nginx.conf:z
+      - ../../../src/ui/dist:/usr/share/nginx/html:z
+      - /etc/localtime:/etc/localtime:ro
+    ports: 
+      - 80:80
+      - 8080:8080
+    links:
+      - apiserver
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "proxy"
+  prometheus:
+    build:
+      context: ../../../
+      dockerfile: make/dev/container/prometheus/Dockerfile
+    image: openboard/dev_prometheus:dev
+    restart: always
+    networks:
+      - board
+    ports:
+      - 9090:9090
+    volumes:
+      - ../../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - log
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "prometheus"
+networks:
+  board:
+    external: true

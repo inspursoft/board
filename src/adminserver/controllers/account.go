@@ -36,7 +36,7 @@ func (a *AccController) Login() {
 		a.CustomAbort(http.StatusInternalServerError, err.Error())
 	}
 
-	if acc.Username != "admin" {
+	if acc.Username != "boardadmin" {
 		a.CustomAbort(http.StatusForbidden, common.ErrForbidden.Error())
 	}
 

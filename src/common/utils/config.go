@@ -128,28 +128,24 @@ func InitializeDefaultConfig() {
 
 	SetConfig("BOARD_API_BASE_URL", "http://%s:%s/api/v1", "BOARD_HOST_IP", "API_SERVER_PORT")
 
-	AddEnv("GOGITS_HOST_IP")
-	AddEnv("GOGITS_HOST_PORT")
+	AddEnv("GOGITS_HOST_IP", "10.0.0.0")
+	AddEnv("GOGITS_HOST_PORT", "10080")
 	SetConfig("GOGITS_BASE_URL", "http://%s:%s", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
 
-	AddEnv("GOGITS_SSH_PORT")
+	AddEnv("GOGITS_SSH_PORT", "10022")
 	SetConfig("GOGITS_SSH_URL", "ssh://git@%s:%s", "GOGITS_HOST_IP", "GOGITS_SSH_PORT")
 
-	AddEnv("JENKINS_HOST_IP")
-	AddEnv("JENKINS_HOST_PORT")
-	AddEnv("JENKINS_NODE_IP")
-	AddEnv("JENKINS_NODE_USERNAME")
-	AddEnv("JENKINS_NODE_PASSWORD")
-	AddEnv("JENKINS_NODE_SSH_PORT")
-	AddEnv("JENKINS_NODE_VOLUME")
-	AddEnv("JENKINS_EXECUTION_MODE")
+	AddEnv("JENKINS_HOST_IP", "10.0.0.0")
+	AddEnv("JENKINS_HOST_PORT", "8080")
+	AddEnv("JENKINS_NODE_IP", "10.0.0.0")
+	AddEnv("JENKINS_NODE_USERNAME", "root")
+	AddEnv("JENKINS_NODE_PASSWORD", "123456a?")
+	AddEnv("JENKINS_NODE_SSH_PORT", "22")
+	AddEnv("JENKINS_NODE_VOLUME", "/data/jenkins_node")
+	AddEnv("JENKINS_EXECUTION_MODE", "single")
 	SetConfig("JENKINS_BASE_URL", "http://%s:%s", "JENKINS_HOST_IP", "JENKINS_HOST_PORT")
 
 	SetConfig("JENKINSFILE_REPO_URL", "http://%s:%s/admin/devops-jenkins.git", "GOGITS_HOST_IP", "GOGITS_HOST_PORT")
-
-	AddEnv("KVM_REGISTRY_SIZE")
-	AddEnv("KVM_REGISTRY_PORT")
-	AddEnv("KVM_TOOLKITS_PATH")
 
 	SetConfig("REGISTRY_URL", "http://%s:%s", "REGISTRY_IP", "REGISTRY_PORT")
 	SetConfig("KUBE_MASTER_URL", "http://%s:%s", "KUBE_MASTER_IP", "KUBE_MASTER_PORT")

@@ -32,7 +32,7 @@ func (auth LdapAuth) DoAuth(principal, password string) (*model.User, error) {
 	var err error
 	var user *model.User
 
-	if principal != "admin" {
+	if principal != "boardadmin" {
 		var ldapconf model.LdapConf
 		ldapconf.LdapURL = utils.GetStringValue("LDAP_URL")
 		logs.Debug("LDAP_URL %s", ldapconf.LdapURL)

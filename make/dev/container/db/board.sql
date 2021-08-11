@@ -21,22 +21,20 @@ CREATE TABLE `user` (
   `reset_uuid` varchar(255) DEFAULT NULL,
   `salt` varchar(255) DEFAULT NULL,
   `repo_token` VARCHAR(127) NULL DEFAULT NULL,  
-  `creation_time` datetime DEFAULT NULL,
-  `update_time` datetime DEFAULT NULL,
+  `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+  `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
   `failed_times` INT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 
 INSERT INTO `board`.`user` (`username`, `password`, `email`, `realname`, `comment`, `creation_time`, `update_time`, `deleted`, `system_admin`)
-  VALUES ('admin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1);
+  VALUES ('boardadmin', 'Board12345', 'admin@inspur.com', 'admin', 'admin user', now(), now(), 0, 1);
 
 CREATE TABLE `board`.`project` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NULL,
   `comment` VARCHAR(255) NULL,
-  `creation_time` DATETIME NULL,
-  `update_time` DATETIME NULL,
   `deleted` SMALLINT(1) NULL,
   `owner_id` INT NULL,
   `owner_name` VARCHAR(45) NULL,
@@ -45,13 +43,16 @@ CREATE TABLE `board`.`project` (
   `current_user_role_id` INT NULL,
   `service_count` INT NULL,
   `istio_support` SMALLINT(1) NULL,
+  `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+  `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
   PRIMARY KEY (`id`));
 
 INSERT INTO `board`.`project`
- (`id`, `name`, `comment`, `creation_time`, `update_time`, `deleted`, `owner_id`, 
-  `owner_name`, `public`, `toggleable`, `current_user_role_id`, `service_count`, `istio_support`)
+ (`id`, `name`, `comment`, `deleted`, `owner_id`, 
+  `owner_name`, `public`, `toggleable`, `current_user_role_id`, 
+  `service_count`, `istio_support`, `creation_time`, `update_time`)
  VALUES
- (1, 'library', 'library comment', now(), now(), 0, 1,'admin', 1, 1, 1, 0, 0);
+ (1, 'library', 'library comment', 0, 1,'boardadmin', 1, 1, 1, 0, 0, now(), now());
 
 
 CREATE TABLE `project_member` (
@@ -77,211 +78,6 @@ INSERT INTO `board`.`role` (id, name, comment)
   VALUES (1, 'projectAdmin', 'Project Admin'),
          (2, 'developer', 'Developer'),
          (3, 'visitor', 'Visitor');
-
--- --------------------------------------------------
---  Table Structure for `model/get_resource.Pods`
--- --------------------------------------------------
-DROP TABLE IF EXISTS `pod`;
-DROP TABLE IF EXISTS `node`;
-DROP TABLE IF EXISTS `service`;
-DROP TABLE IF EXISTS `dashboard_service_second`;
-DROP TABLE IF EXISTS `dashboard_service_minute`;
-DROP TABLE IF EXISTS `dashboard_service_hour`;
-DROP TABLE IF EXISTS `dashboard_service_day`;
-DROP TABLE IF EXISTS `log`;
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect.Node`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `node` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `node_name` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_cpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_gpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `memory_size` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_limit` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `ip` varchar(255) NOT NULL DEFAULT '' ,
-        `cpu_usage` double precision NOT NULL DEFAULT 0 ,
-        `mem_usage` double precision NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0 ,
-        `storage_total` bigint NOT NULL DEFAULT 0 ,
-        `storage_use` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect.Pod`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `pod` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `pod_name` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_hostIP` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect.Service`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `service_name` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect.ServiceKvMap`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service_kv_map` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `name` varchar(255) NOT NULL DEFAULT '' ,
-        `value` varchar(255) NOT NULL DEFAULT '' ,
-        `belong` varchar(255) NOT NULL DEFAULT '' ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect.PodKvMap`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `pod_kv_map` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `name` varchar(255) NOT NULL DEFAULT '' ,
-        `value` varchar(255) NOT NULL DEFAULT '' ,
-        `belong` varchar(255) NOT NULL DEFAULT '' ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.ServiceDashboardSecond`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service_dashboard_second` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `service_name` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_number` bigint NOT NULL DEFAULT 0 ,
-        `container_number` bigint NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.ServiceDashboardMinute`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service_dashboard_minute` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `service_name` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_number` bigint NOT NULL DEFAULT 0 ,
-        `container_number` bigint NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.ServiceDashboardHour`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service_dashboard_hour` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `service_name` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_number` bigint NOT NULL DEFAULT 0 ,
-        `container_number` bigint NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.ServiceDashboardDay`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `service_dashboard_day` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `service_name` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_number` bigint NOT NULL DEFAULT 0 ,
-        `container_number` bigint NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.TimeListLog`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `time_list_log` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `record_time` bigint NOT NULL DEFAULT 0
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.NodeDashboardMinute`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `node_dashboard_minute` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `node_name` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_cpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_gpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `memory_size` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_limit` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `ip` varchar(255) NOT NULL DEFAULT '' ,
-        `cpu_usage` double precision NOT NULL DEFAULT 0 ,
-        `mem_usage` double precision NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0 ,
-        `storage_total` bigint NOT NULL DEFAULT 0 ,
-        `storage_use` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.NodeDashboardHour`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `node_dashboard_hour` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `node_name` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_cpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_gpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `memory_size` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_limit` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `ip` varchar(255) NOT NULL DEFAULT '' ,
-        `cpu_usage` double precision NOT NULL DEFAULT 0 ,
-        `mem_usage` double precision NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0 ,
-        `storage_total` bigint NOT NULL DEFAULT 0 ,
-        `storage_use` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
-
-    -- --------------------------------------------------
-    --  Table Structure for `git/inspursoft/board/src/collector/model/collect/dashboard.NodeDashboardDay`
-    -- --------------------------------------------------
-    CREATE TABLE IF NOT EXISTS `node_dashboard_day` (
-        `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
-        `node_name` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_cpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `numbers_gpu_core` varchar(255) NOT NULL DEFAULT '' ,
-        `memory_size` varchar(255) NOT NULL DEFAULT '' ,
-        `pod_limit` varchar(255) NOT NULL DEFAULT '' ,
-        `create_time` varchar(255) NOT NULL DEFAULT '' ,
-        `ip` varchar(255) NOT NULL DEFAULT '' ,
-        `cpu_usage` double precision NOT NULL DEFAULT 0 ,
-        `mem_usage` double precision NOT NULL DEFAULT 0 ,
-        `time_list_id` bigint NOT NULL DEFAULT 0 ,
-        `storage_total` bigint NOT NULL DEFAULT 0 ,
-        `storage_use` bigint NOT NULL DEFAULT 0,
-        KEY `idx_time_list_id` (`time_list_id`)
-    ) ENGINE=InnoDB;
 
     -- --------------------------------------------------
     --  Table Structure for `git/inspursoft/board/src/common/model/image`
@@ -327,8 +123,8 @@ DROP TABLE IF EXISTS `log`;
 		`type` SMALLINT(1) NOT NULL DEFAULT 0,
         `public` SMALLINT(1) NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
         `source_id` INT NOT NULL DEFAULT 0,
         `service_yaml` TEXT,
@@ -341,8 +137,8 @@ DROP TABLE IF EXISTS `log`;
         `name` VARCHAR(255) NOT NULL DEFAULT '',
         `comment` VARCHAR(255) NOT NULL DEFAULT '',
         `owner_id` INT NOT NULL,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) NOT NULL DEFAULT '',
         `project_id` INT NOT NULL DEFAULT 0,
@@ -358,8 +154,6 @@ DROP TABLE IF EXISTS `log`;
 	
     CREATE TABLE `board`.`operation` (
         `id` INT NOT NULL AUTO_INCREMENT,
-        `creation_time` timestamp DEFAULT 0,
-        `update_time` timestamp DEFAULT 0,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
         `project_name` VARCHAR(255) DEFAULT '',
         `project_id` INT DEFAULT 0,
@@ -369,7 +163,9 @@ DROP TABLE IF EXISTS `log`;
         `object_name` VARCHAR(255) DEFAULT '',
         `action` VARCHAR(255) DEFAULT '',
         `status` VARCHAR(255) DEFAULT '',
-        `path` VARCHAR(255) DEFAULT '',		
+        `path` VARCHAR(255) DEFAULT '',
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp  NOT NULL DEFAULT '2017-06-06 00:00:00',
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;	
 
@@ -451,8 +247,8 @@ INSERT INTO `board`.`helm_repository`
         `workloads` TEXT,
         `owner_id` INT NOT NULL,
         `owner_name` VARCHAR(255) NOT NULL,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -466,8 +262,8 @@ INSERT INTO `board`.`helm_repository`
         `owner_name` VARCHAR(255) DEFAULT NULL,
         `status` SMALLINT(1) NOT NULL,
         `deleted` SMALLINT(1) NOT NULL DEFAULT 0,
-        `creation_time` datetime DEFAULT NULL,
-        `update_time` datetime DEFAULT NULL,
+        `creation_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
+        `update_time` timestamp NOT NULL DEFAULT '2017-06-06 00:00:00',
         `source` SMALLINT(1) NOT NULL,
         `yaml` TEXT,
         PRIMARY KEY (`id`)

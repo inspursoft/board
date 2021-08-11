@@ -18,6 +18,7 @@
                   [inputDefaultValue]="newConfigMap.name"
                   [inputPattern]="configMapNamePattern"
                   [inputMaxlength]="50"
+                  [validatorMessage]="[{key:'pattern', message: 'RESOURCE.CREATE_CONFIG_MAP_NAME_PATTERN' | translate }]"
                   (commitEvent)="newConfigMap.name = $event">
     </lib-input-ex>
     <div class="dynamic-line-container">

@@ -66,6 +66,7 @@ export class JobContainer extends HttpBase {
   @HttpBind('mem_request') memRequest = '';
   @HttpBind('cpu_limit') cpuLimit = '';
   @HttpBind('mem_limit') memLimit = '';
+  @HttpBind('gpu_limit') gpuLimit = '';
   @HttpBindObject('image', JobImage) image: JobImage;
   @HttpBindArray('volume_mounts', JobVolumeMounts) volumeMounts: Array<JobVolumeMounts>;
   @HttpBindArray('env', JobEnv) env: Array<JobEnv>;
@@ -75,6 +76,14 @@ export class JobContainer extends HttpBase {
     this.containerPort = Array<number>();
     this.volumeMounts = Array<JobVolumeMounts>();
     this.env = Array<JobEnv>();
+  }
+
+  get gpuLimitValue(): number {
+    return Number(this.gpuLimit);
+  }
+
+  set gpuLimitValue(value) {
+    this.gpuLimit = `${value}`;
   }
 }
 

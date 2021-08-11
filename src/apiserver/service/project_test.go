@@ -13,7 +13,7 @@ const (
 	projectID   = 1
 	projectName = "testProject"
 	userID      = 1
-	userName    = "admin"
+	userName    = "boardadmin"
 )
 
 var project = model.Project{

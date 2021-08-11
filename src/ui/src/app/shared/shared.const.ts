@@ -8,9 +8,13 @@ export enum SERVICE_STATUS {
   RUNNING,
   STOPPED,
   WARNING,
+  Deploying,
+  Completed,
+  Failed,
   DELETED,
   UnKnown = 8,
-  AutonomousOffline = 9
+  AutonomousOffline = 9,
+  PartAutonomousOffline
 }
 
 export enum GUIDE_STEP {

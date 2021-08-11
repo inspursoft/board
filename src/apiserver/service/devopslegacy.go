@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git/inspursoft/board/src/apiserver/service/devops/gogs"
 	"git/inspursoft/board/src/apiserver/service/devops/jenkins"
+	"git/inspursoft/board/src/apiserver/service/devops/travis"
 	"git/inspursoft/board/src/common/model"
 	"git/inspursoft/board/src/common/utils"
 	"net/http"
@@ -30,6 +31,11 @@ var kvmRegistrySize = utils.GetConfig("KVM_REGISTRY_SIZE")
 var kvmRegistryPort = utils.GetConfig("KVM_REGISTRY_PORT")
 var kvmToolkitsPath = utils.GetConfig("KVM_TOOLKITS_PATH")
 var apiServerURL = utils.GetConfig("BOARD_API_BASE_URL")
+
+const (
+	jenkinsBuildConsoleTemplateURL = "%s/job/{{.JobName}}/{{.BuildSerialID}}/consoleText"
+	jenkinsStopBuildTemplateURL    = "%s/job/{{.JobName}}/{{.BuildSerialID}}/stop"
+)
 
 type gogsJenkinsPushRepositoryPayload struct {
 	ID       int    `json:"id"`
@@ -265,7 +271,18 @@ func (l LegacyDevOps) DeleteRepo(username string, repoName string) error {
 		logs.Error("Failed to get user by name: %s, error: %+v", username, err)
 		return err
 	}
-	return gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	err = gogs.NewGogsHandler(user.Username, user.RepoToken).DeleteRepo(user.Username, repoName)
+	if err != nil {
+		logs.Error("Failed to delete Gogits repo with name: %s, error: %+v", repoName, err)
+	}
+	err = jenkins.NewJenkinsHandler().DeleteJob(repoName)
+	if err != nil {
+		logs.Error("Failed to delete Jenkins job with name: %s, error: %+v", repoName, err)
+		if err == utils.ErrUnprocessableEntity {
+			return err
+		}
+	}
+	return nil
 }
 
 func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection string) error {
@@ -283,6 +300,10 @@ func (l LegacyDevOps) CustomHookPushPayload(rawPayload []byte, nodeSelection str
 	return utils.SimplePostRequestHandle(fmt.Sprintf("%s/generic-webhook-trigger/invoke", JenkinsBaseURL()), header, cp)
 }
 
+func (l LegacyDevOps) CustomHookPipelinePayload(rawPayload []byte) (pipelineID int, buildNumber int, err error) {
+	return
+}
+
 func (l LegacyDevOps) GetRepoFile(username string, repoName string, branch string, filePath string) ([]byte, error) {
 	return nil, fmt.Errorf("unimplement get repo files feature with the Gogits repo service")
 }
@@ -293,6 +314,81 @@ func (l LegacyDevOps) DeleteUser(username string) error {
 		return fmt.Errorf("failed to get admin user with error: %+v", err)
 	}
 	return gogs.NewGogsHandler(adminUser.Username, adminUser.RepoToken).DeleteUser(username)
+}
+
+func generateBuildingImageTravisYAML(configurations map[string]string) error {
+	userID := configurations["user_id"]
+	token := configurations["token"]
+	imageURI := configurations["image_uri"]
+	dockerfileName := configurations["dockerfile"]
+	repoPath := configurations["repo_path"]
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%s/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("docker build -t %s -f containers/%s .", imageURI, dockerfileName),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
+	}
+	return travisCommand.GenerateCustomTravis(repoPath)
+}
+
+func generatePushingImageTravisYAML(configurations map[string]string) error {
+	userID := configurations["user_id"]
+	token := configurations["token"]
+	imagePackageName := configurations["image_package_name"]
+	imageURI := configurations["image_uri"]
+	repoPath := configurations["repo_path"]
+	var travisCommand travis.TravisCommand
+	travisCommand.BeforeDeploy.Commands = []string{
+		fmt.Sprintf("curl \"%s/jenkins-job/%s/$BUILD_NUMBER\"", boardAPIBaseURL(), userID),
+		"if [ -d 'upload' ]; then rm -rf upload; fi",
+		"if [ -e 'attachment.zip' ]; then rm -f attachment.zip; fi",
+		fmt.Sprintf("token=%s", token),
+		fmt.Sprintf("status=`curl -I \"%s/files/download?token=$token\" 2>/dev/null | head -n 1 | awk '{print $2}'`", boardAPIBaseURL()),
+		fmt.Sprintf("bash -c \"if [ $status == '200' ]; then curl -o attachment.zip \"%s/files/download?token=$token\" && mkdir -p upload && unzip attachment.zip -d upload; fi\"", boardAPIBaseURL()),
+	}
+	travisCommand.Deploy.Commands = []string{
+		"export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+		fmt.Sprintf("image_name_tag=$(docker load -i upload/%s |grep 'Loaded image'|awk '{print $NF}')", imagePackageName),
+		fmt.Sprintf("image_name_tag=${image_name_tag#sha256:}"),
+		fmt.Sprintf("docker tag $image_name_tag %s", imageURI),
+		fmt.Sprintf("docker push %s", imageURI),
+		fmt.Sprintf("docker rmi %s", imageURI),
+		fmt.Sprintf("if [[ $image_name_tag =~ ':' ]]; then docker rmi $image_name_tag; fi"),
+	}
+	return travisCommand.GenerateCustomTravis(repoPath)
+}
+
+func (g LegacyDevOps) CreateCIYAML(action yamlAction, configurations map[string]string) (yamlName string, err error) {
+	yamlName = travis.TravisFilename
+	switch action {
+	case BuildDockerImageCIYAML:
+		err = generateBuildingImageTravisYAML(configurations)
+	case PushDockerImageCIYAML:
+		err = generatePushingImageTravisYAML(configurations)
+	}
+	return
+}
+
+func (g LegacyDevOps) ResetOpts(configurations map[string]string) error {
+	return nil
+}
+
+func (g LegacyDevOps) ResolveHandleURL(configurations map[string]string) (consoleURL string, stopURL string, err error) {
+	jobName := configurations["job_name"]
+	buildSerialID := configurations["build_serial_id"]
+	query := CIConsole{JobName: jobName, BuildSerialID: buildSerialID}
+	consoleURL, err = utils.GenerateURL(fmt.Sprintf(jenkinsBuildConsoleTemplateURL, JenkinsBaseURL()), query)
+	stopURL, err = utils.GenerateURL(fmt.Sprintf(jenkinsStopBuildTemplateURL, JenkinsBaseURL()), query)
+	return
 }
 
 func PrepareKVMHost() error {

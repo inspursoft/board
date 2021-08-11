@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "board.apiserver.fullname" . }}
+  labels:
+    app: {{ include "board.apiserver.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  replicas: {{.Values.apiserver.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ include "board.apiserver.name" . }}
+      instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "board.apiserver.name" . }}
+        instance: {{ .Release.Name }}
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ include "board.apiserver.fullname" . }}-env
+        image: {{ include "board.apiserver.image.image" . }}
+        imagePullPolicy: {{ .Values.apiserver.image.pullPolicy }}
+        name: apiserver
+        ports:
+        - containerPort: 8088
+          name: http
+          protocol: TCP
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /cert
+          name: certs
+        - mountPath: /etc/board/cert
+          name: ca
+        - mountPath: /root/kubeconfig
+          name: kubeconfig
+          subPath: kubeconfig
+        - mountPath: /etc/localtime
+          name: localtime
+          readOnly: true
+        resources:
+{{ toYaml .Values.apiserver.resources | indent 10 }}
+      volumes:
+      - hostPath:
+          path: '{{.Values.localtime.path}}'
+        name: localtime
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: kubeconfig
+            path: kubeconfig
+          name: {{ include "board.apiserver.fullname" . }}-kubeconfig
+        name: kubeconfig
+      - configMap:
+          defaultMode: 420
+          name: {{ include "board.apiserver.fullname" . }}-ca
+        name: ca
+      - configMap:
+          defaultMode: 420
+          name: {{ include "board.apiserver.fullname" . }}-certs
+        name: certs
+      restartPolicy: '{{.Values.apiserver.restartPolicy}}'
+      schedulerName: default-scheduler
+    {{- with .Values.apiserver.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiserver.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiserver.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

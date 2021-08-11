@@ -16,6 +16,7 @@
 # Develop flag
 #
 DEVFLAG=release
+RELEASETYPE=Openboard
 
 # ARCH default is x86_64, also support mips, arm64v8
 ARCH=
@@ -84,6 +85,9 @@ PREPAREPATH=$(TOOLSPATH)
 PREPARECMD=prepare
 PREPARECMD_PARAMETERS=--conf $(CONFIGPATH)/$(CONFIGFILE)
 
+PREPARECHARTCMD=prepare_chart
+PREPARECHARTCMD_PARAMETERS=--conf $(MAKEPATH)/board.cfg --tag $(VERSIONTAG)
+
 # swagger parameters
 SWAGGERTOOLPATH=$(TOOLSPATH)/swagger
 SWAGGERFILEPATH=$(BUILDPATH)/docs
@@ -121,7 +125,7 @@ TEST_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_test)
 FMT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_fmt)
 VET_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_vet)
 GOLINT_LIST = $(foreach int, $(COMPILEALL_LIST), $(int)_golint)
-PKG_LIST = $(foreach int, $(IMG_LIST), $(IMAGEPREFIX)_$(int):$(VERSIONTAG))
+PKG_LIST = $(foreach int, $(IMG_LIST), openboard/$(IMAGEPREFIX)_$(int):$(VERSIONTAG))
 
 BUILDALL_LIST = $(foreach int, $(IMG_LIST), container/$(int))
 BUILD_LIST = $(foreach int, $(BUILDALL_LIST), $(int)_build)
@@ -142,6 +146,7 @@ golint: $(GOLINT_LIST)
 version:
 	@echo $(VERSIONTAG)
 	@echo $(VERSIONTAG) > $(VERSIONFILE)
+	@echo -n "-$(RELEASETYPE)" >> $(VERSIONFILE)
 
 compile_ui:
 	$(DOCKERCOMPOSECMD) -f $(MAKEWORKPATH)/$(DOCKERCOMPOSEUIFILENAME) up
@@ -173,10 +178,10 @@ build: version $(BUILD_LIST) #container/db_build
 cleanimage: $(RMIMG_LIST) #container/db_rmi
 
 $(BUILD_LIST): %_build: 
-	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERBUILD) -f $(MAKEWORKPATH)/$*/Dockerfile${if ${ARCH},.${ARCH}} . -t openboard/$(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 	
 $(RMIMG_LIST): %_rmi:
-	$(DOCKERRMIMAGE) -f $(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
+	$(DOCKERRMIMAGE) -f openboard/$(IMAGEPREFIX)_$(subst container/,,$*):$(VERSIONTAG)
 
 #container/db_build:
 #	$(DOCKERBUILD) -f $(MAKEWORKPATH)/container/db/Dockerfile . -t $(IMAGEPREFIX)_mysql:latest
@@ -188,10 +193,22 @@ prepare: version
 	@$(MAKEPATH)/$(PREPARECMD) $(PREPARECMD_PARA)
 	@echo "Done."
 
+prepare_chart: prepare
+	@echo "preparing chart..."
+	@$(MAKEPATH)/$(PREPARECHARTCMD) $(PREPARECHARTCMD_PARAMETERS)
+	@echo "Done."
+
+
 start:
 	@echo "loading Board images..."
 	$(DOCKERNETWORK) create board &> /dev/null || true
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) up -d
+	@echo "Start complete. You can visit Board now."
+
+start_legacy:
+	@echo "loading Board images..."
+	$(DOCKERNETWORK) create board &> /dev/null || true
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/archive/$(DOCKERCOMPOSEFILENAME) up -d
 	@echo "Start complete. You can visit Board now."
 
 start_admin:
@@ -211,6 +228,12 @@ down:
 	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME) down -v
 	@echo "Done."
 
+down_legacy:
+	@echo "stoping Board instance..."
+	$(DOCKERNETWORK) rm board &> /dev/null || true
+	$(DOCKERCOMPOSECMD) -f $(DOCKERCOMPOSEFILEPATH)/archive/$(DOCKERCOMPOSEFILENAME) down -v
+	@echo "Done."
+
 down_admin:
 	@echo "stoping Adminserver instance..."
 	$(DOCKERNETWORK) rm board &> /dev/null || true
@@ -224,37 +247,59 @@ prepare_swagger:
 
 prepare_composefile:
 	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
+	@cp $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.tpl $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml
+	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml
 	@sed -i "s/__version__/$(VERSIONTAG)/g" $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml
 
-package: prepare_composefile
-	@echo "packing offline package ..."
+prepare_package: prepare_composefile
 	@if [ ! -d $(PKGTEMPPATH) ] ; then mkdir $(PKGTEMPPATH) ; fi
 	@if [ ! -d $(PKGTEMPPATH)/adminserver ] ; then mkdir -p $(PKGTEMPPATH)/adminserver ; fi
+	@if [ ! -d $(PKGTEMPPATH)/archive ] ; then mkdir -p $(PKGTEMPPATH)/archive ; fi
 	@cp $(TOOLSPATH)/install.sh $(PKGTEMPPATH)/install.sh
+	@cp $(TOOLSPATH)/chart-install.sh $(PKGTEMPPATH)/chart-install.sh
 	@cp $(TOOLSPATH)/install-adminserver.sh $(PKGTEMPPATH)/adminserver/install-adminserver.sh
 	@cp $(TOOLSPATH)/uninstall.sh $(PKGTEMPPATH)/uninstall.sh
+	@cp $(TOOLSPATH)/chart-uninstall.sh $(PKGTEMPPATH)/chart-uninstall.sh
 	@cp $(TOOLSPATH)/uninstall-adminserver.sh $(PKGTEMPPATH)/adminserver/uninstall-adminserver.sh
+	@cp $(MAKEPATH)/pv.tpl $(PKGTEMPPATH)/pv.tpl
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/.
 	@cp $(MAKEPATH)/board.cfg $(PKGTEMPPATH)/adminserver/.
 	@cp $(MAKEPATH)/prepare $(PKGTEMPPATH)/.
+	@cp $(MAKEPATH)/prepare_chart $(PKGTEMPPATH)/.
 	@cp -rf $(MAKEPATH)/templates $(PKGTEMPPATH)/.
-	@cp $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
-	@cp $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
+	@cp -rf $(MAKEPATH)/charts $(PKGTEMPPATH)/.
+	@mv $(MAKEWORKPATH)/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/docker-compose.yml
+	@mv $(MAKEWORKPATH)/archive/docker-compose${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/archive/docker-compose.yml
+	@mv $(MAKEWORKPATH)/docker-compose-adminserver${if ${ARCH},.${ARCH}}.yml $(PKGTEMPPATH)/adminserver/docker-compose-adminserver.yml
 	@cp $(MAKEPATH)/templates/adminserver/env-release $(PKGTEMPPATH)/adminserver/env
+	@cp $(VERSIONFILE) $(PKGTEMPPATH)/.
 #	@cp LICENSE $(PKGTEMPPATH)/LICENSE
 #	@cp NOTICE $(PKGTEMPPATH)/NOTICE
 	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/docker-compose.yml
+	@sed -i "s/..\/config/.\/config/" $(PKGTEMPPATH)/archive/docker-compose.yml
 
+offline_package: prepare_package
 	@echo "package images ..."
-	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.18 gitlab-helper:1.0
+	@$(DOCKERPULL) docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+	@$(DOCKERPULL) docker.elastic.co/kibana/kibana:7.9.3
+	@$(DOCKERPULL) quay.io/fluentd_elasticsearch/fluentd:v3.0.4
+	@$(DOCKERSAVE) -o $(PKGTEMPPATH)/$(IMAGEPREFIX)_deployment.$(VERSIONTAG).tgz $(PKG_LIST) k8s_install:1.19 gitlab-helper:1.0 docker.elastic.co/elasticsearch/elasticsearch:7.9.3 docker.elastic.co/kibana/kibana:7.9.3 quay.io/fluentd_elasticsearch/fluentd:v3.0.4
 	@$(TARCMD) -zcvf $(PKGNAME)-offline-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
 
 	@rm -rf $(PACKAGEPATH)
+	@echo "######################### Offline package done! #########################"
 
-packageonestep: compile compile_ui build package
+offline_package_one_step: compile compile_ui build offline_package
+# packageonestep: compile compile_ui build package
 #packageonestep: compile build package
+
+online_package: prepare_package
+	@$(TARCMD) -zcvf $(PKGNAME)-online-installer-$(VERSIONTAG)${if ${ARCH},.${ARCH}}.tgz $(PKGTEMPPATH)
+
+	@rm -rf $(PACKAGEPATH)
+	@echo "######################### Online package done! #########################"
 
 .PHONY: cleanall
 cleanall: cleanbinary cleanimage

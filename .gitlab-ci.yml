@@ -8,7 +8,7 @@ variables:
   golang_version: "1.14.0"
   jenkins_version: "2.127"
   last_version: "latest"
-  mysql_version: "5.6.35"
+  mysql_version: "5.7.31"
   openldap_version: "1.1.11"
   registry_ip: "10.110.27.103:6000"
 stages:
@@ -67,7 +67,7 @@ job_api_test:
     - docker tag $registry_ip/board/dev_gomail:dev 10.111.25.119/board/dev_gomail:dev
     - docker pull $registry_ip/library/python:tavern2
     - docker tag $registry_ip/library/python:tavern2 python:tavern2
-    - docker run --rm -v `pwd`:/data python:tavern2 /data/make/prepare
+    - docker run --rm -v `pwd`:/data -v /etc/board/cert:/etc/board/cert python:tavern2 /data/make/prepare
   script:
     - pwd
     - docker images

@@ -1,13 +1,14 @@
 # Board
+[![Go Report Card](https://goreportcard.com/badge/github.com/inspursoft/board)](https://goreportcard.com/report/github.com/inspursoft/board) [![Build Status](https://travis-ci.org/inspursoft/board.svg?branch=dev)](https://travis-ci.org/inspursoft/board) [![codecov](https://codecov.io/gh/inspursoft/board/branch/dev/graph/badge.svg?token=HIOWVOQ772)](https://codecov.io/gh/inspursoft/board)
 
 [English](README.md) | [中文](README_zh_CN.md)
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases] instead of the `master` branch in order to get stable binaries.
 
-|<img alt="notification" width="24" src="docs/img/bell.png">Community Meeting|
-|------------------|
-|The Board Project holds monthly community calls on Webex . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](http://10.10.5.9/TechnologyCenter/board/wikis/community-meeting-schedule).|
+| <img alt="notification" width="24" src="docs/img/bell.png">Community Meeting |
+| ------------------------------------------------------------ |
+| The Board Project holds monthly community calls on Zoom . To join the communit calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/inspursoft/board/wiki/community-meeting-schedule). |
 
 <img alt="Board" src="docs/img/board_logo.png">
 
@@ -32,11 +33,7 @@ Board is deployed as several Docker containers, and, therefore, can be deployed 
 * Docker engine should be version 1.11.2 or higher.  For installation instructions, please refer to: https://docs.docker.com/engine/installation/
 * Docker Compose needs to be version 1.7.1 or higher.  For installation instructions, please refer to: https://docs.docker.com/compose/install/
 
-
-### Install via online installer
-~~The installer downloads Board images from Docker hub. For this reason, the installer is very small in size.~~ (Coming soon.)
-
-### Install via offline installer
+### Install
 The installation steps boil down to the following
 
 1. Download the installer;
@@ -49,11 +46,17 @@ Note: If you need prepare Kubernetes and Registry environment, please refer to t
 
 The binary of the installer can be downloaded from the `release` page. Choose either online or offline installer. Use *tar* command to extract the package.
 
+The difference between online installer and offline installer is:
+* The online installation package directly pulls the image from dockerhub, the installer is very small in size.
+* The offline installation package contains all the images needed for this project, so the installation package is quite larger
+
 Online installer:
-    (Coming soon.)
+```sh
+    $ tar xvf board-online-installer-VERSION[-ARCH].tgz
+```
 Offline installer:
 ```sh
-    $ tar xvf board-offline-installer-latest.tgz.tgz
+    $ tar xvf board-offline-installer-VERSION[-ARCH].tgz
 ```
 
 #### Configuring Board
@@ -73,9 +76,9 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Optional parameters
 
-* **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **admin/123456a?** ._   
+* **board_admin_password**: The administrator's initial password. This password only takes effect for the first time Board launches. After that, this setting is ignored and the administrator's password should be set in the UI. _Note that the default username/password are **boardadmin/123456a?** ._   
 * **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
-For LDAP authentication, set this to **ldap_auth**.  
+  For LDAP authentication, set this to **ldap_auth**.  
 
    **IMPORTANT:** When upgrading from an existing Board instance, you must make sure **auth_mode** is the same in ```board.cfg``` before launching the new version of Board. Otherwise, users may not be able to log in after the upgrade.
 * **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`). Only used when **auth_mode** is set to *ldap_auth* .
@@ -91,7 +94,51 @@ For LDAP authentication, set this to **ldap_auth**.
 #### Connecting Kubernetes cluster which authentication strategy with CA certification
 If the Kubernetes cluster which Board connect to authentication strategy with CA certification, you must copy the Kubernetes cluster's CA files to your machine which installing the Board. You should put CA files into /etc/board/cert directory and name them as 'ca-key.pem'(for private key) and 'ca.pem'(for public key).
 
-Then you should configure these items:
+You also need to deploy the following two files in your Kubernetes for Board to take over your Kubernetes cluster:
+```sh
+$ mkdir board-k8s-requires
+$ cd board-k8s-requires
+# board-clusterrolebinding.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/board-clusterrolebinding.yaml
+$ kubectl apply -f board-clusterrolebinding.yaml
+
+# cadvisor.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/cadvisor.yaml
+# You need to replace the {{docker_dir}} placeholder in the file before deploying. The docker directory defaults to /var/lib/docker
+$ kubectl apply -f cadvisor.yaml
+```
+
+In addition, there are some optional features:
+
+**Helm Chart:** The chart museum is integrated in the Board, which depends on helm2
+```sh
+# tiller.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller.yaml
+# tiller-service.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/tiller-service.yaml
+$ kubectl apply tiller.yaml
+$ kubectl apply tiller-service.yaml
+```
+
+**EFK + Prometheus:** Board supports EFK+Prometheus log management
+```sh
+# fluentd.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/fluentd.yaml
+# Need to replace the {{board_ip_address}} {{docker_dir}} placeholder in the file before deploying
+$ kubectl apply -f fluentd.yaml
+
+# prometheus.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus.yaml
+# prometheus2.yaml
+$ wget https://raw.githubusercontent.com/inspursoft/board-installer/main/ansible_k8s/roles/kubectlCMD/templates/prometheus2.yaml
+# Need to replace the {{nfs_dir}} {{nsf_server_ip_address}} placeholder in the file before deploying, or replace this file with your own pv
+$ kubectl apply -f prometheus.yaml
+$ kubectl apply -f prometheus2.yaml
+```
+
+**Note:** If your kubernetes cluster is installed by the [inspursoft/board-installer](https://github.com/inspursoft/board-installer), you do not need to perform the above steps because the project’s automation script have been completed.
+
+Then you should configure these items in **board.cfg**:
 
 * **kube_http_scheme**: Set to 'https'. It means the requests Board send to Kubernetes cluster will be used via 'https' protocol.
 * **kube_master_ip**: The IP address of the Master of Kubernetes cluster.
@@ -106,22 +153,14 @@ Once **board.cfg** is configured, install and start Board using the ```install.s
     $ sudo ./install.sh
 ```
 
-If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```board.cfg```). Note that the default administrator username/password are admin/123456a? .
+#### After installation
+If everything worked properly, you should be able to open a browser to visit the admin portal at **http://reg.yourdomain.com** (change *reg.yourdomain.com* to the hostname configured in your ```board.cfg```). Note that the default administrator username/password are boardadmin/123456a? .
 
 Log in to the admin portal and create a new project, e.g. `myproject`. You can create your own service now.
 
 For information on how to use Board, please refer to **[User Guide of Board](docs/user_guide.md)** .
 
 For details on how to download and use the installation package, please refer to [Installation and Configuration Guide](docs/installation_guide.md).
-
-#### After installation
-_If everything worked properly, you should be able to open a browser to visit the admin portal at http://reg.yourdomain.com. Note that the default administrator username/password are admin/Harbor12345._
-
-Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (by default, the registry server listens on port 80):
-```sh
-$ docker login reg.yourdomain.com
-$ docker push reg.yourdomain.com/myproject/myrepo:mytag
-```
 
 ## Upgrade
 
@@ -131,70 +170,72 @@ When upgrading your existing Board instance to a newer version, you may need  to
 
 ### Upgrading Board and migrating data
 1 Log in to the host that Board runs on, stop and remove existing Board instance if it is still running:
-   
+
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 
 2 Backup Board's current files so that you can roll back to the current version when it is neccessary.
-   
+
    ```sh
    cd ..
-   mv board /my_backup_dir/board
+   mv Deploy /my_backup_dir/Deploy
+   mv /data/board /my_backup_dir/board
    ```
 
-3 Get the latest Board release package from Gogits:
-   
+3 Get the latest Board release package from github:
+
    ```
-   http://10.111.25.100:10080/inspursoft/board
+   https://github.com/inspursoft/board
    ```
 
 4 Before upgrading Board, perform database migration first. The migration tool is delivered as a Docker image, so you should build it yourself.
-   
+
    ```sh
+   git clone https://github.com/inspursoft/board.git
    cd board/tools/migration
    docker build -t board-migration .
    ```
 
 5 You should start you current Board database by handy.
- 
+
    ```sh
    docker run -d -p 3306:3306 -v /data/board/database:/var/lib/mysql -e DB_PASSWORD=root123 dev_db:dev
    ```
 
 6 Backup database to a directory such as `/data/board-migration/backup`. You also need the IP address, port number,username and password to access the database are provided via environment variables "DB_IP", "DB_PORT", "DB_USR", "DB_PWD".
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration backup
    ```
 7 Upgrade database schema and migrate data.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root board-migration upgrade head
    ```
 
    **NOTE:**
    If you execute this command in a short while after starting the Board database, you may meet errors as the database is not ready for connection. Please retry it after waiting for a while.
-   
+
 ### Roll back from an upgrade
 For any reason, if you want to back to the previous version of Board, follow the below steps:
 
 1 Stop and remove the current Board service if it is still running.
- 
+
    ```sh
-   cd board
+   cd Deploy
    docker-compose down
    ```
 
 2 Start stand-alone container of Board database
- 
+
    ```sh
    docker run -d -p 3306:3306 -v /data/board/database:/var/lib/mysql -e DB_PASSWORD=root123 dev_db:dev
    ```
 
 3 Restore database from backup file in `/data/board-migration/backup`.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration restore
    ```
@@ -204,7 +245,7 @@ For any reason, if you want to back to the previous version of Board, follow the
 ### Migration tool reference
 Use `help` command to show instruction of migration tool:
 `data/board-migration/backup`.
- 
+
    ```sh
    docker run --rm -v /data/board-migration/backup:/board-migration/backup -e DB_IP=10.0.0.0 -e DB_PORT=3306 -e DB_USR=root -e DB_PWD=root123 board-migration help
    ```
@@ -220,7 +261,9 @@ For information on how to use BOARD, please take a look at [User Guide](docs/use
 [Online Community Meeting (inspur internal link)](http://10.10.5.9/TechnologyCenter/board/wikis/Community%20meeting%20schedule)
 
 ## Contribution
-...(Coming soon.)
+Board is developed in the open, and is constantly being improved by our **users, contributors, and maintainers**. It is because of you that we can bring great software to the community.
+
+If you are interested in contributing to board projects, please read this [Contribution Guide Document](CONTRIBUTING.md). 
 
 ## License
 Copyright (c) <2020> <inspur cloud service group>
@@ -260,5 +303,3 @@ etc.
 
 ## About
 ...(Coming soon.)
-
-

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tokenserver  # board apiserver and adminserver hardcodes tokenserver name to 'tokenserver', so here is service name tokenserver.
+  labels:
+    app: {{ include "board.tokenserver.name" . }}
+    chart: {{ include "board.chart" . }}
+    instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.tokenserver.service.type }}
+  ports:
+  - port: {{ .Values.tokenserver.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: {{ include "board.tokenserver.fullname" . }}
+    instance: {{ .Release.Name }}

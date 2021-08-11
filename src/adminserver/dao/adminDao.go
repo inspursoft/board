@@ -34,20 +34,6 @@ func InitAdmin(user model.User) error {
 	return nil
 }
 
-func CacheAccountInfo(account models.Account) error {
-	o := orm.NewOrm()
-	if o.Read(&models.Account{Id: 1}) == orm.ErrNoRows {
-		if _, err := o.Insert(&account); err != nil {
-			return err
-		}
-	} else {
-		if _, err := o.Update(&account); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func LoginCheckAuth(user model.User) (model.User, error) {
 	o := orm.NewOrm()
 	o.Using("mysql-db2")

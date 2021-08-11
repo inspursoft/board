@@ -199,8 +199,6 @@
     </a>
   </div>
   <div class="card-block" [ngStyle]="{height:showMaxGrafanaWindow?'100%':'300px'}">
-    <iframe height="100%" width="100%" [src]="grafanaViewUrl | safe">
-      {{"DASHBOARD.GRAFANA_FRAME_SUPPORT" | translate}}
-    </iframe>
+    <app-grafana></app-grafana>
   </div>
 </div>

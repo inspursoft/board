@@ -1,7 +1,7 @@
 version: '2'
 services:
   log:
-    image: board_log:__version__
+    image: openboard/board_log:__version__
     restart: always
     volumes:
       - /var/log/board/:/var/log/docker/
@@ -11,7 +11,7 @@ services:
     ports:
       - 1514:514
   db:
-    image: board_db:__version__
+    image: openboard/board_db:__version__
     restart: always
     volumes:
       - /data/board/database:/var/lib/mysql
@@ -27,54 +27,11 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "db"
-  gogits:
-    image: board_gogits:__version__
-    restart: always
-    volumes:
-      - /data/board/gogits:/data:rw
-      - ../config/gogits/conf/app.ini:/tmp/conf/app.ini
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - "10022:22"
-      - "10080:3000"
-    networks:
-      - board
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "gogits"
-  jenkins:
-    image: board_jenkins:__version__
-    restart: always
-    networks:
-      - board
-    volumes:
-      - /data/board/jenkins_home:/var/jenkins_home
-      - ../config/ssh_keys:/root/.ssh
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - ../config/jenkins/env
-    ports:
-      - 8888:8080
-    depends_on:
-      - log
-    logging:
-      driver: "syslog"
-      options:
-        syslog-address: "tcp://127.0.0.1:1514"
-        tag: "jenkins"
   apiserver:
-    image: board_apiserver:__version__
+    image: openboard/board_apiserver:__version__
     restart: always
     volumes:
 #     - ../../tools/swagger/vendors/swagger-ui-2.1.4/dist:/usr/bin/swagger:z
-      - /data/board/repos:/repos:rw
-      - /data/board/keys:/keys:rw
       - /data/board/cert:/cert:rw
       - ../config/apiserver/kubeconfig:/root/kubeconfig
       - /etc/board/cert:/etc/board/cert:rw
@@ -95,7 +52,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "apiserver"
   tokenserver:
-    image: board_tokenserver:__version__
+    image: openboard/board_tokenserver:__version__
     env_file:
       - ../config/tokenserver/env
     restart: always
@@ -111,7 +68,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "tokenserver"
   proxy:
-    image: board_proxy:__version__
+    image: openboard/board_proxy:__version__
     networks:
       - board
     restart: always
@@ -132,7 +89,7 @@ services:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
   prometheus:
-    image: board_prometheus:__version__
+    image: openboard/board_prometheus:__version__
     restart: always
     networks:
       - dvserver_net

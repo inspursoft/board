@@ -3,7 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
-	"sync"
+	"fmt"
+	"time"
 
 	c "git/inspursoft/board/src/apiserver/controllers/commons"
 	v2routers "git/inspursoft/board/src/apiserver/routers"
@@ -36,14 +37,12 @@ const (
 	defaultAuthMode                           = "db_auth"
 	defaultMode                               = "normal"
 	adminUserID                               = 1
-	adminUsername                             = "admin"
-	adminEmail                                = "admin@inspur.com"
+	adminUsername                             = "boardadmin"
+	adminEmail                                = "boardadmin@inspur.com"
 	defaultInitialPassword                    = "123456a?"
 	BaseRepoPath                              = "/repos"
 	sshKeyPath                                = "/keys"
 	defaultProject                            = "library"
-	kvmToolsPath                              = "/root/kvm"
-	kvmRegistryPath                           = "/root/kvmregistry"
 )
 
 var GogitsSSHURL = utils.GetConfig("GOGITS_SSH_URL")
@@ -73,25 +72,33 @@ func setConfigurations() {
 	utils.SetConfig("BASE_REPO_PATH", BaseRepoPath)
 	utils.SetConfig("SSH_KEY_PATH", sshKeyPath)
 
-	utils.SetConfig("KVM_TOOLS_PATH", kvmToolsPath)
-	utils.SetConfig("KVM_REGISTRY_PATH", kvmRegistryPath)
-
 	utils.SetConfig("KUBE_CONFIG_PATH", defaultKubeConfigPath)
 
 	utils.SetConfig("AUTH_MODE", defaultAuthMode)
 }
 
-func initBoardVersion(ctx context.Context, cancel context.CancelFunc) {
+func initBoardVersion(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_1_INIT_BOARD_VERSION")
 	version, err := ioutil.ReadFile("VERSION")
 	if err != nil {
 		logs.Error("Failed to read VERSION file: %+v", err)
+		e <- fmt.Errorf("Failed to read VERSION file: %+v", err)
 		cancel()
 	}
 	utils.SetConfig("BOARD_VERSION", string(bytes.TrimSpace(version)))
 	service.SetSystemInfo("BOARD_VERSION", true)
 }
 
-func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
+func updateAdminPassword(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_2_UPDATE_ADMIN_PASSWORD")
 	if ctx.Value(systemInfo).(*model.SystemInfo).SetAdminPassword == "updated" {
 		logs.Info("Skip updating admin user as it has been updated.")
 		return
@@ -106,6 +113,7 @@ func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
 	isSuccess, err := service.UpdateUser(user, "password", "salt")
 	if err != nil {
 		logs.Error("Failed to update user password: %+v", err)
+		e <- fmt.Errorf("Failed to update user password: %+v", err)
 		cancel()
 	}
 	if isSuccess {
@@ -117,26 +125,33 @@ func updateAdminPassword(ctx context.Context, cancel context.CancelFunc) {
 	}
 }
 
-func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
+func initProjectRepo(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_3_INIT_PROJECT_REPO")
 	if ctx.Value(systemInfo).(*model.SystemInfo).InitProjectRepo == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		return
 	}
-
 	initialPassword := utils.GetStringValue("BOARD_ADMIN_PASSWORD")
 	if initialPassword == "" {
 		initialPassword = defaultInitialPassword
 	}
+
 	service.SetSystemInfo("DEVOPS_OPT", false)
 	devops := service.CurrentDevOps()
 	err := devops.SignUp(model.User{Username: adminUsername, Email: adminEmail, Password: initialPassword})
 	if err != nil {
 		logs.Error("Failed to create admin user on current DevOps: %+v", err)
+		e <- fmt.Errorf("Failed to create admin user on current DevOps: %+v", err)
 		cancel()
 	}
 	token, err := devops.CreateAccessToken(adminUsername, initialPassword)
 	if err != nil {
 		logs.Error("Failed to create access token for admin user: %+v", err)
+		e <- fmt.Errorf("Failed to create access token for admin user: %+v", err)
 		cancel()
 	}
 	user := model.User{ID: adminUserID, RepoToken: token}
@@ -152,6 +167,7 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
 	err = devops.CreateRepoAndJob(adminUserID, defaultProject)
 	if err != nil {
 		logs.Error("Failed to create default repo %s: %+v", defaultProject, err)
+		e <- fmt.Errorf("Failed to create default repo %s: %+v", defaultProject, err)
 		cancel()
 	}
 	utils.SetConfig("INIT_PROJECT_REPO", "created")
@@ -159,31 +175,31 @@ func initProjectRepo(ctx context.Context, cancel context.CancelFunc) {
 	logs.Info("Finished to create initial project and repo.")
 }
 
-func prepareKVMHost(ctx context.Context, cancel context.CancelFunc) {
-	if jenkinsExecutionMode() == "single" {
-		logs.Info("Skip preparing KVM host as it set as single slave node.")
+func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
 		return
 	}
-	if err := service.PrepareKVMHost(); err != nil {
-		logs.Error("Failed to prepare KVM host, error: %+v", err)
-		cancel()
-	}
-}
-
-func initKubernetesInfo(ctx context.Context, cancel context.CancelFunc) {
+	utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
 	logs.Info("Initializing Kubernetes info")
 	info, err := service.GetKubernetesInfo()
 	if err != nil {
 		logs.Error("Failed to initialize kubernetes info, err: %+v", err)
 		utils.SetConfig("KUBERNETES_VERSION", "NA")
-		return
+		e <- fmt.Errorf("Failed to initialize kubernetes info, err: %+v", err)
+		cancel()
 	}
 	utils.SetConfig("KUBERNETES_VERSION", info.GitVersion)
 	service.SetSystemInfo("KUBERNETES_VERSION", true)
 	logs.Info("Finished to initialize Kubernetes info.")
 }
 
-func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
+func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc, e chan error) {
+	if err := detectContextStatus(ctx); err != nil {
+		e <- err
+		return
+	}
+	utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
 	if ctx.Value(systemInfo).(*model.SystemInfo).SyncK8s == "created" {
 		logs.Info("Skip initializing project repo as it has been created.")
 		if k8sForceInitSync() == "false" {
@@ -191,7 +207,6 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 			return
 		}
 	}
-
 	logs.Info("Initialize to sync up with K8s status ...")
 	defer func() {
 		utils.SetConfig("SYNC_K8S", "finished")
@@ -201,6 +216,7 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 	err := service.SyncNamespaceByOwnerID(adminUserID)
 	if err != nil {
 		logs.Error("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
+		e <- fmt.Errorf("Failed to sync namespace by userID: %d, err: %+v", adminUserID, err)
 		cancel()
 	}
 	logs.Info("Successful sync up with namespaces for admin user.")
@@ -208,9 +224,19 @@ func syncUpWithK8s(ctx context.Context, cancel context.CancelFunc) {
 	err = service.SyncProjectsWithK8s()
 	if err != nil {
 		logs.Error("Failed to sync projects with K8s: %+v", err)
+		e <- fmt.Errorf("Failed to sync projects with K8s: %+v", err)
 		cancel()
 	}
 	logs.Info("Successful sync up with projects with K8s.")
+}
+
+func detectContextStatus(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(time.Millisecond * 500):
+		return nil
+	}
 }
 
 func main() {
@@ -221,56 +247,39 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	done := make(chan bool)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		initializer := func() <-chan error {
-			e := make(chan error)
-			go func() {
-				defer close(e)
-				dao.InitDB()
-				service.SetSystemInfo("DNS_SUFFIX", true)
-				service.SetSystemInfo("MODE", true)
-				service.SetSystemInfo("BOARD_HOST_IP", true)
-				service.SetSystemInfo("AUTH_MODE", false)
-				service.SetSystemInfo("REDIRECTION_URL", false)
-				service.SetSystemInfo("DEVOPS_OPT", false)
+	initializer := func(done chan bool) chan error {
+		e := make(chan error)
+		go func() {
+			defer close(e)
+			dao.InitDB()
+			service.SetSystemInfo("DNS_SUFFIX", true)
+			service.SetSystemInfo("MODE", true)
+			service.SetSystemInfo("BOARD_HOST_IP", true)
+			service.SetSystemInfo("AUTH_MODE", false)
+			service.SetSystemInfo("REDIRECTION_URL", false)
+			service.SetSystemInfo("DEVOPS_OPT", false)
 
-				info, err := service.GetSystemInfo()
-				if err != nil {
-					logs.Error("Failed to set system config: %+v", err)
-					panic(err)
-				}
-				utils.SetConfig("INIT_STATUS", "NOT_READY")
-				ctx = context.WithValue(ctx, systemInfo, info)
-				initBoardVersion(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_1_UPDATE_ADMIN_PASSWORD")
-				updateAdminPassword(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_2_INIT_PROJECT_REPO")
-				initProjectRepo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_3_PREPARE_KVM_HOST")
-				prepareKVMHost(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_4_INIT_KUBERNETES_INFO")
-				initKubernetesInfo(ctx, cancel)
-				utils.SetConfig("INIT_STATUS", "5_5_SYNC_UP_K8S")
-				syncUpWithK8s(ctx, cancel)
-				for {
-					select {
-					case <-ctx.Done():
-						e <- ctx.Err()
-					case <-done:
-						logs.Info("Finished as initialization has done.")
-						e <- nil
-					}
-				}
-			}()
-			return e
-		}
-		close(done)
+			info, err := service.GetSystemInfo()
+			if err != nil {
+				logs.Error("Failed to set system config: %+v", err)
+				e <- fmt.Errorf("Failed to set system config: %+v", err)
+				cancel()
+			}
+			utils.SetConfig("INIT_STATUS", "NOT_READY")
+			ctx = context.WithValue(ctx, systemInfo, info)
+			initBoardVersion(ctx, cancel, e)
+			updateAdminPassword(ctx, cancel, e)
+			initProjectRepo(ctx, cancel, e)
+			initKubernetesInfo(ctx, cancel, e)
+			syncUpWithK8s(ctx, cancel, e)
+			close(done)
+		}()
+		return e
+	}
+	done := make(chan bool)
+	go func() {
 		select {
-		case err := <-initializer():
+		case err := <-initializer(done):
 			if err != nil {
 				utils.SetConfig("INIT_STATUS", err.Error())
 				logs.Error("Failed to execute initialization with error: %+v", err)
@@ -280,9 +289,7 @@ func main() {
 			}
 		}
 	}()
-	go func() {
-		wg.Wait()
-	}()
+
 	if swaggerDoc() == "enabled" {
 		beego.BConfig.WebConfig.DirectoryIndex = true
 		beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
