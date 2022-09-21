@@ -679,6 +679,7 @@ export const LANG_ZH_CN = {
     "STATUS_DELETED": "已删除",
     "STATUS_UNKNOWN": "未知",
     "STATUS_EDGE": "离线自治",
+    "STATUS_STOPPING": "停止中",
     "TOGGLE_SERVICE": "切换服务状态",
     "CONFIRM_TO_TOGGLE_SERVICE": "确认切换服务 {{0}} 的状态？",
     "DELETE_SERVICE": "删除服务",

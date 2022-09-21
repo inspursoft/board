@@ -30,7 +30,6 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		return nil, fmt.Errorf("failed to get the configuration")
 	}
 	hostName := configuration.Board.Hostname
-	masterIp := configuration.K8s.KubeMasterIP
 	registryIp := configuration.K8s.RegistryIP
 
 	hostFilePath := path.Join(nodeModel.BasePath, nodeModel.HostFileDir)
@@ -43,7 +42,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 
 	hostFileName := fmt.Sprintf("%s/%s@%s", hostFilePath, nodeModel.NodeHostsFile, nodePostData.NodeIp)
 
-	if err := GenerateHostFile(masterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
+	if err := GenerateHostFile(nodePostData.MasterIp, nodePostData.NodeIp, registryIp, hostFileName); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +75,7 @@ func AddRemoveNodeByContainer(nodePostData *nodeModel.AddNodePostData,
 		HostPassword:   nodePostData.HostPassword,
 		HostUserName:   nodePostData.HostUsername,
 		HostFile:       fmt.Sprintf("%s@%s", nodeModel.NodeHostsFile, nodePostData.NodeIp),
-		MasterIp:       masterIp,
+		MasterIp:       nodePostData.MasterIp,
 		MasterPassword: nodePostData.MasterPassword,
 		InstallFile:    yamlFile,
 		LogId:          newLogId,
@@ -125,7 +124,7 @@ func LaunchAnsibleContainer(env *nodeModel.ContainerEnv, secure *secureShell.Sec
 -v %s:/tmp/log \
 -v %s:/tmp/hosts_dir \
 -v %s:/ansible_k8s/pre-env \
-%s k8s_install:1.19 `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
+%s k8s_install:latest `, LogFilePath, HostDirPath, nodeModel.PreEnvDir, envStr)
 
 		if err := secure.ExecuteCommand(cmdStr); err != nil {
 			return err
@@ -350,9 +349,14 @@ func GenerateHostFile(masterIp, nodeIp, registryIp, nodePathFile string) error {
 		return err
 	}
 	addHosts.WriteString("[masters]\n")
-	addHosts.WriteString(fmt.Sprintf("%s\n", masterIp))
+	masters := strings.Split(masterIp, "_")
+	for _, master := range masters {
+		addHosts.WriteString(fmt.Sprintf("%s\n", master))
+	}
 	addHosts.WriteString("[etcd]\n")
-	addHosts.WriteString(fmt.Sprintf("%s\n", masterIp))
+	for _, master := range masters {
+		addHosts.WriteString(fmt.Sprintf("%s\n", master))
+	}
 	addHosts.WriteString("[nodes]\n")
 	nodes := strings.Split(nodeIp, "_")
 	for _, node := range nodes {

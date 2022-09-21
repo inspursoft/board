@@ -36,6 +36,7 @@ export class NodeLogs extends ResponsePaginationBase<NodeLog> {
 export class NodePostData {
   nodeIp = '';
   nodePassword = '';
+  masterIp = '';
   masterPassword = '';
   hostUsername = 'root';
   hostPassword = '';
@@ -44,6 +45,7 @@ export class NodePostData {
     return {
       node_ip: this.nodeIp,
       node_password: this.nodePassword,
+      master_ip: this.masterIp,
       master_password: this.masterPassword,
       host_username: this.hostUsername,
       host_password: this.hostPassword
